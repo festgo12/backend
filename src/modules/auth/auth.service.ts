@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -20,6 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private prisma: PrismaService,
+    private eventEmitter: EventEmitter2,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -50,6 +52,8 @@ export class AuthService {
       },
       include: { profile: true },
     });
+
+    this.eventEmitter.emit('user.created', { userId: user.id, email: user.email });
 
     return this.generateTokens(user.id, user.role);
   }

@@ -85,4 +85,94 @@ export class AdminService {
     const { passwordHash, ...result } = user;
     return result;
   }
+
+  async getAllWallets(page: number, limit: number, search?: string) {
+    const skip = (page - 1) * limit;
+    const where: any = search
+      ? {
+        user: {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+      }
+      : {};
+
+    const [wallets, total] = await Promise.all([
+      this.prisma.wallet.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            include: { profile: true },
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.wallet.count({ where }),
+    ]);
+
+    return {
+      wallets,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getWalletDetail(walletId: string) {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { id: walletId },
+      include: {
+        user: { include: { profile: true } },
+        ledgerEntries: {
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+          include: { transaction: true },
+        },
+        snapshots: {
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!wallet) throw new NotFoundException('Wallet not found');
+    return wallet;
+  }
+
+  async getAllTransactions(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [transactions, total] = await Promise.all([
+      this.prisma.walletTransaction.findMany({
+        skip,
+        take: limit,
+        include: {
+          wallet: {
+            include: {
+              user: { include: { profile: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.walletTransaction.count(),
+    ]);
+
+    return {
+      transactions,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 }

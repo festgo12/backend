@@ -38,4 +38,29 @@ export class AdminController {
   getUserDetail(@Param('id') userId: string) {
     return this.adminService.getUserDetail(userId);
   }
+
+  @Get('wallets')
+  @ApiOperation({ summary: 'List all user wallets' })
+  getAllWallets(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAllWallets(parseInt(page), parseInt(limit), search);
+  }
+
+  @Get('wallets/:id')
+  @ApiOperation({ summary: 'Get wallet details with history' })
+  getWalletDetail(@Param('id') walletId: string) {
+    return this.adminService.getWalletDetail(walletId);
+  }
+
+  @Get('transactions')
+  @ApiOperation({ summary: 'List platform transactions' })
+  getAllTransactions(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return this.adminService.getAllTransactions(parseInt(page), parseInt(limit));
+  }
 }

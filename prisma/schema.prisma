@@ -106,35 +106,68 @@ model UserPreference {
 }
 
 model Wallet {
-  id              String        @id @default(uuid()) @db.Uuid
-  userId          String        @db.Uuid
-  user            User          @relation(fields: [userId], references: [id])
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @db.Uuid
+  user            User                @relation(fields: [userId], references: [id])
   currency        Currency
-  balance         Decimal       @default(0) @db.Decimal(20, 8)
-  reservedBalance Decimal       @default(0) @db.Decimal(20, 8)
-  address         String?       @unique
+  balance         Decimal             @default(0) @db.Decimal(20, 8)
+  reservedBalance Decimal             @default(0) @db.Decimal(20, 8)
+  address         String?             @unique
   ledgerEntries   LedgerEntry[]
-  updatedAt       DateTime      @updatedAt
+  transactions    WalletTransaction[]
+  snapshots       BalanceSnapshot[]
+  updatedAt       DateTime            @updatedAt
 
   @@unique([userId, currency])
   @@index([userId])
 }
 
 model LedgerEntry {
-  id           String     @id @default(uuid()) @db.Uuid
-  walletId     String     @db.Uuid
-  wallet       Wallet     @relation(fields: [walletId], references: [id])
-  orderId      String?    @db.Uuid
-  order        Order?     @relation(fields: [orderId], references: [id])
-  amount       Decimal    @db.Decimal(20, 8)
-  type         LedgerType
-  reference    String     @unique
-  balanceAfter Decimal    @db.Decimal(20, 8)
-  metadata     Json?
-  createdAt    DateTime   @default(now())
+  id            String             @id @default(uuid()) @db.Uuid
+  walletId      String             @db.Uuid
+  wallet        Wallet             @relation(fields: [walletId], references: [id])
+  transactionId String?            @db.Uuid
+  transaction   WalletTransaction? @relation(fields: [transactionId], references: [id])
+  orderId       String?            @db.Uuid
+  order         Order?             @relation(fields: [orderId], references: [id])
+  amount        Decimal            @db.Decimal(20, 8)
+  type          LedgerType
+  reference     String             @unique
+  balanceAfter  Decimal            @db.Decimal(20, 8)
+  metadata      Json?
+  createdAt     DateTime           @default(now())
 
   @@index([walletId])
   @@index([orderId])
+  @@index([transactionId])
+}
+
+model WalletTransaction {
+  id            String        @id @default(uuid()) @db.Uuid
+  walletId      String        @db.Uuid
+  wallet        Wallet        @relation(fields: [walletId], references: [id])
+  type          LedgerType
+  status        String        @default("PENDING")
+  amount        Decimal       @db.Decimal(20, 8)
+  fee           Decimal       @default(0) @db.Decimal(20, 8)
+  reference     String        @unique
+  metadata      Json?
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([walletId, status])
+}
+
+model BalanceSnapshot {
+  id        String   @id @default(uuid()) @db.Uuid
+  walletId  String   @db.Uuid
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  balance   Decimal  @db.Decimal(20, 8)
+  ledgerId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@index([walletId, createdAt])
 }
 
 model Ad {
