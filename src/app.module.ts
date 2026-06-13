@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -15,7 +16,8 @@ import { AppService } from './app.service';
     AuthModule, 
     UsersModule, 
     AdminModule, 
-    WalletModule
+    WalletModule,
+    MarketplaceModule
   ],
   controllers: [AppController],
   providers: [AppService],
