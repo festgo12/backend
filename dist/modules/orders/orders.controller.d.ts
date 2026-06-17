@@ -1,0 +1,141 @@
+import { OrdersService } from './orders.service';
+import { CreateOrderDto } from './dto/order.dto';
+export declare class OrdersController {
+    private readonly ordersService;
+    constructor(ordersService: OrdersService);
+    create(req: any, createOrderDto: CreateOrderDto): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    }>;
+    findAll(req: any): Promise<({
+        ad: {
+            type: import(".prisma/client").$Enums.AdType;
+            id: string;
+            status: string;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            sellerId: string;
+            asset: import(".prisma/client").$Enums.Currency;
+            price: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            minLimit: import("@prisma/client/runtime/library").Decimal;
+            maxLimit: import("@prisma/client/runtime/library").Decimal;
+            isSponsored: boolean;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    })[]>;
+    findOne(id: string, req: any): Promise<{
+        ad: {
+            type: import(".prisma/client").$Enums.AdType;
+            id: string;
+            status: string;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            sellerId: string;
+            asset: import(".prisma/client").$Enums.Currency;
+            price: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            minLimit: import("@prisma/client/runtime/library").Decimal;
+            maxLimit: import("@prisma/client/runtime/library").Decimal;
+            isSponsored: boolean;
+        };
+        seller: {
+            id: string;
+            email: string | null;
+            phone: string | null;
+            resetToken: string | null;
+            passwordHash: string;
+            role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.UserStatus;
+            twoFactorEnabled: boolean;
+            twoFactorSecret: string | null;
+            resetTokenExpires: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        buyer: {
+            id: string;
+            email: string | null;
+            phone: string | null;
+            resetToken: string | null;
+            passwordHash: string;
+            role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.UserStatus;
+            twoFactorEnabled: boolean;
+            twoFactorSecret: string | null;
+            resetTokenExpires: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    }>;
+    approve(id: string, req: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    }>;
+    decline(id: string, req: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    }>;
+}

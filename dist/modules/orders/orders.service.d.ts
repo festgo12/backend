@@ -1,0 +1,144 @@
+import { PrismaService } from '../../core/database/prisma.service';
+import { CreateOrderDto } from './dto/order.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Decimal } from '@prisma/client/runtime/library';
+export declare class OrdersService {
+    private prisma;
+    private eventEmitter;
+    constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
+    createOrder(buyerId: string, dto: CreateOrderDto): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: Decimal;
+        cryptoAmount: Decimal;
+        feeAmount: Decimal;
+        fraudFlagged: boolean;
+    }>;
+    approveOrder(orderId: string, sellerId: string): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: Decimal;
+        cryptoAmount: Decimal;
+        feeAmount: Decimal;
+        fraudFlagged: boolean;
+    }>;
+    declineOrder(orderId: string, initiatorId: string): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: Decimal;
+        cryptoAmount: Decimal;
+        feeAmount: Decimal;
+        fraudFlagged: boolean;
+    }>;
+    getOrder(orderId: string, userId: string): Promise<{
+        ad: {
+            type: import(".prisma/client").$Enums.AdType;
+            id: string;
+            status: string;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            sellerId: string;
+            asset: import(".prisma/client").$Enums.Currency;
+            price: Decimal;
+            quantity: Decimal;
+            minLimit: Decimal;
+            maxLimit: Decimal;
+            isSponsored: boolean;
+        };
+        seller: {
+            id: string;
+            email: string | null;
+            phone: string | null;
+            resetToken: string | null;
+            passwordHash: string;
+            role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.UserStatus;
+            twoFactorEnabled: boolean;
+            twoFactorSecret: string | null;
+            resetTokenExpires: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        buyer: {
+            id: string;
+            email: string | null;
+            phone: string | null;
+            resetToken: string | null;
+            passwordHash: string;
+            role: import(".prisma/client").$Enums.Role;
+            status: import(".prisma/client").$Enums.UserStatus;
+            twoFactorEnabled: boolean;
+            twoFactorSecret: string | null;
+            resetTokenExpires: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: Decimal;
+        cryptoAmount: Decimal;
+        feeAmount: Decimal;
+        fraudFlagged: boolean;
+    }>;
+    listUserOrders(userId: string): Promise<({
+        ad: {
+            type: import(".prisma/client").$Enums.AdType;
+            id: string;
+            status: string;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            sellerId: string;
+            asset: import(".prisma/client").$Enums.Currency;
+            price: Decimal;
+            quantity: Decimal;
+            minLimit: Decimal;
+            maxLimit: Decimal;
+            isSponsored: boolean;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        version: number;
+        expiresAt: Date;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: Decimal;
+        cryptoAmount: Decimal;
+        feeAmount: Decimal;
+        fraudFlagged: boolean;
+    })[]>;
+}
