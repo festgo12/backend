@@ -1,16 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { WalletService } from './wallet.service';
 import { LedgerService } from './ledger.service';
-import { PaystackService } from './paystack.service';
-import { TatumService } from './tatum.service';
 import { WalletController } from './wallet.controller';
 import { WalletEventsHandler } from './wallet_events.handler';
+import { PaystackModule } from '../paystack/paystack.module';
 
 @Module({
-  imports: [HttpModule],
+  imports: [
+    HttpModule,
+    forwardRef(() => PaystackModule),
+  ],
   controllers: [WalletController],
-  providers: [WalletService, LedgerService, PaystackService, TatumService, WalletEventsHandler],
-  exports: [WalletService, LedgerService, PaystackService, TatumService],
+  providers: [WalletService, LedgerService, WalletEventsHandler],
+  exports: [WalletService, LedgerService],
 })
 export class WalletModule {}

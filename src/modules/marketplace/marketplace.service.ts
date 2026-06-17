@@ -85,6 +85,14 @@ export class MarketplaceService {
       if (maxPrice) where.price.lte = maxPrice;
     }
 
+    if (dto.search) {
+      where.OR = [
+        { seller: { email: { contains: dto.search, mode: 'insensitive' } } },
+        { seller: { profile: { firstName: { contains: dto.search, mode: 'insensitive' } } } },
+        { seller: { profile: { lastName: { contains: dto.search, mode: 'insensitive' } } } },
+      ];
+    }
+
     const [total, items] = await Promise.all([
       this.prisma.ad.count({ where }),
       this.prisma.ad.findMany({

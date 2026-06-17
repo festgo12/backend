@@ -97,4 +97,7 @@ export class SearchAdsDto {
 
   @IsOptional()
   sortOrder?: 'asc' | 'desc' = 'desc';
+
+  @IsOptional()
+  search?: string;
 }

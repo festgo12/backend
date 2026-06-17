@@ -70,6 +70,7 @@ export class WalletService {
     type: LedgerType;
     amount: number;
     reference: string;
+    status?: string;
     metadata?: any;
   }) {
     return this.prisma.$transaction(async (tx) => {
@@ -80,20 +81,22 @@ export class WalletService {
           type: params.type,
           amount: new Prisma.Decimal(params.amount),
           reference: params.reference,
-          status: 'COMPLETED', // Simplified for now
+          status: params.status || 'PENDING',
           metadata: params.metadata || {},
         },
       });
 
-      // 2. Create LedgerEntry via LedgerService
-      await this.ledger.createEntry(tx, {
-        walletId: params.walletId,
-        transactionId: transaction.id,
-        amount: params.amount,
-        type: params.type,
-        reference: `${params.reference}-ledger`,
-        metadata: params.metadata,
-      });
+      // 2. Create LedgerEntry via LedgerService ONLY if status is COMPLETED
+      if (params.status === 'COMPLETED') {
+        await this.ledger.createEntry(tx, {
+          walletId: params.walletId,
+          transactionId: transaction.id,
+          amount: params.amount,
+          type: params.type,
+          reference: `${params.reference}-ledger`,
+          metadata: params.metadata,
+        });
+      }
 
       return transaction;
     });
@@ -141,6 +144,107 @@ export class WalletService {
     }
 
     return calculatedBalance;
+  }
+
+  /**
+   * Updates the blockchain address for a wallet.
+   */
+  async updateWalletAddress(walletId: string, address: string) {
+    return this.prisma.wallet.update({
+      where: { id: walletId },
+      data: { address },
+    });
+  }
+
+  /**
+   * Finds a transaction by its reference.
+   */
+  async findTransactionByReference(reference: string) {
+    return this.prisma.walletTransaction.findUnique({
+      where: { reference },
+    });
+  }
+
+  /**
+   * Updates transaction status and creates ledger entry if completed.
+   */
+  async updateTransactionStatus(transactionId: string, status: string, metadata?: any) {
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.walletTransaction.findUnique({
+        where: { id: transactionId },
+      });
+
+      if (!current) throw new NotFoundException('Transaction not found');
+
+      const updatedMetadata = {
+        ...(current.metadata as any || {}),
+        ...(metadata || {}),
+      };
+
+      const transaction = await tx.walletTransaction.update({
+        where: { id: transactionId },
+        data: { 
+          status,
+          metadata: updatedMetadata,
+        },
+      });
+
+      if (status === 'COMPLETED') {
+        // Create LedgerEntry if it doesn't already exist for this transaction
+        const existingEntry = await tx.ledgerEntry.findFirst({
+          where: { transactionId: transaction.id },
+        });
+
+        if (!existingEntry) {
+          await this.ledger.createEntry(tx, {
+            walletId: transaction.walletId,
+            transactionId: transaction.id,
+            amount: transaction.amount.toNumber(),
+            type: transaction.type,
+            reference: `${transaction.reference}-ledger`,
+            metadata: updatedMetadata,
+          });
+        }
+      }
+
+      return transaction;
+    });
+  }
+
+  /**
+   * Reverses a failed transaction by creating an offsetting ledger entry.
+   */
+  async reverseTransaction(transactionId: string, reason: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const transaction = await tx.walletTransaction.findUnique({
+        where: { id: transactionId },
+      });
+
+      if (!transaction || transaction.status === 'REVERSED') return;
+
+      // 1. Mark as reversed
+      await tx.walletTransaction.update({
+        where: { id: transactionId },
+        data: { 
+          status: 'REVERSED',
+          metadata: {
+            ...(transaction.metadata as any || {}),
+            reverse_reason: reason
+          }
+        },
+      });
+
+      // 2. Create an offsetting LedgerEntry to give back the money
+      // We use TRADE_REFUND as a fallback if no SPECIFIC reversal type exists
+      await this.ledger.createEntry(tx, {
+        walletId: transaction.walletId,
+        transactionId: transaction.id,
+        amount: Math.abs(transaction.amount.toNumber()), // Positive to give back
+        type: LedgerType.TRADE_REFUND,
+        reference: `${transaction.reference}-rev-${Date.now()}`,
+        metadata: { reason },
+      });
+    });
   }
 }
 

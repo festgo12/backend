@@ -63,4 +63,60 @@ export class AdminController {
   ) {
     return this.adminService.getAllTransactions(parseInt(page), parseInt(limit));
   }
+
+  @Get('orders')
+  @ApiOperation({ summary: 'List all platform orders' })
+  getAllOrders(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAllOrders(parseInt(page), parseInt(limit), search);
+  }
+
+  @Get('orders/:id')
+  @ApiOperation({ summary: 'Get detailed order information' })
+  getOrderDetail(@Param('id') orderId: string) {
+    return this.adminService.getOrderDetail(orderId);
+  }
+
+  @Get('blockchain/stats')
+  @ApiOperation({ summary: 'Get blockchain monitoring stats' })
+  getBlockchainStats() {
+    return this.adminService.getBlockchainStats();
+  }
+
+  @Get('blockchain/transactions')
+  @ApiOperation({ summary: 'Monitor blockchain transactions' })
+  getBlockchainTransactions(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return this.adminService.getBlockchainTransactions(parseInt(page), parseInt(limit));
+  }
+
+  @Get('blockchain/failed')
+  @ApiOperation({ summary: 'List failed transactions' })
+  getFailedTransactions(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return this.adminService.getFailedTransactions(parseInt(page), parseInt(limit));
+  }
+
+  @Get('payments/stats')
+  @ApiOperation({ summary: 'Get NGN payment statistics' })
+  getPaymentStats() {
+    return this.adminService.getPaymentStats();
+  }
+
+  @Get('payments/transactions')
+  @ApiOperation({ summary: 'Monitor NGN payment transactions' })
+  getPaymentTransactions(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+  }
 }
+

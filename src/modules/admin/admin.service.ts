@@ -175,4 +175,183 @@ export class AdminService {
       },
     };
   }
+
+  async getAllOrders(page: number, limit: number, search?: string) {
+    const skip = (page - 1) * limit;
+    const where: any = search
+      ? {
+        OR: [
+          { id: { contains: search, mode: 'insensitive' } },
+          { buyer: { email: { contains: search, mode: 'insensitive' } } },
+          { seller: { email: { contains: search, mode: 'insensitive' } } },
+        ],
+      }
+      : {};
+
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          buyer: { include: { profile: true } },
+          seller: { include: { profile: true } },
+          ad: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      orders,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getOrderDetail(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        buyer: { include: { profile: true, wallets: true } },
+        seller: { include: { profile: true, wallets: true } },
+        ad: true,
+        ledgerEntries: {
+          include: { wallet: true },
+        },
+      },
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
+  /**
+   * List all crypto transactions for monitoring.
+   */
+  async getBlockchainTransactions(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [transactions, total] = await Promise.all([
+      this.prisma.walletTransaction.findMany({
+        where: {
+          wallet: {
+            currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
+          },
+        },
+        skip,
+        take: limit,
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.walletTransaction.count({
+        where: {
+          wallet: {
+            currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  /**
+   * List transactions that failed and need intervention.
+   */
+  async getFailedTransactions(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [transactions, total] = await Promise.all([
+      this.prisma.walletTransaction.findMany({
+        where: { status: 'FAILED' },
+        skip,
+        take: limit,
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.walletTransaction.count({ where: { status: 'FAILED' } }),
+    ]);
+
+    return {
+      transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  /**
+   * Returns high-level blockchain stats for the dashboard.
+   */
+  async getBlockchainStats() {
+    // ... existing blockchain stats code
+  }
+
+  /**
+   * Get Paystack/NGN payment statistics for admin dashboard.
+   */
+  async getPaymentStats() {
+    const totalDeposits = await this.prisma.walletTransaction.aggregate({
+      where: {
+        type: 'DEPOSIT',
+        status: 'COMPLETED',
+        wallet: { currency: 'NGN' },
+      },
+      _sum: { amount: true },
+    });
+
+    const totalWithdrawals = await this.prisma.walletTransaction.aggregate({
+      where: {
+        type: 'WITHDRAWAL',
+        status: 'COMPLETED',
+        wallet: { currency: 'NGN' },
+      },
+      _sum: { amount: true },
+    });
+
+    return {
+      totalDeposits: totalDeposits._sum.amount || 0,
+      totalWithdrawals: totalWithdrawals._sum.amount || 0,
+    };
+  }
+
+  /**
+   * List all Paystack transactions for monitoring.
+   */
+  async getPaymentTransactions(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [transactions, total] = await Promise.all([
+      this.prisma.walletTransaction.findMany({
+        where: {
+          wallet: { currency: 'NGN' },
+        },
+        skip,
+        take: limit,
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.walletTransaction.count({
+        where: {
+          wallet: { currency: 'NGN' },
+        },
+      }),
+    ]);
+
+    return {
+      transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
 }
+

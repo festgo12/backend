@@ -117,6 +117,7 @@ model Wallet {
   transactions    WalletTransaction[]
   snapshots       BalanceSnapshot[]
   updatedAt       DateTime            @updatedAt
+  version         Int                 @default(0)
 
   @@unique([userId, currency])
   @@index([userId])
@@ -185,6 +186,7 @@ model Ad {
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  version     Int      @default(0)
 
   @@index([sellerId, asset, type])
 }
@@ -206,6 +208,8 @@ model Order {
   expiresAt     DateTime
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  version       Int           @default(0)
+  fraudFlagged  Boolean       @default(false)
 
   @@index([buyerId, sellerId, status])
 }
