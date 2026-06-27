@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Headers, HttpCode, HttpStatus, Logger, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers, HttpCode, HttpStatus, Logger, UnauthorizedException, Param, Query, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { TatumWebhookService } from './tatum-webhook.service';
 import { TatumDepositService } from './tatum-deposit.service';
+
+import { PrismaService } from '../../core/database/prisma.service';
 
 @ApiTags('Tatum Webhooks')
 @Controller('tatum/webhooks')
@@ -11,6 +13,7 @@ export class TatumWebhookController {
   constructor(
     private readonly webhookService: TatumWebhookService,
     private readonly depositService: TatumDepositService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Post('incoming')
@@ -50,6 +53,57 @@ export class TatumWebhookController {
     }
 
     return { received: true };
+  }
+
+
+  @Get('testnet/:currency/:amount')
+  @ApiOperation({ summary: 'Simulate a Tatum testnet deposit for testing' })
+  async simulateTestnetDeposit(
+    @Param('currency') currency: string,
+    @Param('amount') amount: string,
+    @Query('address') address?: string,
+  ) {
+    this.logger.log(`Simulating testnet deposit: ${amount} ${currency} (Address: ${address || 'any'})`);
+
+    // 1. Find a wallet to credit
+    let wallet;
+    if (address) {
+      wallet = await this.prisma.wallet.findUnique({
+        where: { address },
+      });
+    } else {
+      wallet = await this.prisma.wallet.findFirst({
+        where: { 
+          currency: currency.toUpperCase() as any,
+          address: { not: null }
+        },
+      });
+    }
+
+    if (!wallet || !wallet.address) {
+      throw new NotFoundException(`No wallet with address found for ${currency}`);
+    }
+
+    const txId = `sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // 2. Trigger deposit notification (creates PENDING transaction)
+    await this.depositService.handleDepositNotification({
+      address: wallet.address,
+      amount,
+      asset: currency.toUpperCase(),
+      txId,
+    });
+
+    // 3. Immediately trigger confirmation completion for testing (marks as COMPLETED)
+    await this.webhookService.markTransactionAsCompleted(txId);
+
+    return {
+      success: true,
+      message: `Simulated ${amount} ${currency} deposit to ${wallet.address}`,
+      txId,
+      walletId: wallet.id,
+      userId: wallet.userId
+    };
   }
 
   private async handleConfirmation(payload: any) {

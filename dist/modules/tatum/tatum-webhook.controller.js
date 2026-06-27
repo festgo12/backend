@@ -18,13 +18,16 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const tatum_webhook_service_1 = require("./tatum-webhook.service");
 const tatum_deposit_service_1 = require("./tatum-deposit.service");
+const prisma_service_1 = require("../../core/database/prisma.service");
 let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookController {
     webhookService;
     depositService;
+    prisma;
     logger = new common_1.Logger(TatumWebhookController_1.name);
-    constructor(webhookService, depositService) {
+    constructor(webhookService, depositService, prisma) {
         this.webhookService = webhookService;
         this.depositService = depositService;
+        this.prisma = prisma;
     }
     async handleWebhook(payload, signature) {
         if (!this.webhookService.verifySignature(payload, signature)) {
@@ -51,6 +54,41 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
         }
         return { received: true };
     }
+    async simulateTestnetDeposit(currency, amount, address) {
+        this.logger.log(`Simulating testnet deposit: ${amount} ${currency} (Address: ${address || 'any'})`);
+        let wallet;
+        if (address) {
+            wallet = await this.prisma.wallet.findUnique({
+                where: { address },
+            });
+        }
+        else {
+            wallet = await this.prisma.wallet.findFirst({
+                where: {
+                    currency: currency.toUpperCase(),
+                    address: { not: null }
+                },
+            });
+        }
+        if (!wallet || !wallet.address) {
+            throw new common_1.NotFoundException(`No wallet with address found for ${currency}`);
+        }
+        const txId = `sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        await this.depositService.handleDepositNotification({
+            address: wallet.address,
+            amount,
+            asset: currency.toUpperCase(),
+            txId,
+        });
+        await this.webhookService.markTransactionAsCompleted(txId);
+        return {
+            success: true,
+            message: `Simulated ${amount} ${currency} deposit to ${wallet.address}`,
+            txId,
+            walletId: wallet.id,
+            userId: wallet.userId
+        };
+    }
     async handleConfirmation(payload) {
         const { txId, confirmations } = payload;
         this.logger.log(`Transaction ${txId} reached ${confirmations} confirmations.`);
@@ -71,10 +109,21 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], TatumWebhookController.prototype, "handleWebhook", null);
+__decorate([
+    (0, common_1.Get)('testnet/:currency/:amount'),
+    (0, swagger_1.ApiOperation)({ summary: 'Simulate a Tatum testnet deposit for testing' }),
+    __param(0, (0, common_1.Param)('currency')),
+    __param(1, (0, common_1.Param)('amount')),
+    __param(2, (0, common_1.Query)('address')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], TatumWebhookController.prototype, "simulateTestnetDeposit", null);
 exports.TatumWebhookController = TatumWebhookController = TatumWebhookController_1 = __decorate([
     (0, swagger_1.ApiTags)('Tatum Webhooks'),
     (0, common_1.Controller)('tatum/webhooks'),
     __metadata("design:paramtypes", [tatum_webhook_service_1.TatumWebhookService,
-        tatum_deposit_service_1.TatumDepositService])
+        tatum_deposit_service_1.TatumDepositService,
+        prisma_service_1.PrismaService])
 ], TatumWebhookController);
 //# sourceMappingURL=tatum-webhook.controller.js.map

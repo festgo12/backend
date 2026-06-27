@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../core/database/prisma.service';
+import { WalletService } from '../wallet/wallet.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class TatumWebhookService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly walletService: WalletService,
   ) {
     this.hmacSecret = this.configService.get<string>('TATUM_WEBHOOK_SECRET') || '';
   }
@@ -37,11 +39,17 @@ export class TatumWebhookService {
    */
   async markTransactionAsCompleted(txId: string) {
     try {
-      await this.prisma.walletTransaction.update({
+      const transaction = await this.prisma.walletTransaction.findUnique({
         where: { reference: txId },
-        data: { status: 'COMPLETED' },
       });
-      this.logger.log(`Transaction ${txId} marked as COMPLETED.`);
+
+      if (!transaction) {
+        this.logger.warn(`Transaction with reference ${txId} not found.`);
+        return;
+      }
+
+      await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED');
+      this.logger.log(`Transaction ${txId} marked as COMPLETED and balance synced.`);
     } catch (error) {
       this.logger.error(`Failed to mark transaction ${txId} as completed: ${error.message}`);
     }

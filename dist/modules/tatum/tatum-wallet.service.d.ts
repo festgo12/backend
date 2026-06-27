@@ -9,6 +9,7 @@ export declare class TatumWalletService {
     private readonly baseUrl;
     constructor(configService: ConfigService, httpService: HttpService);
     private get headers();
+    getOrGenerateXpub(asset: Currency): Promise<string>;
     generateWallet(asset: Currency): Promise<{
         mnemonic: string;
         xpub: string;

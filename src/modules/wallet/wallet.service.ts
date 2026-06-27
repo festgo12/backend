@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
-import { Currency, Role, LedgerType } from '@prisma/client';
+import { Currency, Role, LedgerType, Prisma } from '@prisma/client';
 
 @Injectable()
 export class WalletService {
@@ -14,7 +14,7 @@ export class WalletService {
    * Returns all wallets for a user with their current balances.
    */
   async getUserWallets(userId: string) {
-    return this.prisma.wallet.findMany({
+    const wallets = await this.prisma.wallet.findMany({
       where: { userId },
       include: {
         _count: {
@@ -22,6 +22,19 @@ export class WalletService {
         },
       },
     });
+
+    const rates: Record<Currency, number> = {
+      NGN: 1.0,
+      USDT: 1550.0,
+      USDC: 1545.0,
+      BTC: 96000000.0,
+      ETH: 5400000.0,
+    };
+
+    return wallets.map((w) => ({
+      ...w,
+      balanceInNgn: w.balance.mul(rates[w.currency] || 0),
+    }));
   }
 
   /**
@@ -58,9 +71,37 @@ export class WalletService {
       skip: offset,
       include: {
         transaction: true,
+        wallet: {
+          select: {
+            currency: true,
+          },
+        },
       },
     });
   }
+
+  /**
+   * Returns transaction history (from LedgerEntry) across all wallets for a user.
+   */
+  async getUserHistory(userId: string, limit: number = 20, offset: number = 0) {
+    return this.prisma.ledgerEntry.findMany({
+      where: {
+        wallet: { userId },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+      include: {
+        transaction: true,
+        wallet: {
+          select: {
+            currency: true,
+          },
+        },
+      },
+    });
+  }
+
 
   /**
    * Initiates a wallet transaction (e.g. Deposit, Withdrawal) and creates ledger entries.
@@ -183,7 +224,7 @@ export class WalletService {
 
       const transaction = await tx.walletTransaction.update({
         where: { id: transactionId },
-        data: { 
+        data: {
           status,
           metadata: updatedMetadata,
         },
@@ -225,7 +266,7 @@ export class WalletService {
       // 1. Mark as reversed
       await tx.walletTransaction.update({
         where: { id: transactionId },
-        data: { 
+        data: {
           status: 'REVERSED',
           metadata: {
             ...(transaction.metadata as any || {}),
@@ -248,4 +289,4 @@ export class WalletService {
   }
 }
 
-import { Prisma } from '@prisma/client';
+

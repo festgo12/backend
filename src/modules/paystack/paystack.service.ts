@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
@@ -43,8 +43,9 @@ export class PaystackService {
       );
       return response.data;
     } catch (error) {
-      this.logger.error(`Paystack initializeTransaction error: ${error.message}`, error.stack);
-      throw error;
+      const errorMessage = error.response?.data?.message || error.message;
+      this.logger.error(`Paystack initializeTransaction error: ${errorMessage}`, error.stack);
+      throw new Error(`Paystack initialization failed: ${errorMessage}`);
     }
   }
 
@@ -100,8 +101,9 @@ export class PaystackService {
       );
       return response.data;
     } catch (error) {
-      this.logger.error(`Paystack verifyAccountNumber error: ${error.message}`, error.stack);
-      throw error;
+      const errorMessage = error.response?.data?.message || error.message;
+      this.logger.error(`Paystack verifyAccountNumber error: ${errorMessage}`, error.stack);
+      throw new BadRequestException(`Account verification failed: ${errorMessage}`);
     }
   }
 

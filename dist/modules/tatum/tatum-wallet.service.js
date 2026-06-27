@@ -30,6 +30,16 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
     get headers() {
         return { 'x-api-key': this.apiKey };
     }
+    async getOrGenerateXpub(asset) {
+        const envXpubKey = `TATUM_${asset}_XPUB`;
+        const configuredXpub = this.configService.get(envXpubKey);
+        if (configuredXpub) {
+            return configuredXpub;
+        }
+        this.logger.log(`No explicit XPub found for ${asset} in environment. Generating a new key pair via Tatum...`);
+        const dynamicWallet = await this.generateWallet(asset);
+        return dynamicWallet.xpub;
+    }
     async generateWallet(asset) {
         const chain = this.mapCurrencyToChain(asset);
         try {
@@ -40,25 +50,26 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Failed to generate wallet for ${asset}: ${error.message}`);
-            throw error;
+            this.logger.error(`Failed to generate wallet for ${asset}: ${error.response?.data?.message || error.message}`);
+            throw new common_1.InternalServerErrorException(`Could not generate wallet infrastructure for ${asset}`);
         }
     }
     async generateAddress(asset, xpub, index) {
         const chain = this.mapCurrencyToChain(asset);
         try {
-            const url = asset === client_1.Currency.BTC
-                ? `${this.baseUrl}/bitcoin/address/${xpub}/${index}`
-                : `${this.baseUrl}/ethereum/address/${xpub}/${index}`;
+            const url = `${this.baseUrl}/${chain}/address/${xpub}/${index}`;
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, { headers: this.headers }).pipe((0, rxjs_1.retry)({
                 count: 3,
                 delay: (error, retryCount) => (0, rxjs_1.timer)(retryCount * 1000),
             })));
+            if (!response.data || !response.data.address) {
+                throw new Error('Address missing from Tatum response body');
+            }
             return response.data.address;
         }
         catch (error) {
-            this.logger.error(`Failed to generate address for ${asset}: ${error.message}`);
-            throw error;
+            this.logger.error(`Failed to generate address for ${asset}: ${error.response?.data?.message || error.message}`);
+            throw new common_1.BadRequestException(`Failed to generate deposit address for ${asset}. Ensure XPub is valid.`);
         }
     }
     async generatePrivateKey(asset, mnemonic, index) {
@@ -68,17 +79,20 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
             return response.data.key;
         }
         catch (error) {
-            this.logger.error(`Failed to generate private key for ${asset}: ${error.message}`);
-            throw error;
+            this.logger.error(`Failed to generate private key for ${asset}: ${error.response?.data?.message || error.message}`);
+            throw new common_1.InternalServerErrorException(`Secure key generation failed for asset ${asset}`);
         }
     }
     mapCurrencyToChain(currency) {
         switch (currency) {
-            case client_1.Currency.BTC: return 'bitcoin';
+            case client_1.Currency.BTC:
+                return 'bitcoin';
             case client_1.Currency.ETH:
             case client_1.Currency.USDT:
-            case client_1.Currency.USDC: return 'ethereum';
-            default: throw new Error(`Unsupported currency for Tatum: ${currency}`);
+            case client_1.Currency.USDC:
+                return 'ethereum';
+            default:
+                throw new common_1.BadRequestException(`Unsupported crypto wallet network type: ${currency}`);
         }
     }
 };

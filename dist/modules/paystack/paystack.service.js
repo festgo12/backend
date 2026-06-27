@@ -77,8 +77,9 @@ let PaystackService = PaystackService_1 = class PaystackService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Paystack initializeTransaction error: ${error.message}`, error.stack);
-            throw error;
+            const errorMessage = error.response?.data?.message || error.message;
+            this.logger.error(`Paystack initializeTransaction error: ${errorMessage}`, error.stack);
+            throw new Error(`Paystack initialization failed: ${errorMessage}`);
         }
     }
     async verifyTransaction(reference) {
@@ -119,8 +120,9 @@ let PaystackService = PaystackService_1 = class PaystackService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Paystack verifyAccountNumber error: ${error.message}`, error.stack);
-            throw error;
+            const errorMessage = error.response?.data?.message || error.message;
+            this.logger.error(`Paystack verifyAccountNumber error: ${errorMessage}`, error.stack);
+            throw new common_1.BadRequestException(`Account verification failed: ${errorMessage}`);
         }
     }
     async createTransferRecipient(name, accountNumber, bankCode) {

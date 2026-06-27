@@ -47,15 +47,18 @@ exports.TatumWebhookService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const wallet_service_1 = require("../wallet/wallet.service");
 const crypto = __importStar(require("crypto"));
 let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     configService;
     prisma;
+    walletService;
     logger = new common_1.Logger(TatumWebhookService_1.name);
     hmacSecret;
-    constructor(configService, prisma) {
+    constructor(configService, prisma, walletService) {
         this.configService = configService;
         this.prisma = prisma;
+        this.walletService = walletService;
         this.hmacSecret = this.configService.get('TATUM_WEBHOOK_SECRET') || '';
     }
     verifySignature(payload, signature) {
@@ -71,11 +74,15 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     }
     async markTransactionAsCompleted(txId) {
         try {
-            await this.prisma.walletTransaction.update({
+            const transaction = await this.prisma.walletTransaction.findUnique({
                 where: { reference: txId },
-                data: { status: 'COMPLETED' },
             });
-            this.logger.log(`Transaction ${txId} marked as COMPLETED.`);
+            if (!transaction) {
+                this.logger.warn(`Transaction with reference ${txId} not found.`);
+                return;
+            }
+            await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED');
+            this.logger.log(`Transaction ${txId} marked as COMPLETED and balance synced.`);
         }
         catch (error) {
             this.logger.error(`Failed to mark transaction ${txId} as completed: ${error.message}`);
@@ -86,6 +93,7 @@ exports.TatumWebhookService = TatumWebhookService;
 exports.TatumWebhookService = TatumWebhookService = TatumWebhookService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        wallet_service_1.WalletService])
 ], TatumWebhookService);
 //# sourceMappingURL=tatum-webhook.service.js.map

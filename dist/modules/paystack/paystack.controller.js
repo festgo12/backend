@@ -34,23 +34,29 @@ let PaystackController = PaystackController_1 = class PaystackController {
             throw new common_1.BadRequestException('User email is required for Paystack');
         if (!amount || amount <= 0)
             throw new common_1.BadRequestException('Invalid amount');
-        const reference = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const result = await this.paystackService.initializeTransaction(user.email, amount, reference, {
-            userId: user.id,
-            type: 'DEPOSIT',
-        });
-        const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
-        await this.walletService.createTransaction({
-            walletId: wallet.id,
-            type: client_1.LedgerType.DEPOSIT,
-            amount,
-            reference,
-            status: 'PENDING',
-            metadata: {
-                paystack_ref: result.data.reference,
-            },
-        });
-        return result;
+        try {
+            const reference = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            const result = await this.paystackService.initializeTransaction(user.email, amount, reference, {
+                userId: user.id,
+                type: 'DEPOSIT',
+            });
+            const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
+            await this.walletService.createTransaction({
+                walletId: wallet.id,
+                type: client_1.LedgerType.DEPOSIT,
+                amount,
+                reference,
+                status: 'PENDING',
+                metadata: {
+                    paystack_ref: result.data.reference,
+                },
+            });
+            return result;
+        }
+        catch (error) {
+            this.logger.error(`Deposit initialization failed for ${user.email}: ${error.message}`);
+            throw new common_1.BadRequestException(error.message || 'Failed to initialize deposit');
+        }
     }
     async getBanks() {
         return this.paystackService.listBanks();

@@ -5,12 +5,13 @@ import type { User } from '@prisma/client';
 export declare class WalletController {
     private readonly walletService;
     private readonly tatumWallet;
+    private readonly logger;
     constructor(walletService: WalletService, tatumWallet: TatumWalletService);
-    getWallets(user: User): Promise<({
+    getWallets(user: User): Promise<{
+        balanceInNgn: import("@prisma/client/runtime/library").Decimal;
         _count: {
             ledgerEntries: number;
         };
-    } & {
         id: string;
         updatedAt: Date;
         userId: string;
@@ -19,8 +20,11 @@ export declare class WalletController {
         reservedBalance: import("@prisma/client/runtime/library").Decimal;
         address: string | null;
         version: number;
-    })[]>;
-    getHistory(walletId: string, limit?: number, offset?: number): Promise<({
+    }[]>;
+    getHistory(user: User, walletId?: string, limit?: number, offset?: number): Promise<({
+        wallet: {
+            currency: import(".prisma/client").$Enums.Currency;
+        };
         transaction: {
             type: import(".prisma/client").$Enums.LedgerType;
             id: string;

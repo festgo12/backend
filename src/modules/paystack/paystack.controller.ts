@@ -27,27 +27,32 @@ export class PaystackController {
     if (!user.email) throw new BadRequestException('User email is required for Paystack');
     if (!amount || amount <= 0) throw new BadRequestException('Invalid amount');
 
-    const reference = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const result = await this.paystackService.initializeTransaction(user.email, amount, reference, {
-      userId: user.id,
-      type: 'DEPOSIT',
-    });
+    try {
+      const reference = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const result = await this.paystackService.initializeTransaction(user.email, amount, reference, {
+        userId: user.id,
+        type: 'DEPOSIT',
+      });
 
-    // Create a pending transaction in our DB
-    const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
-    
-    await this.walletService.createTransaction({
-      walletId: wallet.id,
-      type: LedgerType.DEPOSIT,
-      amount,
-      reference,
-      status: 'PENDING',
-      metadata: { 
-        paystack_ref: result.data.reference,
-      },
-    });
+      // Create a pending transaction in our DB
+      const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
+      
+      await this.walletService.createTransaction({
+        walletId: wallet.id,
+        type: LedgerType.DEPOSIT,
+        amount,
+        reference,
+        status: 'PENDING',
+        metadata: { 
+          paystack_ref: result.data.reference,
+        },
+      });
 
-    return result;
+      return result;
+    } catch (error) {
+      this.logger.error(`Deposit initialization failed for ${user.email}: ${error.message}`);
+      throw new BadRequestException(error.message || 'Failed to initialize deposit');
+    }
   }
 
   @Get('banks')

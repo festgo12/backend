@@ -22,7 +22,7 @@ let WalletService = class WalletService {
         this.ledger = ledger;
     }
     async getUserWallets(userId) {
-        return this.prisma.wallet.findMany({
+        const wallets = await this.prisma.wallet.findMany({
             where: { userId },
             include: {
                 _count: {
@@ -30,6 +30,17 @@ let WalletService = class WalletService {
                 },
             },
         });
+        const rates = {
+            NGN: 1.0,
+            USDT: 1550.0,
+            USDC: 1545.0,
+            BTC: 96000000.0,
+            ETH: 5400000.0,
+        };
+        return wallets.map((w) => ({
+            ...w,
+            balanceInNgn: w.balance.mul(rates[w.currency] || 0),
+        }));
     }
     async getOrCreateWallet(userId, currency) {
         let wallet = await this.prisma.wallet.findUnique({
@@ -56,6 +67,29 @@ let WalletService = class WalletService {
             skip: offset,
             include: {
                 transaction: true,
+                wallet: {
+                    select: {
+                        currency: true,
+                    },
+                },
+            },
+        });
+    }
+    async getUserHistory(userId, limit = 20, offset = 0) {
+        return this.prisma.ledgerEntry.findMany({
+            where: {
+                wallet: { userId },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+            skip: offset,
+            include: {
+                transaction: true,
+                wallet: {
+                    select: {
+                        currency: true,
+                    },
+                },
             },
         });
     }
@@ -65,7 +99,7 @@ let WalletService = class WalletService {
                 data: {
                     walletId: params.walletId,
                     type: params.type,
-                    amount: new client_2.Prisma.Decimal(params.amount),
+                    amount: new client_1.Prisma.Decimal(params.amount),
                     reference: params.reference,
                     status: params.status || 'PENDING',
                     metadata: params.metadata || {},
@@ -97,7 +131,7 @@ let WalletService = class WalletService {
         if (!wallet)
             throw new common_1.NotFoundException('Wallet not found');
         const lastSnapshot = wallet.snapshots[0];
-        const snapshotBalance = lastSnapshot ? lastSnapshot.balance : new client_2.Prisma.Decimal(0);
+        const snapshotBalance = lastSnapshot ? lastSnapshot.balance : new client_1.Prisma.Decimal(0);
         const snapshotDate = lastSnapshot ? lastSnapshot.createdAt : new Date(0);
         const ledgerSum = await this.prisma.ledgerEntry.aggregate({
             where: {
@@ -198,5 +232,4 @@ exports.WalletService = WalletService = __decorate([
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         ledger_service_1.LedgerService])
 ], WalletService);
-const client_2 = require("@prisma/client");
 //# sourceMappingURL=wallet.service.js.map
