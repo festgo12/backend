@@ -8,8 +8,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -39,8 +39,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -98,8 +98,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -113,8 +113,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -128,8 +128,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
