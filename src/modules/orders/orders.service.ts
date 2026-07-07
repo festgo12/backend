@@ -57,7 +57,7 @@ export class OrdersService {
         throw new BadRequestException('Requested quantity exceeds advertisement available volume');
       }
 
-      // 4. Validate and Reserve Balances
+      // 4. Validate Balances (Instant Insufficient Balance error)
       const buyerFiatWallet = await tx.wallet.findUnique({
         where: { userId_currency: { userId: buyerId, currency: Currency.NGN } },
       });
@@ -88,14 +88,14 @@ export class OrdersService {
         throw new InternalServerErrorException('Conflict during balance reservation. Please retry.');
       }
 
-      // 6. Create Order
+      // 6. Create Order initially in CREATED status
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
       const order = await tx.order.create({
         data: {
           adId: ad.id,
           buyerId,
           sellerId: ad.sellerId,
-          status: OrderStatus.PENDING_SELLER,
+          status: OrderStatus.CREATED,
           fiatAmount,
           cryptoAmount,
           feeAmount: 0,
@@ -103,10 +103,19 @@ export class OrdersService {
         },
       });
 
-      // 7. Emit Event
-      this.eventEmitter.emit('order.created', order);
+      // 7. Transition order status immediately to PENDING_SELLER and start countdown
+      const finalOrder = await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: OrderStatus.PENDING_SELLER,
+          version: { increment: 1 },
+        },
+      });
 
-      return order;
+      // 8. Emit Event
+      this.eventEmitter.emit('order.created', finalOrder);
+
+      return finalOrder;
     });
   }
 
@@ -130,35 +139,72 @@ export class OrdersService {
       const buyerFee = cryptoAmount.times(0.005).toDecimalPlaces(8);
       const sellerFee = fiatAmount.times(0.005).toDecimalPlaces(2);
 
-      // 1. Deduct Crypto from Seller (Optimistic Lock)
-      const sellerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: sellerId, currency: order.ad.asset } },
-      });
-      if (!sellerCryptoWallet) throw new InternalServerErrorException('Seller wallet not found');
-
-      const deductCryptoResult = await tx.wallet.updateMany({
-        where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },
+      // --- STAGE 1: Transition status to APPROVED (Locks crypto logic) ---
+      const approvedOrder = await tx.order.update({
+        where: { id: order.id },
         data: {
-          balance: { decrement: cryptoAmount },
+          status: OrderStatus.APPROVED,
           version: { increment: 1 },
         },
       });
-      if (deductCryptoResult.count === 0) throw new InternalServerErrorException('Conflict updating seller crypto wallet');
 
-      // 2. Transfer Fiat from Buyer Reserved to Seller Available (Optimistic Lock)
+      // --- STAGE 2: Lock crypto from Seller (Optimistic Lock) ---
+      const sellerCryptoWallet = await tx.wallet.findUnique({
+        where: { userId_currency: { userId: sellerId, currency: order.ad.asset } },
+      });
+      if (!sellerCryptoWallet) throw new InternalServerErrorException('Seller crypto wallet not found');
+      if (new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
+        throw new BadRequestException('Seller has insufficient crypto balance to lock');
+      }
+
+      const lockCryptoResult = await tx.wallet.updateMany({
+        where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },
+        data: {
+          balance: { decrement: cryptoAmount },
+          reservedBalance: { increment: cryptoAmount },
+          version: { increment: 1 },
+        },
+      });
+      if (lockCryptoResult.count === 0) throw new InternalServerErrorException('Conflict locking seller crypto');
+
+      // --- STAGE 3: Transfer Crypto (Debit seller escrow, Credit buyer available) ---
+      const transferCryptoResult = await tx.wallet.updateMany({
+        where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version + 1 }, // we incremented once
+        data: {
+          reservedBalance: { decrement: cryptoAmount },
+          version: { increment: 1 },
+        },
+      });
+      if (transferCryptoResult.count === 0) throw new InternalServerErrorException('Conflict transferring seller crypto');
+
+      const buyerCryptoWallet = await tx.wallet.findUnique({
+        where: { userId_currency: { userId: order.buyerId, currency: order.ad.asset } },
+      });
+      if (!buyerCryptoWallet) throw new InternalServerErrorException('Buyer crypto wallet not found');
+
+      const creditBuyerCryptoResult = await tx.wallet.updateMany({
+        where: { id: buyerCryptoWallet.id, version: buyerCryptoWallet.version },
+        data: {
+          balance: { increment: cryptoAmount.minus(buyerFee) },
+          version: { increment: 1 },
+        },
+      });
+      if (creditBuyerCryptoResult.count === 0) throw new InternalServerErrorException('Conflict crediting buyer crypto');
+
+      // --- STAGE 4: Credit seller NGN (Debit buyer reserved NGN, Credit seller NGN) ---
       const buyerFiatWallet = await tx.wallet.findUnique({
         where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
 
-      const releaseReservedResult = await tx.wallet.updateMany({
+      const releaseReservedFiatResult = await tx.wallet.updateMany({
         where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
         data: {
           reservedBalance: { decrement: fiatAmount },
           version: { increment: 1 },
         },
       });
-      if (releaseReservedResult.count === 0) throw new InternalServerErrorException('Conflict releasing buyer reserved funds');
+      if (releaseReservedFiatResult.count === 0) throw new InternalServerErrorException('Conflict releasing buyer reserved fiat');
 
       const sellerFiatWallet = await tx.wallet.findUnique({
         where: { userId_currency: { userId: sellerId, currency: Currency.NGN } },
@@ -172,24 +218,9 @@ export class OrdersService {
           version: { increment: 1 },
         },
       });
-      if (creditSellerFiatResult.count === 0) throw new InternalServerErrorException('Conflict crediting seller fiat wallet');
+      if (creditSellerFiatResult.count === 0) throw new InternalServerErrorException('Conflict crediting seller fiat');
 
-      // 3. Credit Crypto to Buyer (Optimistic Lock)
-      const buyerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: order.ad.asset } },
-      });
-      if (!buyerCryptoWallet) throw new InternalServerErrorException('Buyer crypto wallet not found');
-
-      const creditBuyerCryptoResult = await tx.wallet.updateMany({
-        where: { id: buyerCryptoWallet.id, version: buyerCryptoWallet.version },
-        data: {
-          balance: { increment: cryptoAmount.minus(buyerFee) },
-          version: { increment: 1 },
-        },
-      });
-      if (creditBuyerCryptoResult.count === 0) throw new InternalServerErrorException('Conflict crediting buyer crypto wallet');
-
-      // 4. Update Ad Quantity (Optimistic Lock)
+      // --- STAGE 5: Update Ad Quantity (Optimistic Lock) ---
       const ad = await tx.ad.findUnique({ where: { id: order.adId } });
       if (!ad) throw new InternalServerErrorException('Ad not found during settlement');
       
@@ -204,7 +235,7 @@ export class OrdersService {
       });
       if (updateAdResult.count === 0) throw new InternalServerErrorException('Conflict updating ad quantity');
 
-      // 5. Create Ledger Entries
+      // --- STAGE 6: Generate Audit Logs (LedgerEntries) ---
       await tx.ledgerEntry.createMany({
         data: [
           {
@@ -224,11 +255,27 @@ export class OrdersService {
             balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
           },
           {
+            walletId: sellerFiatWallet.id,
+            orderId: order.id,
+            amount: sellerFee.negated(),
+            type: LedgerType.FEE,
+            reference: `FEE-NGN-SELLER-${order.id}`,
+            balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
+          },
+          {
             walletId: buyerCryptoWallet.id,
             orderId: order.id,
             amount: cryptoAmount.minus(buyerFee),
             type: LedgerType.TRADE_SETTLEMENT,
             reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
+            balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+          },
+          {
+            walletId: buyerCryptoWallet.id,
+            orderId: order.id,
+            amount: buyerFee.negated(),
+            type: LedgerType.FEE,
+            reference: `FEE-CRYPTO-BUYER-${order.id}`,
             balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
           },
           {
@@ -242,17 +289,17 @@ export class OrdersService {
         ],
       });
 
-      // 6. Complete Order
+      // --- STAGE 7: Complete Order ---
       const finalOrder = await tx.order.update({
         where: { id: order.id },
         data: {
           status: OrderStatus.COMPLETED,
           feeAmount: buyerFee.plus(sellerFee),
-          version: { increment: 1 },
+          version: approvedOrder.version + 1, // Incremented once for approved, once here
         },
       });
 
-      // 7. Emit Event
+      // 8. Emit Event
       this.eventEmitter.emit('order.completed', finalOrder);
 
       return finalOrder;
@@ -266,7 +313,7 @@ export class OrdersService {
       });
 
       if (!order) throw new NotFoundException('Order not found');
-      if (order.status !== OrderStatus.PENDING_SELLER) {
+      if (order.status !== OrderStatus.PENDING_SELLER && order.status !== OrderStatus.CREATED) {
         throw new BadRequestException(`Cannot decline/cancel order in ${order.status} state`);
       }
 
@@ -298,6 +345,122 @@ export class OrdersService {
       });
 
       this.eventEmitter.emit('order.declined', { order: finalOrder, initiatorId });
+      return finalOrder;
+    });
+  }
+
+  async expireOrder(orderId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!order) throw new NotFoundException('Order not found');
+      if (order.status !== OrderStatus.PENDING_SELLER && order.status !== OrderStatus.CREATED) {
+        throw new BadRequestException(`Cannot expire order in ${order.status} state`);
+      }
+
+      const fiatAmount = new Decimal(order.fiatAmount.toString());
+
+      // Refund Buyer Reserved Fiat (Optimistic Lock)
+      const buyerFiatWallet = await tx.wallet.findUnique({
+        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+      });
+      if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
+
+      const refundResult = await tx.wallet.updateMany({
+        where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
+        data: {
+          balance: { increment: fiatAmount },
+          reservedBalance: { decrement: fiatAmount },
+          version: { increment: 1 },
+        },
+      });
+
+      if (refundResult.count === 0) throw new InternalServerErrorException('Conflict during refund. Please retry.');
+
+      const finalOrder = await tx.order.update({
+        where: { id: order.id },
+        data: { 
+          status: OrderStatus.EXPIRED,
+          version: { increment: 1 },
+        },
+      });
+
+      this.eventEmitter.emit('order.expired', finalOrder);
+      return finalOrder;
+    });
+  }
+
+  async flagFraud(orderId: string, initiatorId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { ad: true },
+      });
+
+      if (!order) throw new NotFoundException('Order not found');
+      if (order.fraudFlagged) {
+        throw new BadRequestException('Order is already flagged as fraud');
+      }
+
+      if (
+        order.status === OrderStatus.COMPLETED ||
+        order.status === OrderStatus.DECLINED ||
+        order.status === OrderStatus.EXPIRED ||
+        order.status === OrderStatus.CANCELLED
+      ) {
+        throw new BadRequestException(`Cannot flag order in ${order.status} state`);
+      }
+
+      const fiatAmount = new Decimal(order.fiatAmount.toString());
+
+      // 1. Refund Buyer Reserved NGN
+      const buyerFiatWallet = await tx.wallet.findUnique({
+        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+      });
+      if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
+
+      const refundFiatResult = await tx.wallet.updateMany({
+        where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
+        data: {
+          balance: { increment: fiatAmount },
+          reservedBalance: { decrement: fiatAmount },
+          version: { increment: 1 },
+        },
+      });
+      if (refundFiatResult.count === 0) throw new InternalServerErrorException('Conflict refunding buyer fiat');
+
+      // 2. Refund Seller Crypto if it was locked.
+      if (order.status === OrderStatus.APPROVED) {
+        const cryptoAmount = new Decimal(order.cryptoAmount.toString());
+        const sellerCryptoWallet = await tx.wallet.findUnique({
+          where: { userId_currency: { userId: order.sellerId, currency: order.ad.asset } },
+        });
+        if (!sellerCryptoWallet) throw new InternalServerErrorException('Seller crypto wallet not found');
+
+        const refundCryptoResult = await tx.wallet.updateMany({
+          where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },
+          data: {
+            balance: { increment: cryptoAmount },
+            reservedBalance: { decrement: cryptoAmount },
+            version: { increment: 1 },
+          },
+        });
+        if (refundCryptoResult.count === 0) throw new InternalServerErrorException('Conflict refunding seller crypto');
+      }
+
+      // 3. Flag as fraud and transition to CANCELLED
+      const finalOrder = await tx.order.update({
+        where: { id: order.id },
+        data: {
+          fraudFlagged: true,
+          status: OrderStatus.CANCELLED,
+          version: { increment: 1 },
+        },
+      });
+
+      this.eventEmitter.emit('order.fraud_flagged', { order: finalOrder, initiatorId });
       return finalOrder;
     });
   }

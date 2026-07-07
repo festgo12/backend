@@ -40,4 +40,10 @@ export class OrdersController {
   decline(@Param('id') id: string, @Request() req) {
     return this.ordersService.declineOrder(id, req.user.id);
   }
+
+  @Post(':id/flag-fraud')
+  @ApiOperation({ summary: 'Flag order as fraud' })
+  flagFraud(@Param('id') id: string, @Request() req) {
+    return this.ordersService.flagFraud(id, req.user.id);
+  }
 }

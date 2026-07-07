@@ -18,6 +18,7 @@ const marketplace_module_1 = require("./modules/marketplace/marketplace.module")
 const orders_module_1 = require("./modules/orders/orders.module");
 const tatum_module_1 = require("./modules/tatum/tatum.module");
 const paystack_module_1 = require("./modules/paystack/paystack.module");
+const transactions_module_1 = require("./modules/transactions/transactions.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -36,6 +37,7 @@ exports.AppModule = AppModule = __decorate([
             orders_module_1.OrdersModule,
             tatum_module_1.TatumModule,
             paystack_module_1.PaystackModule,
+            transactions_module_1.TransactionsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

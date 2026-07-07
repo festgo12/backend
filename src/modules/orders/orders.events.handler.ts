@@ -3,7 +3,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import type { Order } from '@prisma/client';
 
-
 @Injectable()
 export class OrdersEventsHandler {
   private readonly logger = new Logger(OrdersEventsHandler.name);
@@ -19,7 +18,7 @@ export class OrdersEventsHandler {
       data: {
         userId: order.sellerId,
         title: 'New Buy Order',
-        body: `You have a new buy order for ${order.cryptoAmount} ${order.adId}. Please approve within 15 minutes.`,
+        body: `You have a new buy order for ${order.cryptoAmount} NGN. Please approve within 15 minutes.`,
         data: { orderId: order.id },
       },
     });
@@ -79,6 +78,75 @@ export class OrdersEventsHandler {
         title: 'Order Cancelled/Declined',
         body: `The order ${order.id} has been cancelled or declined.`,
         data: { orderId: order.id },
+      },
+    });
+
+    await this.prisma.securityLog.create({
+      data: {
+        userId: initiatorId,
+        action: 'ORDER_DECLINED',
+        metadata: { orderId: order.id },
+      },
+    });
+  }
+
+  @OnEvent('order.expired')
+  async handleOrderExpired(order: Order) {
+    this.logger.log(`Order expired: ${order.id}`);
+
+    await this.prisma.notification.createMany({
+      data: [
+        {
+          userId: order.buyerId,
+          title: 'Order Expired',
+          body: `Your order for ${order.cryptoAmount} has expired.`,
+          data: { orderId: order.id },
+        },
+        {
+          userId: order.sellerId,
+          title: 'Order Expired',
+          body: `The order for ${order.fiatAmount} NGN has expired.`,
+          data: { orderId: order.id },
+        },
+      ],
+    });
+
+    await this.prisma.securityLog.create({
+      data: {
+        userId: order.buyerId,
+        action: 'ORDER_EXPIRED',
+        metadata: { orderId: order.id },
+      },
+    });
+  }
+
+  @OnEvent('order.fraud_flagged')
+  async handleOrderFraudFlagged(payload: { order: Order; initiatorId: string }) {
+    const { order, initiatorId } = payload;
+    this.logger.warn(`Order ${order.id} flagged as FRAUD by ${initiatorId}`);
+
+    await this.prisma.notification.createMany({
+      data: [
+        {
+          userId: order.buyerId,
+          title: 'Order Flagged for Fraud',
+          body: `The order ${order.id} has been flagged for fraud and cancelled.`,
+          data: { orderId: order.id },
+        },
+        {
+          userId: order.sellerId,
+          title: 'Order Flagged for Fraud',
+          body: `The order ${order.id} has been flagged for fraud and cancelled.`,
+          data: { orderId: order.id },
+        },
+      ],
+    });
+
+    await this.prisma.securityLog.create({
+      data: {
+        userId: initiatorId,
+        action: 'ORDER_FRAUD_FLAGGED',
+        metadata: { orderId: order.id, status: order.status },
       },
     });
   }

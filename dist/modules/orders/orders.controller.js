@@ -38,6 +38,9 @@ let OrdersController = class OrdersController {
     decline(id, req) {
         return this.ordersService.declineOrder(id, req.user.id);
     }
+    flagFraud(id, req) {
+        return this.ordersService.flagFraud(id, req.user.id);
+    }
 };
 exports.OrdersController = OrdersController;
 __decorate([
@@ -84,6 +87,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "decline", null);
+__decorate([
+    (0, common_1.Post)(':id/flag-fraud'),
+    (0, swagger_1.ApiOperation)({ summary: 'Flag order as fraud' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "flagFraud", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, swagger_1.ApiTags)('Orders'),
     (0, swagger_1.ApiBearerAuth)(),

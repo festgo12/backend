@@ -10,4 +10,9 @@ export declare class OrdersEventsHandler {
         order: Order;
         initiatorId: string;
     }): Promise<void>;
+    handleOrderExpired(order: Order): Promise<void>;
+    handleOrderFraudFlagged(payload: {
+        order: Order;
+        initiatorId: string;
+    }): Promise<void>;
 }

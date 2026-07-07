@@ -36,7 +36,7 @@ let OrdersScheduler = OrdersScheduler_1 = class OrdersScheduler {
             this.logger.log(`Found ${expiredOrders.length} expired orders. Processing...`);
             for (const order of expiredOrders) {
                 try {
-                    await this.ordersService.declineOrder(order.id, 'SYSTEM');
+                    await this.ordersService.expireOrder(order.id);
                     this.logger.log(`Order ${order.id} marked as EXPIRED by system.`);
                 }
                 catch (error) {

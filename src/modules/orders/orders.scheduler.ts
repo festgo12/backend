@@ -29,7 +29,7 @@ export class OrdersScheduler {
 
       for (const order of expiredOrders) {
         try {
-          await this.ordersService.declineOrder(order.id, 'SYSTEM');
+          await this.ordersService.expireOrder(order.id);
           this.logger.log(`Order ${order.id} marked as EXPIRED by system.`);
         } catch (error) {
           this.logger.error(`Failed to expire order ${order.id}: ${error.message}`);

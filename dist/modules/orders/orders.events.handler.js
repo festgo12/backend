@@ -26,7 +26,7 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
             data: {
                 userId: order.sellerId,
                 title: 'New Buy Order',
-                body: `You have a new buy order for ${order.cryptoAmount} ${order.adId}. Please approve within 15 minutes.`,
+                body: `You have a new buy order for ${order.cryptoAmount} NGN. Please approve within 15 minutes.`,
                 data: { orderId: order.id },
             },
         });
@@ -76,6 +76,66 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
                 data: { orderId: order.id },
             },
         });
+        await this.prisma.securityLog.create({
+            data: {
+                userId: initiatorId,
+                action: 'ORDER_DECLINED',
+                metadata: { orderId: order.id },
+            },
+        });
+    }
+    async handleOrderExpired(order) {
+        this.logger.log(`Order expired: ${order.id}`);
+        await this.prisma.notification.createMany({
+            data: [
+                {
+                    userId: order.buyerId,
+                    title: 'Order Expired',
+                    body: `Your order for ${order.cryptoAmount} has expired.`,
+                    data: { orderId: order.id },
+                },
+                {
+                    userId: order.sellerId,
+                    title: 'Order Expired',
+                    body: `The order for ${order.fiatAmount} NGN has expired.`,
+                    data: { orderId: order.id },
+                },
+            ],
+        });
+        await this.prisma.securityLog.create({
+            data: {
+                userId: order.buyerId,
+                action: 'ORDER_EXPIRED',
+                metadata: { orderId: order.id },
+            },
+        });
+    }
+    async handleOrderFraudFlagged(payload) {
+        const { order, initiatorId } = payload;
+        this.logger.warn(`Order ${order.id} flagged as FRAUD by ${initiatorId}`);
+        await this.prisma.notification.createMany({
+            data: [
+                {
+                    userId: order.buyerId,
+                    title: 'Order Flagged for Fraud',
+                    body: `The order ${order.id} has been flagged for fraud and cancelled.`,
+                    data: { orderId: order.id },
+                },
+                {
+                    userId: order.sellerId,
+                    title: 'Order Flagged for Fraud',
+                    body: `The order ${order.id} has been flagged for fraud and cancelled.`,
+                    data: { orderId: order.id },
+                },
+            ],
+        });
+        await this.prisma.securityLog.create({
+            data: {
+                userId: initiatorId,
+                action: 'ORDER_FRAUD_FLAGGED',
+                metadata: { orderId: order.id, status: order.status },
+            },
+        });
     }
 };
 exports.OrdersEventsHandler = OrdersEventsHandler;
@@ -97,6 +157,18 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OrdersEventsHandler.prototype, "handleOrderDeclined", null);
+__decorate([
+    (0, event_emitter_1.OnEvent)('order.expired'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersEventsHandler.prototype, "handleOrderExpired", null);
+__decorate([
+    (0, event_emitter_1.OnEvent)('order.fraud_flagged'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersEventsHandler.prototype, "handleOrderFraudFlagged", null);
 exports.OrdersEventsHandler = OrdersEventsHandler = OrdersEventsHandler_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

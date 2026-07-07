@@ -8,8 +8,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -39,8 +39,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -98,8 +98,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -113,8 +113,8 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -128,8 +128,23 @@ export declare class OrdersController {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
+        fiatAmount: import("@prisma/client/runtime/library").Decimal;
+        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
+        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fraudFlagged: boolean;
+    }>;
+    flagFraud(id: string, req: any): Promise<{
+        id: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;

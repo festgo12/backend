@@ -11,6 +11,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { TatumModule } from './modules/tatum/tatum.module';
 import { PaystackModule } from './modules/paystack/paystack.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -26,6 +27,7 @@ import { AppService } from './app.service';
     OrdersModule,
     TatumModule,
     PaystackModule,
+    TransactionsModule,
   ],
 
   controllers: [AppController],
