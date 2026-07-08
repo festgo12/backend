@@ -66,6 +66,28 @@ let PaystackController = PaystackController_1 = class PaystackController {
             throw new common_1.BadRequestException('Missing parameters');
         return this.paystackService.verifyAccountNumber(accountNumber, bankCode);
     }
+    async verify(reference) {
+        if (!reference)
+            throw new common_1.BadRequestException('Reference is required');
+        try {
+            const verification = await this.paystackService.verifyTransaction(reference);
+            if (verification && verification.status === true && verification.data.status === 'success') {
+                const transaction = await this.walletService.findTransactionByReference(reference);
+                if (transaction && transaction.status !== 'COMPLETED') {
+                    this.logger.log(`Paystack manual verification success for ref: ${reference}`);
+                    await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED', {
+                        paystack_data: verification.data
+                    });
+                }
+                return { status: 'success', data: verification.data };
+            }
+            return { status: 'failed', message: 'Transaction not successful on Paystack' };
+        }
+        catch (error) {
+            this.logger.error(`Paystack manual verification failed for ref ${reference}: ${error.message}`);
+            throw new common_1.BadRequestException(error.message || 'Verification failed');
+        }
+    }
     async initiateTransfer(user, amount, accountNumber, bankCode, accountName) {
         if (!amount || amount <= 0)
             throw new common_1.BadRequestException('Invalid amount');
@@ -176,6 +198,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], PaystackController.prototype, "verifyAccount", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('verify/:reference'),
+    (0, swagger_1.ApiOperation)({ summary: 'Verify a deposit transaction status from Paystack' }),
+    __param(0, (0, common_1.Param)('reference')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PaystackController.prototype, "verify", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

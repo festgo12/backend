@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger, Param } from '@nestjs/common';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { Currency, LedgerType, Role } from '@prisma/client';
@@ -71,6 +71,31 @@ export class PaystackController {
   ) {
     if (!accountNumber || !bankCode) throw new BadRequestException('Missing parameters');
     return this.paystackService.verifyAccountNumber(accountNumber, bankCode);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('verify/:reference')
+  @ApiOperation({ summary: 'Verify a deposit transaction status from Paystack' })
+  async verify(@Param('reference') reference: string) {
+    if (!reference) throw new BadRequestException('Reference is required');
+    try {
+      const verification = await this.paystackService.verifyTransaction(reference);
+      if (verification && verification.status === true && verification.data.status === 'success') {
+        const transaction = await this.walletService.findTransactionByReference(reference);
+        if (transaction && transaction.status !== 'COMPLETED') {
+          this.logger.log(`Paystack manual verification success for ref: ${reference}`);
+          await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED', {
+            paystack_data: verification.data
+          });
+        }
+        return { status: 'success', data: verification.data };
+      }
+      return { status: 'failed', message: 'Transaction not successful on Paystack' };
+    } catch (error) {
+      this.logger.error(`Paystack manual verification failed for ref ${reference}: ${error.message}`);
+      throw new BadRequestException(error.message || 'Verification failed');
+    }
   }
 
   @ApiBearerAuth()

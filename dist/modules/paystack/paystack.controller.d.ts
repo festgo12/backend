@@ -9,6 +9,15 @@ export declare class PaystackController {
     initialize(user: User, amount: number): Promise<any>;
     getBanks(): Promise<any>;
     verifyAccount(accountNumber: string, bankCode: string): Promise<any>;
+    verify(reference: string): Promise<{
+        status: string;
+        data: any;
+        message?: undefined;
+    } | {
+        status: string;
+        message: string;
+        data?: undefined;
+    }>;
     initiateTransfer(user: User, amount: number, accountNumber: string, bankCode: string, accountName: string): Promise<any>;
     handleWebhook(payload: any, signature: string): Promise<{
         status: string;

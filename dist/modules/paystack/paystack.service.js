@@ -66,7 +66,7 @@ let PaystackService = PaystackService_1 = class PaystackService {
                 email,
                 amount: Math.round(amount * 100),
                 reference,
-                callback_url: this.configService.get('PAYSTACK_CALLBACK_URL'),
+                callback_url: this.configService.get('PAYSTACK_CALLBACK_URL') || 'https://standard.paystack.co/close',
                 metadata,
             }, {
                 headers: {

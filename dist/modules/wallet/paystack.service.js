@@ -29,7 +29,7 @@ let PaystackService = class PaystackService {
             email,
             amount: amount * 100,
             reference,
-            callback_url: this.configService.get('PAYSTACK_CALLBACK_URL'),
+            callback_url: this.configService.get('PAYSTACK_CALLBACK_URL') || 'https://standard.paystack.co/close',
         }, {
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,

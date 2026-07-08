@@ -30,7 +30,7 @@ export class PaystackService {
             email,
             amount: Math.round(amount * 100), // Convert to kobo
             reference,
-            callback_url: this.configService.get<string>('PAYSTACK_CALLBACK_URL'),
+            callback_url: this.configService.get<string>('PAYSTACK_CALLBACK_URL') || 'https://standard.paystack.co/close',
             metadata,
           },
           {
