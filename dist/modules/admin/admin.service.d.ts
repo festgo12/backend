@@ -97,6 +97,7 @@ export declare class AdminService {
             lastLogin: Date;
             userAgent: string | null;
             ipAddress: string | null;
+            fcmToken: string | null;
         }[];
         securityLogs: {
             id: string;
@@ -354,8 +355,8 @@ export declare class AdminService {
             status: import(".prisma/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
+            version: number;
             adId: string;
             buyerId: string;
             sellerId: string;
@@ -483,8 +484,8 @@ export declare class AdminService {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;

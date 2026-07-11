@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const event_emitter_1 = require("@nestjs/event-emitter");
+const schedule_1 = require("@nestjs/schedule");
 const core_module_1 = require("./core/core.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const users_module_1 = require("./modules/users/users.module");
@@ -19,6 +20,7 @@ const orders_module_1 = require("./modules/orders/orders.module");
 const tatum_module_1 = require("./modules/tatum/tatum.module");
 const paystack_module_1 = require("./modules/paystack/paystack.module");
 const transactions_module_1 = require("./modules/transactions/transactions.module");
+const notifications_module_1 = require("./modules/notifications/notifications.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -28,6 +30,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             event_emitter_1.EventEmitterModule.forRoot(),
+            schedule_1.ScheduleModule.forRoot(),
             core_module_1.CoreModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
@@ -38,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             tatum_module_1.TatumModule,
             paystack_module_1.PaystackModule,
             transactions_module_1.TransactionsModule,
+            notifications_module_1.NotificationsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

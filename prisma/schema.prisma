@@ -71,6 +71,7 @@ model User {
   authTokens    AuthToken[]
   devices       Device[]
   notifications Notification[]
+  notificationLogs NotificationLog[]
   disputes      Dispute[]      @relation("Initiator")
   securityLogs  SecurityLog[]
   twoFactorEnabled Boolean        @default(false)
@@ -248,6 +249,7 @@ model Device {
   lastLogin   DateTime @default(now())
   userAgent   String?
   ipAddress   String?
+  fcmToken    String?  // Added for push notifications
 
   @@unique([userId, deviceId])
 }
@@ -275,4 +277,56 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+  SYSTEM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+model NotificationTemplate {
+  id           String   @id @default(uuid()) @db.Uuid
+  type         String   @unique
+  name         String
+  emailSubject String?
+  emailBody    String?  @db.Text
+  pushTitle    String?
+  pushBody     String?  @db.Text
+  inAppTitle   String
+  inAppBody    String   @db.Text
+  smsBody      String?  @db.Text
+  systemBody   String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model NotificationLog {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id])
+  type         String
+  channel      NotificationChannel
+  recipient    String
+  title        String
+  body         String
+  status       NotificationStatus  @default(PENDING)
+  retryCount   Int                 @default(0)
+  maxRetries   Int                 @default(3)
+  nextTryAt    DateTime?
+  errorDetails String?             @db.Text
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([status, nextTryAt])
 }

@@ -70,6 +70,7 @@ export declare class UsersController {
         lastLogin: Date;
         userAgent: string | null;
         ipAddress: string | null;
+        fcmToken: string | null;
     }[]>;
     removeDevice(userId: string, deviceId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
 }
