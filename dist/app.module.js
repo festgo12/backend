@@ -21,6 +21,7 @@ const tatum_module_1 = require("./modules/tatum/tatum.module");
 const paystack_module_1 = require("./modules/paystack/paystack.module");
 const transactions_module_1 = require("./modules/transactions/transactions.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
+const audit_module_1 = require("./modules/audit/audit.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -42,6 +43,7 @@ exports.AppModule = AppModule = __decorate([
             paystack_module_1.PaystackModule,
             transactions_module_1.TransactionsModule,
             notifications_module_1.NotificationsModule,
+            audit_module_1.AuditModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { PaystackService } from './paystack.service';
 import { WalletService } from '../wallet/wallet.service';
+import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('Paystack Payment')
 @Controller('paystack')
@@ -22,6 +23,7 @@ export class PaystackController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('initialize')
+  @AuditLog('WALLET_DEPOSIT', 'WALLET')
   @ApiOperation({ summary: 'Initialize a deposit transaction' })
   async initialize(@GetUser() user: User, @Body('amount') amount: number) {
     if (!user.email) throw new BadRequestException('User email is required for Paystack');
@@ -101,6 +103,7 @@ export class PaystackController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('transfer')
+  @AuditLog('WALLET_WITHDRAWAL', 'WALLET')
   @ApiOperation({ summary: 'Initiate a withdrawal (transfer)' })
   async initiateTransfer(
     @GetUser() user: User,

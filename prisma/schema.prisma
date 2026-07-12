@@ -255,15 +255,25 @@ model Device {
 }
 
 model SecurityLog {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id])
-  action    String
-  metadata  Json?
-  ipAddress String?
-  createdAt DateTime @default(now())
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id])
+  actorId     String?   @db.Uuid
+  action      String
+  resource    String?
+  resourceId  String?
+  oldValue    Json?
+  newValue    Json?
+  metadata    Json?
+  ipAddress   String?
+  device      String?
+  success     Boolean   @default(true)
+  errorMessage String?  @db.Text
+  createdAt   DateTime  @default(now())
 
   @@index([userId, action])
+  @@index([action, createdAt])
+  @@index([resource, resourceId])
 }
 
 model Notification {

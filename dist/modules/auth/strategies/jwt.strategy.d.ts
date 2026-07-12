@@ -7,13 +7,13 @@ export declare class JwtStrategy extends JwtStrategy_base {
     constructor(configService: ConfigService, usersService: UsersService);
     validate(payload: any): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            firstName: string | null;
+            lastName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
     } & {
         id: string;

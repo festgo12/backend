@@ -22,6 +22,7 @@ const wallet_service_1 = require("./wallet.service");
 const tatum_wallet_service_1 = require("../tatum/tatum-wallet.service");
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
+const audit_decorator_1 = require("../audit/audit.decorator");
 let WalletController = WalletController_1 = class WalletController {
     walletService;
     tatumWallet;
@@ -89,6 +90,7 @@ __decorate([
 ], WalletController.prototype, "getHistory", null);
 __decorate([
     (0, common_1.Post)('init'),
+    (0, audit_decorator_1.AuditLog)('WALLET_CREATION', 'WALLET'),
     (0, swagger_1.ApiOperation)({ summary: 'Initialize a wallet for a specific currency' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)('currency')),

@@ -21,6 +21,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 const paystack_service_1 = require("./paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
+const audit_decorator_1 = require("../audit/audit.decorator");
 let PaystackController = PaystackController_1 = class PaystackController {
     paystackService;
     walletService;
@@ -173,6 +174,7 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('initialize'),
+    (0, audit_decorator_1.AuditLog)('WALLET_DEPOSIT', 'WALLET'),
     (0, swagger_1.ApiOperation)({ summary: 'Initialize a deposit transaction' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)('amount')),
@@ -212,6 +214,7 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('transfer'),
+    (0, audit_decorator_1.AuditLog)('WALLET_WITHDRAWAL', 'WALLET'),
     (0, swagger_1.ApiOperation)({ summary: 'Initiate a withdrawal (transfer)' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)('amount')),

@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AuditInterceptor } from './modules/audit/audit.interceptor';
+import { AuditService } from './modules/audit/audit.service';
 import helmet from 'helmet';
 
 async function bootstrap() {
@@ -20,6 +22,11 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Global Audit Interceptor
+  const auditService = app.get(AuditService);
+  const reflector = app.get('Reflector');
+  app.useGlobalInterceptors(new AuditInterceptor(reflector, auditService));
 
   // Swagger Documentation
   const config = new DocumentBuilder()

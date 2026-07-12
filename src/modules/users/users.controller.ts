@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateProfileDto, UpdatePreferencesDto } from './dto/update-user.dto';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -19,6 +20,7 @@ export class UsersController {
   }
 
   @Patch('profile')
+  @AuditLog('USER_PROFILE_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user profile' })
   updateProfile(@GetUser('id') userId: string, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(userId, dto);
@@ -37,6 +39,7 @@ export class UsersController {
   }
 
   @Delete('devices/:id')
+  @AuditLog('SECURITY_DEVICE_REMOVE', 'DEVICE')
   @ApiOperation({ summary: 'Remove a device session' })
   removeDevice(@GetUser('id') userId: string, @Param('id') deviceId: string) {
     return this.usersService.removeDevice(userId, deviceId);

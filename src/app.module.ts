@@ -13,6 +13,7 @@ import { TatumModule } from './modules/tatum/tatum.module';
 import { PaystackModule } from './modules/paystack/paystack.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -31,6 +32,7 @@ import { AppService } from './app.service';
     PaystackModule,
     TransactionsModule,
     NotificationsModule,
+    AuditModule,
   ],
 
   controllers: [AppController],

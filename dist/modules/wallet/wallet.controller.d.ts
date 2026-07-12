@@ -26,11 +26,11 @@ export declare class WalletController {
             currency: import(".prisma/client").$Enums.Currency;
         };
         transaction: {
-            type: import(".prisma/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import(".prisma/client").$Enums.LedgerType;
             walletId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             fee: import("@prisma/client/runtime/library").Decimal;
@@ -38,9 +38,9 @@ export declare class WalletController {
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
         } | null;
     } & {
-        type: import(".prisma/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
+        type: import(".prisma/client").$Enums.LedgerType;
         walletId: string;
         amount: import("@prisma/client/runtime/library").Decimal;
         reference: string;

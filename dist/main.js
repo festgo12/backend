@@ -7,6 +7,8 @@ const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const audit_interceptor_1 = require("./modules/audit/audit.interceptor");
+const audit_service_1 = require("./modules/audit/audit.service");
 const helmet_1 = __importDefault(require("helmet"));
 async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
@@ -18,6 +20,9 @@ async function bootstrap() {
         transform: true,
         forbidNonWhitelisted: true,
     }));
+    const auditService = app.get(audit_service_1.AuditService);
+    const reflector = app.get('Reflector');
+    app.useGlobalInterceptors(new audit_interceptor_1.AuditInterceptor(reflector, auditService));
     const config = new swagger_1.DocumentBuilder()
         .setTitle('P2N Crypto Marketplace API')
         .setDescription('The core API for the P2P Crypto Marketplace')

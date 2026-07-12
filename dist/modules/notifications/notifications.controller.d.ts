@@ -8,10 +8,10 @@ export declare class NotificationsController {
     getMyNotifications(user: User, limit?: number, offset?: number): Promise<{
         id: string;
         createdAt: Date;
+        data: import("@prisma/client/runtime/library").JsonValue | null;
         userId: string;
         title: string;
         body: string;
-        data: import("@prisma/client/runtime/library").JsonValue | null;
         isRead: boolean;
     }[]>;
     markAsRead(user: User, id: string): Promise<{
@@ -38,22 +38,22 @@ export declare class NotificationsController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        type: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
         title: string;
         body: string;
-        type: string;
         channel: import(".prisma/client").$Enums.NotificationChannel;
         recipient: string;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;
         errorDetails: string | null;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
     })[]>;
     getTemplates(): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         type: string;
         emailSubject: string | null;
         emailBody: string | null;
@@ -65,10 +65,10 @@ export declare class NotificationsController {
         systemBody: string | null;
     }[]>;
     updateTemplate(type: string, body: Record<string, any>): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         type: string;
         emailSubject: string | null;
         emailBody: string | null;

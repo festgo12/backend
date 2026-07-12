@@ -11,17 +11,17 @@ export declare class NotificationsQueue {
     processQueue(): Promise<void>;
     dispatchLog(logId: string): Promise<boolean>;
     resend(logId: string): Promise<{
-        type: string;
-        title: string;
         id: string;
         status: import(".prisma/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        type: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        title: string;
         body: string;
-        recipient: string;
         channel: import(".prisma/client").$Enums.NotificationChannel;
+        recipient: string;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

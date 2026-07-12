@@ -7,6 +7,7 @@ import { TatumWalletService } from '../tatum/tatum-wallet.service';
 import { Currency } from '@prisma/client';
 import type { User } from '@prisma/client';
 import { isUUID } from 'class-validator';
+import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('Wallets')
 @ApiBearerAuth()
@@ -47,6 +48,7 @@ export class WalletController {
 
 
   @Post('init')
+  @AuditLog('WALLET_CREATION', 'WALLET')
   @ApiOperation({ summary: 'Initialize a wallet for a specific currency' })
   async initWallet(@GetUser() user: User, @Body('currency') currency: Currency) {
     // 1. Get or build database record row entry placeholder frame first

@@ -353,5 +353,147 @@ export class AdminService {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
+
+  // --- Audit Log Endpoints ---
+
+  async getAuditLogs(
+    page: number,
+    limit: number,
+    filters?: {
+      action?: string;
+      resource?: string;
+      userId?: string;
+      success?: string;
+      startDate?: string;
+      endDate?: string;
+      search?: string;
+    },
+  ) {
+    const skip = (page - 1) * limit;
+    const where: any = {};
+
+    if (filters?.action) {
+      where.action = { contains: filters.action, mode: 'insensitive' };
+    }
+    if (filters?.resource) {
+      where.resource = filters.resource;
+    }
+    if (filters?.userId) {
+      where.userId = filters.userId;
+    }
+    if (filters?.success !== undefined && filters.success !== '') {
+      where.success = filters.success === 'true';
+    }
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) {
+        where.createdAt.gte = new Date(filters.startDate);
+      }
+      if (filters.endDate) {
+        where.createdAt.lte = new Date(filters.endDate);
+      }
+    }
+    if (filters?.search) {
+      where.OR = [
+        { action: { contains: filters.search, mode: 'insensitive' } },
+        { resource: { contains: filters.search, mode: 'insensitive' } },
+        { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+        { ipAddress: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [logs, total] = await Promise.all([
+      this.prisma.securityLog.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profile: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.securityLog.count({ where }),
+    ]);
+
+    return {
+      logs,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getAuditStats() {
+    const now = new Date();
+    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [total, last24hCount, failures, byResource] = await Promise.all([
+      this.prisma.securityLog.count(),
+      this.prisma.securityLog.count({ where: { createdAt: { gte: last24h } } }),
+      this.prisma.securityLog.count({ where: { success: false } }),
+      this.prisma.securityLog.groupBy({
+        by: ['resource'],
+        _count: { resource: true },
+        where: { createdAt: { gte: last7d } },
+        orderBy: { _count: { resource: 'desc' } },
+      }),
+    ]);
+
+    const byAction = await this.prisma.securityLog.groupBy({
+      by: ['action'],
+      _count: { action: true },
+      where: { createdAt: { gte: last7d } },
+      orderBy: { _count: { action: 'desc' } },
+      take: 10,
+    });
+
+    return {
+      total,
+      last24h: last24hCount,
+      failures,
+      last7d: last7d,
+      byResource: byResource.map((r) => ({
+        resource: r.resource || 'UNKNOWN',
+        count: r._count.resource,
+      })),
+      byAction: byAction.map((a) => ({
+        action: a.action,
+        count: a._count.action,
+      })),
+    };
+  }
+
+  async getUserAuditTrail(userId: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [logs, total] = await Promise.all([
+      this.prisma.securityLog.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profile: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.securityLog.count({ where: { userId } }),
+    ]);
+
+    return {
+      logs,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
 }
 

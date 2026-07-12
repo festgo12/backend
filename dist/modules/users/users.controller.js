@@ -19,6 +19,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const users_service_1 = require("./users.service");
 const update_user_dto_1 = require("./dto/update-user.dto");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
+const audit_decorator_1 = require("../audit/audit.decorator");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
@@ -51,6 +52,7 @@ __decorate([
 ], UsersController.prototype, "getMe", null);
 __decorate([
     (0, common_1.Patch)('profile'),
+    (0, audit_decorator_1.AuditLog)('USER_PROFILE_UPDATE', 'USER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update user profile' }),
     __param(0, (0, get_user_decorator_1.GetUser)('id')),
     __param(1, (0, common_1.Body)()),
@@ -77,6 +79,7 @@ __decorate([
 ], UsersController.prototype, "getDevices", null);
 __decorate([
     (0, common_1.Delete)('devices/:id'),
+    (0, audit_decorator_1.AuditLog)('SECURITY_DEVICE_REMOVE', 'DEVICE'),
     (0, swagger_1.ApiOperation)({ summary: 'Remove a device session' }),
     __param(0, (0, get_user_decorator_1.GetUser)('id')),
     __param(1, (0, common_1.Param)('id')),

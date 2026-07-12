@@ -5,6 +5,7 @@ import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { AdminService } from './admin.service';
 import { UserStatus, Role } from '@prisma/client';
+import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -25,6 +26,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/status')
+  @AuditLog('ADMIN_USER_STATUS_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user account status' })
   updateUserStatus(
     @Param('id') userId: string,
@@ -117,6 +119,42 @@ export class AdminController {
     @Query('limit') limit: string = '10',
   ) {
     return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+  }
+
+  @Get('audit-logs')
+  @ApiOperation({ summary: 'Get audit logs with optional filters' })
+  getAuditLogs(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query('action') action?: string,
+    @Query('resource') resource?: string,
+    @Query('userId') userId?: string,
+    @Query('success') success?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAuditLogs(
+      parseInt(page),
+      parseInt(limit),
+      { action, resource, userId, success, startDate, endDate, search },
+    );
+  }
+
+  @Get('audit-logs/stats')
+  @ApiOperation({ summary: 'Get audit log statistics' })
+  getAuditStats() {
+    return this.adminService.getAuditStats();
+  }
+
+  @Get('audit-logs/user/:userId')
+  @ApiOperation({ summary: 'Get audit trail for a specific user' })
+  getUserAuditTrail(
+    @Param('userId') userId: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
   }
 }
 

@@ -20,6 +20,7 @@ const roles_guard_1 = require("../../core/security/guards/roles.guard");
 const roles_decorator_1 = require("../../core/security/decorators/roles.decorator");
 const admin_service_1 = require("./admin.service");
 const client_1 = require("@prisma/client");
+const audit_decorator_1 = require("../audit/audit.decorator");
 let AdminController = class AdminController {
     adminService;
     constructor(adminService) {
@@ -64,6 +65,15 @@ let AdminController = class AdminController {
     getPaymentTransactions(page = '1', limit = '10') {
         return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
     }
+    getAuditLogs(page = '1', limit = '20', action, resource, userId, success, startDate, endDate, search) {
+        return this.adminService.getAuditLogs(parseInt(page), parseInt(limit), { action, resource, userId, success, startDate, endDate, search });
+    }
+    getAuditStats() {
+        return this.adminService.getAuditStats();
+    }
+    getUserAuditTrail(userId, page = '1', limit = '20') {
+        return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
+    }
 };
 exports.AdminController = AdminController;
 __decorate([
@@ -78,6 +88,7 @@ __decorate([
 ], AdminController.prototype, "getUsers", null);
 __decorate([
     (0, common_1.Patch)('users/:id/status'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_USER_STATUS_UPDATE', 'USER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update user account status' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)('status')),
@@ -179,6 +190,39 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getPaymentTransactions", null);
+__decorate([
+    (0, common_1.Get)('audit-logs'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get audit logs with optional filters' }),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('action')),
+    __param(3, (0, common_1.Query)('resource')),
+    __param(4, (0, common_1.Query)('userId')),
+    __param(5, (0, common_1.Query)('success')),
+    __param(6, (0, common_1.Query)('startDate')),
+    __param(7, (0, common_1.Query)('endDate')),
+    __param(8, (0, common_1.Query)('search')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getAuditLogs", null);
+__decorate([
+    (0, common_1.Get)('audit-logs/stats'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get audit log statistics' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getAuditStats", null);
+__decorate([
+    (0, common_1.Get)('audit-logs/user/:userId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get audit trail for a specific user' }),
+    __param(0, (0, common_1.Param)('userId')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getUserAuditTrail", null);
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiBearerAuth)(),

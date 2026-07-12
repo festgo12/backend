@@ -24,6 +24,7 @@ const verify_2fa_dto_1 = require("./dto/verify-2fa.dto");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
+const audit_decorator_1 = require("../audit/audit.decorator");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -60,6 +61,7 @@ let AuthController = class AuthController {
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('register'),
+    (0, audit_decorator_1.AuditLog)('AUTH_REGISTER', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'Register a new user' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'User successfully registered' }),
     __param(0, (0, common_1.Body)()),
@@ -70,6 +72,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('login'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_LOGIN', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'User login' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -88,6 +91,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('logout'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_LOGOUT', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'Logout and revoke refresh token' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -97,6 +101,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('google'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_LOGIN_GOOGLE', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'Google login/register' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -117,6 +122,7 @@ __decorate([
     (0, common_1.Post)('2fa/verify'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_ENABLE', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'Verify and enable 2FA' }),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
@@ -136,6 +142,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('reset-password'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_PASSWORD_CHANGE', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'Reset password with token' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
