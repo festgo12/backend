@@ -116,6 +116,11 @@ let MarketplaceService = class MarketplaceService {
                                     kycStatus: true,
                                 },
                             },
+                            devices: {
+                                select: { lastLogin: true },
+                                take: 1,
+                                orderBy: { lastLogin: 'desc' },
+                            },
                         },
                     },
                 },
