@@ -16,13 +16,13 @@ export declare class AuthController {
     login(dto: LoginDto): Promise<{
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -47,13 +47,13 @@ export declare class AuthController {
     googleLogin(dto: GoogleLoginDto): Promise<{
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;

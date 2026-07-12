@@ -25,31 +25,31 @@ export declare class NotificationsService {
         customTitle?: string;
         customBody?: string;
     }): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         data: Prisma.JsonValue | null;
         userId: string;
-        title: string;
         body: string;
         isRead: boolean;
     }>;
     getNotifications(userId: string, limit?: number, offset?: number): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         data: Prisma.JsonValue | null;
         userId: string;
-        title: string;
         body: string;
         isRead: boolean;
     }[]>;
     markAsRead(userId: string, notificationId: string): Promise<Prisma.BatchPayload>;
     markAllAsRead(userId: string): Promise<Prisma.BatchPayload>;
     getTemplates(): Promise<{
+        name: string;
+        type: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        type: string;
         emailSubject: string | null;
         emailBody: string | null;
         pushTitle: string | null;
@@ -60,11 +60,11 @@ export declare class NotificationsService {
         systemBody: string | null;
     }[]>;
     createOrUpdateTemplate(type: string, data: Partial<Prisma.NotificationTemplateCreateInput>): Promise<{
+        name: string;
+        type: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        type: string;
         emailSubject: string | null;
         emailBody: string | null;
         pushTitle: string | null;
@@ -80,17 +80,17 @@ export declare class NotificationsService {
             phone: string | null;
         };
     } & {
+        type: string;
+        title: string;
         id: string;
         status: import(".prisma/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        type: string;
         metadata: Prisma.JsonValue | null;
-        title: string;
         body: string;
-        channel: import(".prisma/client").$Enums.NotificationChannel;
         recipient: string;
+        channel: import(".prisma/client").$Enums.NotificationChannel;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

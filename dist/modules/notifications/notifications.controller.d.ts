@@ -6,11 +6,11 @@ export declare class NotificationsController {
     private readonly notificationsQueue;
     constructor(notificationsService: NotificationsService, notificationsQueue: NotificationsQueue);
     getMyNotifications(user: User, limit?: number, offset?: number): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         data: import("@prisma/client/runtime/library").JsonValue | null;
         userId: string;
-        title: string;
         body: string;
         isRead: boolean;
     }[]>;
@@ -33,28 +33,28 @@ export declare class NotificationsController {
             phone: string | null;
         };
     } & {
+        type: string;
+        title: string;
         id: string;
         status: import(".prisma/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        type: string;
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        title: string;
         body: string;
-        channel: import(".prisma/client").$Enums.NotificationChannel;
         recipient: string;
+        channel: import(".prisma/client").$Enums.NotificationChannel;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;
         errorDetails: string | null;
     })[]>;
     getTemplates(): Promise<{
+        name: string;
+        type: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        type: string;
         emailSubject: string | null;
         emailBody: string | null;
         pushTitle: string | null;
@@ -65,11 +65,11 @@ export declare class NotificationsController {
         systemBody: string | null;
     }[]>;
     updateTemplate(type: string, body: Record<string, any>): Promise<{
+        name: string;
+        type: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        type: string;
         emailSubject: string | null;
         emailBody: string | null;
         pushTitle: string | null;

@@ -4,11 +4,11 @@ export declare class MarketplaceService {
     private prisma;
     constructor(prisma: PrismaService);
     createAd(userId: string, dto: CreateAdDto): Promise<{
+        type: import(".prisma/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.AdType;
         version: number;
         sellerId: string;
         asset: import(".prisma/client").$Enums.Currency;
@@ -19,11 +19,11 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     updateAd(userId: string, adId: string, dto: UpdateAdDto): Promise<{
+        type: import(".prisma/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.AdType;
         version: number;
         sellerId: string;
         asset: import(".prisma/client").$Enums.Currency;
@@ -34,11 +34,11 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     deleteAd(userId: string, adId: string): Promise<{
+        type: import(".prisma/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.AdType;
         version: number;
         sellerId: string;
         asset: import(".prisma/client").$Enums.Currency;
@@ -49,11 +49,11 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     listUserAds(userId: string): Promise<{
+        type: import(".prisma/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import(".prisma/client").$Enums.AdType;
         version: number;
         sellerId: string;
         asset: import(".prisma/client").$Enums.Currency;
@@ -73,11 +73,11 @@ export declare class MarketplaceService {
                 id: string;
             };
         } & {
+            type: import(".prisma/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.AdType;
             version: number;
             sellerId: string;
             asset: import(".prisma/client").$Enums.Currency;
