@@ -363,8 +363,8 @@ export declare class AdminService {
             status: import(".prisma/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            expiresAt: Date;
             version: number;
+            expiresAt: Date;
             adId: string;
             buyerId: string;
             sellerId: string;
@@ -492,8 +492,8 @@ export declare class AdminService {
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        expiresAt: Date;
         version: number;
+        expiresAt: Date;
         adId: string;
         buyerId: string;
         sellerId: string;
