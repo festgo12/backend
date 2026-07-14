@@ -1,7 +1,7 @@
 # .cpanel.yml
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/bjmpfehm/repositories/backend/
+    - export DEPLOYPATH=/home/bjmpfehm/p2p-api/
     - /bin/cp -R dist $DEPLOYPATH
     - /bin/cp passenger.js $DEPLOYPATH
     - /bin/cp package.json $DEPLOYPATH
