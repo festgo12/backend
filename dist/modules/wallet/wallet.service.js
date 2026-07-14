@@ -13,7 +13,7 @@ exports.WalletService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const ledger_service_1 = require("./ledger.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let WalletService = class WalletService {
     prisma;
     ledger;

@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SearchAdsDto = exports.UpdateAdDto = exports.CreateAdDto = void 0;
 const class_validator_1 = require("class-validator");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../../generated/client/index.js");
 const class_transformer_1 = require("class-transformer");
 class CreateAdDto {
     asset;

@@ -20,7 +20,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 const wallet_service_1 = require("./wallet.service");
 const tatum_wallet_service_1 = require("../tatum/tatum-wallet.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 const class_validator_1 = require("class-validator");
 const audit_decorator_1 = require("../audit/audit.decorator");
 let WalletController = WalletController_1 = class WalletController {

@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 // import { TransactionsService, TransactionFilters } from './transactions.service';
 import { TransactionsService, type TransactionFilters } from './transactions.service';
-import type { User } from '@prisma/client';
+import type { User } from '@src/generated/client';
 
 @ApiTags('Transactions')
 @ApiBearerAuth()

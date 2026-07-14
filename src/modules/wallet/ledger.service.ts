@@ -1,6 +1,6 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { LedgerType, Prisma } from '@prisma/client';
+import { LedgerType, Prisma } from '@src/generated/client';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

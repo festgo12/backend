@@ -6,8 +6,8 @@ import { Roles } from '../../core/security/decorators/roles.decorator';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { NotificationsService } from './notifications.service';
 import { NotificationsQueue } from './notifications.queue';
-import { Role } from '@prisma/client';
-import type { User } from '@prisma/client';
+import { Role } from '@src/generated/client';
+import type { User } from '@src/generated/client';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()

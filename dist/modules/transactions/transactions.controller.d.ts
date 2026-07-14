@@ -1,6 +1,6 @@
 import type { Response } from 'express';
 import { TransactionsService, type TransactionFilters } from './transactions.service';
-import type { User } from '@prisma/client';
+import type { User } from '@src/generated/client';
 export declare class TransactionsController {
     private readonly transactionsService;
     constructor(transactionsService: TransactionsService);
@@ -14,8 +14,8 @@ export declare class TransactionsController {
     getDetails(user: User, id: string): Promise<{
         id: string;
         walletId: string;
-        currency: import(".prisma/client").$Enums.Currency;
-        type: import(".prisma/client").$Enums.LedgerType;
+        currency: import("@src/generated/client").$Enums.Currency;
+        type: import("@src/generated/client").$Enums.LedgerType;
         amount: string;
         fee: string;
         status: string;
@@ -43,8 +43,8 @@ export declare class TransactionsController {
     } | {
         id: string;
         walletId: string;
-        currency: import(".prisma/client").$Enums.Currency;
-        type: import(".prisma/client").$Enums.LedgerType;
+        currency: import("@src/generated/client").$Enums.Currency;
+        type: import("@src/generated/client").$Enums.LedgerType;
         amount: string;
         fee: string;
         status: string;
@@ -55,7 +55,7 @@ export declare class TransactionsController {
         details: {
             paymentMethod: string;
             blockchainTxHash: any;
-            metadata: import("@prisma/client/runtime/library").JsonValue;
+            metadata: import("@src/generated/client/runtime/library").JsonValue;
         };
     }>;
 }

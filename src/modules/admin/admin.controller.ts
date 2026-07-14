@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { AdminService } from './admin.service';
-import { UserStatus, Role } from '@prisma/client';
+import { UserStatus, Role } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('Admin')

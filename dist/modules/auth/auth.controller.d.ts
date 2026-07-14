@@ -28,8 +28,8 @@ export declare class AuthController {
             email: string | null;
             phone: string | null;
             resetToken: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -59,8 +59,8 @@ export declare class AuthController {
             email: string | null;
             phone: string | null;
             resetToken: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;

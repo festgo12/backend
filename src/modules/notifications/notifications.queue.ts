@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../core/database/prisma.service';
 import { EmailService } from './email.service';
 import { FcmService } from './fcm.service';
-import { NotificationChannel, NotificationStatus } from '@prisma/client';
+import { NotificationChannel, NotificationStatus } from '@src/generated/client';
 
 @Injectable()
 export class NotificationsQueue {

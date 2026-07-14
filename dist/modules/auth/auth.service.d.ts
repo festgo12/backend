@@ -6,7 +6,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
-import { Role } from '@prisma/client';
+import { Role } from '@src/generated/client';
 export declare class AuthService {
     private usersService;
     private jwtService;
@@ -33,8 +33,8 @@ export declare class AuthService {
             email: string | null;
             phone: string | null;
             resetToken: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -75,8 +75,8 @@ export declare class AuthService {
             email: string | null;
             phone: string | null;
             resetToken: string | null;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;

@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const email_service_1 = require("./email.service");
 const fcm_service_1 = require("./fcm.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let NotificationsService = NotificationsService_1 = class NotificationsService {
     prisma;
     emailService;

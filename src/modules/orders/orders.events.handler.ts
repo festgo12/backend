@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
-import type { Order } from '@prisma/client';
+import type { Order } from '@src/generated/client';
 
 @Injectable()
 export class OrdersEventsHandler {

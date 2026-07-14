@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { OrderStatus, Currency, LedgerType } from '@prisma/client';
+import { OrderStatus, Currency, LedgerType } from '@src/generated/client';
 import { NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@src/generated/client/runtime/library';
 
 describe('OrdersService', () => {
   let service: OrdersService;

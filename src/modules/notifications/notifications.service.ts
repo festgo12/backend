@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { EmailService } from './email.service';
 import { FcmService } from './fcm.service';
-import { NotificationChannel, NotificationStatus, Prisma } from '@prisma/client';
+import { NotificationChannel, NotificationStatus, Prisma } from '@src/generated/client';
 
 @Injectable()
 export class NotificationsService {

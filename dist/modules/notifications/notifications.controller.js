@@ -21,7 +21,7 @@ const roles_decorator_1 = require("../../core/security/decorators/roles.decorato
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 const notifications_service_1 = require("./notifications.service");
 const notifications_queue_1 = require("./notifications.queue");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let NotificationsController = class NotificationsController {
     notificationsService;
     notificationsQueue;

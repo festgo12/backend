@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { WalletService } from './wallet.service';
-import { Currency } from '@prisma/client';
+import { Currency } from '@src/generated/client';
 
 @Injectable()
 export class WalletEventsHandler {

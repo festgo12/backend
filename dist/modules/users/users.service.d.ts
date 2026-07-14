@@ -26,9 +26,9 @@ export declare class UsersService {
             id: string;
             updatedAt: Date;
             userId: string;
-            currency: import(".prisma/client").$Enums.Currency;
-            balance: import("@prisma/client/runtime/library").Decimal;
-            reservedBalance: import("@prisma/client/runtime/library").Decimal;
+            currency: import("@src/generated/client").$Enums.Currency;
+            balance: import("@src/generated/client/runtime/library").Decimal;
+            reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             version: number;
         }[];
@@ -36,8 +36,8 @@ export declare class UsersService {
         email: string | null;
         phone: string | null;
         resetToken: string | null;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
@@ -72,7 +72,7 @@ export declare class UsersService {
         ipAddress: string | null;
         fcmToken: string | null;
     }[]>;
-    removeDevice(userId: string, deviceId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
+    removeDevice(userId: string, deviceId: string): Promise<import("@src/generated/client").Prisma.BatchPayload>;
     findOneByEmail(email: string): Promise<({
         profile: {
             firstName: string | null;
@@ -89,8 +89,8 @@ export declare class UsersService {
         phone: string | null;
         resetToken: string | null;
         passwordHash: string;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
@@ -113,8 +113,8 @@ export declare class UsersService {
         phone: string | null;
         resetToken: string | null;
         passwordHash: string;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
@@ -137,8 +137,8 @@ export declare class UsersService {
         phone: string | null;
         resetToken: string | null;
         passwordHash: string;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;

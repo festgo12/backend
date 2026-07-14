@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const axios_1 = require("@nestjs/axios");
 const rxjs_1 = require("rxjs");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
     configService;
     httpService;

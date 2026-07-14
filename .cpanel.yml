@@ -1,0 +1,8 @@
+# .cpanel.yml
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/bjmpfehm/repositories/backend/
+    - /bin/cp -R dist $DEPLOYPATH
+    - /bin/cp passenger.js $DEPLOYPATH
+    - /bin/cp package.json $DEPLOYPATH
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt

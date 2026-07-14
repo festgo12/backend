@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
-import { LedgerType } from '@prisma/client';
+import { LedgerType } from '@src/generated/client';
 
 @Injectable()
 export class TatumDepositService {

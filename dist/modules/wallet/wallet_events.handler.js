@@ -13,7 +13,7 @@ exports.WalletEventsHandler = void 0;
 const common_1 = require("@nestjs/common");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const wallet_service_1 = require("./wallet.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let WalletEventsHandler = class WalletEventsHandler {
     walletService;
     constructor(walletService) {

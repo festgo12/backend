@@ -1,4 +1,4 @@
-import { Currency, AdType } from '@prisma/client';
+import { Currency, AdType } from '@src/generated/client';
 export declare class CreateAdDto {
     asset: Currency;
     type: AdType;

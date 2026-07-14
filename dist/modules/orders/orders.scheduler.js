@@ -15,7 +15,7 @@ const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const orders_service_1 = require("./orders.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let OrdersScheduler = OrdersScheduler_1 = class OrdersScheduler {
     prisma;
     ordersService;

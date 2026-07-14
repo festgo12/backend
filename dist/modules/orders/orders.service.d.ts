@@ -1,18 +1,18 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateOrderDto } from './dto/order.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@src/generated/client/runtime/library';
 export declare class OrdersService {
     private prisma;
     private eventEmitter;
     constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
     createOrder(buyerId: string, dto: CreateOrderDto): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -23,11 +23,11 @@ export declare class OrdersService {
     }>;
     approveOrder(orderId: string, sellerId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -38,11 +38,11 @@ export declare class OrdersService {
     }>;
     declineOrder(orderId: string, initiatorId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -53,11 +53,11 @@ export declare class OrdersService {
     }>;
     expireOrder(orderId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -68,11 +68,11 @@ export declare class OrdersService {
     }>;
     flagFraud(orderId: string, initiatorId: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -83,14 +83,14 @@ export declare class OrdersService {
     }>;
     getOrder(orderId: string, userId: string): Promise<{
         ad: {
-            type: import(".prisma/client").$Enums.AdType;
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             sellerId: string;
-            asset: import(".prisma/client").$Enums.Currency;
+            asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
             minLimit: Decimal;
@@ -103,8 +103,8 @@ export declare class OrdersService {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -117,8 +117,8 @@ export declare class OrdersService {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -127,11 +127,11 @@ export declare class OrdersService {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -142,14 +142,14 @@ export declare class OrdersService {
     }>;
     listUserOrders(userId: string): Promise<({
         ad: {
-            type: import(".prisma/client").$Enums.AdType;
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             sellerId: string;
-            asset: import(".prisma/client").$Enums.Currency;
+            asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
             minLimit: Decimal;
@@ -158,11 +158,11 @@ export declare class OrdersService {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;

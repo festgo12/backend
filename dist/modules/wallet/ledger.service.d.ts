@@ -1,5 +1,5 @@
 import { PrismaService } from '../../core/database/prisma.service';
-import { LedgerType, Prisma } from '@prisma/client';
+import { LedgerType, Prisma } from '@src/generated/client';
 export declare class LedgerService {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -12,7 +12,7 @@ export declare class LedgerService {
         reference: string;
         metadata?: any;
     }): Promise<{
-        type: import(".prisma/client").$Enums.LedgerType;
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
         walletId: string;

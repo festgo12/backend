@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { Currency } from '@prisma/client';
+import { Currency } from '@src/generated/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TatumWalletService } from './tatum-wallet.service';

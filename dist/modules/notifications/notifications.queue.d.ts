@@ -14,14 +14,14 @@ export declare class NotificationsQueue {
         type: string;
         title: string;
         id: string;
-        status: import(".prisma/client").$Enums.NotificationStatus;
+        status: import("@src/generated/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         body: string;
         recipient: string;
-        channel: import(".prisma/client").$Enums.NotificationChannel;
+        channel: import("@src/generated/client").$Enums.NotificationChannel;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

@@ -1,0 +1,344 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/client"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  FROZEN
+  SUSPENDED
+}
+
+enum Currency {
+  NGN
+  USDT
+  BTC
+  ETH
+  USDC
+}
+
+enum LedgerType {
+  DEPOSIT
+  WITHDRAWAL
+  TRADE_RESERVE
+  TRADE_SETTLEMENT
+  TRADE_REFUND
+  FEE
+  GIFT_CARD_PURCHASE
+  GIFT_CARD_SALE
+}
+
+enum OrderStatus {
+  CREATED
+  PENDING_SELLER
+  APPROVED
+  COMPLETED
+  DECLINED
+  EXPIRED
+  CANCELLED
+  DISPUTED
+}
+
+enum AdType {
+  BUY
+  SELL
+}
+
+model User {
+  id                String            @id @default(uuid()) @db.Uuid
+  email             String?           @unique
+  phone             String?           @unique
+  passwordHash      String
+  role              Role              @default(USER)
+  status            UserStatus        @default(ACTIVE)
+  profile           Profile?
+  preferences       UserPreference?
+  wallets           Wallet[]
+  ads               Ad[]
+  buyOrders         Order[]           @relation("BuyerOrders")
+  sellOrders        Order[]           @relation("SellerOrders")
+  authTokens        AuthToken[]
+  devices           Device[]
+  notifications     Notification[]
+  notificationLogs  NotificationLog[]
+  disputes          Dispute[]         @relation("Initiator")
+  securityLogs      SecurityLog[]
+  twoFactorEnabled  Boolean           @default(false)
+  twoFactorSecret   String?
+  resetToken        String?           @unique
+  resetTokenExpires DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([email, phone])
+}
+
+model Profile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  firstName String?
+  lastName  String?
+  kycStatus String   @default("NONE")
+  avatarUrl String?
+  updatedAt DateTime @updatedAt
+}
+
+model UserPreference {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+  baseCurrency String   @default("NGN")
+  emailNotify  Boolean  @default(true)
+  pushNotify   Boolean  @default(true)
+  theme        String   @default("DARK")
+  updatedAt    DateTime @updatedAt
+}
+
+model Wallet {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @db.Uuid
+  user            User                @relation(fields: [userId], references: [id])
+  currency        Currency
+  balance         Decimal             @default(0) @db.Decimal(20, 8)
+  reservedBalance Decimal             @default(0) @db.Decimal(20, 8)
+  address         String?             @unique
+  ledgerEntries   LedgerEntry[]
+  transactions    WalletTransaction[]
+  snapshots       BalanceSnapshot[]
+  updatedAt       DateTime            @updatedAt
+  version         Int                 @default(0)
+
+  @@unique([userId, currency])
+  @@index([userId])
+}
+
+model LedgerEntry {
+  id            String             @id @default(uuid()) @db.Uuid
+  walletId      String             @db.Uuid
+  wallet        Wallet             @relation(fields: [walletId], references: [id])
+  transactionId String?            @db.Uuid
+  transaction   WalletTransaction? @relation(fields: [transactionId], references: [id])
+  orderId       String?            @db.Uuid
+  order         Order?             @relation(fields: [orderId], references: [id])
+  amount        Decimal            @db.Decimal(20, 8)
+  type          LedgerType
+  reference     String             @unique
+  balanceAfter  Decimal            @db.Decimal(20, 8)
+  metadata      Json?
+  createdAt     DateTime           @default(now())
+
+  @@index([walletId])
+  @@index([orderId])
+  @@index([transactionId])
+}
+
+model WalletTransaction {
+  id            String        @id @default(uuid()) @db.Uuid
+  walletId      String        @db.Uuid
+  wallet        Wallet        @relation(fields: [walletId], references: [id])
+  type          LedgerType
+  status        String        @default("PENDING")
+  amount        Decimal       @db.Decimal(20, 8)
+  fee           Decimal       @default(0) @db.Decimal(20, 8)
+  reference     String        @unique
+  metadata      Json?
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([walletId, status])
+}
+
+model BalanceSnapshot {
+  id        String   @id @default(uuid()) @db.Uuid
+  walletId  String   @db.Uuid
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  balance   Decimal  @db.Decimal(20, 8)
+  ledgerId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@index([walletId, createdAt])
+}
+
+model Ad {
+  id          String   @id @default(uuid()) @db.Uuid
+  sellerId    String   @db.Uuid
+  seller      User     @relation(fields: [sellerId], references: [id])
+  asset       Currency
+  type        AdType
+  price       Decimal  @db.Decimal(20, 8)
+  quantity    Decimal  @db.Decimal(20, 8)
+  minLimit    Decimal  @db.Decimal(20, 8)
+  maxLimit    Decimal  @db.Decimal(20, 8)
+  isSponsored Boolean  @default(false)
+  status      String   @default("ACTIVE")
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  version     Int      @default(0)
+
+  @@index([sellerId, asset, type])
+}
+
+model Order {
+  id            String        @id @default(uuid()) @db.Uuid
+  adId          String        @db.Uuid
+  ad            Ad            @relation(fields: [adId], references: [id])
+  buyerId       String        @db.Uuid
+  buyer         User          @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId      String        @db.Uuid
+  seller        User          @relation("SellerOrders", fields: [sellerId], references: [id])
+  status        OrderStatus   @default(CREATED)
+  fiatAmount    Decimal       @db.Decimal(20, 2)
+  cryptoAmount  Decimal       @db.Decimal(20, 8)
+  feeAmount     Decimal       @db.Decimal(20, 8)
+  ledgerEntries LedgerEntry[]
+  disputes      Dispute[]
+  expiresAt     DateTime
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  version       Int           @default(0)
+  fraudFlagged  Boolean       @default(false)
+
+  @@index([buyerId, sellerId, status])
+}
+
+model Dispute {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String   @db.Uuid
+  order       Order    @relation(fields: [orderId], references: [id])
+  initiatorId String   @db.Uuid
+  initiator   User     @relation("Initiator", fields: [initiatorId], references: [id])
+  reason      String
+  status      String   @default("OPEN")
+  evidence    Json?
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuthToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Device {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+  deviceId    String
+  fingerprint String
+  lastLogin   DateTime @default(now())
+  userAgent   String?
+  ipAddress   String?
+  fcmToken    String? // Added for push notifications
+
+  @@unique([userId, deviceId])
+}
+
+model SecurityLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id])
+  actorId      String?  @db.Uuid
+  action       String
+  resource     String?
+  resourceId   String?
+  oldValue     Json?
+  newValue     Json?
+  metadata     Json?
+  ipAddress    String?
+  device       String?
+  success      Boolean  @default(true)
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([userId, action])
+  @@index([action, createdAt])
+  @@index([resource, resourceId])
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+  SYSTEM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+model NotificationTemplate {
+  id           String   @id @default(uuid()) @db.Uuid
+  type         String   @unique
+  name         String
+  emailSubject String?
+  emailBody    String?  @db.Text
+  pushTitle    String?
+  pushBody     String?  @db.Text
+  inAppTitle   String
+  inAppBody    String   @db.Text
+  smsBody      String?  @db.Text
+  systemBody   String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model NotificationLog {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id])
+  type         String
+  channel      NotificationChannel
+  recipient    String
+  title        String
+  body         String
+  status       NotificationStatus  @default(PENDING)
+  retryCount   Int                 @default(0)
+  maxRetries   Int                 @default(3)
+  nextTryAt    DateTime?
+  errorDetails String?             @db.Text
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([status, nextTryAt])
+}

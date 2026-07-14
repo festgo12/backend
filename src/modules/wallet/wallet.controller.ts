@@ -4,8 +4,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { WalletService } from './wallet.service';
 import { TatumWalletService } from '../tatum/tatum-wallet.service';
-import { Currency } from '@prisma/client';
-import type { User } from '@prisma/client';
+import { Currency } from '@src/generated/client';
+import type { User } from '@src/generated/client';
 import { isUUID } from 'class-validator';
 import { AuditLog } from '../audit/audit.decorator';
 

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, retry, timer } from 'rxjs';
-import { Currency, LedgerType } from '@prisma/client';
+import { Currency, LedgerType } from '@src/generated/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TatumWalletService } from './tatum-wallet.service';

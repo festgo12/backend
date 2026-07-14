@@ -1,5 +1,5 @@
 import { PrismaService } from '../../core/database/prisma.service';
-import type { Order } from '@prisma/client';
+import type { Order } from '@src/generated/client';
 export declare class OrdersEventsHandler {
     private prisma;
     private readonly logger;

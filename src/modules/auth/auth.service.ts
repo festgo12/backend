@@ -9,7 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { Role } from '@prisma/client';
+import { Role } from '@src/generated/client';
 import { generateSecret, verify, generateURI } from "otplib";
 import * as toDataURL from 'qrcode';
 import { OAuth2Client } from 'google-auth-library';

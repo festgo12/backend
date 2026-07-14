@@ -1,5 +1,5 @@
 import { AdminService } from './admin.service';
-import { UserStatus } from '@prisma/client';
+import { UserStatus } from '@src/generated/client';
 export declare class AdminController {
     private readonly adminService;
     constructor(adminService: AdminService);
@@ -18,9 +18,9 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             }[];
@@ -30,8 +30,8 @@ export declare class AdminController {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -61,8 +61,8 @@ export declare class AdminController {
         phone: string | null;
         resetToken: string | null;
         passwordHash: string;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
@@ -83,9 +83,9 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
-            currency: import(".prisma/client").$Enums.Currency;
-            balance: import("@prisma/client/runtime/library").Decimal;
-            reservedBalance: import("@prisma/client/runtime/library").Decimal;
+            currency: import("@src/generated/client").$Enums.Currency;
+            balance: import("@src/generated/client/runtime/library").Decimal;
+            reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             version: number;
         }[];
@@ -105,22 +105,22 @@ export declare class AdminController {
             createdAt: Date;
             userId: string;
             ipAddress: string | null;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             action: string;
             resource: string | null;
             success: boolean;
             actorId: string | null;
             resourceId: string | null;
-            oldValue: import("@prisma/client/runtime/library").JsonValue | null;
-            newValue: import("@prisma/client/runtime/library").JsonValue | null;
+            oldValue: import("@src/generated/client/runtime/library").JsonValue | null;
+            newValue: import("@src/generated/client/runtime/library").JsonValue | null;
             errorMessage: string | null;
         }[];
         id: string;
         email: string | null;
         phone: string | null;
         resetToken: string | null;
-        role: import(".prisma/client").$Enums.Role;
-        status: import(".prisma/client").$Enums.UserStatus;
+        role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
@@ -145,8 +145,8 @@ export declare class AdminController {
                 phone: string | null;
                 resetToken: string | null;
                 passwordHash: string;
-                role: import(".prisma/client").$Enums.Role;
-                status: import(".prisma/client").$Enums.UserStatus;
+                role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
@@ -157,9 +157,9 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
-            currency: import(".prisma/client").$Enums.Currency;
-            balance: import("@prisma/client/runtime/library").Decimal;
-            reservedBalance: import("@prisma/client/runtime/library").Decimal;
+            currency: import("@src/generated/client").$Enums.Currency;
+            balance: import("@src/generated/client/runtime/library").Decimal;
+            reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             version: number;
         })[];
@@ -187,8 +187,8 @@ export declare class AdminController {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -197,33 +197,33 @@ export declare class AdminController {
         };
         ledgerEntries: ({
             transaction: {
-                type: import(".prisma/client").$Enums.LedgerType;
+                type: import("@src/generated/client").$Enums.LedgerType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
                 walletId: string;
-                amount: import("@prisma/client/runtime/library").Decimal;
-                fee: import("@prisma/client/runtime/library").Decimal;
+                amount: import("@src/generated/client/runtime/library").Decimal;
+                fee: import("@src/generated/client/runtime/library").Decimal;
                 reference: string;
-                metadata: import("@prisma/client/runtime/library").JsonValue | null;
+                metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             } | null;
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             createdAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             transactionId: string | null;
             orderId: string | null;
-            balanceAfter: import("@prisma/client/runtime/library").Decimal;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         })[];
         snapshots: {
             id: string;
             createdAt: Date;
-            balance: import("@prisma/client/runtime/library").Decimal;
+            balance: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             ledgerId: string | null;
         }[];
@@ -231,9 +231,9 @@ export declare class AdminController {
         id: string;
         updatedAt: Date;
         userId: string;
-        currency: import(".prisma/client").$Enums.Currency;
-        balance: import("@prisma/client/runtime/library").Decimal;
-        reservedBalance: import("@prisma/client/runtime/library").Decimal;
+        currency: import("@src/generated/client").$Enums.Currency;
+        balance: import("@src/generated/client/runtime/library").Decimal;
+        reservedBalance: import("@src/generated/client/runtime/library").Decimal;
         address: string | null;
         version: number;
     }>;
@@ -256,8 +256,8 @@ export declare class AdminController {
                     phone: string | null;
                     resetToken: string | null;
                     passwordHash: string;
-                    role: import(".prisma/client").$Enums.Role;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@src/generated/client").$Enums.Role;
+                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     resetTokenExpires: Date | null;
@@ -268,23 +268,23 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             };
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            fee: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            fee: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         })[];
         meta: {
             total: number;
@@ -296,18 +296,18 @@ export declare class AdminController {
     getAllOrders(page?: string, limit?: string, search?: string): Promise<{
         orders: ({
             ad: {
-                type: import(".prisma/client").$Enums.AdType;
+                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
                 version: number;
                 sellerId: string;
-                asset: import(".prisma/client").$Enums.Currency;
-                price: import("@prisma/client/runtime/library").Decimal;
-                quantity: import("@prisma/client/runtime/library").Decimal;
-                minLimit: import("@prisma/client/runtime/library").Decimal;
-                maxLimit: import("@prisma/client/runtime/library").Decimal;
+                asset: import("@src/generated/client").$Enums.Currency;
+                price: import("@src/generated/client/runtime/library").Decimal;
+                quantity: import("@src/generated/client/runtime/library").Decimal;
+                minLimit: import("@src/generated/client/runtime/library").Decimal;
+                maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
             };
             seller: {
@@ -326,8 +326,8 @@ export declare class AdminController {
                 phone: string | null;
                 resetToken: string | null;
                 passwordHash: string;
-                role: import(".prisma/client").$Enums.Role;
-                status: import(".prisma/client").$Enums.UserStatus;
+                role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
@@ -350,8 +350,8 @@ export declare class AdminController {
                 phone: string | null;
                 resetToken: string | null;
                 passwordHash: string;
-                role: import(".prisma/client").$Enums.Role;
-                status: import(".prisma/client").$Enums.UserStatus;
+                role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
@@ -360,17 +360,17 @@ export declare class AdminController {
             };
         } & {
             id: string;
-            status: import(".prisma/client").$Enums.OrderStatus;
+            status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
+            version: number;
             adId: string;
             buyerId: string;
             sellerId: string;
-            fiatAmount: import("@prisma/client/runtime/library").Decimal;
-            cryptoAmount: import("@prisma/client/runtime/library").Decimal;
-            feeAmount: import("@prisma/client/runtime/library").Decimal;
+            fiatAmount: import("@src/generated/client/runtime/library").Decimal;
+            cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
+            feeAmount: import("@src/generated/client/runtime/library").Decimal;
             fraudFlagged: boolean;
         })[];
         meta: {
@@ -382,18 +382,18 @@ export declare class AdminController {
     }>;
     getOrderDetail(orderId: string): Promise<{
         ad: {
-            type: import(".prisma/client").$Enums.AdType;
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             sellerId: string;
-            asset: import(".prisma/client").$Enums.Currency;
-            price: import("@prisma/client/runtime/library").Decimal;
-            quantity: import("@prisma/client/runtime/library").Decimal;
-            minLimit: import("@prisma/client/runtime/library").Decimal;
-            maxLimit: import("@prisma/client/runtime/library").Decimal;
+            asset: import("@src/generated/client").$Enums.Currency;
+            price: import("@src/generated/client/runtime/library").Decimal;
+            quantity: import("@src/generated/client/runtime/library").Decimal;
+            minLimit: import("@src/generated/client/runtime/library").Decimal;
+            maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
         };
         ledgerEntries: ({
@@ -401,23 +401,23 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             };
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             createdAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             transactionId: string | null;
             orderId: string | null;
-            balanceAfter: import("@prisma/client/runtime/library").Decimal;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         })[];
         seller: {
             profile: {
@@ -433,9 +433,9 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             }[];
@@ -445,8 +445,8 @@ export declare class AdminController {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -467,9 +467,9 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             }[];
@@ -479,8 +479,8 @@ export declare class AdminController {
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.Role;
-            status: import(".prisma/client").$Enums.UserStatus;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
@@ -489,17 +489,17 @@ export declare class AdminController {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
+        version: number;
         adId: string;
         buyerId: string;
         sellerId: string;
-        fiatAmount: import("@prisma/client/runtime/library").Decimal;
-        cryptoAmount: import("@prisma/client/runtime/library").Decimal;
-        feeAmount: import("@prisma/client/runtime/library").Decimal;
+        fiatAmount: import("@src/generated/client/runtime/library").Decimal;
+        cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
+        feeAmount: import("@src/generated/client/runtime/library").Decimal;
         fraudFlagged: boolean;
     }>;
     getBlockchainStats(): Promise<void>;
@@ -522,8 +522,8 @@ export declare class AdminController {
                     phone: string | null;
                     resetToken: string | null;
                     passwordHash: string;
-                    role: import(".prisma/client").$Enums.Role;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@src/generated/client").$Enums.Role;
+                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     resetTokenExpires: Date | null;
@@ -534,23 +534,23 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             };
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            fee: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            fee: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         })[];
         meta: {
             total: number;
@@ -578,8 +578,8 @@ export declare class AdminController {
                     phone: string | null;
                     resetToken: string | null;
                     passwordHash: string;
-                    role: import(".prisma/client").$Enums.Role;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@src/generated/client").$Enums.Role;
+                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     resetTokenExpires: Date | null;
@@ -590,23 +590,23 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             };
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            fee: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            fee: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         })[];
         meta: {
             total: number;
@@ -616,8 +616,8 @@ export declare class AdminController {
         };
     }>;
     getPaymentStats(): Promise<{
-        totalDeposits: number | import("@prisma/client/runtime/library").Decimal;
-        totalWithdrawals: number | import("@prisma/client/runtime/library").Decimal;
+        totalDeposits: number | import("@src/generated/client/runtime/library").Decimal;
+        totalWithdrawals: number | import("@src/generated/client/runtime/library").Decimal;
     }>;
     getPaymentTransactions(page?: string, limit?: string): Promise<{
         transactions: ({
@@ -638,8 +638,8 @@ export declare class AdminController {
                     phone: string | null;
                     resetToken: string | null;
                     passwordHash: string;
-                    role: import(".prisma/client").$Enums.Role;
-                    status: import(".prisma/client").$Enums.UserStatus;
+                    role: import("@src/generated/client").$Enums.Role;
+                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     resetTokenExpires: Date | null;
@@ -650,23 +650,23 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                currency: import(".prisma/client").$Enums.Currency;
-                balance: import("@prisma/client/runtime/library").Decimal;
-                reservedBalance: import("@prisma/client/runtime/library").Decimal;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 version: number;
             };
         } & {
-            type: import(".prisma/client").$Enums.LedgerType;
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             walletId: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            fee: import("@prisma/client/runtime/library").Decimal;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            fee: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         })[];
         meta: {
             total: number;
@@ -691,14 +691,14 @@ export declare class AdminController {
             createdAt: Date;
             userId: string;
             ipAddress: string | null;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             action: string;
             resource: string | null;
             success: boolean;
             actorId: string | null;
             resourceId: string | null;
-            oldValue: import("@prisma/client/runtime/library").JsonValue | null;
-            newValue: import("@prisma/client/runtime/library").JsonValue | null;
+            oldValue: import("@src/generated/client/runtime/library").JsonValue | null;
+            newValue: import("@src/generated/client/runtime/library").JsonValue | null;
             errorMessage: string | null;
         })[];
         meta: {
@@ -738,14 +738,14 @@ export declare class AdminController {
             createdAt: Date;
             userId: string;
             ipAddress: string | null;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             action: string;
             resource: string | null;
             success: boolean;
             actorId: string | null;
             resourceId: string | null;
-            oldValue: import("@prisma/client/runtime/library").JsonValue | null;
-            newValue: import("@prisma/client/runtime/library").JsonValue | null;
+            oldValue: import("@src/generated/client/runtime/library").JsonValue | null;
+            newValue: import("@src/generated/client/runtime/library").JsonValue | null;
             errorMessage: string | null;
         })[];
         meta: {

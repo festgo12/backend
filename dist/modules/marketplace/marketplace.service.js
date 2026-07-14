@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MarketplaceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let MarketplaceService = class MarketplaceService {
     prisma;
     constructor(prisma) {

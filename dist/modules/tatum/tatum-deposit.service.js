@@ -14,7 +14,7 @@ exports.TatumDepositService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const wallet_service_1 = require("../wallet/wallet.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 let TatumDepositService = TatumDepositService_1 = class TatumDepositService {
     prisma;
     walletService;

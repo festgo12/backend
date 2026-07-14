@@ -1,5 +1,5 @@
 import { PrismaService } from '../../core/database/prisma.service';
-import { Currency, LedgerType, Prisma } from '@prisma/client';
+import { Currency, LedgerType, Prisma } from '@src/generated/client';
 export interface TransactionFilters {
     walletId?: string;
     currency?: Currency;
@@ -22,8 +22,8 @@ export declare class TransactionsService {
     getTransactionDetails(userId: string, id: string): Promise<{
         id: string;
         walletId: string;
-        currency: import(".prisma/client").$Enums.Currency;
-        type: import(".prisma/client").$Enums.LedgerType;
+        currency: import("@src/generated/client").$Enums.Currency;
+        type: import("@src/generated/client").$Enums.LedgerType;
         amount: string;
         fee: string;
         status: string;
@@ -51,8 +51,8 @@ export declare class TransactionsService {
     } | {
         id: string;
         walletId: string;
-        currency: import(".prisma/client").$Enums.Currency;
-        type: import(".prisma/client").$Enums.LedgerType;
+        currency: import("@src/generated/client").$Enums.Currency;
+        type: import("@src/generated/client").$Enums.LedgerType;
         amount: string;
         fee: string;
         status: string;

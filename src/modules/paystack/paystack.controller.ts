@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger, Param } from '@nestjs/common';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
-import { Currency, LedgerType, Role } from '@prisma/client';
-import type { User } from '@prisma/client';
+import { Currency, LedgerType, Role } from '@src/generated/client';
+import type { User } from '@src/generated/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';

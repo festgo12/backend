@@ -1,7 +1,7 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { EmailService } from './email.service';
 import { FcmService } from './fcm.service';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@src/generated/client';
 export declare class NotificationsService {
     private readonly prisma;
     private readonly emailService;
@@ -83,14 +83,14 @@ export declare class NotificationsService {
         type: string;
         title: string;
         id: string;
-        status: import(".prisma/client").$Enums.NotificationStatus;
+        status: import("@src/generated/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         metadata: Prisma.JsonValue | null;
         body: string;
         recipient: string;
-        channel: import(".prisma/client").$Enums.NotificationChannel;
+        channel: import("@src/generated/client").$Enums.NotificationChannel;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

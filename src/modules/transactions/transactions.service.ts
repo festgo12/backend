@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { Currency, LedgerType, Prisma } from '@prisma/client';
+import { Currency, LedgerType, Prisma } from '@src/generated/client';
 
 export interface TransactionFilters {
   walletId?: string;

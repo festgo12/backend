@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
-import { Currency, Role, LedgerType, Prisma } from '@prisma/client';
+import { Currency, Role, LedgerType, Prisma } from '@src/generated/client';
 
 @Injectable()
 export class WalletService {

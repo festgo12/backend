@@ -19,7 +19,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../core/security/guards/roles.guard");
 const roles_decorator_1 = require("../../core/security/decorators/roles.decorator");
 const admin_service_1 = require("./admin.service");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 const audit_decorator_1 = require("../audit/audit.decorator");
 let AdminController = class AdminController {
     adminService;

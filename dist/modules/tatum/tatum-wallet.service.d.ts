@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { Currency } from '@prisma/client';
+import { Currency } from '@src/generated/client';
 export declare class TatumWalletService {
     private readonly configService;
     private readonly httpService;

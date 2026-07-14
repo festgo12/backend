@@ -2,7 +2,7 @@ import { Injectable, Logger, BadRequestException, InternalServerErrorException }
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom, retry, timer } from 'rxjs';
-import { Currency } from '@prisma/client';
+import { Currency } from '@src/generated/client';
 
 @Injectable()
 export class TatumWalletService {

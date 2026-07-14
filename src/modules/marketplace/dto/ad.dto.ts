@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional, Min } from 'class-validator';
-import { Currency, AdType } from '@prisma/client';
+import { Currency, AdType } from '@src/generated/client';
 import { Type } from 'class-transformer';
 
 export class CreateAdDto {

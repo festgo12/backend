@@ -15,7 +15,7 @@ var PaystackController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaystackController = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
+const client_1 = require("../../generated/client/index.js");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");

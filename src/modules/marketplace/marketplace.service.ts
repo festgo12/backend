@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateAdDto, UpdateAdDto, SearchAdsDto } from './dto/ad.dto';
-import { AdType, Currency } from '@prisma/client';
+import { AdType, Currency } from '@src/generated/client';
 
 @Injectable()
 export class MarketplaceService {

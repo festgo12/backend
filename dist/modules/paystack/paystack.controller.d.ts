@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '@src/generated/client';
 import { PaystackService } from './paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 export declare class PaystackController {

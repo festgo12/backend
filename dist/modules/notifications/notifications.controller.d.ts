@@ -1,6 +1,6 @@
 import { NotificationsService } from './notifications.service';
 import { NotificationsQueue } from './notifications.queue';
-import type { User } from '@prisma/client';
+import type { User } from '@src/generated/client';
 export declare class NotificationsController {
     private readonly notificationsService;
     private readonly notificationsQueue;
@@ -9,7 +9,7 @@ export declare class NotificationsController {
         title: string;
         id: string;
         createdAt: Date;
-        data: import("@prisma/client/runtime/library").JsonValue | null;
+        data: import("@src/generated/client/runtime/library").JsonValue | null;
         userId: string;
         body: string;
         isRead: boolean;
@@ -36,14 +36,14 @@ export declare class NotificationsController {
         type: string;
         title: string;
         id: string;
-        status: import(".prisma/client").$Enums.NotificationStatus;
+        status: import("@src/generated/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         body: string;
         recipient: string;
-        channel: import(".prisma/client").$Enums.NotificationChannel;
+        channel: import("@src/generated/client").$Enums.NotificationChannel;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

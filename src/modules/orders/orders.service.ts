@@ -1,9 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateOrderDto } from './dto/order.dto';
-import { OrderStatus, Currency, LedgerType } from '@prisma/client';
+import { OrderStatus, Currency, LedgerType } from '@src/generated/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@src/generated/client/runtime/library';
 
 @Injectable()
 export class OrdersService {

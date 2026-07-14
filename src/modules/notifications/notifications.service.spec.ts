@@ -3,7 +3,7 @@ import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { EmailService } from './email.service';
 import { FcmService } from './fcm.service';
-import { NotificationChannel, NotificationStatus } from '@prisma/client';
+import { NotificationChannel, NotificationStatus } from '@src/generated/client';
 import { NotFoundException } from '@nestjs/common';
 
 describe('NotificationsService', () => {
