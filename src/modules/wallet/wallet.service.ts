@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
+import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
 import { Currency, Role, LedgerType, Prisma } from '@src/generated/client';
 
 @Injectable()
@@ -8,10 +9,12 @@ export class WalletService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
-  ) { }
+    private readonly exchangeRateService: TatumExchangeRateService,
+  ) {}
 
   /**
    * Returns all wallets for a user with their current balances.
+   * Uses live exchange rates from CoinGecko (via TatumExchangeRateService).
    */
   async getUserWallets(userId: string) {
     const wallets = await this.prisma.wallet.findMany({
@@ -23,13 +26,7 @@ export class WalletService {
       },
     });
 
-    const rates: Record<Currency, number> = {
-      NGN: 1.0,
-      USDT: 1550.0,
-      USDC: 1545.0,
-      BTC: 96000000.0,
-      ETH: 5400000.0,
-    };
+    const rates = this.exchangeRateService.getAllRates();
 
     return wallets.map((w) => ({
       ...w,
@@ -145,7 +142,6 @@ export class WalletService {
 
   /**
    * Calculates the real balance by summing ledger entries since the last snapshot.
-   * This verifies the denormalized 'balance' field in the Wallet model.
    */
   async verifyAndSyncBalance(walletId: string) {
     const wallet = await this.prisma.wallet.findUnique({
@@ -176,7 +172,6 @@ export class WalletService {
 
     const calculatedBalance = snapshotBalance.plus(ledgerSum._sum.amount || 0);
 
-    // If there's a discrepancy, we sync it (in a real production app, this would trigger an alert)
     if (!calculatedBalance.equals(wallet.balance)) {
       await this.prisma.wallet.update({
         where: { id: walletId },
@@ -240,7 +235,9 @@ export class WalletService {
           await this.ledger.createEntry(tx, {
             walletId: transaction.walletId,
             transactionId: transaction.id,
-            amount: transaction.amount.toNumber(),
+            amount: transaction.type === LedgerType.WITHDRAWAL
+              ? -transaction.amount.toNumber()  // Negative for withdrawals
+              : transaction.amount.toNumber(),
             type: transaction.type,
             reference: `${transaction.reference}-ledger`,
             metadata: updatedMetadata,
@@ -263,24 +260,21 @@ export class WalletService {
 
       if (!transaction || transaction.status === 'REVERSED') return;
 
-      // 1. Mark as reversed
       await tx.walletTransaction.update({
         where: { id: transactionId },
         data: {
           status: 'REVERSED',
           metadata: {
             ...(transaction.metadata as any || {}),
-            reverse_reason: reason
-          }
+            reverse_reason: reason,
+          },
         },
       });
 
-      // 2. Create an offsetting LedgerEntry to give back the money
-      // We use TRADE_REFUND as a fallback if no SPECIFIC reversal type exists
       await this.ledger.createEntry(tx, {
         walletId: transaction.walletId,
         transactionId: transaction.id,
-        amount: Math.abs(transaction.amount.toNumber()), // Positive to give back
+        amount: Math.abs(transaction.amount.toNumber()),
         type: LedgerType.TRADE_REFUND,
         reference: `${transaction.reference}-rev-${Date.now()}`,
         metadata: { reason },
@@ -288,5 +282,3 @@ export class WalletService {
     });
   }
 }
-
-

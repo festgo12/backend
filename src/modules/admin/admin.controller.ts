@@ -1,9 +1,12 @@
-import { Controller, Get, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { AdminService } from './admin.service';
+import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
+import { TatumDepositService } from '../tatum/tatum-deposit.service';
+import { TatumWebhookService } from '../tatum/tatum-webhook.service';
 import { UserStatus, Role } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
 
@@ -13,7 +16,12 @@ import { AuditLog } from '../audit/audit.decorator';
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly exchangeRateService: TatumExchangeRateService,
+    private readonly depositService: TatumDepositService,
+    private readonly webhookService: TatumWebhookService,
+  ) {}
 
   @Get('users')
   @ApiOperation({ summary: 'Get list of users with pagination' })
@@ -28,10 +36,7 @@ export class AdminController {
   @Patch('users/:id/status')
   @AuditLog('ADMIN_USER_STATUS_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user account status' })
-  updateUserStatus(
-    @Param('id') userId: string,
-    @Body('status') status: UserStatus,
-  ) {
+  updateUserStatus(@Param('id') userId: string, @Body('status') status: UserStatus) {
     return this.adminService.updateUserStatus(userId, status);
   }
 
@@ -106,6 +111,20 @@ export class AdminController {
     return this.adminService.getFailedTransactions(parseInt(page), parseInt(limit));
   }
 
+  @Post('blockchain/failed/:id/retry')
+  @AuditLog('ADMIN_RETRY_WITHDRAWAL', 'TRANSACTION')
+  @ApiOperation({ summary: 'Retry a failed withdrawal transaction' })
+  retryFailedTransaction(@Param('id') transactionId: string) {
+    return this.adminService.retryFailedTransaction(transactionId);
+  }
+
+  @Post('blockchain/sync')
+  @AuditLog('ADMIN_BALANCE_SYNC', 'WALLET')
+  @ApiOperation({ summary: 'Trigger balance sync for all crypto wallets' })
+  async syncAllBalances() {
+    return this.depositService.syncAllWallets();
+  }
+
   @Get('payments/stats')
   @ApiOperation({ summary: 'Get NGN payment statistics' })
   getPaymentStats() {
@@ -119,6 +138,24 @@ export class AdminController {
     @Query('limit') limit: string = '10',
   ) {
     return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+  }
+
+  @Get('exchange-rates')
+  @ApiOperation({ summary: 'Get current exchange rates' })
+  getExchangeRates() {
+    return this.exchangeRateService.getRateInfo();
+  }
+
+  @Post('exchange-rates/refresh')
+  @AuditLog('ADMIN_REFRESH_RATES', 'SYSTEM')
+  @ApiOperation({ summary: 'Manually refresh exchange rates from CoinGecko' })
+  async refreshExchangeRates() {
+    const rates = await this.exchangeRateService.refreshRates();
+    return {
+      success: true,
+      rates,
+      lastUpdated: this.exchangeRateService.getLastUpdated(),
+    };
   }
 
   @Get('audit-logs')
@@ -156,5 +193,28 @@ export class AdminController {
   ) {
     return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
   }
-}
 
+  // ─── Webhook Subscription Management ──────────────────────────────────────
+
+  @Get('webhooks')
+  @ApiOperation({ summary: 'List active Tatum webhook subscriptions' })
+  getWebhookSubscriptions() {
+    return this.webhookService.getSubscriptionSummary();
+  }
+
+  @Post('webhooks/init')
+  @AuditLog('ADMIN_WEBHOOK_INIT', 'SYSTEM')
+  @ApiOperation({ summary: 'Register outgoing webhooks for all chains' })
+  async initOutgoingWebhooks() {
+    await this.webhookService.ensureOutgoingWebhooks();
+    return { success: true, message: 'Outgoing webhooks initialized for all chains' };
+  }
+
+  @Post('webhooks/cancel/:id')
+  @AuditLog('ADMIN_WEBHOOK_CANCEL', 'SYSTEM')
+  @ApiOperation({ summary: 'Cancel a Tatum webhook subscription' })
+  async cancelWebhook(@Param('id') subscriptionId: string) {
+    const success = await this.webhookService.cancelSubscription(subscriptionId);
+    return { success, message: success ? 'Subscription cancelled' : 'Failed to cancel subscription' };
+  }
+}

@@ -19,14 +19,21 @@ const swagger_1 = require("@nestjs/swagger");
 const tatum_webhook_service_1 = require("./tatum-webhook.service");
 const tatum_deposit_service_1 = require("./tatum-deposit.service");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const wallet_service_1 = require("../wallet/wallet.service");
 let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookController {
     webhookService;
     depositService;
+    walletService;
     prisma;
     logger = new common_1.Logger(TatumWebhookController_1.name);
-    constructor(webhookService, depositService, prisma) {
+    CONFIRMATION_THRESHOLDS = {
+        bitcoin: 3,
+        ethereum: 12,
+    };
+    constructor(webhookService, depositService, walletService, prisma) {
         this.webhookService = webhookService;
         this.depositService = depositService;
+        this.walletService = walletService;
         this.prisma = prisma;
     }
     async handleWebhook(payload, signature) {
@@ -34,20 +41,20 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
             this.logger.error('Invalid Tatum webhook signature received.');
             throw new common_1.UnauthorizedException('Invalid signature');
         }
-        this.logger.log(`Received Tatum webhook: ${payload.subscriptionType}`);
+        this.logger.log(`Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`);
         switch (payload.subscriptionType) {
             case 'ADDRESS_TRANSACTION':
             case 'INCOMING_BLOCKCHAIN_TRANSACTION':
-                await this.depositService.handleDepositNotification({
-                    address: payload.address,
-                    amount: payload.amount,
-                    asset: payload.asset,
-                    txId: payload.txId,
-                    reference: payload.reference,
-                });
+                await this.handleIncomingDeposit(payload);
                 break;
             case 'CONFIRMATION_COUNT_REACHED':
                 await this.handleConfirmation(payload);
+                break;
+            case 'OUTGOING_BLOCKCHAIN_TRANSACTION':
+                await this.handleOutgoingSuccess(payload);
+                break;
+            case 'OUTGOING_BLOCKCHAIN_TRANSACTION_FAILED':
+                await this.handleOutgoingFailed(payload);
                 break;
             default:
                 this.logger.log(`Unhandled webhook type: ${payload.subscriptionType}`);
@@ -58,15 +65,13 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
         this.logger.log(`Simulating testnet deposit: ${amount} ${currency} (Address: ${address || 'any'})`);
         let wallet;
         if (address) {
-            wallet = await this.prisma.wallet.findUnique({
-                where: { address },
-            });
+            wallet = await this.prisma.wallet.findUnique({ where: { address } });
         }
         else {
             wallet = await this.prisma.wallet.findFirst({
                 where: {
                     currency: currency.toUpperCase(),
-                    address: { not: null }
+                    address: { not: null },
                 },
             });
         }
@@ -86,16 +91,75 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
             message: `Simulated ${amount} ${currency} deposit to ${wallet.address}`,
             txId,
             walletId: wallet.id,
-            userId: wallet.userId
+            userId: wallet.userId,
         };
     }
+    async handleIncomingDeposit(payload) {
+        const { address, amount, asset, txId, reference, from: sourceAddress } = payload;
+        if (!address || !txId) {
+            this.logger.warn('Incoming deposit webhook missing address or txId. Skipping.');
+            return;
+        }
+        await this.depositService.handleDepositNotification({
+            address,
+            amount: String(amount),
+            asset: asset || 'UNKNOWN',
+            txId,
+            reference,
+            sourceAddress,
+        });
+    }
     async handleConfirmation(payload) {
-        const { txId, confirmations } = payload;
-        this.logger.log(`Transaction ${txId} reached ${confirmations} confirmations.`);
-        const threshold = 3;
+        const { txId, confirmations, chain } = payload;
+        if (!txId) {
+            this.logger.warn('Confirmation webhook missing txId. Skipping.');
+            return;
+        }
+        const threshold = this.CONFIRMATION_THRESHOLDS[chain] || 3;
+        this.logger.log(`Transaction ${txId}: ${confirmations}/${threshold} confirmations (${chain})`);
         if (confirmations >= threshold) {
             await this.webhookService.markTransactionAsCompleted(txId);
         }
+    }
+    async handleOutgoingSuccess(payload) {
+        const { txId } = payload;
+        if (!txId) {
+            this.logger.warn('Outgoing success webhook missing txId. Skipping.');
+            return;
+        }
+        this.logger.log(`Outgoing transaction confirmed: ${txId}`);
+        const transaction = await this.prisma.walletTransaction.findUnique({
+            where: { reference: txId },
+        });
+        if (!transaction) {
+            this.logger.warn(`No pending withdrawal found for txId ${txId}`);
+            return;
+        }
+        if (transaction.status === 'COMPLETED') {
+            this.logger.log(`Transaction ${txId} already completed. Skipping.`);
+            return;
+        }
+        await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED');
+        this.logger.log(`Withdrawal ${txId} marked as COMPLETED`);
+    }
+    async handleOutgoingFailed(payload) {
+        const { txId, error } = payload;
+        if (!txId) {
+            this.logger.warn('Outgoing failure webhook missing txId. Skipping.');
+            return;
+        }
+        this.logger.error(`Outgoing transaction failed: ${txId} - ${error || 'unknown error'}`);
+        const transaction = await this.prisma.walletTransaction.findUnique({
+            where: { reference: txId },
+        });
+        if (!transaction || transaction.status === 'COMPLETED') {
+            return;
+        }
+        await this.walletService.updateTransactionStatus(transaction.id, 'FAILED', {
+            lastError: error || 'Blockchain transaction failed',
+            failedAt: new Date().toISOString(),
+        });
+        this.logger.log(`Withdrawal ${txId} marked as FAILED`);
     }
 };
 exports.TatumWebhookController = TatumWebhookController;
@@ -124,6 +188,7 @@ exports.TatumWebhookController = TatumWebhookController = TatumWebhookController
     (0, common_1.Controller)('tatum/webhooks'),
     __metadata("design:paramtypes", [tatum_webhook_service_1.TatumWebhookService,
         tatum_deposit_service_1.TatumDepositService,
+        wallet_service_1.WalletService,
         prisma_service_1.PrismaService])
 ], TatumWebhookController);
 //# sourceMappingURL=tatum-webhook.controller.js.map

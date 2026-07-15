@@ -14,15 +14,20 @@ export declare class TatumWithdrawalService {
     private readonly apiKey;
     private readonly baseUrl;
     constructor(configService: ConfigService, httpService: HttpService, prisma: PrismaService, walletService: WalletService, tatumWallet: TatumWalletService);
+    private get headers();
     processWithdrawal(params: {
         walletId: string;
         amount: number;
         destinationAddress: string;
         currency: Currency;
     }): Promise<{
-        txId: any;
+        txId: string;
         status: string;
     }>;
-    private mapCurrencyToChain;
+    retryWithdrawal(transactionId: string): Promise<{
+        txId: string;
+        status: string;
+    }>;
+    private validateAddress;
     private buildTransferBody;
 }

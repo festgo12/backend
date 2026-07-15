@@ -6,11 +6,13 @@ import { TatumWithdrawalService } from './tatum-withdrawal.service';
 import { TatumRiskService } from './tatum-risk.service';
 import { TatumWebhookService } from './tatum-webhook.service';
 import { TatumWebhookController } from './tatum-webhook.controller';
+import { TatumExchangeRateService } from './tatum-exchange-rate.service';
 import { WalletModule } from '../wallet/wallet.module';
+import { SecurityModule } from '../security/security.module';
 
 @Global()
 @Module({
-  imports: [HttpModule, WalletModule],
+  imports: [HttpModule, WalletModule, SecurityModule],
   controllers: [TatumWebhookController],
   providers: [
     TatumWalletService,
@@ -18,6 +20,7 @@ import { WalletModule } from '../wallet/wallet.module';
     TatumWithdrawalService,
     TatumRiskService,
     TatumWebhookService,
+    TatumExchangeRateService,
   ],
   exports: [
     TatumWalletService,
@@ -25,6 +28,7 @@ import { WalletModule } from '../wallet/wallet.module';
     TatumWithdrawalService,
     TatumRiskService,
     TatumWebhookService,
+    TatumExchangeRateService,
   ],
 })
-export class TatumModule { }
+export class TatumModule {}

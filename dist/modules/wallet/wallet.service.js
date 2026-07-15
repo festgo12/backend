@@ -13,13 +13,16 @@ exports.WalletService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const ledger_service_1 = require("./ledger.service");
+const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
 const client_1 = require("../../generated/client/index.js");
 let WalletService = class WalletService {
     prisma;
     ledger;
-    constructor(prisma, ledger) {
+    exchangeRateService;
+    constructor(prisma, ledger, exchangeRateService) {
         this.prisma = prisma;
         this.ledger = ledger;
+        this.exchangeRateService = exchangeRateService;
     }
     async getUserWallets(userId) {
         const wallets = await this.prisma.wallet.findMany({
@@ -30,13 +33,7 @@ let WalletService = class WalletService {
                 },
             },
         });
-        const rates = {
-            NGN: 1.0,
-            USDT: 1550.0,
-            USDC: 1545.0,
-            BTC: 96000000.0,
-            ETH: 5400000.0,
-        };
+        const rates = this.exchangeRateService.getAllRates();
         return wallets.map((w) => ({
             ...w,
             balanceInNgn: w.balance.mul(rates[w.currency] || 0),
@@ -188,7 +185,9 @@ let WalletService = class WalletService {
                     await this.ledger.createEntry(tx, {
                         walletId: transaction.walletId,
                         transactionId: transaction.id,
-                        amount: transaction.amount.toNumber(),
+                        amount: transaction.type === client_1.LedgerType.WITHDRAWAL
+                            ? -transaction.amount.toNumber()
+                            : transaction.amount.toNumber(),
                         type: transaction.type,
                         reference: `${transaction.reference}-ledger`,
                         metadata: updatedMetadata,
@@ -211,8 +210,8 @@ let WalletService = class WalletService {
                     status: 'REVERSED',
                     metadata: {
                         ...(transaction.metadata || {}),
-                        reverse_reason: reason
-                    }
+                        reverse_reason: reason,
+                    },
                 },
             });
             await this.ledger.createEntry(tx, {
@@ -230,6 +229,7 @@ exports.WalletService = WalletService;
 exports.WalletService = WalletService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        ledger_service_1.LedgerService])
+        ledger_service_1.LedgerService,
+        tatum_exchange_rate_service_1.TatumExchangeRateService])
 ], WalletService);
 //# sourceMappingURL=wallet.service.js.map

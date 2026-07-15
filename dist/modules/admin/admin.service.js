@@ -12,10 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const tatum_withdrawal_service_1 = require("../tatum/tatum-withdrawal.service");
+const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
 let AdminService = class AdminService {
     prisma;
-    constructor(prisma) {
+    tatumWithdrawal;
+    exchangeRateService;
+    constructor(prisma, tatumWithdrawal, exchangeRateService) {
         this.prisma = prisma;
+        this.tatumWithdrawal = tatumWithdrawal;
+        this.exchangeRateService = exchangeRateService;
     }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
@@ -24,16 +30,8 @@ let AdminService = class AdminService {
                 OR: [
                     { email: { contains: search, mode: 'insensitive' } },
                     { phone: { contains: search, mode: 'insensitive' } },
-                    {
-                        profile: {
-                            firstName: { contains: search, mode: 'insensitive' },
-                        },
-                    },
-                    {
-                        profile: {
-                            lastName: { contains: search, mode: 'insensitive' },
-                        },
-                    },
+                    { profile: { firstName: { contains: search, mode: 'insensitive' } } },
+                    { profile: { lastName: { contains: search, mode: 'insensitive' } } },
                 ],
             }
             : {};
@@ -42,27 +40,18 @@ let AdminService = class AdminService {
                 where,
                 skip,
                 take: limit,
-                include: {
-                    profile: true,
-                    wallets: true,
-                },
+                include: { profile: true, wallets: true },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.user.count({ where }),
         ]);
         return {
             users,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
     async updateUserStatus(userId, status) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        console.log(user);
         if (!user)
             throw new common_1.NotFoundException('User not found');
         return this.prisma.user.update({
@@ -78,10 +67,7 @@ let AdminService = class AdminService {
                 profile: true,
                 wallets: true,
                 devices: true,
-                securityLogs: {
-                    take: 10,
-                    orderBy: { createdAt: 'desc' },
-                },
+                securityLogs: { take: 10, orderBy: { createdAt: 'desc' } },
             },
         });
         if (!user)
@@ -92,37 +78,24 @@ let AdminService = class AdminService {
     async getAllWallets(page, limit, search) {
         const skip = (page - 1) * limit;
         const where = search
-            ? {
-                user: {
-                    OR: [
+            ? { user: { OR: [
                         { email: { contains: search, mode: 'insensitive' } },
                         { phone: { contains: search, mode: 'insensitive' } },
-                    ],
-                },
-            }
+                    ] } }
             : {};
         const [wallets, total] = await Promise.all([
             this.prisma.wallet.findMany({
                 where,
                 skip,
                 take: limit,
-                include: {
-                    user: {
-                        include: { profile: true },
-                    },
-                },
+                include: { user: { include: { profile: true } } },
                 orderBy: { updatedAt: 'desc' },
             }),
             this.prisma.wallet.count({ where }),
         ]);
         return {
             wallets,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
     async getWalletDetail(walletId) {
@@ -130,15 +103,8 @@ let AdminService = class AdminService {
             where: { id: walletId },
             include: {
                 user: { include: { profile: true } },
-                ledgerEntries: {
-                    take: 50,
-                    orderBy: { createdAt: 'desc' },
-                    include: { transaction: true },
-                },
-                snapshots: {
-                    take: 10,
-                    orderBy: { createdAt: 'desc' },
-                },
+                ledgerEntries: { take: 50, orderBy: { createdAt: 'desc' }, include: { transaction: true } },
+                snapshots: { take: 10, orderBy: { createdAt: 'desc' } },
             },
         });
         if (!wallet)
@@ -151,37 +117,24 @@ let AdminService = class AdminService {
             this.prisma.walletTransaction.findMany({
                 skip,
                 take: limit,
-                include: {
-                    wallet: {
-                        include: {
-                            user: { include: { profile: true } },
-                        },
-                    },
-                },
+                include: { wallet: { include: { user: { include: { profile: true } } } } },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.walletTransaction.count(),
         ]);
         return {
             transactions,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
     async getAllOrders(page, limit, search) {
         const skip = (page - 1) * limit;
         const where = search
-            ? {
-                OR: [
+            ? { OR: [
                     { id: { contains: search, mode: 'insensitive' } },
                     { buyer: { email: { contains: search, mode: 'insensitive' } } },
                     { seller: { email: { contains: search, mode: 'insensitive' } } },
-                ],
-            }
+                ] }
             : {};
         const [orders, total] = await Promise.all([
             this.prisma.order.findMany({
@@ -199,12 +152,7 @@ let AdminService = class AdminService {
         ]);
         return {
             orders,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            },
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
     async getOrderDetail(orderId) {
@@ -214,9 +162,7 @@ let AdminService = class AdminService {
                 buyer: { include: { profile: true, wallets: true } },
                 seller: { include: { profile: true, wallets: true } },
                 ad: true,
-                ledgerEntries: {
-                    include: { wallet: true },
-                },
+                ledgerEntries: { include: { wallet: true } },
             },
         });
         if (!order)
@@ -227,24 +173,14 @@ let AdminService = class AdminService {
         const skip = (page - 1) * limit;
         const [transactions, total] = await Promise.all([
             this.prisma.walletTransaction.findMany({
-                where: {
-                    wallet: {
-                        currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
-                    },
-                },
+                where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
                 skip,
                 take: limit,
-                include: {
-                    wallet: { include: { user: { include: { profile: true } } } },
-                },
+                include: { wallet: { include: { user: { include: { profile: true } } } } },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.walletTransaction.count({
-                where: {
-                    wallet: {
-                        currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
-                    },
-                },
+                where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
             }),
         ]);
         return {
@@ -259,9 +195,7 @@ let AdminService = class AdminService {
                 where: { status: 'FAILED' },
                 skip,
                 take: limit,
-                include: {
-                    wallet: { include: { user: { include: { profile: true } } } },
-                },
+                include: { wallet: { include: { user: { include: { profile: true } } } } },
                 orderBy: { createdAt: 'desc' },
             }),
             this.prisma.walletTransaction.count({ where: { status: 'FAILED' } }),
@@ -271,23 +205,81 @@ let AdminService = class AdminService {
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
+    async retryFailedTransaction(transactionId) {
+        const tx = await this.prisma.walletTransaction.findUnique({
+            where: { id: transactionId },
+            include: { wallet: true },
+        });
+        if (!tx)
+            throw new common_1.NotFoundException('Transaction not found');
+        if (tx.status !== 'FAILED')
+            throw new common_1.BadRequestException('Only failed transactions can be retried');
+        return this.tatumWithdrawal.retryWithdrawal(transactionId);
+    }
     async getBlockchainStats() {
+        const cryptoCurrencies = ['BTC', 'ETH', 'USDT', 'USDC'];
+        const balanceAgg = await this.prisma.wallet.aggregate({
+            where: { currency: { in: cryptoCurrencies } },
+            _sum: { balance: true },
+        });
+        const balances = await this.prisma.wallet.groupBy({
+            by: ['currency'],
+            where: { currency: { in: cryptoCurrencies } },
+            _sum: { balance: true },
+            _count: { id: true },
+        });
+        const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const txCount24h = await this.prisma.walletTransaction.count({
+            where: {
+                wallet: { currency: { in: cryptoCurrencies } },
+                createdAt: { gte: last24h },
+            },
+        });
+        const pendingCount = await this.prisma.walletTransaction.count({
+            where: {
+                wallet: { currency: { in: cryptoCurrencies } },
+                status: 'PENDING',
+            },
+        });
+        const failedCount = await this.prisma.walletTransaction.count({
+            where: {
+                wallet: { currency: { in: cryptoCurrencies } },
+                status: 'FAILED',
+            },
+        });
+        const completedCount = await this.prisma.walletTransaction.count({
+            where: {
+                wallet: { currency: { in: cryptoCurrencies } },
+                status: 'COMPLETED',
+                createdAt: { gte: last24h },
+            },
+        });
+        const total24h = txCount24h || 1;
+        const successRate = Math.round((completedCount / total24h) * 100);
+        const rates = this.exchangeRateService.getAllRates();
+        return {
+            balances: balances.map((b) => ({
+                currency: b.currency,
+                total: b._sum.balance?.toNumber() || 0,
+                walletCount: b._count.id,
+                rate: rates[b.currency] || 0,
+                valueInNgn: (b._sum.balance?.toNumber() || 0) * (rates[b.currency] || 0),
+            })),
+            totalBalanceNgn: balanceAgg._sum.balance?.toNumber() || 0,
+            txCount24h,
+            pendingCount,
+            failedCount,
+            successRate,
+            exchangeRates: rates,
+        };
     }
     async getPaymentStats() {
         const totalDeposits = await this.prisma.walletTransaction.aggregate({
-            where: {
-                type: 'DEPOSIT',
-                status: 'COMPLETED',
-                wallet: { currency: 'NGN' },
-            },
+            where: { type: 'DEPOSIT', status: 'COMPLETED', wallet: { currency: 'NGN' } },
             _sum: { amount: true },
         });
         const totalWithdrawals = await this.prisma.walletTransaction.aggregate({
-            where: {
-                type: 'WITHDRAWAL',
-                status: 'COMPLETED',
-                wallet: { currency: 'NGN' },
-            },
+            where: { type: 'WITHDRAWAL', status: 'COMPLETED', wallet: { currency: 'NGN' } },
             _sum: { amount: true },
         });
         return {
@@ -299,21 +291,13 @@ let AdminService = class AdminService {
         const skip = (page - 1) * limit;
         const [transactions, total] = await Promise.all([
             this.prisma.walletTransaction.findMany({
-                where: {
-                    wallet: { currency: 'NGN' },
-                },
+                where: { wallet: { currency: 'NGN' } },
                 skip,
                 take: limit,
-                include: {
-                    wallet: { include: { user: { include: { profile: true } } } },
-                },
+                include: { wallet: { include: { user: { include: { profile: true } } } } },
                 orderBy: { createdAt: 'desc' },
             }),
-            this.prisma.walletTransaction.count({
-                where: {
-                    wallet: { currency: 'NGN' },
-                },
-            }),
+            this.prisma.walletTransaction.count({ where: { wallet: { currency: 'NGN' } } }),
         ]);
         return {
             transactions,
@@ -323,26 +307,20 @@ let AdminService = class AdminService {
     async getAuditLogs(page, limit, filters) {
         const skip = (page - 1) * limit;
         const where = {};
-        if (filters?.action) {
+        if (filters?.action)
             where.action = { contains: filters.action, mode: 'insensitive' };
-        }
-        if (filters?.resource) {
+        if (filters?.resource)
             where.resource = filters.resource;
-        }
-        if (filters?.userId) {
+        if (filters?.userId)
             where.userId = filters.userId;
-        }
-        if (filters?.success !== undefined && filters.success !== '') {
+        if (filters?.success !== undefined && filters.success !== '')
             where.success = filters.success === 'true';
-        }
         if (filters?.startDate || filters?.endDate) {
             where.createdAt = {};
-            if (filters.startDate) {
+            if (filters.startDate)
                 where.createdAt.gte = new Date(filters.startDate);
-            }
-            if (filters.endDate) {
+            if (filters.endDate)
                 where.createdAt.lte = new Date(filters.endDate);
-            }
         }
         if (filters?.search) {
             where.OR = [
@@ -358,13 +336,7 @@ let AdminService = class AdminService {
                 skip,
                 take: limit,
                 include: {
-                    user: {
-                        select: {
-                            id: true,
-                            email: true,
-                            profile: { select: { firstName: true, lastName: true } },
-                        },
-                    },
+                    user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
                 },
                 orderBy: { createdAt: 'desc' },
             }),
@@ -401,15 +373,9 @@ let AdminService = class AdminService {
             total,
             last24h: last24hCount,
             failures,
-            last7d: last7d,
-            byResource: byResource.map((r) => ({
-                resource: r.resource || 'UNKNOWN',
-                count: r._count.resource,
-            })),
-            byAction: byAction.map((a) => ({
-                action: a.action,
-                count: a._count.action,
-            })),
+            last7d,
+            byResource: byResource.map((r) => ({ resource: r.resource || 'UNKNOWN', count: r._count.resource })),
+            byAction: byAction.map((a) => ({ action: a.action, count: a._count.action })),
         };
     }
     async getUserAuditTrail(userId, page, limit) {
@@ -420,13 +386,7 @@ let AdminService = class AdminService {
                 skip,
                 take: limit,
                 include: {
-                    user: {
-                        select: {
-                            id: true,
-                            email: true,
-                            profile: { select: { firstName: true, lastName: true } },
-                        },
-                    },
+                    user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
                 },
                 orderBy: { createdAt: 'desc' },
             }),
@@ -441,6 +401,8 @@ let AdminService = class AdminService {
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        tatum_withdrawal_service_1.TatumWithdrawalService,
+        tatum_exchange_rate_service_1.TatumExchangeRateService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

@@ -36,73 +36,159 @@ let TatumWithdrawalService = TatumWithdrawalService_1 = class TatumWithdrawalSer
         this.tatumWallet = tatumWallet;
         this.apiKey = this.configService.get('TATUM_API_KEY') || '';
     }
+    get headers() {
+        return { 'x-api-key': this.apiKey };
+    }
     async processWithdrawal(params) {
         const { walletId, amount, destinationAddress, currency } = params;
+        this.logger.log(`Initiating withdrawal: ${amount} ${currency} to ${destinationAddress}`);
+        const wallet = await this.prisma.wallet.findUnique({ where: { id: walletId } });
+        if (!wallet)
+            throw new common_1.BadRequestException('Wallet not found');
+        const available = wallet.balance.minus(wallet.reservedBalance);
+        if (available.lessThan(amount)) {
+            throw new common_1.BadRequestException(`Insufficient balance. Available: ${available.toString()} ${currency}`);
+        }
+        this.validateAddress(currency, destinationAddress);
+        const chain = this.tatumWallet.mapCurrencyToChain(currency);
+        const body = await this.buildTransferBody(currency, destinationAddress, amount.toString());
+        let txId;
         try {
-            this.logger.log(`Initiating withdrawal: ${amount} ${currency} to ${destinationAddress}`);
-            const chain = this.mapCurrencyToChain(currency);
-            const body = await this.buildTransferBody(currency, destinationAddress, amount.toString());
-            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/${chain}/transaction`, body, { headers: { 'x-api-key': this.apiKey } }).pipe((0, rxjs_1.retry)({
+            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/${chain}/transaction`, body, {
+                headers: this.headers,
+            }).pipe((0, rxjs_1.retry)({
                 count: 2,
-                delay: (error, retryCount) => (0, rxjs_1.timer)(retryCount * 2000),
+                delay: (error, retryCount) => {
+                    this.logger.warn(`Withdrawal retry ${retryCount} for ${currency}: ${error.message}`);
+                    return (0, rxjs_1.timer)(retryCount * 2000);
+                },
             })));
-            const txId = response.data.txId;
+            txId = response.data.txId;
+            if (!txId) {
+                throw new Error('No txId returned from Tatum');
+            }
+        }
+        catch (error) {
+            const tatumMsg = error.response?.data?.message || error.message;
+            this.logger.error(`Blockchain submission failed for ${currency}: ${tatumMsg}`);
             await this.prisma.walletTransaction.create({
                 data: {
                     walletId,
                     type: client_1.LedgerType.WITHDRAWAL,
-                    amount: amount,
-                    status: 'PENDING',
-                    reference: txId,
+                    amount,
+                    status: 'FAILED',
+                    reference: `failed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
                     metadata: {
                         destination: destinationAddress,
                         blockchain: chain,
-                        tatumResponse: response.data
+                        lastError: tatumMsg,
+                        retryCount: 0,
                     },
                 },
             });
-            return { txId, status: 'PENDING' };
+            throw new common_1.InternalServerErrorException(`Withdrawal failed: ${tatumMsg}`);
         }
-        catch (error) {
-            this.logger.error(`Withdrawal failed: ${error.message}`);
-            throw error;
-        }
+        await this.prisma.walletTransaction.create({
+            data: {
+                walletId,
+                type: client_1.LedgerType.WITHDRAWAL,
+                amount,
+                status: 'PENDING',
+                reference: txId,
+                metadata: {
+                    destination: destinationAddress,
+                    blockchain: chain,
+                    initiatedAt: new Date().toISOString(),
+                },
+            },
+        });
+        this.logger.log(`Withdrawal submitted: ${txId} (${amount} ${currency})`);
+        return { txId, status: 'PENDING' };
     }
-    mapCurrencyToChain(currency) {
+    async retryWithdrawal(transactionId) {
+        const tx = await this.prisma.walletTransaction.findUnique({
+            where: { id: transactionId },
+            include: { wallet: true },
+        });
+        if (!tx || tx.status !== 'FAILED') {
+            throw new common_1.BadRequestException('Transaction not found or not in FAILED status');
+        }
+        const meta = tx.metadata || {};
+        await this.prisma.walletTransaction.delete({ where: { id: transactionId } });
+        return this.processWithdrawal({
+            walletId: tx.walletId,
+            amount: tx.amount.toNumber(),
+            destinationAddress: meta.destination,
+            currency: tx.wallet.currency,
+        });
+    }
+    validateAddress(currency, address) {
+        if (!address || typeof address !== 'string') {
+            throw new common_1.BadRequestException('Invalid destination address');
+        }
+        const trimmed = address.trim();
         switch (currency) {
-            case client_1.Currency.BTC: return 'bitcoin';
+            case client_1.Currency.BTC:
+                if (!/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(trimmed)) {
+                    throw new common_1.BadRequestException('Invalid Bitcoin address format');
+                }
+                break;
             case client_1.Currency.ETH:
             case client_1.Currency.USDT:
-            case client_1.Currency.USDC: return 'ethereum';
-            default: throw new Error(`Unsupported withdrawal currency: ${currency}`);
+            case client_1.Currency.USDC:
+                if (!/^0x[0-9a-fA-F]{40}$/.test(trimmed)) {
+                    throw new common_1.BadRequestException('Invalid Ethereum address format');
+                }
+                break;
+            default:
+                throw new common_1.BadRequestException(`Unsupported withdrawal currency: ${currency}`);
         }
     }
     async buildTransferBody(currency, to, amount) {
         const mnemonic = this.configService.get(`TATUM_${currency}_MNEMONIC`);
+        const addressIndex = this.configService.get(`TATUM_${currency}_DERIVATION_INDEX`, 0);
         switch (currency) {
-            case client_1.Currency.BTC:
+            case client_1.Currency.BTC: {
+                if (!mnemonic) {
+                    throw new common_1.InternalServerErrorException(`Missing TATUM_BTC_MNEMONIC environment variable`);
+                }
+                const privateKey = await this.tatumWallet.generatePrivateKey(client_1.Currency.BTC, mnemonic, addressIndex);
                 return {
-                    fromAddress: [{ address: 'SENDER_ADDR_PLACEHOLDER', signatureId: 'KMS_ID_PLACEHOLDER' }],
+                    fromAddress: [{
+                            address: await this.tatumWallet.generateAddress(client_1.Currency.BTC, this.configService.get('TATUM_BTC_XPUBLIC') || '', addressIndex),
+                            signatureId: privateKey,
+                        }],
                     to: [{ address: to, value: parseFloat(amount) }],
                 };
-            case client_1.Currency.ETH:
+            }
+            case client_1.Currency.ETH: {
+                if (!mnemonic) {
+                    throw new common_1.InternalServerErrorException(`Missing TATUM_ETH_MNEMONIC environment variable`);
+                }
+                const privateKey = await this.tatumWallet.generatePrivateKey(client_1.Currency.ETH, mnemonic, addressIndex);
                 return {
                     to,
                     currency: 'ETH',
                     amount,
-                    fromPrivateKey: 'PRIVATE_KEY_FROM_VAULT',
+                    fromPrivateKey: privateKey,
                 };
+            }
             case client_1.Currency.USDT:
-            case client_1.Currency.USDC:
+            case client_1.Currency.USDC: {
+                if (!mnemonic) {
+                    throw new common_1.InternalServerErrorException(`Missing TATUM_${currency}_MNEMONIC environment variable`);
+                }
+                const privateKey = await this.tatumWallet.generatePrivateKey(currency, mnemonic, addressIndex);
                 return {
                     to,
                     currency,
                     amount,
-                    fromPrivateKey: 'PRIVATE_KEY_FROM_VAULT',
+                    fromPrivateKey: privateKey,
                     fee: { gasLimit: '100000', gasPrice: '20' },
                 };
+            }
             default:
-                throw new Error(`Transfer body not implemented for ${currency}`);
+                throw new common_1.BadRequestException(`Withdrawals not supported for ${currency}`);
         }
     }
 };

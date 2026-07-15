@@ -19,12 +19,21 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../core/security/guards/roles.guard");
 const roles_decorator_1 = require("../../core/security/decorators/roles.decorator");
 const admin_service_1 = require("./admin.service");
+const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
+const tatum_deposit_service_1 = require("../tatum/tatum-deposit.service");
+const tatum_webhook_service_1 = require("../tatum/tatum-webhook.service");
 const client_1 = require("../../generated/client/index.js");
 const audit_decorator_1 = require("../audit/audit.decorator");
 let AdminController = class AdminController {
     adminService;
-    constructor(adminService) {
+    exchangeRateService;
+    depositService;
+    webhookService;
+    constructor(adminService, exchangeRateService, depositService, webhookService) {
         this.adminService = adminService;
+        this.exchangeRateService = exchangeRateService;
+        this.depositService = depositService;
+        this.webhookService = webhookService;
     }
     getUsers(page = '1', limit = '10', search) {
         return this.adminService.getUsers(parseInt(page), parseInt(limit), search);
@@ -59,11 +68,28 @@ let AdminController = class AdminController {
     getFailedTransactions(page = '1', limit = '10') {
         return this.adminService.getFailedTransactions(parseInt(page), parseInt(limit));
     }
+    retryFailedTransaction(transactionId) {
+        return this.adminService.retryFailedTransaction(transactionId);
+    }
+    async syncAllBalances() {
+        return this.depositService.syncAllWallets();
+    }
     getPaymentStats() {
         return this.adminService.getPaymentStats();
     }
     getPaymentTransactions(page = '1', limit = '10') {
         return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+    }
+    getExchangeRates() {
+        return this.exchangeRateService.getRateInfo();
+    }
+    async refreshExchangeRates() {
+        const rates = await this.exchangeRateService.refreshRates();
+        return {
+            success: true,
+            rates,
+            lastUpdated: this.exchangeRateService.getLastUpdated(),
+        };
     }
     getAuditLogs(page = '1', limit = '20', action, resource, userId, success, startDate, endDate, search) {
         return this.adminService.getAuditLogs(parseInt(page), parseInt(limit), { action, resource, userId, success, startDate, endDate, search });
@@ -73,6 +99,17 @@ let AdminController = class AdminController {
     }
     getUserAuditTrail(userId, page = '1', limit = '20') {
         return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
+    }
+    getWebhookSubscriptions() {
+        return this.webhookService.getSubscriptionSummary();
+    }
+    async initOutgoingWebhooks() {
+        await this.webhookService.ensureOutgoingWebhooks();
+        return { success: true, message: 'Outgoing webhooks initialized for all chains' };
+    }
+    async cancelWebhook(subscriptionId) {
+        const success = await this.webhookService.cancelSubscription(subscriptionId);
+        return { success, message: success ? 'Subscription cancelled' : 'Failed to cancel subscription' };
     }
 };
 exports.AdminController = AdminController;
@@ -175,6 +212,23 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getFailedTransactions", null);
 __decorate([
+    (0, common_1.Post)('blockchain/failed/:id/retry'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_RETRY_WITHDRAWAL', 'TRANSACTION'),
+    (0, swagger_1.ApiOperation)({ summary: 'Retry a failed withdrawal transaction' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "retryFailedTransaction", null);
+__decorate([
+    (0, common_1.Post)('blockchain/sync'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_BALANCE_SYNC', 'WALLET'),
+    (0, swagger_1.ApiOperation)({ summary: 'Trigger balance sync for all crypto wallets' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "syncAllBalances", null);
+__decorate([
     (0, common_1.Get)('payments/stats'),
     (0, swagger_1.ApiOperation)({ summary: 'Get NGN payment statistics' }),
     __metadata("design:type", Function),
@@ -190,6 +244,21 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getPaymentTransactions", null);
+__decorate([
+    (0, common_1.Get)('exchange-rates'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current exchange rates' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getExchangeRates", null);
+__decorate([
+    (0, common_1.Post)('exchange-rates/refresh'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_REFRESH_RATES', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({ summary: 'Manually refresh exchange rates from CoinGecko' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "refreshExchangeRates", null);
 __decorate([
     (0, common_1.Get)('audit-logs'),
     (0, swagger_1.ApiOperation)({ summary: 'Get audit logs with optional filters' }),
@@ -223,12 +292,39 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getUserAuditTrail", null);
+__decorate([
+    (0, common_1.Get)('webhooks'),
+    (0, swagger_1.ApiOperation)({ summary: 'List active Tatum webhook subscriptions' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getWebhookSubscriptions", null);
+__decorate([
+    (0, common_1.Post)('webhooks/init'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_WEBHOOK_INIT', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({ summary: 'Register outgoing webhooks for all chains' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "initOutgoingWebhooks", null);
+__decorate([
+    (0, common_1.Post)('webhooks/cancel/:id'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_WEBHOOK_CANCEL', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({ summary: 'Cancel a Tatum webhook subscription' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "cancelWebhook", null);
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN),
     (0, common_1.Controller)('admin'),
-    __metadata("design:paramtypes", [admin_service_1.AdminService])
+    __metadata("design:paramtypes", [admin_service_1.AdminService,
+        tatum_exchange_rate_service_1.TatumExchangeRateService,
+        tatum_deposit_service_1.TatumDepositService,
+        tatum_webhook_service_1.TatumWebhookService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

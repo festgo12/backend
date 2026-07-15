@@ -1,32 +1,30 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { UserStatus } from '@src/generated/client';
+import { UserStatus, Currency, LedgerType } from '@src/generated/client';
+import { Prisma } from '@src/generated/client';
+import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
+import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private readonly tatumWithdrawal: TatumWithdrawalService,
+    private readonly exchangeRateService: TatumExchangeRateService,
+  ) {}
 
   async getUsers(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
 
-    // Explicitly typing this as Prisma.UserWhereInput ensures complete type safety
     const where: any = search
       ? {
-        OR: [
-          { email: { contains: search, mode: 'insensitive' } },
-          { phone: { contains: search, mode: 'insensitive' } },
-          {
-            profile: {
-              firstName: { contains: search, mode: 'insensitive' },
-            },
-          },
-          {
-            profile: {
-              lastName: { contains: search, mode: 'insensitive' },
-            },
-          },
-        ],
-      }
+          OR: [
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+            { profile: { firstName: { contains: search, mode: 'insensitive' } } },
+            { profile: { lastName: { contains: search, mode: 'insensitive' } } },
+          ],
+        }
       : {};
 
     const [users, total] = await Promise.all([
@@ -34,10 +32,7 @@ export class AdminService {
         where,
         skip,
         take: limit,
-        include: {
-          profile: true,
-          wallets: true,
-        },
+        include: { profile: true, wallets: true },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.user.count({ where }),
@@ -45,18 +40,12 @@ export class AdminService {
 
     return {
       users,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
   async updateUserStatus(userId: string, status: UserStatus) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    console.log(user);
     if (!user) throw new NotFoundException('User not found');
 
     return this.prisma.user.update({
@@ -73,15 +62,11 @@ export class AdminService {
         profile: true,
         wallets: true,
         devices: true,
-        securityLogs: {
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
+        securityLogs: { take: 10, orderBy: { createdAt: 'desc' } },
       },
     });
 
     if (!user) throw new NotFoundException('User not found');
-
     const { passwordHash, ...result } = user;
     return result;
   }
@@ -89,14 +74,10 @@ export class AdminService {
   async getAllWallets(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const where: any = search
-      ? {
-        user: {
-          OR: [
+      ? { user: { OR: [
             { email: { contains: search, mode: 'insensitive' } },
             { phone: { contains: search, mode: 'insensitive' } },
-          ],
-        },
-      }
+          ] } }
       : {};
 
     const [wallets, total] = await Promise.all([
@@ -104,11 +85,7 @@ export class AdminService {
         where,
         skip,
         take: limit,
-        include: {
-          user: {
-            include: { profile: true },
-          },
-        },
+        include: { user: { include: { profile: true } } },
         orderBy: { updatedAt: 'desc' },
       }),
       this.prisma.wallet.count({ where }),
@@ -116,12 +93,7 @@ export class AdminService {
 
     return {
       wallets,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -130,15 +102,8 @@ export class AdminService {
       where: { id: walletId },
       include: {
         user: { include: { profile: true } },
-        ledgerEntries: {
-          take: 50,
-          orderBy: { createdAt: 'desc' },
-          include: { transaction: true },
-        },
-        snapshots: {
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
+        ledgerEntries: { take: 50, orderBy: { createdAt: 'desc' }, include: { transaction: true } },
+        snapshots: { take: 10, orderBy: { createdAt: 'desc' } },
       },
     });
 
@@ -153,13 +118,7 @@ export class AdminService {
       this.prisma.walletTransaction.findMany({
         skip,
         take: limit,
-        include: {
-          wallet: {
-            include: {
-              user: { include: { profile: true } },
-            },
-          },
-        },
+        include: { wallet: { include: { user: { include: { profile: true } } } } },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count(),
@@ -167,25 +126,18 @@ export class AdminService {
 
     return {
       transactions,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
   async getAllOrders(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const where: any = search
-      ? {
-        OR: [
-          { id: { contains: search, mode: 'insensitive' } },
-          { buyer: { email: { contains: search, mode: 'insensitive' } } },
-          { seller: { email: { contains: search, mode: 'insensitive' } } },
-        ],
-      }
+      ? { OR: [
+            { id: { contains: search, mode: 'insensitive' } },
+            { buyer: { email: { contains: search, mode: 'insensitive' } } },
+            { seller: { email: { contains: search, mode: 'insensitive' } } },
+          ] }
       : {};
 
     const [orders, total] = await Promise.all([
@@ -205,12 +157,7 @@ export class AdminService {
 
     return {
       orders,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
@@ -221,9 +168,7 @@ export class AdminService {
         buyer: { include: { profile: true, wallets: true } },
         seller: { include: { profile: true, wallets: true } },
         ad: true,
-        ledgerEntries: {
-          include: { wallet: true },
-        },
+        ledgerEntries: { include: { wallet: true } },
       },
     });
 
@@ -231,31 +176,18 @@ export class AdminService {
     return order;
   }
 
-  /**
-   * List all crypto transactions for monitoring.
-   */
   async getBlockchainTransactions(page: number, limit: number) {
     const skip = (page - 1) * limit;
     const [transactions, total] = await Promise.all([
       this.prisma.walletTransaction.findMany({
-        where: {
-          wallet: {
-            currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
-          },
-        },
+        where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
         skip,
         take: limit,
-        include: {
-          wallet: { include: { user: { include: { profile: true } } } },
-        },
+        include: { wallet: { include: { user: { include: { profile: true } } } } },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count({
-        where: {
-          wallet: {
-            currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
-          },
-        },
+        where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
       }),
     ]);
 
@@ -265,9 +197,6 @@ export class AdminService {
     };
   }
 
-  /**
-   * List transactions that failed and need intervention.
-   */
   async getFailedTransactions(page: number, limit: number) {
     const skip = (page - 1) * limit;
     const [transactions, total] = await Promise.all([
@@ -275,9 +204,7 @@ export class AdminService {
         where: { status: 'FAILED' },
         skip,
         take: limit,
-        include: {
-          wallet: { include: { user: { include: { profile: true } } } },
-        },
+        include: { wallet: { include: { user: { include: { profile: true } } } } },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count({ where: { status: 'FAILED' } }),
@@ -290,31 +217,100 @@ export class AdminService {
   }
 
   /**
-   * Returns high-level blockchain stats for the dashboard.
+   * Retries a failed withdrawal transaction.
    */
-  async getBlockchainStats() {
-    // ... existing blockchain stats code
+  async retryFailedTransaction(transactionId: string) {
+    const tx = await this.prisma.walletTransaction.findUnique({
+      where: { id: transactionId },
+      include: { wallet: true },
+    });
+
+    if (!tx) throw new NotFoundException('Transaction not found');
+    if (tx.status !== 'FAILED') throw new BadRequestException('Only failed transactions can be retried');
+
+    return this.tatumWithdrawal.retryWithdrawal(transactionId);
   }
 
   /**
-   * Get Paystack/NGN payment statistics for admin dashboard.
+   * Returns high-level blockchain stats for the dashboard.
    */
+  async getBlockchainStats() {
+    const cryptoCurrencies: Currency[] = ['BTC', 'ETH', 'USDT', 'USDC'];
+
+    const balanceAgg = await this.prisma.wallet.aggregate({
+      where: { currency: { in: cryptoCurrencies } },
+      _sum: { balance: true },
+    });
+
+    const balances = await this.prisma.wallet.groupBy({
+      by: ['currency'],
+      where: { currency: { in: cryptoCurrencies } },
+      _sum: { balance: true },
+      _count: { id: true },
+    });
+
+    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const txCount24h = await this.prisma.walletTransaction.count({
+      where: {
+        wallet: { currency: { in: cryptoCurrencies } },
+        createdAt: { gte: last24h },
+      },
+    });
+
+    const pendingCount = await this.prisma.walletTransaction.count({
+      where: {
+        wallet: { currency: { in: cryptoCurrencies } },
+        status: 'PENDING',
+      },
+    });
+
+    const failedCount = await this.prisma.walletTransaction.count({
+      where: {
+        wallet: { currency: { in: cryptoCurrencies } },
+        status: 'FAILED',
+      },
+    });
+
+    const completedCount = await this.prisma.walletTransaction.count({
+      where: {
+        wallet: { currency: { in: cryptoCurrencies } },
+        status: 'COMPLETED',
+        createdAt: { gte: last24h },
+      },
+    });
+
+    const total24h = txCount24h || 1;
+    const successRate = Math.round((completedCount / total24h) * 100);
+
+    // Get live exchange rates
+    const rates = this.exchangeRateService.getAllRates();
+
+    return {
+      balances: balances.map((b) => ({
+        currency: b.currency,
+        total: b._sum.balance?.toNumber() || 0,
+        walletCount: b._count.id,
+        rate: rates[b.currency] || 0,
+        valueInNgn: (b._sum.balance?.toNumber() || 0) * (rates[b.currency] || 0),
+      })),
+      totalBalanceNgn: balanceAgg._sum.balance?.toNumber() || 0,
+      txCount24h,
+      pendingCount,
+      failedCount,
+      successRate,
+      exchangeRates: rates,
+    };
+  }
+
   async getPaymentStats() {
     const totalDeposits = await this.prisma.walletTransaction.aggregate({
-      where: {
-        type: 'DEPOSIT',
-        status: 'COMPLETED',
-        wallet: { currency: 'NGN' },
-      },
+      where: { type: 'DEPOSIT', status: 'COMPLETED', wallet: { currency: 'NGN' } },
       _sum: { amount: true },
     });
 
     const totalWithdrawals = await this.prisma.walletTransaction.aggregate({
-      where: {
-        type: 'WITHDRAWAL',
-        status: 'COMPLETED',
-        wallet: { currency: 'NGN' },
-      },
+      where: { type: 'WITHDRAWAL', status: 'COMPLETED', wallet: { currency: 'NGN' } },
       _sum: { amount: true },
     });
 
@@ -324,28 +320,17 @@ export class AdminService {
     };
   }
 
-  /**
-   * List all Paystack transactions for monitoring.
-   */
   async getPaymentTransactions(page: number, limit: number) {
     const skip = (page - 1) * limit;
     const [transactions, total] = await Promise.all([
       this.prisma.walletTransaction.findMany({
-        where: {
-          wallet: { currency: 'NGN' },
-        },
+        where: { wallet: { currency: 'NGN' } },
         skip,
         take: limit,
-        include: {
-          wallet: { include: { user: { include: { profile: true } } } },
-        },
+        include: { wallet: { include: { user: { include: { profile: true } } } } },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.walletTransaction.count({
-        where: {
-          wallet: { currency: 'NGN' },
-        },
-      }),
+      this.prisma.walletTransaction.count({ where: { wallet: { currency: 'NGN' } } }),
     ]);
 
     return {
@@ -353,8 +338,6 @@ export class AdminService {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
-
-  // --- Audit Log Endpoints ---
 
   async getAuditLogs(
     page: number,
@@ -372,26 +355,14 @@ export class AdminService {
     const skip = (page - 1) * limit;
     const where: any = {};
 
-    if (filters?.action) {
-      where.action = { contains: filters.action, mode: 'insensitive' };
-    }
-    if (filters?.resource) {
-      where.resource = filters.resource;
-    }
-    if (filters?.userId) {
-      where.userId = filters.userId;
-    }
-    if (filters?.success !== undefined && filters.success !== '') {
-      where.success = filters.success === 'true';
-    }
+    if (filters?.action) where.action = { contains: filters.action, mode: 'insensitive' };
+    if (filters?.resource) where.resource = filters.resource;
+    if (filters?.userId) where.userId = filters.userId;
+    if (filters?.success !== undefined && filters.success !== '') where.success = filters.success === 'true';
     if (filters?.startDate || filters?.endDate) {
       where.createdAt = {};
-      if (filters.startDate) {
-        where.createdAt.gte = new Date(filters.startDate);
-      }
-      if (filters.endDate) {
-        where.createdAt.lte = new Date(filters.endDate);
-      }
+      if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
+      if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
     }
     if (filters?.search) {
       where.OR = [
@@ -408,13 +379,7 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              profile: { select: { firstName: true, lastName: true } },
-            },
-          },
+          user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -456,15 +421,9 @@ export class AdminService {
       total,
       last24h: last24hCount,
       failures,
-      last7d: last7d,
-      byResource: byResource.map((r) => ({
-        resource: r.resource || 'UNKNOWN',
-        count: r._count.resource,
-      })),
-      byAction: byAction.map((a) => ({
-        action: a.action,
-        count: a._count.action,
-      })),
+      last7d,
+      byResource: byResource.map((r) => ({ resource: r.resource || 'UNKNOWN', count: r._count.resource })),
+      byAction: byAction.map((a) => ({ action: a.action, count: a._count.action })),
     };
   }
 
@@ -477,13 +436,7 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              profile: { select: { firstName: true, lastName: true } },
-            },
-          },
+          user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -496,4 +449,3 @@ export class AdminService {
     };
   }
 }
-

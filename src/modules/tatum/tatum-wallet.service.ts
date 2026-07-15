@@ -114,7 +114,7 @@ export class TatumWalletService {
   /**
    * Maps client currency definitions to baseline Tatum network layers
    */
-  private mapCurrencyToChain(currency: Currency): string {
+  mapCurrencyToChain(currency: Currency): string {
     switch (currency) {
       case Currency.BTC:
         return 'bitcoin';

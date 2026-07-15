@@ -20,16 +20,28 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 const wallet_service_1 = require("./wallet.service");
 const tatum_wallet_service_1 = require("../tatum/tatum-wallet.service");
+const tatum_withdrawal_service_1 = require("../tatum/tatum-withdrawal.service");
+const tatum_risk_service_1 = require("../tatum/tatum-risk.service");
+const tatum_webhook_service_1 = require("../tatum/tatum-webhook.service");
+const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
 const client_1 = require("../../generated/client/index.js");
 const class_validator_1 = require("class-validator");
 const audit_decorator_1 = require("../audit/audit.decorator");
 let WalletController = WalletController_1 = class WalletController {
     walletService;
     tatumWallet;
+    tatumWithdrawal;
+    tatumRisk;
+    tatumWebhook;
+    exchangeRateService;
     logger = new common_1.Logger(WalletController_1.name);
-    constructor(walletService, tatumWallet) {
+    constructor(walletService, tatumWallet, tatumWithdrawal, tatumRisk, tatumWebhook, exchangeRateService) {
         this.walletService = walletService;
         this.tatumWallet = tatumWallet;
+        this.tatumWithdrawal = tatumWithdrawal;
+        this.tatumRisk = tatumRisk;
+        this.tatumWebhook = tatumWebhook;
+        this.exchangeRateService = exchangeRateService;
     }
     async getWallets(user) {
         return this.walletService.getUserWallets(user.id);
@@ -44,6 +56,11 @@ let WalletController = WalletController_1 = class WalletController {
         }
         return this.walletService.getUserHistory(user.id, limit, offset);
     }
+    async getExchangeRates() {
+        const rates = this.exchangeRateService.getAllRates();
+        const info = this.exchangeRateService.getRateInfo();
+        return { rates, lastUpdated: info.lastUpdated, ageMinutes: info.ageMinutes, source: info.source };
+    }
     async initWallet(user, currency) {
         const wallet = await this.walletService.getOrCreateWallet(user.id, currency);
         if (currency !== client_1.Currency.NGN && !wallet.address) {
@@ -51,7 +68,12 @@ let WalletController = WalletController_1 = class WalletController {
                 const xpub = await this.tatumWallet.getOrGenerateXpub(currency);
                 const index = Math.abs(this.hashCode(wallet.id)) % 1000000;
                 const address = await this.tatumWallet.generateAddress(currency, xpub, index);
-                return await this.walletService.updateWalletAddress(wallet.id, address);
+                const updatedWallet = await this.walletService.updateWalletAddress(wallet.id, address);
+                const chain = this.tatumWallet.mapCurrencyToChain(currency);
+                this.tatumWebhook.registerAddressSubscription(address, chain, currency).catch((err) => {
+                    this.logger.warn(`Failed to register webhook for ${currency} address ${address}: ${err.message}`);
+                });
+                return updatedWallet;
             }
             catch (error) {
                 this.logger.error(`Failed to execute wallet initialization sequence for user ${user.id} (${currency}): ${error.message}`);
@@ -59,6 +81,54 @@ let WalletController = WalletController_1 = class WalletController {
             }
         }
         return wallet;
+    }
+    async withdrawCrypto(user, walletId, address, amount) {
+        if (!walletId || !(0, class_validator_1.isUUID)(walletId)) {
+            throw new common_1.BadRequestException('Valid walletId is required');
+        }
+        if (!address || typeof address !== 'string') {
+            throw new common_1.BadRequestException('Destination address is required');
+        }
+        if (!amount || amount <= 0) {
+            throw new common_1.BadRequestException('Amount must be greater than 0');
+        }
+        const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
+        const userWallet = await this.walletService.getUserWallets(user.id);
+        const ownedWallet = userWallet.find((w) => w.id === walletId);
+        if (!ownedWallet) {
+            throw new common_1.BadRequestException('Wallet not found or access denied');
+        }
+        if (ownedWallet.currency === client_1.Currency.NGN) {
+            throw new common_1.BadRequestException('NGN withdrawals use Paystack, not crypto withdrawal');
+        }
+        const chain = this.tatumWallet.mapCurrencyToChain(ownedWallet.currency);
+        const addressResult = await this.tatumRisk.screenAddress(address.trim(), chain, 'withdrawal');
+        if (!addressResult.isSafe) {
+            this.logger.warn(`Withdrawal blocked by address screening: user=${user.id}, address=${address}, score=${addressResult.riskScore}`);
+            throw new common_1.BadRequestException('Destination address failed security screening. Contact support if you believe this is an error.');
+        }
+        const txResult = await this.tatumRisk.screenTransaction({
+            userId: user.id,
+            currency: ownedWallet.currency,
+            amount,
+            destinationAddress: address.trim(),
+        });
+        if (!txResult.approved) {
+            this.logger.warn(`Withdrawal blocked by transaction screening: user=${user.id}, reasons=${txResult.reasons.join('; ')}`);
+            throw new common_1.BadRequestException(`Transaction blocked: ${txResult.reasons[0]}. Contact support if you believe this is an error.`);
+        }
+        const result = await this.tatumWithdrawal.processWithdrawal({
+            walletId,
+            amount,
+            destinationAddress: address.trim(),
+            currency: ownedWallet.currency,
+        });
+        return {
+            success: true,
+            txId: result.txId,
+            status: result.status,
+            message: 'Withdrawal submitted and awaiting blockchain confirmation',
+        };
     }
     hashCode(s) {
         let h = 0;
@@ -89,6 +159,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], WalletController.prototype, "getHistory", null);
 __decorate([
+    (0, common_1.Get)('rates'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current crypto-to-NGN exchange rates (cached)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], WalletController.prototype, "getExchangeRates", null);
+__decorate([
     (0, common_1.Post)('init'),
     (0, audit_decorator_1.AuditLog)('WALLET_CREATION', 'WALLET'),
     (0, swagger_1.ApiOperation)({ summary: 'Initialize a wallet for a specific currency' }),
@@ -98,12 +175,28 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], WalletController.prototype, "initWallet", null);
+__decorate([
+    (0, common_1.Post)('withdraw'),
+    (0, audit_decorator_1.AuditLog)('CRYPTO_WITHDRAWAL', 'WALLET'),
+    (0, swagger_1.ApiOperation)({ summary: 'Withdraw crypto to an external address' }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __param(1, (0, common_1.Body)('walletId')),
+    __param(2, (0, common_1.Body)('address')),
+    __param(3, (0, common_1.Body)('amount')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, Number]),
+    __metadata("design:returntype", Promise)
+], WalletController.prototype, "withdrawCrypto", null);
 exports.WalletController = WalletController = WalletController_1 = __decorate([
     (0, swagger_1.ApiTags)('Wallets'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('wallets'),
     __metadata("design:paramtypes", [wallet_service_1.WalletService,
-        tatum_wallet_service_1.TatumWalletService])
+        tatum_wallet_service_1.TatumWalletService,
+        tatum_withdrawal_service_1.TatumWithdrawalService,
+        tatum_risk_service_1.TatumRiskService,
+        tatum_webhook_service_1.TatumWebhookService,
+        tatum_exchange_rate_service_1.TatumExchangeRateService])
 ], WalletController);
 //# sourceMappingURL=wallet.controller.js.map

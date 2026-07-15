@@ -16,5 +16,5 @@ export declare class TatumWalletService {
     }>;
     generateAddress(asset: Currency, xpub: string, index: number): Promise<string>;
     generatePrivateKey(asset: Currency, mnemonic: string, index: number): Promise<string>;
-    private mapCurrencyToChain;
+    mapCurrencyToChain(currency: Currency): string;
 }
