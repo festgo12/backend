@@ -57,6 +57,16 @@ enum AdType {
   SELL
 }
 
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  WAITING_FOR_USER
+  WAITING_FOR_ADMIN
+  RESOLVED
+  REJECTED
+  ESCALATED
+}
+
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   email         String?        @unique
@@ -74,7 +84,9 @@ model User {
   devices       Device[]
   notifications Notification[]
   notificationLogs NotificationLog[]
-  disputes      Dispute[]      @relation("Initiator")
+  initiatedDisputes Dispute[] @relation("Initiator")
+  assignedDisputes  Dispute[] @relation("Assignee")
+  evidenceUploads   Evidence[]
   securityLogs  SecurityLog[]
   twoFactorEnabled Boolean        @default(false)
   twoFactorSecret  String?
@@ -218,17 +230,41 @@ model Order {
 }
 
 model Dispute {
-  id          String   @id @default(uuid()) @db.Uuid
-  orderId     String   @db.Uuid
-  order       Order    @relation(fields: [orderId], references: [id])
-  initiatorId String   @db.Uuid
-  initiator   User     @relation("Initiator", fields: [initiatorId], references: [id])
-  reason      String
-  status      String   @default("OPEN")
-  evidence    Json?
-  resolution  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String        @id @default(uuid()) @db.Uuid
+  orderId      String        @db.Uuid
+  order        Order         @relation(fields: [orderId], references: [id])
+  initiatorId  String        @db.Uuid
+  initiator    User          @relation("Initiator", fields: [initiatorId], references: [id])
+  reason       String        @db.Text
+  description  String?       @db.Text
+  status       DisputeStatus @default(OPEN)
+  assigneeId   String?       @db.Uuid
+  assignee     User?         @relation("Assignee", fields: [assigneeId], references: [id])
+  resolution   String?       @db.Text
+  deadline     DateTime?
+  evidence     Evidence[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([initiatorId])
+  @@index([assigneeId])
+  @@index([status])
+}
+
+model Evidence {
+  id           String   @id @default(uuid()) @db.Uuid
+  disputeId    String   @db.Uuid
+  dispute      Dispute  @relation(fields: [disputeId], references: [id])
+  url          String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  uploadedById String   @db.Uuid
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([disputeId])
 }
 
 model AuthToken {

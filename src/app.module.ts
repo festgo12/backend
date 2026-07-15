@@ -14,6 +14,8 @@ import { PaystackModule } from './modules/paystack/paystack.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { DisputesModule } from './modules/disputes/disputes.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -33,6 +35,8 @@ import { AppService } from './app.service';
     TransactionsModule,
     NotificationsModule,
     AuditModule,
+    DisputesModule,
+    UploadModule,
   ],
 
   controllers: [AppController],

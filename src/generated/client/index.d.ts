@@ -64,6 +64,11 @@ export type Order = $Result.DefaultSelection<Prisma.$OrderPayload>
  */
 export type Dispute = $Result.DefaultSelection<Prisma.$DisputePayload>
 /**
+ * Model Evidence
+ * 
+ */
+export type Evidence = $Result.DefaultSelection<Prisma.$EvidencePayload>
+/**
  * Model AuthToken
  * 
  */
@@ -164,6 +169,19 @@ export const OrderStatus: {
 export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 
 
+export const DisputeStatus: {
+  OPEN: 'OPEN',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  WAITING_FOR_USER: 'WAITING_FOR_USER',
+  WAITING_FOR_ADMIN: 'WAITING_FOR_ADMIN',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+  ESCALATED: 'ESCALATED'
+};
+
+export type DisputeStatus = (typeof DisputeStatus)[keyof typeof DisputeStatus]
+
+
 export const NotificationChannel: {
   IN_APP: 'IN_APP',
   PUSH: 'PUSH',
@@ -208,6 +226,10 @@ export const AdType: typeof $Enums.AdType
 export type OrderStatus = $Enums.OrderStatus
 
 export const OrderStatus: typeof $Enums.OrderStatus
+
+export type DisputeStatus = $Enums.DisputeStatus
+
+export const DisputeStatus: typeof $Enums.DisputeStatus
 
 export type NotificationChannel = $Enums.NotificationChannel
 
@@ -439,6 +461,16 @@ export class PrismaClient<
     * ```
     */
   get dispute(): Prisma.DisputeDelegate<ExtArgs>;
+
+  /**
+   * `prisma.evidence`: Exposes CRUD operations for the **Evidence** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Evidences
+    * const evidences = await prisma.evidence.findMany()
+    * ```
+    */
+  get evidence(): Prisma.EvidenceDelegate<ExtArgs>;
 
   /**
    * `prisma.authToken`: Exposes CRUD operations for the **AuthToken** model.
@@ -950,6 +982,7 @@ export namespace Prisma {
     Ad: 'Ad',
     Order: 'Order',
     Dispute: 'Dispute',
+    Evidence: 'Evidence',
     AuthToken: 'AuthToken',
     Device: 'Device',
     SecurityLog: 'SecurityLog',
@@ -971,7 +1004,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1675,6 +1708,76 @@ export namespace Prisma {
           }
         }
       }
+      Evidence: {
+        payload: Prisma.$EvidencePayload<ExtArgs>
+        fields: Prisma.EvidenceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EvidenceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EvidenceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          findFirst: {
+            args: Prisma.EvidenceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EvidenceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          findMany: {
+            args: Prisma.EvidenceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>[]
+          }
+          create: {
+            args: Prisma.EvidenceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          createMany: {
+            args: Prisma.EvidenceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EvidenceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>[]
+          }
+          delete: {
+            args: Prisma.EvidenceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          update: {
+            args: Prisma.EvidenceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          deleteMany: {
+            args: Prisma.EvidenceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EvidenceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EvidenceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EvidencePayload>
+          }
+          aggregate: {
+            args: Prisma.EvidenceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEvidence>
+          }
+          groupBy: {
+            args: Prisma.EvidenceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EvidenceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EvidenceCountArgs<ExtArgs>
+            result: $Utils.Optional<EvidenceCountAggregateOutputType> | number
+          }
+        }
+      }
       AuthToken: {
         payload: Prisma.$AuthTokenPayload<ExtArgs>
         fields: Prisma.AuthTokenFieldRefs
@@ -2264,7 +2367,9 @@ export namespace Prisma {
     devices: number
     notifications: number
     notificationLogs: number
-    disputes: number
+    initiatedDisputes: number
+    assignedDisputes: number
+    evidenceUploads: number
     securityLogs: number
   }
 
@@ -2277,7 +2382,9 @@ export namespace Prisma {
     devices?: boolean | UserCountOutputTypeCountDevicesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     notificationLogs?: boolean | UserCountOutputTypeCountNotificationLogsArgs
-    disputes?: boolean | UserCountOutputTypeCountDisputesArgs
+    initiatedDisputes?: boolean | UserCountOutputTypeCountInitiatedDisputesArgs
+    assignedDisputes?: boolean | UserCountOutputTypeCountAssignedDisputesArgs
+    evidenceUploads?: boolean | UserCountOutputTypeCountEvidenceUploadsArgs
     securityLogs?: boolean | UserCountOutputTypeCountSecurityLogsArgs
   }
 
@@ -2351,8 +2458,22 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type UserCountOutputTypeCountInitiatedDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DisputeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAssignedDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DisputeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEvidenceUploadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EvidenceWhereInput
   }
 
   /**
@@ -2511,6 +2632,37 @@ export namespace Prisma {
    */
   export type OrderCountOutputTypeCountDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DisputeWhereInput
+  }
+
+
+  /**
+   * Count Type DisputeCountOutputType
+   */
+
+  export type DisputeCountOutputType = {
+    evidence: number
+  }
+
+  export type DisputeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    evidence?: boolean | DisputeCountOutputTypeCountEvidenceArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * DisputeCountOutputType without action
+   */
+  export type DisputeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DisputeCountOutputType
+     */
+    select?: DisputeCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * DisputeCountOutputType without action
+   */
+  export type DisputeCountOutputTypeCountEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EvidenceWhereInput
   }
 
 
@@ -2748,7 +2900,9 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     notificationLogs?: boolean | User$notificationLogsArgs<ExtArgs>
-    disputes?: boolean | User$disputesArgs<ExtArgs>
+    initiatedDisputes?: boolean | User$initiatedDisputesArgs<ExtArgs>
+    assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
+    evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -2794,7 +2948,9 @@ export namespace Prisma {
     devices?: boolean | User$devicesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     notificationLogs?: boolean | User$notificationLogsArgs<ExtArgs>
-    disputes?: boolean | User$disputesArgs<ExtArgs>
+    initiatedDisputes?: boolean | User$initiatedDisputesArgs<ExtArgs>
+    assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
+    evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2813,7 +2969,9 @@ export namespace Prisma {
       devices: Prisma.$DevicePayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       notificationLogs: Prisma.$NotificationLogPayload<ExtArgs>[]
-      disputes: Prisma.$DisputePayload<ExtArgs>[]
+      initiatedDisputes: Prisma.$DisputePayload<ExtArgs>[]
+      assignedDisputes: Prisma.$DisputePayload<ExtArgs>[]
+      evidenceUploads: Prisma.$EvidencePayload<ExtArgs>[]
       securityLogs: Prisma.$SecurityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3203,7 +3361,9 @@ export namespace Prisma {
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany"> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     notificationLogs<T extends User$notificationLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationLogPayload<ExtArgs>, T, "findMany"> | Null>
-    disputes<T extends User$disputesArgs<ExtArgs> = {}>(args?: Subset<T, User$disputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
+    initiatedDisputes<T extends User$initiatedDisputesArgs<ExtArgs> = {}>(args?: Subset<T, User$initiatedDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
+    assignedDisputes<T extends User$assignedDisputesArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
+    evidenceUploads<T extends User$evidenceUploadsArgs<ExtArgs> = {}>(args?: Subset<T, User$evidenceUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
     securityLogs<T extends User$securityLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3750,9 +3910,9 @@ export namespace Prisma {
   }
 
   /**
-   * User.disputes
+   * User.initiatedDisputes
    */
-  export type User$disputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$initiatedDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Dispute
      */
@@ -3767,6 +3927,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DisputeScalarFieldEnum | DisputeScalarFieldEnum[]
+  }
+
+  /**
+   * User.assignedDisputes
+   */
+  export type User$assignedDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Dispute
+     */
+    select?: DisputeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DisputeInclude<ExtArgs> | null
+    where?: DisputeWhereInput
+    orderBy?: DisputeOrderByWithRelationInput | DisputeOrderByWithRelationInput[]
+    cursor?: DisputeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DisputeScalarFieldEnum | DisputeScalarFieldEnum[]
+  }
+
+  /**
+   * User.evidenceUploads
+   */
+  export type User$evidenceUploadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    where?: EvidenceWhereInput
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    cursor?: EvidenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
   }
 
   /**
@@ -12149,8 +12349,11 @@ export namespace Prisma {
     orderId: string | null
     initiatorId: string | null
     reason: string | null
-    status: string | null
+    description: string | null
+    status: $Enums.DisputeStatus | null
+    assigneeId: string | null
     resolution: string | null
+    deadline: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12160,8 +12363,11 @@ export namespace Prisma {
     orderId: string | null
     initiatorId: string | null
     reason: string | null
-    status: string | null
+    description: string | null
+    status: $Enums.DisputeStatus | null
+    assigneeId: string | null
     resolution: string | null
+    deadline: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12171,9 +12377,11 @@ export namespace Prisma {
     orderId: number
     initiatorId: number
     reason: number
+    description: number
     status: number
-    evidence: number
+    assigneeId: number
     resolution: number
+    deadline: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12185,8 +12393,11 @@ export namespace Prisma {
     orderId?: true
     initiatorId?: true
     reason?: true
+    description?: true
     status?: true
+    assigneeId?: true
     resolution?: true
+    deadline?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12196,8 +12407,11 @@ export namespace Prisma {
     orderId?: true
     initiatorId?: true
     reason?: true
+    description?: true
     status?: true
+    assigneeId?: true
     resolution?: true
+    deadline?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12207,9 +12421,11 @@ export namespace Prisma {
     orderId?: true
     initiatorId?: true
     reason?: true
+    description?: true
     status?: true
-    evidence?: true
+    assigneeId?: true
     resolution?: true
+    deadline?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12292,9 +12508,11 @@ export namespace Prisma {
     orderId: string
     initiatorId: string
     reason: string
-    status: string
-    evidence: JsonValue | null
+    description: string | null
+    status: $Enums.DisputeStatus
+    assigneeId: string | null
     resolution: string | null
+    deadline: Date | null
     createdAt: Date
     updatedAt: Date
     _count: DisputeCountAggregateOutputType | null
@@ -12321,13 +12539,18 @@ export namespace Prisma {
     orderId?: boolean
     initiatorId?: boolean
     reason?: boolean
+    description?: boolean
     status?: boolean
-    evidence?: boolean
+    assigneeId?: boolean
     resolution?: boolean
+    deadline?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
+    assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
+    evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
+    _count?: boolean | DisputeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["dispute"]>
 
   export type DisputeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12335,13 +12558,16 @@ export namespace Prisma {
     orderId?: boolean
     initiatorId?: boolean
     reason?: boolean
+    description?: boolean
     status?: boolean
-    evidence?: boolean
+    assigneeId?: boolean
     resolution?: boolean
+    deadline?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
+    assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }, ExtArgs["result"]["dispute"]>
 
   export type DisputeSelectScalar = {
@@ -12349,9 +12575,11 @@ export namespace Prisma {
     orderId?: boolean
     initiatorId?: boolean
     reason?: boolean
+    description?: boolean
     status?: boolean
-    evidence?: boolean
+    assigneeId?: boolean
     resolution?: boolean
+    deadline?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -12359,10 +12587,14 @@ export namespace Prisma {
   export type DisputeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
+    assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
+    evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
+    _count?: boolean | DisputeCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DisputeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
+    assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }
 
   export type $DisputePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12370,15 +12602,19 @@ export namespace Prisma {
     objects: {
       order: Prisma.$OrderPayload<ExtArgs>
       initiator: Prisma.$UserPayload<ExtArgs>
+      assignee: Prisma.$UserPayload<ExtArgs> | null
+      evidence: Prisma.$EvidencePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       orderId: string
       initiatorId: string
       reason: string
-      status: string
-      evidence: Prisma.JsonValue | null
+      description: string | null
+      status: $Enums.DisputeStatus
+      assigneeId: string | null
       resolution: string | null
+      deadline: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["dispute"]>
@@ -12747,6 +12983,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     initiator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    assignee<T extends Dispute$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    evidence<T extends Dispute$evidenceArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$evidenceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12780,9 +13018,11 @@ export namespace Prisma {
     readonly orderId: FieldRef<"Dispute", 'String'>
     readonly initiatorId: FieldRef<"Dispute", 'String'>
     readonly reason: FieldRef<"Dispute", 'String'>
-    readonly status: FieldRef<"Dispute", 'String'>
-    readonly evidence: FieldRef<"Dispute", 'Json'>
+    readonly description: FieldRef<"Dispute", 'String'>
+    readonly status: FieldRef<"Dispute", 'DisputeStatus'>
+    readonly assigneeId: FieldRef<"Dispute", 'String'>
     readonly resolution: FieldRef<"Dispute", 'String'>
+    readonly deadline: FieldRef<"Dispute", 'DateTime'>
     readonly createdAt: FieldRef<"Dispute", 'DateTime'>
     readonly updatedAt: FieldRef<"Dispute", 'DateTime'>
   }
@@ -13103,6 +13343,41 @@ export namespace Prisma {
   }
 
   /**
+   * Dispute.assignee
+   */
+  export type Dispute$assigneeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Dispute.evidence
+   */
+  export type Dispute$evidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    where?: EvidenceWhereInput
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    cursor?: EvidenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
+  }
+
+  /**
    * Dispute without action
    */
   export type DisputeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13114,6 +13389,1015 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DisputeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Evidence
+   */
+
+  export type AggregateEvidence = {
+    _count: EvidenceCountAggregateOutputType | null
+    _avg: EvidenceAvgAggregateOutputType | null
+    _sum: EvidenceSumAggregateOutputType | null
+    _min: EvidenceMinAggregateOutputType | null
+    _max: EvidenceMaxAggregateOutputType | null
+  }
+
+  export type EvidenceAvgAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type EvidenceSumAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type EvidenceMinAggregateOutputType = {
+    id: string | null
+    disputeId: string | null
+    url: string | null
+    fileName: string | null
+    fileType: string | null
+    fileSize: number | null
+    uploadedById: string | null
+    createdAt: Date | null
+  }
+
+  export type EvidenceMaxAggregateOutputType = {
+    id: string | null
+    disputeId: string | null
+    url: string | null
+    fileName: string | null
+    fileType: string | null
+    fileSize: number | null
+    uploadedById: string | null
+    createdAt: Date | null
+  }
+
+  export type EvidenceCountAggregateOutputType = {
+    id: number
+    disputeId: number
+    url: number
+    fileName: number
+    fileType: number
+    fileSize: number
+    uploadedById: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type EvidenceAvgAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type EvidenceSumAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type EvidenceMinAggregateInputType = {
+    id?: true
+    disputeId?: true
+    url?: true
+    fileName?: true
+    fileType?: true
+    fileSize?: true
+    uploadedById?: true
+    createdAt?: true
+  }
+
+  export type EvidenceMaxAggregateInputType = {
+    id?: true
+    disputeId?: true
+    url?: true
+    fileName?: true
+    fileType?: true
+    fileSize?: true
+    uploadedById?: true
+    createdAt?: true
+  }
+
+  export type EvidenceCountAggregateInputType = {
+    id?: true
+    disputeId?: true
+    url?: true
+    fileName?: true
+    fileType?: true
+    fileSize?: true
+    uploadedById?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type EvidenceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Evidence to aggregate.
+     */
+    where?: EvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Evidences to fetch.
+     */
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Evidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Evidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Evidences
+    **/
+    _count?: true | EvidenceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: EvidenceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EvidenceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EvidenceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EvidenceMaxAggregateInputType
+  }
+
+  export type GetEvidenceAggregateType<T extends EvidenceAggregateArgs> = {
+        [P in keyof T & keyof AggregateEvidence]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEvidence[P]>
+      : GetScalarType<T[P], AggregateEvidence[P]>
+  }
+
+
+
+
+  export type EvidenceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EvidenceWhereInput
+    orderBy?: EvidenceOrderByWithAggregationInput | EvidenceOrderByWithAggregationInput[]
+    by: EvidenceScalarFieldEnum[] | EvidenceScalarFieldEnum
+    having?: EvidenceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EvidenceCountAggregateInputType | true
+    _avg?: EvidenceAvgAggregateInputType
+    _sum?: EvidenceSumAggregateInputType
+    _min?: EvidenceMinAggregateInputType
+    _max?: EvidenceMaxAggregateInputType
+  }
+
+  export type EvidenceGroupByOutputType = {
+    id: string
+    disputeId: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    uploadedById: string
+    createdAt: Date
+    _count: EvidenceCountAggregateOutputType | null
+    _avg: EvidenceAvgAggregateOutputType | null
+    _sum: EvidenceSumAggregateOutputType | null
+    _min: EvidenceMinAggregateOutputType | null
+    _max: EvidenceMaxAggregateOutputType | null
+  }
+
+  type GetEvidenceGroupByPayload<T extends EvidenceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EvidenceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EvidenceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EvidenceGroupByOutputType[P]>
+            : GetScalarType<T[P], EvidenceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EvidenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    disputeId?: boolean
+    url?: boolean
+    fileName?: boolean
+    fileType?: boolean
+    fileSize?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    dispute?: boolean | DisputeDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["evidence"]>
+
+  export type EvidenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    disputeId?: boolean
+    url?: boolean
+    fileName?: boolean
+    fileType?: boolean
+    fileSize?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    dispute?: boolean | DisputeDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["evidence"]>
+
+  export type EvidenceSelectScalar = {
+    id?: boolean
+    disputeId?: boolean
+    url?: boolean
+    fileName?: boolean
+    fileType?: boolean
+    fileSize?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+  }
+
+  export type EvidenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    dispute?: boolean | DisputeDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type EvidenceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    dispute?: boolean | DisputeDefaultArgs<ExtArgs>
+    uploadedBy?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $EvidencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Evidence"
+    objects: {
+      dispute: Prisma.$DisputePayload<ExtArgs>
+      uploadedBy: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      disputeId: string
+      url: string
+      fileName: string
+      fileType: string
+      fileSize: number
+      uploadedById: string
+      createdAt: Date
+    }, ExtArgs["result"]["evidence"]>
+    composites: {}
+  }
+
+  type EvidenceGetPayload<S extends boolean | null | undefined | EvidenceDefaultArgs> = $Result.GetResult<Prisma.$EvidencePayload, S>
+
+  type EvidenceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<EvidenceFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: EvidenceCountAggregateInputType | true
+    }
+
+  export interface EvidenceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Evidence'], meta: { name: 'Evidence' } }
+    /**
+     * Find zero or one Evidence that matches the filter.
+     * @param {EvidenceFindUniqueArgs} args - Arguments to find a Evidence
+     * @example
+     * // Get one Evidence
+     * const evidence = await prisma.evidence.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EvidenceFindUniqueArgs>(args: SelectSubset<T, EvidenceFindUniqueArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Evidence that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {EvidenceFindUniqueOrThrowArgs} args - Arguments to find a Evidence
+     * @example
+     * // Get one Evidence
+     * const evidence = await prisma.evidence.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EvidenceFindUniqueOrThrowArgs>(args: SelectSubset<T, EvidenceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Evidence that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceFindFirstArgs} args - Arguments to find a Evidence
+     * @example
+     * // Get one Evidence
+     * const evidence = await prisma.evidence.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EvidenceFindFirstArgs>(args?: SelectSubset<T, EvidenceFindFirstArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Evidence that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceFindFirstOrThrowArgs} args - Arguments to find a Evidence
+     * @example
+     * // Get one Evidence
+     * const evidence = await prisma.evidence.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EvidenceFindFirstOrThrowArgs>(args?: SelectSubset<T, EvidenceFindFirstOrThrowArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Evidences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Evidences
+     * const evidences = await prisma.evidence.findMany()
+     * 
+     * // Get first 10 Evidences
+     * const evidences = await prisma.evidence.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const evidenceWithIdOnly = await prisma.evidence.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EvidenceFindManyArgs>(args?: SelectSubset<T, EvidenceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Evidence.
+     * @param {EvidenceCreateArgs} args - Arguments to create a Evidence.
+     * @example
+     * // Create one Evidence
+     * const Evidence = await prisma.evidence.create({
+     *   data: {
+     *     // ... data to create a Evidence
+     *   }
+     * })
+     * 
+     */
+    create<T extends EvidenceCreateArgs>(args: SelectSubset<T, EvidenceCreateArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Evidences.
+     * @param {EvidenceCreateManyArgs} args - Arguments to create many Evidences.
+     * @example
+     * // Create many Evidences
+     * const evidence = await prisma.evidence.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EvidenceCreateManyArgs>(args?: SelectSubset<T, EvidenceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Evidences and returns the data saved in the database.
+     * @param {EvidenceCreateManyAndReturnArgs} args - Arguments to create many Evidences.
+     * @example
+     * // Create many Evidences
+     * const evidence = await prisma.evidence.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Evidences and only return the `id`
+     * const evidenceWithIdOnly = await prisma.evidence.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EvidenceCreateManyAndReturnArgs>(args?: SelectSubset<T, EvidenceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Evidence.
+     * @param {EvidenceDeleteArgs} args - Arguments to delete one Evidence.
+     * @example
+     * // Delete one Evidence
+     * const Evidence = await prisma.evidence.delete({
+     *   where: {
+     *     // ... filter to delete one Evidence
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EvidenceDeleteArgs>(args: SelectSubset<T, EvidenceDeleteArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Evidence.
+     * @param {EvidenceUpdateArgs} args - Arguments to update one Evidence.
+     * @example
+     * // Update one Evidence
+     * const evidence = await prisma.evidence.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EvidenceUpdateArgs>(args: SelectSubset<T, EvidenceUpdateArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Evidences.
+     * @param {EvidenceDeleteManyArgs} args - Arguments to filter Evidences to delete.
+     * @example
+     * // Delete a few Evidences
+     * const { count } = await prisma.evidence.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EvidenceDeleteManyArgs>(args?: SelectSubset<T, EvidenceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Evidences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Evidences
+     * const evidence = await prisma.evidence.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EvidenceUpdateManyArgs>(args: SelectSubset<T, EvidenceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Evidence.
+     * @param {EvidenceUpsertArgs} args - Arguments to update or create a Evidence.
+     * @example
+     * // Update or create a Evidence
+     * const evidence = await prisma.evidence.upsert({
+     *   create: {
+     *     // ... data to create a Evidence
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Evidence we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EvidenceUpsertArgs>(args: SelectSubset<T, EvidenceUpsertArgs<ExtArgs>>): Prisma__EvidenceClient<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Evidences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceCountArgs} args - Arguments to filter Evidences to count.
+     * @example
+     * // Count the number of Evidences
+     * const count = await prisma.evidence.count({
+     *   where: {
+     *     // ... the filter for the Evidences we want to count
+     *   }
+     * })
+    **/
+    count<T extends EvidenceCountArgs>(
+      args?: Subset<T, EvidenceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EvidenceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Evidence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EvidenceAggregateArgs>(args: Subset<T, EvidenceAggregateArgs>): Prisma.PrismaPromise<GetEvidenceAggregateType<T>>
+
+    /**
+     * Group by Evidence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EvidenceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EvidenceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EvidenceGroupByArgs['orderBy'] }
+        : { orderBy?: EvidenceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EvidenceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEvidenceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Evidence model
+   */
+  readonly fields: EvidenceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Evidence.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EvidenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    dispute<T extends DisputeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DisputeDefaultArgs<ExtArgs>>): Prisma__DisputeClient<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    uploadedBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Evidence model
+   */ 
+  interface EvidenceFieldRefs {
+    readonly id: FieldRef<"Evidence", 'String'>
+    readonly disputeId: FieldRef<"Evidence", 'String'>
+    readonly url: FieldRef<"Evidence", 'String'>
+    readonly fileName: FieldRef<"Evidence", 'String'>
+    readonly fileType: FieldRef<"Evidence", 'String'>
+    readonly fileSize: FieldRef<"Evidence", 'Int'>
+    readonly uploadedById: FieldRef<"Evidence", 'String'>
+    readonly createdAt: FieldRef<"Evidence", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Evidence findUnique
+   */
+  export type EvidenceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which Evidence to fetch.
+     */
+    where: EvidenceWhereUniqueInput
+  }
+
+  /**
+   * Evidence findUniqueOrThrow
+   */
+  export type EvidenceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which Evidence to fetch.
+     */
+    where: EvidenceWhereUniqueInput
+  }
+
+  /**
+   * Evidence findFirst
+   */
+  export type EvidenceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which Evidence to fetch.
+     */
+    where?: EvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Evidences to fetch.
+     */
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Evidences.
+     */
+    cursor?: EvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Evidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Evidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Evidences.
+     */
+    distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * Evidence findFirstOrThrow
+   */
+  export type EvidenceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which Evidence to fetch.
+     */
+    where?: EvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Evidences to fetch.
+     */
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Evidences.
+     */
+    cursor?: EvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Evidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Evidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Evidences.
+     */
+    distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * Evidence findMany
+   */
+  export type EvidenceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which Evidences to fetch.
+     */
+    where?: EvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Evidences to fetch.
+     */
+    orderBy?: EvidenceOrderByWithRelationInput | EvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Evidences.
+     */
+    cursor?: EvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Evidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Evidences.
+     */
+    skip?: number
+    distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * Evidence create
+   */
+  export type EvidenceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Evidence.
+     */
+    data: XOR<EvidenceCreateInput, EvidenceUncheckedCreateInput>
+  }
+
+  /**
+   * Evidence createMany
+   */
+  export type EvidenceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Evidences.
+     */
+    data: EvidenceCreateManyInput | EvidenceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Evidence createManyAndReturn
+   */
+  export type EvidenceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Evidences.
+     */
+    data: EvidenceCreateManyInput | EvidenceCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Evidence update
+   */
+  export type EvidenceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Evidence.
+     */
+    data: XOR<EvidenceUpdateInput, EvidenceUncheckedUpdateInput>
+    /**
+     * Choose, which Evidence to update.
+     */
+    where: EvidenceWhereUniqueInput
+  }
+
+  /**
+   * Evidence updateMany
+   */
+  export type EvidenceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Evidences.
+     */
+    data: XOR<EvidenceUpdateManyMutationInput, EvidenceUncheckedUpdateManyInput>
+    /**
+     * Filter which Evidences to update
+     */
+    where?: EvidenceWhereInput
+  }
+
+  /**
+   * Evidence upsert
+   */
+  export type EvidenceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Evidence to update in case it exists.
+     */
+    where: EvidenceWhereUniqueInput
+    /**
+     * In case the Evidence found by the `where` argument doesn't exist, create a new Evidence with this data.
+     */
+    create: XOR<EvidenceCreateInput, EvidenceUncheckedCreateInput>
+    /**
+     * In case the Evidence was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EvidenceUpdateInput, EvidenceUncheckedUpdateInput>
+  }
+
+  /**
+   * Evidence delete
+   */
+  export type EvidenceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
+    /**
+     * Filter which Evidence to delete.
+     */
+    where: EvidenceWhereUniqueInput
+  }
+
+  /**
+   * Evidence deleteMany
+   */
+  export type EvidenceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Evidences to delete
+     */
+    where?: EvidenceWhereInput
+  }
+
+  /**
+   * Evidence without action
+   */
+  export type EvidenceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Evidence
+     */
+    select?: EvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvidenceInclude<ExtArgs> | null
   }
 
 
@@ -19220,14 +20504,30 @@ export namespace Prisma {
     orderId: 'orderId',
     initiatorId: 'initiatorId',
     reason: 'reason',
+    description: 'description',
     status: 'status',
-    evidence: 'evidence',
+    assigneeId: 'assigneeId',
     resolution: 'resolution',
+    deadline: 'deadline',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type DisputeScalarFieldEnum = (typeof DisputeScalarFieldEnum)[keyof typeof DisputeScalarFieldEnum]
+
+
+  export const EvidenceScalarFieldEnum: {
+    id: 'id',
+    disputeId: 'disputeId',
+    url: 'url',
+    fileName: 'fileName',
+    fileType: 'fileType',
+    fileSize: 'fileSize',
+    uploadedById: 'uploadedById',
+    createdAt: 'createdAt'
+  };
+
+  export type EvidenceScalarFieldEnum = (typeof EvidenceScalarFieldEnum)[keyof typeof EvidenceScalarFieldEnum]
 
 
   export const AuthTokenScalarFieldEnum: {
@@ -19529,6 +20829,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'DisputeStatus'
+   */
+  export type EnumDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'DisputeStatus[]'
+   */
+  export type ListEnumDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'NotificationChannel'
    */
   export type EnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel'>
@@ -19599,7 +20913,9 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     notifications?: NotificationListRelationFilter
     notificationLogs?: NotificationLogListRelationFilter
-    disputes?: DisputeListRelationFilter
+    initiatedDisputes?: DisputeListRelationFilter
+    assignedDisputes?: DisputeListRelationFilter
+    evidenceUploads?: EvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
   }
 
@@ -19626,7 +20942,9 @@ export namespace Prisma {
     devices?: DeviceOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     notificationLogs?: NotificationLogOrderByRelationAggregateInput
-    disputes?: DisputeOrderByRelationAggregateInput
+    initiatedDisputes?: DisputeOrderByRelationAggregateInput
+    assignedDisputes?: DisputeOrderByRelationAggregateInput
+    evidenceUploads?: EvidenceOrderByRelationAggregateInput
     securityLogs?: SecurityLogOrderByRelationAggregateInput
   }
 
@@ -19656,7 +20974,9 @@ export namespace Prisma {
     devices?: DeviceListRelationFilter
     notifications?: NotificationListRelationFilter
     notificationLogs?: NotificationLogListRelationFilter
-    disputes?: DisputeListRelationFilter
+    initiatedDisputes?: DisputeListRelationFilter
+    assignedDisputes?: DisputeListRelationFilter
+    evidenceUploads?: EvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
   }, "id" | "email" | "phone" | "resetToken">
 
@@ -20355,13 +21675,17 @@ export namespace Prisma {
     orderId?: UuidFilter<"Dispute"> | string
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
-    status?: StringFilter<"Dispute"> | string
-    evidence?: JsonNullableFilter<"Dispute">
+    description?: StringNullableFilter<"Dispute"> | string | null
+    status?: EnumDisputeStatusFilter<"Dispute"> | $Enums.DisputeStatus
+    assigneeId?: UuidNullableFilter<"Dispute"> | string | null
     resolution?: StringNullableFilter<"Dispute"> | string | null
+    deadline?: DateTimeNullableFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
     order?: XOR<OrderRelationFilter, OrderWhereInput>
     initiator?: XOR<UserRelationFilter, UserWhereInput>
+    assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    evidence?: EvidenceListRelationFilter
   }
 
   export type DisputeOrderByWithRelationInput = {
@@ -20369,13 +21693,17 @@ export namespace Prisma {
     orderId?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
+    description?: SortOrderInput | SortOrder
     status?: SortOrder
-    evidence?: SortOrderInput | SortOrder
+    assigneeId?: SortOrderInput | SortOrder
     resolution?: SortOrderInput | SortOrder
+    deadline?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
     initiator?: UserOrderByWithRelationInput
+    assignee?: UserOrderByWithRelationInput
+    evidence?: EvidenceOrderByRelationAggregateInput
   }
 
   export type DisputeWhereUniqueInput = Prisma.AtLeast<{
@@ -20386,13 +21714,17 @@ export namespace Prisma {
     orderId?: UuidFilter<"Dispute"> | string
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
-    status?: StringFilter<"Dispute"> | string
-    evidence?: JsonNullableFilter<"Dispute">
+    description?: StringNullableFilter<"Dispute"> | string | null
+    status?: EnumDisputeStatusFilter<"Dispute"> | $Enums.DisputeStatus
+    assigneeId?: UuidNullableFilter<"Dispute"> | string | null
     resolution?: StringNullableFilter<"Dispute"> | string | null
+    deadline?: DateTimeNullableFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
     order?: XOR<OrderRelationFilter, OrderWhereInput>
     initiator?: XOR<UserRelationFilter, UserWhereInput>
+    assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    evidence?: EvidenceListRelationFilter
   }, "id">
 
   export type DisputeOrderByWithAggregationInput = {
@@ -20400,9 +21732,11 @@ export namespace Prisma {
     orderId?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
+    description?: SortOrderInput | SortOrder
     status?: SortOrder
-    evidence?: SortOrderInput | SortOrder
+    assigneeId?: SortOrderInput | SortOrder
     resolution?: SortOrderInput | SortOrder
+    deadline?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DisputeCountOrderByAggregateInput
@@ -20418,11 +21752,88 @@ export namespace Prisma {
     orderId?: UuidWithAggregatesFilter<"Dispute"> | string
     initiatorId?: UuidWithAggregatesFilter<"Dispute"> | string
     reason?: StringWithAggregatesFilter<"Dispute"> | string
-    status?: StringWithAggregatesFilter<"Dispute"> | string
-    evidence?: JsonNullableWithAggregatesFilter<"Dispute">
+    description?: StringNullableWithAggregatesFilter<"Dispute"> | string | null
+    status?: EnumDisputeStatusWithAggregatesFilter<"Dispute"> | $Enums.DisputeStatus
+    assigneeId?: UuidNullableWithAggregatesFilter<"Dispute"> | string | null
     resolution?: StringNullableWithAggregatesFilter<"Dispute"> | string | null
+    deadline?: DateTimeNullableWithAggregatesFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Dispute"> | Date | string
+  }
+
+  export type EvidenceWhereInput = {
+    AND?: EvidenceWhereInput | EvidenceWhereInput[]
+    OR?: EvidenceWhereInput[]
+    NOT?: EvidenceWhereInput | EvidenceWhereInput[]
+    id?: UuidFilter<"Evidence"> | string
+    disputeId?: UuidFilter<"Evidence"> | string
+    url?: StringFilter<"Evidence"> | string
+    fileName?: StringFilter<"Evidence"> | string
+    fileType?: StringFilter<"Evidence"> | string
+    fileSize?: IntFilter<"Evidence"> | number
+    uploadedById?: UuidFilter<"Evidence"> | string
+    createdAt?: DateTimeFilter<"Evidence"> | Date | string
+    dispute?: XOR<DisputeRelationFilter, DisputeWhereInput>
+    uploadedBy?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type EvidenceOrderByWithRelationInput = {
+    id?: SortOrder
+    disputeId?: SortOrder
+    url?: SortOrder
+    fileName?: SortOrder
+    fileType?: SortOrder
+    fileSize?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+    dispute?: DisputeOrderByWithRelationInput
+    uploadedBy?: UserOrderByWithRelationInput
+  }
+
+  export type EvidenceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: EvidenceWhereInput | EvidenceWhereInput[]
+    OR?: EvidenceWhereInput[]
+    NOT?: EvidenceWhereInput | EvidenceWhereInput[]
+    disputeId?: UuidFilter<"Evidence"> | string
+    url?: StringFilter<"Evidence"> | string
+    fileName?: StringFilter<"Evidence"> | string
+    fileType?: StringFilter<"Evidence"> | string
+    fileSize?: IntFilter<"Evidence"> | number
+    uploadedById?: UuidFilter<"Evidence"> | string
+    createdAt?: DateTimeFilter<"Evidence"> | Date | string
+    dispute?: XOR<DisputeRelationFilter, DisputeWhereInput>
+    uploadedBy?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type EvidenceOrderByWithAggregationInput = {
+    id?: SortOrder
+    disputeId?: SortOrder
+    url?: SortOrder
+    fileName?: SortOrder
+    fileType?: SortOrder
+    fileSize?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+    _count?: EvidenceCountOrderByAggregateInput
+    _avg?: EvidenceAvgOrderByAggregateInput
+    _max?: EvidenceMaxOrderByAggregateInput
+    _min?: EvidenceMinOrderByAggregateInput
+    _sum?: EvidenceSumOrderByAggregateInput
+  }
+
+  export type EvidenceScalarWhereWithAggregatesInput = {
+    AND?: EvidenceScalarWhereWithAggregatesInput | EvidenceScalarWhereWithAggregatesInput[]
+    OR?: EvidenceScalarWhereWithAggregatesInput[]
+    NOT?: EvidenceScalarWhereWithAggregatesInput | EvidenceScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Evidence"> | string
+    disputeId?: UuidWithAggregatesFilter<"Evidence"> | string
+    url?: StringWithAggregatesFilter<"Evidence"> | string
+    fileName?: StringWithAggregatesFilter<"Evidence"> | string
+    fileType?: StringWithAggregatesFilter<"Evidence"> | string
+    fileSize?: IntWithAggregatesFilter<"Evidence"> | number
+    uploadedById?: UuidWithAggregatesFilter<"Evidence"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Evidence"> | Date | string
   }
 
   export type AuthTokenWhereInput = {
@@ -20938,7 +22349,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -20965,7 +22378,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20992,7 +22407,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -21019,7 +22436,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -21766,13 +23185,16 @@ export namespace Prisma {
   export type DisputeCreateInput = {
     id?: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutDisputesInput
-    initiator: UserCreateNestedOneWithoutDisputesInput
+    initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
+    assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
+    evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUncheckedCreateInput = {
@@ -21780,23 +23202,29 @@ export namespace Prisma {
     orderId: string
     initiatorId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    evidence?: EvidenceUncheckedCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
-    initiator?: UserUpdateOneRequiredWithoutDisputesNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
+    assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
+    evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateInput = {
@@ -21804,11 +23232,14 @@ export namespace Prisma {
     orderId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evidence?: EvidenceUncheckedUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeCreateManyInput = {
@@ -21816,9 +23247,11 @@ export namespace Prisma {
     orderId: string
     initiatorId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -21826,9 +23259,10 @@ export namespace Prisma {
   export type DisputeUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21838,11 +23272,88 @@ export namespace Prisma {
     orderId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceCreateInput = {
+    id?: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    createdAt?: Date | string
+    dispute: DisputeCreateNestedOneWithoutEvidenceInput
+    uploadedBy: UserCreateNestedOneWithoutEvidenceUploadsInput
+  }
+
+  export type EvidenceUncheckedCreateInput = {
+    id?: string
+    disputeId: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    uploadedById: string
+    createdAt?: Date | string
+  }
+
+  export type EvidenceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dispute?: DisputeUpdateOneRequiredWithoutEvidenceNestedInput
+    uploadedBy?: UserUpdateOneRequiredWithoutEvidenceUploadsNestedInput
+  }
+
+  export type EvidenceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    disputeId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceCreateManyInput = {
+    id?: string
+    disputeId: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    uploadedById: string
+    createdAt?: Date | string
+  }
+
+  export type EvidenceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    disputeId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AuthTokenCreateInput = {
@@ -22541,6 +24052,12 @@ export namespace Prisma {
     none?: DisputeWhereInput
   }
 
+  export type EvidenceListRelationFilter = {
+    every?: EvidenceWhereInput
+    some?: EvidenceWhereInput
+    none?: EvidenceWhereInput
+  }
+
   export type SecurityLogListRelationFilter = {
     every?: SecurityLogWhereInput
     some?: SecurityLogWhereInput
@@ -22581,6 +24098,10 @@ export namespace Prisma {
   }
 
   export type DisputeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EvidenceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -23353,9 +24874,21 @@ export namespace Prisma {
     _max?: NestedEnumOrderStatusFilter<$PrismaModel>
   }
 
+  export type EnumDisputeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeStatusFilter<$PrismaModel> | $Enums.DisputeStatus
+  }
+
   export type OrderRelationFilter = {
     is?: OrderWhereInput
     isNot?: OrderWhereInput
+  }
+
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type DisputeCountOrderByAggregateInput = {
@@ -23363,9 +24896,11 @@ export namespace Prisma {
     orderId?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
+    description?: SortOrder
     status?: SortOrder
-    evidence?: SortOrder
+    assigneeId?: SortOrder
     resolution?: SortOrder
+    deadline?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -23375,8 +24910,11 @@ export namespace Prisma {
     orderId?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
+    description?: SortOrder
     status?: SortOrder
+    assigneeId?: SortOrder
     resolution?: SortOrder
+    deadline?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -23386,10 +24924,69 @@ export namespace Prisma {
     orderId?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
+    description?: SortOrder
     status?: SortOrder
+    assigneeId?: SortOrder
     resolution?: SortOrder
+    deadline?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumDisputeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeStatusWithAggregatesFilter<$PrismaModel> | $Enums.DisputeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDisputeStatusFilter<$PrismaModel>
+    _max?: NestedEnumDisputeStatusFilter<$PrismaModel>
+  }
+
+  export type DisputeRelationFilter = {
+    is?: DisputeWhereInput
+    isNot?: DisputeWhereInput
+  }
+
+  export type EvidenceCountOrderByAggregateInput = {
+    id?: SortOrder
+    disputeId?: SortOrder
+    url?: SortOrder
+    fileName?: SortOrder
+    fileType?: SortOrder
+    fileSize?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EvidenceAvgOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type EvidenceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    disputeId?: SortOrder
+    url?: SortOrder
+    fileName?: SortOrder
+    fileType?: SortOrder
+    fileSize?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EvidenceMinOrderByAggregateInput = {
+    id?: SortOrder
+    disputeId?: SortOrder
+    url?: SortOrder
+    fileName?: SortOrder
+    fileType?: SortOrder
+    fileSize?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EvidenceSumOrderByAggregateInput = {
+    fileSize?: SortOrder
   }
 
   export type AuthTokenCountOrderByAggregateInput = {
@@ -23746,6 +25343,20 @@ export namespace Prisma {
     connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
   }
 
+  export type DisputeCreateNestedManyWithoutAssigneeInput = {
+    create?: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput> | DisputeCreateWithoutAssigneeInput[] | DisputeUncheckedCreateWithoutAssigneeInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutAssigneeInput | DisputeCreateOrConnectWithoutAssigneeInput[]
+    createMany?: DisputeCreateManyAssigneeInputEnvelope
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+  }
+
+  export type EvidenceCreateNestedManyWithoutUploadedByInput = {
+    create?: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput> | EvidenceCreateWithoutUploadedByInput[] | EvidenceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
+    createMany?: EvidenceCreateManyUploadedByInputEnvelope
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+  }
+
   export type SecurityLogCreateNestedManyWithoutUserInput = {
     create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
@@ -23826,6 +25437,20 @@ export namespace Prisma {
     connectOrCreate?: DisputeCreateOrConnectWithoutInitiatorInput | DisputeCreateOrConnectWithoutInitiatorInput[]
     createMany?: DisputeCreateManyInitiatorInputEnvelope
     connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+  }
+
+  export type DisputeUncheckedCreateNestedManyWithoutAssigneeInput = {
+    create?: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput> | DisputeCreateWithoutAssigneeInput[] | DisputeUncheckedCreateWithoutAssigneeInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutAssigneeInput | DisputeCreateOrConnectWithoutAssigneeInput[]
+    createMany?: DisputeCreateManyAssigneeInputEnvelope
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+  }
+
+  export type EvidenceUncheckedCreateNestedManyWithoutUploadedByInput = {
+    create?: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput> | EvidenceCreateWithoutUploadedByInput[] | EvidenceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
+    createMany?: EvidenceCreateManyUploadedByInputEnvelope
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
   }
 
   export type SecurityLogUncheckedCreateNestedManyWithoutUserInput = {
@@ -24009,6 +25634,34 @@ export namespace Prisma {
     deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
   }
 
+  export type DisputeUpdateManyWithoutAssigneeNestedInput = {
+    create?: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput> | DisputeCreateWithoutAssigneeInput[] | DisputeUncheckedCreateWithoutAssigneeInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutAssigneeInput | DisputeCreateOrConnectWithoutAssigneeInput[]
+    upsert?: DisputeUpsertWithWhereUniqueWithoutAssigneeInput | DisputeUpsertWithWhereUniqueWithoutAssigneeInput[]
+    createMany?: DisputeCreateManyAssigneeInputEnvelope
+    set?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    disconnect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    delete?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    update?: DisputeUpdateWithWhereUniqueWithoutAssigneeInput | DisputeUpdateWithWhereUniqueWithoutAssigneeInput[]
+    updateMany?: DisputeUpdateManyWithWhereWithoutAssigneeInput | DisputeUpdateManyWithWhereWithoutAssigneeInput[]
+    deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
+  }
+
+  export type EvidenceUpdateManyWithoutUploadedByNestedInput = {
+    create?: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput> | EvidenceCreateWithoutUploadedByInput[] | EvidenceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
+    upsert?: EvidenceUpsertWithWhereUniqueWithoutUploadedByInput | EvidenceUpsertWithWhereUniqueWithoutUploadedByInput[]
+    createMany?: EvidenceCreateManyUploadedByInputEnvelope
+    set?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    disconnect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    delete?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    update?: EvidenceUpdateWithWhereUniqueWithoutUploadedByInput | EvidenceUpdateWithWhereUniqueWithoutUploadedByInput[]
+    updateMany?: EvidenceUpdateManyWithWhereWithoutUploadedByInput | EvidenceUpdateManyWithWhereWithoutUploadedByInput[]
+    deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+  }
+
   export type SecurityLogUpdateManyWithoutUserNestedInput = {
     create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
@@ -24167,6 +25820,34 @@ export namespace Prisma {
     update?: DisputeUpdateWithWhereUniqueWithoutInitiatorInput | DisputeUpdateWithWhereUniqueWithoutInitiatorInput[]
     updateMany?: DisputeUpdateManyWithWhereWithoutInitiatorInput | DisputeUpdateManyWithWhereWithoutInitiatorInput[]
     deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
+  }
+
+  export type DisputeUncheckedUpdateManyWithoutAssigneeNestedInput = {
+    create?: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput> | DisputeCreateWithoutAssigneeInput[] | DisputeUncheckedCreateWithoutAssigneeInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutAssigneeInput | DisputeCreateOrConnectWithoutAssigneeInput[]
+    upsert?: DisputeUpsertWithWhereUniqueWithoutAssigneeInput | DisputeUpsertWithWhereUniqueWithoutAssigneeInput[]
+    createMany?: DisputeCreateManyAssigneeInputEnvelope
+    set?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    disconnect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    delete?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    update?: DisputeUpdateWithWhereUniqueWithoutAssigneeInput | DisputeUpdateWithWhereUniqueWithoutAssigneeInput[]
+    updateMany?: DisputeUpdateManyWithWhereWithoutAssigneeInput | DisputeUpdateManyWithWhereWithoutAssigneeInput[]
+    deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
+  }
+
+  export type EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput = {
+    create?: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput> | EvidenceCreateWithoutUploadedByInput[] | EvidenceUncheckedCreateWithoutUploadedByInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
+    upsert?: EvidenceUpsertWithWhereUniqueWithoutUploadedByInput | EvidenceUpsertWithWhereUniqueWithoutUploadedByInput[]
+    createMany?: EvidenceCreateManyUploadedByInputEnvelope
+    set?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    disconnect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    delete?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    update?: EvidenceUpdateWithWhereUniqueWithoutUploadedByInput | EvidenceUpdateWithWhereUniqueWithoutUploadedByInput[]
+    updateMany?: EvidenceUpdateManyWithWhereWithoutUploadedByInput | EvidenceUpdateManyWithWhereWithoutUploadedByInput[]
+    deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
   }
 
   export type SecurityLogUncheckedUpdateManyWithoutUserNestedInput = {
@@ -24687,10 +26368,34 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput
   }
 
-  export type UserCreateNestedOneWithoutDisputesInput = {
-    create?: XOR<UserCreateWithoutDisputesInput, UserUncheckedCreateWithoutDisputesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDisputesInput
+  export type UserCreateNestedOneWithoutInitiatedDisputesInput = {
+    create?: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInitiatedDisputesInput
     connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAssignedDisputesInput = {
+    create?: XOR<UserCreateWithoutAssignedDisputesInput, UserUncheckedCreateWithoutAssignedDisputesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedDisputesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EvidenceCreateNestedManyWithoutDisputeInput = {
+    create?: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput> | EvidenceCreateWithoutDisputeInput[] | EvidenceUncheckedCreateWithoutDisputeInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutDisputeInput | EvidenceCreateOrConnectWithoutDisputeInput[]
+    createMany?: EvidenceCreateManyDisputeInputEnvelope
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+  }
+
+  export type EvidenceUncheckedCreateNestedManyWithoutDisputeInput = {
+    create?: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput> | EvidenceCreateWithoutDisputeInput[] | EvidenceUncheckedCreateWithoutDisputeInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutDisputeInput | EvidenceCreateOrConnectWithoutDisputeInput[]
+    createMany?: EvidenceCreateManyDisputeInputEnvelope
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+  }
+
+  export type EnumDisputeStatusFieldUpdateOperationsInput = {
+    set?: $Enums.DisputeStatus
   }
 
   export type OrderUpdateOneRequiredWithoutDisputesNestedInput = {
@@ -24701,12 +26406,78 @@ export namespace Prisma {
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutDisputesInput, OrderUpdateWithoutDisputesInput>, OrderUncheckedUpdateWithoutDisputesInput>
   }
 
-  export type UserUpdateOneRequiredWithoutDisputesNestedInput = {
-    create?: XOR<UserCreateWithoutDisputesInput, UserUncheckedCreateWithoutDisputesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDisputesInput
-    upsert?: UserUpsertWithoutDisputesInput
+  export type UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput = {
+    create?: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInitiatedDisputesInput
+    upsert?: UserUpsertWithoutInitiatedDisputesInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDisputesInput, UserUpdateWithoutDisputesInput>, UserUncheckedUpdateWithoutDisputesInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInitiatedDisputesInput, UserUpdateWithoutInitiatedDisputesInput>, UserUncheckedUpdateWithoutInitiatedDisputesInput>
+  }
+
+  export type UserUpdateOneWithoutAssignedDisputesNestedInput = {
+    create?: XOR<UserCreateWithoutAssignedDisputesInput, UserUncheckedCreateWithoutAssignedDisputesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedDisputesInput
+    upsert?: UserUpsertWithoutAssignedDisputesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAssignedDisputesInput, UserUpdateWithoutAssignedDisputesInput>, UserUncheckedUpdateWithoutAssignedDisputesInput>
+  }
+
+  export type EvidenceUpdateManyWithoutDisputeNestedInput = {
+    create?: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput> | EvidenceCreateWithoutDisputeInput[] | EvidenceUncheckedCreateWithoutDisputeInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutDisputeInput | EvidenceCreateOrConnectWithoutDisputeInput[]
+    upsert?: EvidenceUpsertWithWhereUniqueWithoutDisputeInput | EvidenceUpsertWithWhereUniqueWithoutDisputeInput[]
+    createMany?: EvidenceCreateManyDisputeInputEnvelope
+    set?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    disconnect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    delete?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    update?: EvidenceUpdateWithWhereUniqueWithoutDisputeInput | EvidenceUpdateWithWhereUniqueWithoutDisputeInput[]
+    updateMany?: EvidenceUpdateManyWithWhereWithoutDisputeInput | EvidenceUpdateManyWithWhereWithoutDisputeInput[]
+    deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+  }
+
+  export type EvidenceUncheckedUpdateManyWithoutDisputeNestedInput = {
+    create?: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput> | EvidenceCreateWithoutDisputeInput[] | EvidenceUncheckedCreateWithoutDisputeInput[]
+    connectOrCreate?: EvidenceCreateOrConnectWithoutDisputeInput | EvidenceCreateOrConnectWithoutDisputeInput[]
+    upsert?: EvidenceUpsertWithWhereUniqueWithoutDisputeInput | EvidenceUpsertWithWhereUniqueWithoutDisputeInput[]
+    createMany?: EvidenceCreateManyDisputeInputEnvelope
+    set?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    disconnect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    delete?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+    update?: EvidenceUpdateWithWhereUniqueWithoutDisputeInput | EvidenceUpdateWithWhereUniqueWithoutDisputeInput[]
+    updateMany?: EvidenceUpdateManyWithWhereWithoutDisputeInput | EvidenceUpdateManyWithWhereWithoutDisputeInput[]
+    deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+  }
+
+  export type DisputeCreateNestedOneWithoutEvidenceInput = {
+    create?: XOR<DisputeCreateWithoutEvidenceInput, DisputeUncheckedCreateWithoutEvidenceInput>
+    connectOrCreate?: DisputeCreateOrConnectWithoutEvidenceInput
+    connect?: DisputeWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutEvidenceUploadsInput = {
+    create?: XOR<UserCreateWithoutEvidenceUploadsInput, UserUncheckedCreateWithoutEvidenceUploadsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEvidenceUploadsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DisputeUpdateOneRequiredWithoutEvidenceNestedInput = {
+    create?: XOR<DisputeCreateWithoutEvidenceInput, DisputeUncheckedCreateWithoutEvidenceInput>
+    connectOrCreate?: DisputeCreateOrConnectWithoutEvidenceInput
+    upsert?: DisputeUpsertWithoutEvidenceInput
+    connect?: DisputeWhereUniqueInput
+    update?: XOR<XOR<DisputeUpdateToOneWithWhereWithoutEvidenceInput, DisputeUpdateWithoutEvidenceInput>, DisputeUncheckedUpdateWithoutEvidenceInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutEvidenceUploadsNestedInput = {
+    create?: XOR<UserCreateWithoutEvidenceUploadsInput, UserUncheckedCreateWithoutEvidenceUploadsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEvidenceUploadsInput
+    upsert?: UserUpsertWithoutEvidenceUploadsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEvidenceUploadsInput, UserUpdateWithoutEvidenceUploadsInput>, UserUncheckedUpdateWithoutEvidenceUploadsInput>
   }
 
   export type UserCreateNestedOneWithoutAuthTokensInput = {
@@ -25162,6 +26933,23 @@ export namespace Prisma {
     _max?: NestedEnumOrderStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumDisputeStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeStatusFilter<$PrismaModel> | $Enums.DisputeStatus
+  }
+
+  export type NestedEnumDisputeStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeStatusWithAggregatesFilter<$PrismaModel> | $Enums.DisputeStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDisputeStatusFilter<$PrismaModel>
+    _max?: NestedEnumDisputeStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumNotificationChannelFilter<$PrismaModel = never> = {
     equals?: $Enums.NotificationChannel | EnumNotificationChannelFieldRefInput<$PrismaModel>
     in?: $Enums.NotificationChannel[] | ListEnumNotificationChannelFieldRefInput<$PrismaModel>
@@ -25537,23 +27325,29 @@ export namespace Prisma {
   export type DisputeCreateWithoutInitiatorInput = {
     id?: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutDisputesInput
+    assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
+    evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUncheckedCreateWithoutInitiatorInput = {
     id?: string
     orderId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    evidence?: EvidenceUncheckedCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeCreateOrConnectWithoutInitiatorInput = {
@@ -25563,6 +27357,74 @@ export namespace Prisma {
 
   export type DisputeCreateManyInitiatorInputEnvelope = {
     data: DisputeCreateManyInitiatorInput | DisputeCreateManyInitiatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DisputeCreateWithoutAssigneeInput = {
+    id?: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutDisputesInput
+    initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
+    evidence?: EvidenceCreateNestedManyWithoutDisputeInput
+  }
+
+  export type DisputeUncheckedCreateWithoutAssigneeInput = {
+    id?: string
+    orderId: string
+    initiatorId: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    evidence?: EvidenceUncheckedCreateNestedManyWithoutDisputeInput
+  }
+
+  export type DisputeCreateOrConnectWithoutAssigneeInput = {
+    where: DisputeWhereUniqueInput
+    create: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput>
+  }
+
+  export type DisputeCreateManyAssigneeInputEnvelope = {
+    data: DisputeCreateManyAssigneeInput | DisputeCreateManyAssigneeInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EvidenceCreateWithoutUploadedByInput = {
+    id?: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    createdAt?: Date | string
+    dispute: DisputeCreateNestedOneWithoutEvidenceInput
+  }
+
+  export type EvidenceUncheckedCreateWithoutUploadedByInput = {
+    id?: string
+    disputeId: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    createdAt?: Date | string
+  }
+
+  export type EvidenceCreateOrConnectWithoutUploadedByInput = {
+    where: EvidenceWhereUniqueInput
+    create: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput>
+  }
+
+  export type EvidenceCreateManyUploadedByInputEnvelope = {
+    data: EvidenceCreateManyUploadedByInput | EvidenceCreateManyUploadedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -25929,11 +27791,59 @@ export namespace Prisma {
     orderId?: UuidFilter<"Dispute"> | string
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
-    status?: StringFilter<"Dispute"> | string
-    evidence?: JsonNullableFilter<"Dispute">
+    description?: StringNullableFilter<"Dispute"> | string | null
+    status?: EnumDisputeStatusFilter<"Dispute"> | $Enums.DisputeStatus
+    assigneeId?: UuidNullableFilter<"Dispute"> | string | null
     resolution?: StringNullableFilter<"Dispute"> | string | null
+    deadline?: DateTimeNullableFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
+  }
+
+  export type DisputeUpsertWithWhereUniqueWithoutAssigneeInput = {
+    where: DisputeWhereUniqueInput
+    update: XOR<DisputeUpdateWithoutAssigneeInput, DisputeUncheckedUpdateWithoutAssigneeInput>
+    create: XOR<DisputeCreateWithoutAssigneeInput, DisputeUncheckedCreateWithoutAssigneeInput>
+  }
+
+  export type DisputeUpdateWithWhereUniqueWithoutAssigneeInput = {
+    where: DisputeWhereUniqueInput
+    data: XOR<DisputeUpdateWithoutAssigneeInput, DisputeUncheckedUpdateWithoutAssigneeInput>
+  }
+
+  export type DisputeUpdateManyWithWhereWithoutAssigneeInput = {
+    where: DisputeScalarWhereInput
+    data: XOR<DisputeUpdateManyMutationInput, DisputeUncheckedUpdateManyWithoutAssigneeInput>
+  }
+
+  export type EvidenceUpsertWithWhereUniqueWithoutUploadedByInput = {
+    where: EvidenceWhereUniqueInput
+    update: XOR<EvidenceUpdateWithoutUploadedByInput, EvidenceUncheckedUpdateWithoutUploadedByInput>
+    create: XOR<EvidenceCreateWithoutUploadedByInput, EvidenceUncheckedCreateWithoutUploadedByInput>
+  }
+
+  export type EvidenceUpdateWithWhereUniqueWithoutUploadedByInput = {
+    where: EvidenceWhereUniqueInput
+    data: XOR<EvidenceUpdateWithoutUploadedByInput, EvidenceUncheckedUpdateWithoutUploadedByInput>
+  }
+
+  export type EvidenceUpdateManyWithWhereWithoutUploadedByInput = {
+    where: EvidenceScalarWhereInput
+    data: XOR<EvidenceUpdateManyMutationInput, EvidenceUncheckedUpdateManyWithoutUploadedByInput>
+  }
+
+  export type EvidenceScalarWhereInput = {
+    AND?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+    OR?: EvidenceScalarWhereInput[]
+    NOT?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+    id?: UuidFilter<"Evidence"> | string
+    disputeId?: UuidFilter<"Evidence"> | string
+    url?: StringFilter<"Evidence"> | string
+    fileName?: StringFilter<"Evidence"> | string
+    fileType?: StringFilter<"Evidence"> | string
+    fileSize?: IntFilter<"Evidence"> | number
+    uploadedById?: UuidFilter<"Evidence"> | string
+    createdAt?: DateTimeFilter<"Evidence"> | Date | string
   }
 
   export type SecurityLogUpsertWithWhereUniqueWithoutUserInput = {
@@ -25994,7 +27904,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -26020,7 +27932,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -26062,7 +27976,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -26088,7 +28004,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -26114,7 +28032,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -26140,7 +28060,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -26182,7 +28104,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -26208,7 +28132,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -26234,7 +28160,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -26260,7 +28188,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -26396,7 +28326,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -26422,7 +28354,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -26945,7 +28879,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -26971,7 +28907,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -27057,7 +28995,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -27083,7 +29023,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27162,7 +29104,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -27188,7 +29132,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -27219,7 +29165,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -27245,7 +29193,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -27291,23 +29241,29 @@ export namespace Prisma {
   export type DisputeCreateWithoutOrderInput = {
     id?: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    initiator: UserCreateNestedOneWithoutDisputesInput
+    initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
+    assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
+    evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUncheckedCreateWithoutOrderInput = {
     id?: string
     initiatorId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    evidence?: EvidenceUncheckedCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeCreateOrConnectWithoutOrderInput = {
@@ -27396,7 +29352,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -27422,7 +29380,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27459,7 +29419,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -27485,7 +29447,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27560,7 +29524,7 @@ export namespace Prisma {
     create: XOR<OrderCreateWithoutDisputesInput, OrderUncheckedCreateWithoutDisputesInput>
   }
 
-  export type UserCreateWithoutDisputesInput = {
+  export type UserCreateWithoutInitiatedDisputesInput = {
     id?: string
     email?: string | null
     phone?: string | null
@@ -27583,10 +29547,12 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutDisputesInput = {
+  export type UserUncheckedCreateWithoutInitiatedDisputesInput = {
     id?: string
     email?: string | null
     phone?: string | null
@@ -27609,12 +29575,105 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutDisputesInput = {
+  export type UserCreateOrConnectWithoutInitiatedDisputesInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutDisputesInput, UserUncheckedCreateWithoutDisputesInput>
+    create: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
+  }
+
+  export type UserCreateWithoutAssignedDisputesInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAssignedDisputesInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAssignedDisputesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAssignedDisputesInput, UserUncheckedCreateWithoutAssignedDisputesInput>
+  }
+
+  export type EvidenceCreateWithoutDisputeInput = {
+    id?: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    createdAt?: Date | string
+    uploadedBy: UserCreateNestedOneWithoutEvidenceUploadsInput
+  }
+
+  export type EvidenceUncheckedCreateWithoutDisputeInput = {
+    id?: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    uploadedById: string
+    createdAt?: Date | string
+  }
+
+  export type EvidenceCreateOrConnectWithoutDisputeInput = {
+    where: EvidenceWhereUniqueInput
+    create: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput>
+  }
+
+  export type EvidenceCreateManyDisputeInputEnvelope = {
+    data: EvidenceCreateManyDisputeInput | EvidenceCreateManyDisputeInput[]
+    skipDuplicates?: boolean
   }
 
   export type OrderUpsertWithoutDisputesInput = {
@@ -27662,18 +29721,18 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   }
 
-  export type UserUpsertWithoutDisputesInput = {
-    update: XOR<UserUpdateWithoutDisputesInput, UserUncheckedUpdateWithoutDisputesInput>
-    create: XOR<UserCreateWithoutDisputesInput, UserUncheckedCreateWithoutDisputesInput>
+  export type UserUpsertWithoutInitiatedDisputesInput = {
+    update: XOR<UserUpdateWithoutInitiatedDisputesInput, UserUncheckedUpdateWithoutInitiatedDisputesInput>
+    create: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutDisputesInput = {
+  export type UserUpdateToOneWithWhereWithoutInitiatedDisputesInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutDisputesInput, UserUncheckedUpdateWithoutDisputesInput>
+    data: XOR<UserUpdateWithoutInitiatedDisputesInput, UserUncheckedUpdateWithoutInitiatedDisputesInput>
   }
 
-  export type UserUpdateWithoutDisputesInput = {
+  export type UserUpdateWithoutInitiatedDisputesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27696,10 +29755,12 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutDisputesInput = {
+  export type UserUncheckedUpdateWithoutInitiatedDisputesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27722,6 +29783,291 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutAssignedDisputesInput = {
+    update: XOR<UserUpdateWithoutAssignedDisputesInput, UserUncheckedUpdateWithoutAssignedDisputesInput>
+    create: XOR<UserCreateWithoutAssignedDisputesInput, UserUncheckedCreateWithoutAssignedDisputesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAssignedDisputesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAssignedDisputesInput, UserUncheckedUpdateWithoutAssignedDisputesInput>
+  }
+
+  export type UserUpdateWithoutAssignedDisputesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAssignedDisputesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type EvidenceUpsertWithWhereUniqueWithoutDisputeInput = {
+    where: EvidenceWhereUniqueInput
+    update: XOR<EvidenceUpdateWithoutDisputeInput, EvidenceUncheckedUpdateWithoutDisputeInput>
+    create: XOR<EvidenceCreateWithoutDisputeInput, EvidenceUncheckedCreateWithoutDisputeInput>
+  }
+
+  export type EvidenceUpdateWithWhereUniqueWithoutDisputeInput = {
+    where: EvidenceWhereUniqueInput
+    data: XOR<EvidenceUpdateWithoutDisputeInput, EvidenceUncheckedUpdateWithoutDisputeInput>
+  }
+
+  export type EvidenceUpdateManyWithWhereWithoutDisputeInput = {
+    where: EvidenceScalarWhereInput
+    data: XOR<EvidenceUpdateManyMutationInput, EvidenceUncheckedUpdateManyWithoutDisputeInput>
+  }
+
+  export type DisputeCreateWithoutEvidenceInput = {
+    id?: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutDisputesInput
+    initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
+    assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
+  }
+
+  export type DisputeUncheckedCreateWithoutEvidenceInput = {
+    id?: string
+    orderId: string
+    initiatorId: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DisputeCreateOrConnectWithoutEvidenceInput = {
+    where: DisputeWhereUniqueInput
+    create: XOR<DisputeCreateWithoutEvidenceInput, DisputeUncheckedCreateWithoutEvidenceInput>
+  }
+
+  export type UserCreateWithoutEvidenceUploadsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutEvidenceUploadsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutEvidenceUploadsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEvidenceUploadsInput, UserUncheckedCreateWithoutEvidenceUploadsInput>
+  }
+
+  export type DisputeUpsertWithoutEvidenceInput = {
+    update: XOR<DisputeUpdateWithoutEvidenceInput, DisputeUncheckedUpdateWithoutEvidenceInput>
+    create: XOR<DisputeCreateWithoutEvidenceInput, DisputeUncheckedCreateWithoutEvidenceInput>
+    where?: DisputeWhereInput
+  }
+
+  export type DisputeUpdateToOneWithWhereWithoutEvidenceInput = {
+    where?: DisputeWhereInput
+    data: XOR<DisputeUpdateWithoutEvidenceInput, DisputeUncheckedUpdateWithoutEvidenceInput>
+  }
+
+  export type DisputeUpdateWithoutEvidenceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
+    assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
+  }
+
+  export type DisputeUncheckedUpdateWithoutEvidenceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutEvidenceUploadsInput = {
+    update: XOR<UserUpdateWithoutEvidenceUploadsInput, UserUncheckedUpdateWithoutEvidenceUploadsInput>
+    create: XOR<UserCreateWithoutEvidenceUploadsInput, UserUncheckedCreateWithoutEvidenceUploadsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEvidenceUploadsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEvidenceUploadsInput, UserUncheckedUpdateWithoutEvidenceUploadsInput>
+  }
+
+  export type UserUpdateWithoutEvidenceUploadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutEvidenceUploadsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27747,7 +30093,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -27773,7 +30121,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -27815,7 +30165,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -27841,7 +30193,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27867,7 +30221,9 @@ export namespace Prisma {
     authTokens?: AuthTokenCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -27893,7 +30249,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -27935,7 +30293,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -27961,7 +30321,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -27988,7 +30350,9 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserUncheckedCreateWithoutSecurityLogsInput = {
@@ -28014,7 +30378,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
   }
 
   export type UserCreateOrConnectWithoutSecurityLogsInput = {
@@ -28056,7 +30422,9 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSecurityLogsInput = {
@@ -28082,7 +30450,9 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -28107,7 +30477,9 @@ export namespace Prisma {
     authTokens?: AuthTokenCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -28133,7 +30505,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -28175,7 +30549,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -28201,7 +30577,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -28227,7 +30605,9 @@ export namespace Prisma {
     authTokens?: AuthTokenCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    disputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -28253,7 +30633,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    disputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -28295,7 +30677,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -28321,7 +30705,9 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    disputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -28427,11 +30813,36 @@ export namespace Prisma {
     id?: string
     orderId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type DisputeCreateManyAssigneeInput = {
+    id?: string
+    orderId: string
+    initiatorId: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EvidenceCreateManyUploadedByInput = {
+    id?: string
+    disputeId: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    createdAt?: Date | string
   }
 
   export type SecurityLogCreateManyUserInput = {
@@ -28763,34 +31174,113 @@ export namespace Prisma {
   export type DisputeUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
+    evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evidence?: EvidenceUncheckedUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateManyWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DisputeUpdateWithoutAssigneeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
+    evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
+  }
+
+  export type DisputeUncheckedUpdateWithoutAssigneeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evidence?: EvidenceUncheckedUpdateManyWithoutDisputeNestedInput
+  }
+
+  export type DisputeUncheckedUpdateManyWithoutAssigneeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceUpdateWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dispute?: DisputeUpdateOneRequiredWithoutEvidenceNestedInput
+  }
+
+  export type EvidenceUncheckedUpdateWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    disputeId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceUncheckedUpdateManyWithoutUploadedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    disputeId?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SecurityLogUpdateWithoutUserInput = {
@@ -29095,9 +31585,11 @@ export namespace Prisma {
     id?: string
     initiatorId: string
     reason: string
-    status?: string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
     resolution?: string | null
+    deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29141,34 +31633,82 @@ export namespace Prisma {
   export type DisputeUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    initiator?: UserUpdateOneRequiredWithoutDisputesNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
+    assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
+    evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evidence?: EvidenceUncheckedUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateManyWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    evidence?: NullableJsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceCreateManyDisputeInput = {
+    id?: string
+    url: string
+    fileName: string
+    fileType: string
+    fileSize: number
+    uploadedById: string
+    createdAt?: Date | string
+  }
+
+  export type EvidenceUpdateWithoutDisputeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploadedBy?: UserUpdateOneRequiredWithoutEvidenceUploadsNestedInput
+  }
+
+  export type EvidenceUncheckedUpdateWithoutDisputeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvidenceUncheckedUpdateManyWithoutDisputeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    fileName?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
@@ -29196,6 +31736,10 @@ export namespace Prisma {
      * @deprecated Use OrderCountOutputTypeDefaultArgs instead
      */
     export type OrderCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OrderCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DisputeCountOutputTypeDefaultArgs instead
+     */
+    export type DisputeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DisputeCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */
@@ -29236,6 +31780,10 @@ export namespace Prisma {
      * @deprecated Use DisputeDefaultArgs instead
      */
     export type DisputeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DisputeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use EvidenceDefaultArgs instead
+     */
+    export type EvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EvidenceDefaultArgs<ExtArgs>
     /**
      * @deprecated Use AuthTokenDefaultArgs instead
      */

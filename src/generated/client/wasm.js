@@ -239,11 +239,24 @@ exports.Prisma.DisputeScalarFieldEnum = {
   orderId: 'orderId',
   initiatorId: 'initiatorId',
   reason: 'reason',
+  description: 'description',
   status: 'status',
-  evidence: 'evidence',
+  assigneeId: 'assigneeId',
   resolution: 'resolution',
+  deadline: 'deadline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EvidenceScalarFieldEnum = {
+  id: 'id',
+  disputeId: 'disputeId',
+  url: 'url',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.AuthTokenScalarFieldEnum = {
@@ -399,6 +412,16 @@ exports.OrderStatus = exports.$Enums.OrderStatus = {
   DISPUTED: 'DISPUTED'
 };
 
+exports.DisputeStatus = exports.$Enums.DisputeStatus = {
+  OPEN: 'OPEN',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  WAITING_FOR_USER: 'WAITING_FOR_USER',
+  WAITING_FOR_ADMIN: 'WAITING_FOR_ADMIN',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+  ESCALATED: 'ESCALATED'
+};
+
 exports.NotificationChannel = exports.$Enums.NotificationChannel = {
   IN_APP: 'IN_APP',
   PUSH: 'PUSH',
@@ -424,6 +447,7 @@ exports.Prisma.ModelName = {
   Ad: 'Ad',
   Order: 'Order',
   Dispute: 'Dispute',
+  Evidence: 'Evidence',
   AuthToken: 'AuthToken',
   Device: 'Device',
   SecurityLog: 'SecurityLog',

@@ -22,6 +22,8 @@ const paystack_module_1 = require("./modules/paystack/paystack.module");
 const transactions_module_1 = require("./modules/transactions/transactions.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const audit_module_1 = require("./modules/audit/audit.module");
+const disputes_module_1 = require("./modules/disputes/disputes.module");
+const upload_module_1 = require("./modules/upload/upload.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -44,6 +46,8 @@ exports.AppModule = AppModule = __decorate([
             transactions_module_1.TransactionsModule,
             notifications_module_1.NotificationsModule,
             audit_module_1.AuditModule,
+            disputes_module_1.DisputesModule,
+            upload_module_1.UploadModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

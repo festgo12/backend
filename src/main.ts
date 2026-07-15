@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { AuditService } from './modules/audit/audit.service';
 import helmet from 'helmet';
+import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -13,6 +15,9 @@ async function bootstrap() {
   // Security
   app.use(helmet());
   app.enableCors();
+
+  // Static file serving for uploads
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
   // Global Validation
   app.useGlobalPipes(
