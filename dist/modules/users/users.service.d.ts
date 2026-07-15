@@ -26,11 +26,11 @@ export declare class UsersService {
             id: string;
             updatedAt: Date;
             userId: string;
+            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
-            version: number;
         }[];
         id: string;
         email: string | null;
@@ -41,6 +41,8 @@ export declare class UsersService {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -64,13 +66,19 @@ export declare class UsersService {
     }>;
     getDevices(userId: string): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         deviceId: string;
         fingerprint: string;
-        lastLogin: Date;
-        userAgent: string | null;
+        deviceName: string | null;
+        browser: string | null;
+        osVersion: string | null;
+        location: string | null;
         ipAddress: string | null;
+        userAgent: string | null;
         fcmToken: string | null;
+        lastLogin: Date;
+        lastActivity: Date | null;
     }[]>;
     removeDevice(userId: string, deviceId: string): Promise<import("@src/generated/client").Prisma.BatchPayload>;
     findOneByEmail(email: string): Promise<({
@@ -94,6 +102,8 @@ export declare class UsersService {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -118,6 +128,8 @@ export declare class UsersService {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -142,6 +154,8 @@ export declare class UsersService {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;

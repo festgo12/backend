@@ -68,32 +68,35 @@ enum DisputeStatus {
 }
 
 model User {
-  id                String            @id @default(uuid()) @db.Uuid
-  email             String?           @unique
-  phone             String?           @unique
-  passwordHash      String
-  role              Role              @default(USER)
-  status            UserStatus        @default(ACTIVE)
-  profile           Profile?
-  preferences       UserPreference?
-  wallets           Wallet[]
-  ads               Ad[]
-  buyOrders         Order[]           @relation("BuyerOrders")
-  sellOrders        Order[]           @relation("SellerOrders")
-  authTokens        AuthToken[]
-  devices           Device[]
-  notifications     Notification[]
-  notificationLogs  NotificationLog[]
-  initiatedDisputes Dispute[]         @relation("Initiator")
-  assignedDisputes  Dispute[]         @relation("Assignee")
-  evidenceUploads   Evidence[]
-  securityLogs      SecurityLog[]
-  twoFactorEnabled  Boolean           @default(false)
-  twoFactorSecret   String?
-  resetToken        String?           @unique
-  resetTokenExpires DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                  String            @id @default(uuid()) @db.Uuid
+  email               String?           @unique
+  phone               String?           @unique
+  passwordHash        String
+  role                Role              @default(USER)
+  status              UserStatus        @default(ACTIVE)
+  profile             Profile?
+  preferences         UserPreference?
+  wallets             Wallet[]
+  ads                 Ad[]
+  buyOrders           Order[]           @relation("BuyerOrders")
+  sellOrders          Order[]           @relation("SellerOrders")
+  authTokens          AuthToken[]
+  devices             Device[]
+  notifications       Notification[]
+  notificationLogs    NotificationLog[]
+  initiatedDisputes   Dispute[]         @relation("Initiator")
+  assignedDisputes    Dispute[]         @relation("Assignee")
+  evidenceUploads     Evidence[]
+  securityLogs        SecurityLog[]
+  securityAlerts      SecurityAlert[]
+  twoFactorEnabled    Boolean           @default(false)
+  twoFactorSecret     String?
+  resetToken          String?           @unique
+  resetTokenExpires   DateTime?
+  failedLoginAttempts Int               @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   @@index([email, phone])
 }
@@ -268,28 +271,39 @@ model Evidence {
 }
 
 model AuthToken {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  user         User      @relation(fields: [userId], references: [id])
+  token        String    @unique
+  expiresAt    DateTime
+  userAgent    String?
+  ipAddress    String?
+  lastActivity DateTime?
+  createdAt    DateTime  @default(now())
 
   @@index([userId])
 }
 
 model Device {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id])
-  deviceId    String
-  fingerprint String
-  lastLogin   DateTime @default(now())
-  userAgent   String?
-  ipAddress   String?
-  fcmToken    String? // Added for push notifications
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  user         User      @relation(fields: [userId], references: [id])
+  deviceId     String
+  fingerprint  String
+  deviceName   String?
+  browser      String?
+  osVersion    String?
+  location     String?
+  ipAddress    String?
+  userAgent    String?
+  fcmToken     String?
+  lastLogin    DateTime  @default(now())
+  lastActivity DateTime?
+  createdAt    DateTime  @default(now())
 
   @@unique([userId, deviceId])
+  @@index([userId])
+  @@index([fingerprint])
 }
 
 model SecurityLog {
@@ -377,4 +391,34 @@ model NotificationLog {
 
   @@index([userId])
   @@index([status, nextTryAt])
+}
+
+model SecurityAlert {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  severity  String   @default("MEDIUM")
+  title     String
+  message   String   @db.Text
+  metadata  Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+model FraudRule {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  code        String   @unique
+  description String   @db.Text
+  enabled     Boolean  @default(true)
+  threshold   Int      @default(5)
+  severity    String   @default("MEDIUM")
+  action      String   @default("ALERT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

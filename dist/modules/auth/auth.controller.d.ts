@@ -13,7 +13,7 @@ export declare class AuthController {
         accessToken: string;
         refreshToken: string;
     }>;
-    login(dto: LoginDto): Promise<{
+    login(dto: LoginDto, req: any): Promise<{
         user: {
             profile: {
                 firstName: string | null;
@@ -33,13 +33,15 @@ export declare class AuthController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;
     }>;
-    refresh(dto: RefreshTokenDto): Promise<{
+    refresh(dto: RefreshTokenDto, req: any): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
@@ -64,6 +66,8 @@ export declare class AuthController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };

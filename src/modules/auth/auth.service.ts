@@ -1,9 +1,11 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../../core/database/prisma.service';
+import { SecurityService } from '../security/security.service';
+import { FraudRulesService } from '../security/fraud-rules.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -22,6 +24,8 @@ export class AuthService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    private securityService: SecurityService,
+    private fraudRulesService: FraudRulesService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -58,35 +62,106 @@ export class AuthService {
     return this.generateTokens(user.id, user.role);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, request?: any) {
     const user = dto.email
       ? await this.usersService.findOneByEmail(dto.email)
       : await this.usersService.findOneByPhone(dto.phone!);
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+    // Account lockout check
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      throw new ForbiddenException(`Account locked. Try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`);
+    }
 
-    // Device Tracking
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isPasswordValid) {
+      // Track failed login attempts
+      const failedAttempts = user.failedLoginAttempts + 1;
+      const maxAttempts = 5;
+      const lockoutMinutes = 30;
+
+      const updateData: any = { failedLoginAttempts: failedAttempts };
+
+      if (failedAttempts >= maxAttempts) {
+        updateData.lockedUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000);
+        updateData.failedLoginAttempts = 0;
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
+      // Evaluate failed login burst fraud rule
+      const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+      await this.fraudRulesService.evaluateFailedLoginBurst(
+        user.email || '',
+        ipAddress,
+      ).catch(() => {});
+
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Reset failed login attempts on success
+    if (user.failedLoginAttempts > 0) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
+    }
+
+    // Extract IP and User-Agent from request
+    const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+    const userAgent = request?.headers?.['user-agent'] || 'unknown';
+    const parsedUA = this.securityService.parseUserAgent(userAgent);
+
+    // Location from IP (best-effort)
+    const location = await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown');
+
+    // Enhanced Device Tracking
     await this.prisma.device.upsert({
       where: { userId_deviceId: { userId: user.id, deviceId: dto.deviceId } },
-      update: { lastLogin: new Date(), fingerprint: dto.fingerprint },
+      update: {
+        lastLogin: new Date(),
+        fingerprint: dto.fingerprint,
+        userAgent,
+        ipAddress,
+        browser: parsedUA.browser,
+        osVersion: parsedUA.osVersion,
+        deviceName: parsedUA.deviceName,
+        location,
+        lastActivity: new Date(),
+      },
       create: {
         userId: user.id,
         deviceId: dto.deviceId,
         fingerprint: dto.fingerprint,
+        userAgent,
+        ipAddress,
+        browser: parsedUA.browser,
+        osVersion: parsedUA.osVersion,
+        deviceName: parsedUA.deviceName,
+        location,
       },
     });
+
+    // Evaluate fraud rules
+    this.fraudRulesService.evaluateNewDeviceLogin(user.id, dto.deviceId, ipAddress).catch(() => {});
+    this.fraudRulesService.evaluateMultipleAccountsSameDevice(user.id, dto.deviceId).catch(() => {});
+    this.fraudRulesService.evaluateRapidWithdrawals(user.id).catch(() => {});
+    this.fraudRulesService.evaluateUnusualVolume(user.id).catch(() => {});
+
     // hiden password from user response
     const { passwordHash, ...userWithoutPassword } = user;
-    const token = await this.generateTokens(user.id, user.role)
+    const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
     const userData = { ...token, user: userWithoutPassword }
 
     return userData;
   }
 
-  async generateTokens(userId: string, role: Role) {
+  async generateTokens(userId: string, role: Role, userAgent?: string, ipAddress?: string) {
     const payload = { sub: userId, role };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -99,19 +174,21 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    // Store refresh token
+    // Store refresh token with session metadata
     await this.prisma.authToken.create({
       data: {
         userId,
         token: refreshToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userAgent: userAgent || null,
+        ipAddress: ipAddress || null,
       },
     });
 
     return { accessToken, refreshToken };
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string, request?: any) {
     try {
       const payload = await this.jwtService.verifyAsync(refreshToken, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
@@ -125,10 +202,13 @@ export class AuthService {
         throw new UnauthorizedException('Invalid or expired refresh token');
       }
 
-      // Revoke old refresh token (optional: rotate tokens)
+      const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
+      const userAgent = request?.headers?.['user-agent'];
+
+      // Update last activity on the old token before revoking
       await this.prisma.authToken.delete({ where: { id: tokenInDb.id } });
 
-      return this.generateTokens(payload.sub, payload.role);
+      return this.generateTokens(payload.sub, payload.role, userAgent, ipAddress);
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token');
     }

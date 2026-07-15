@@ -33,11 +33,11 @@ let AuthController = class AuthController {
     register(dto) {
         return this.authService.register(dto);
     }
-    login(dto) {
-        return this.authService.login(dto);
+    login(dto, req) {
+        return this.authService.login(dto, req);
     }
-    refresh(dto) {
-        return this.authService.refresh(dto.refreshToken);
+    refresh(dto, req) {
+        return this.authService.refresh(dto.refreshToken, req);
     }
     logout(dto) {
         return this.authService.logout(dto.refreshToken);
@@ -75,8 +75,9 @@ __decorate([
     (0, audit_decorator_1.AuditLog)('AUTH_LOGIN', 'AUTH'),
     (0, swagger_1.ApiOperation)({ summary: 'User login' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "login", null);
 __decorate([
@@ -84,8 +85,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Refresh access token' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto]),
+    __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "refresh", null);
 __decorate([

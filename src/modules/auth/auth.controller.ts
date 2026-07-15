@@ -28,15 +28,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @AuditLog('AUTH_LOGIN', 'AUTH')
   @ApiOperation({ summary: 'User login' })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Body() dto: LoginDto, @Req() req: any) {
+    return this.authService.login(dto, req);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refresh(dto.refreshToken);
+  refresh(@Body() dto: RefreshTokenDto, @Req() req: any) {
+    return this.authService.refresh(dto.refreshToken, req);
   }
 
   @Post('logout')

@@ -12,14 +12,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     approveOrder(orderId: string, sellerId: string): Promise<{
         id: string;
@@ -27,14 +27,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     declineOrder(orderId: string, initiatorId: string): Promise<{
         id: string;
@@ -42,14 +42,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     expireOrder(orderId: string): Promise<{
         id: string;
@@ -57,14 +57,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     flagFraud(orderId: string, initiatorId: string): Promise<{
         id: string;
@@ -72,14 +72,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     getOrder(orderId: string, userId: string): Promise<{
         ad: {
@@ -88,8 +88,8 @@ export declare class OrdersService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
@@ -108,6 +108,8 @@ export declare class OrdersService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -122,6 +124,8 @@ export declare class OrdersService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -131,14 +135,14 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     }>;
     listUserOrders(userId: string): Promise<({
         ad: {
@@ -147,8 +151,8 @@ export declare class OrdersService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
@@ -162,13 +166,13 @@ export declare class OrdersService {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
-        fraudFlagged: boolean;
     })[]>;
 }

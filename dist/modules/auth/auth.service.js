@@ -49,6 +49,8 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const users_service_1 = require("../users/users.service");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const security_service_1 = require("../security/security.service");
+const fraud_rules_service_1 = require("../security/fraud-rules.service");
 const bcrypt = __importStar(require("bcrypt"));
 const crypto = __importStar(require("crypto"));
 const client_1 = require("../../generated/client/index.js");
@@ -61,12 +63,16 @@ let AuthService = class AuthService {
     configService;
     prisma;
     eventEmitter;
-    constructor(usersService, jwtService, configService, prisma, eventEmitter) {
+    securityService;
+    fraudRulesService;
+    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
         this.prisma = prisma;
         this.eventEmitter = eventEmitter;
+        this.securityService = securityService;
+        this.fraudRulesService = fraudRulesService;
     }
     async register(dto) {
         if (dto.email) {
@@ -98,30 +104,79 @@ let AuthService = class AuthService {
         this.eventEmitter.emit('user.created', { userId: user.id, email: user.email });
         return this.generateTokens(user.id, user.role);
     }
-    async login(dto) {
+    async login(dto, request) {
         const user = dto.email
             ? await this.usersService.findOneByEmail(dto.email)
             : await this.usersService.findOneByPhone(dto.phone);
         if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
+        if (user.lockedUntil && user.lockedUntil > new Date()) {
+            const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+            throw new common_1.ForbiddenException(`Account locked. Try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`);
+        }
         const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-        if (!isPasswordValid)
+        if (!isPasswordValid) {
+            const failedAttempts = user.failedLoginAttempts + 1;
+            const maxAttempts = 5;
+            const lockoutMinutes = 30;
+            const updateData = { failedLoginAttempts: failedAttempts };
+            if (failedAttempts >= maxAttempts) {
+                updateData.lockedUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000);
+                updateData.failedLoginAttempts = 0;
+            }
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: updateData,
+            });
+            const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+            await this.fraudRulesService.evaluateFailedLoginBurst(user.email || '', ipAddress).catch(() => { });
             throw new common_1.UnauthorizedException('Invalid credentials');
+        }
+        if (user.failedLoginAttempts > 0) {
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: 0, lockedUntil: null },
+            });
+        }
+        const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const parsedUA = this.securityService.parseUserAgent(userAgent);
+        const location = await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown');
         await this.prisma.device.upsert({
             where: { userId_deviceId: { userId: user.id, deviceId: dto.deviceId } },
-            update: { lastLogin: new Date(), fingerprint: dto.fingerprint },
+            update: {
+                lastLogin: new Date(),
+                fingerprint: dto.fingerprint,
+                userAgent,
+                ipAddress,
+                browser: parsedUA.browser,
+                osVersion: parsedUA.osVersion,
+                deviceName: parsedUA.deviceName,
+                location,
+                lastActivity: new Date(),
+            },
             create: {
                 userId: user.id,
                 deviceId: dto.deviceId,
                 fingerprint: dto.fingerprint,
+                userAgent,
+                ipAddress,
+                browser: parsedUA.browser,
+                osVersion: parsedUA.osVersion,
+                deviceName: parsedUA.deviceName,
+                location,
             },
         });
+        this.fraudRulesService.evaluateNewDeviceLogin(user.id, dto.deviceId, ipAddress).catch(() => { });
+        this.fraudRulesService.evaluateMultipleAccountsSameDevice(user.id, dto.deviceId).catch(() => { });
+        this.fraudRulesService.evaluateRapidWithdrawals(user.id).catch(() => { });
+        this.fraudRulesService.evaluateUnusualVolume(user.id).catch(() => { });
         const { passwordHash, ...userWithoutPassword } = user;
-        const token = await this.generateTokens(user.id, user.role);
+        const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
         const userData = { ...token, user: userWithoutPassword };
         return userData;
     }
-    async generateTokens(userId, role) {
+    async generateTokens(userId, role, userAgent, ipAddress) {
         const payload = { sub: userId, role };
         const accessToken = await this.jwtService.signAsync(payload, {
             secret: this.configService.get('JWT_SECRET'),
@@ -136,11 +191,13 @@ let AuthService = class AuthService {
                 userId,
                 token: refreshToken,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                userAgent: userAgent || null,
+                ipAddress: ipAddress || null,
             },
         });
         return { accessToken, refreshToken };
     }
-    async refresh(refreshToken) {
+    async refresh(refreshToken, request) {
         try {
             const payload = await this.jwtService.verifyAsync(refreshToken, {
                 secret: this.configService.get('JWT_REFRESH_SECRET'),
@@ -151,8 +208,10 @@ let AuthService = class AuthService {
             if (!tokenInDb || tokenInDb.expiresAt < new Date()) {
                 throw new common_1.UnauthorizedException('Invalid or expired refresh token');
             }
+            const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
+            const userAgent = request?.headers?.['user-agent'];
             await this.prisma.authToken.delete({ where: { id: tokenInDb.id } });
-            return this.generateTokens(payload.sub, payload.role);
+            return this.generateTokens(payload.sub, payload.role, userAgent, ipAddress);
         }
         catch (e) {
             throw new common_1.UnauthorizedException('Invalid refresh token');
@@ -293,6 +352,8 @@ exports.AuthService = AuthService = __decorate([
         jwt_1.JwtService,
         config_1.ConfigService,
         prisma_service_1.PrismaService,
-        event_emitter_1.EventEmitter2])
+        event_emitter_1.EventEmitter2,
+        security_service_1.SecurityService,
+        fraud_rules_service_1.FraudRulesService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

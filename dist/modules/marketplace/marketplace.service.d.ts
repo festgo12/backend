@@ -9,8 +9,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -24,8 +24,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -39,8 +39,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -54,8 +54,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -81,8 +81,8 @@ export declare class MarketplaceService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;

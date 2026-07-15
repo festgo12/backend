@@ -26,6 +26,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }>;

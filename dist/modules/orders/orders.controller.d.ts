@@ -9,14 +9,14 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     }>;
     findAll(req: any): Promise<({
         ad: {
@@ -25,8 +25,8 @@ export declare class OrdersController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -40,14 +40,14 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     })[]>;
     findOne(id: string, req: any): Promise<{
         ad: {
@@ -56,8 +56,8 @@ export declare class OrdersController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -76,6 +76,8 @@ export declare class OrdersController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -90,6 +92,8 @@ export declare class OrdersController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -99,14 +103,14 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     }>;
     approve(id: string, req: any): Promise<{
         id: string;
@@ -114,14 +118,14 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     }>;
     decline(id: string, req: any): Promise<{
         id: string;
@@ -129,14 +133,14 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     }>;
     flagFraud(id: string, req: any): Promise<{
         id: string;
@@ -144,13 +148,13 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
         version: number;
         adId: string;
-        buyerId: string;
-        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        fraudFlagged: boolean;
     }>;
 }

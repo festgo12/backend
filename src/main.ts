@@ -7,6 +7,7 @@ import { AuditService } from './modules/audit/audit.service';
 import helmet from 'helmet';
 import { join } from 'path';
 import * as express from 'express';
+import rateLimit from 'express-rate-limit';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -15,6 +16,39 @@ async function bootstrap() {
   // Security
   app.use(helmet());
   app.enableCors();
+
+  // Rate Limiting
+  app.use(
+    '/auth',
+    rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 20, // 20 requests per window per IP
+      message: { statusCode: 429, message: 'Too many authentication attempts. Please try again later.' },
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
+
+  app.use(
+    '/security',
+    rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 30, // 30 requests per minute
+      message: { statusCode: 429, message: 'Too many requests. Please try again later.' },
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
+
+  // Global rate limit
+  app.use(
+    rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 100, // 100 requests per minute globally
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
 
   // Static file serving for uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));

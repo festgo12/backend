@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../../core/database/prisma.service';
+import { SecurityService } from '../security/security.service';
+import { FraudRulesService } from '../security/fraud-rules.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -13,12 +15,14 @@ export declare class AuthService {
     private configService;
     private prisma;
     private eventEmitter;
-    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2);
+    private securityService;
+    private fraudRulesService;
+    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService);
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
-    login(dto: LoginDto): Promise<{
+    login(dto: LoginDto, request?: any): Promise<{
         user: {
             profile: {
                 firstName: string | null;
@@ -38,17 +42,19 @@ export declare class AuthService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;
     }>;
-    generateTokens(userId: string, role: Role): Promise<{
+    generateTokens(userId: string, role: Role, userAgent?: string, ipAddress?: string): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
-    refresh(refreshToken: string): Promise<{
+    refresh(refreshToken: string, request?: any): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
@@ -80,6 +86,8 @@ export declare class AuthService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };

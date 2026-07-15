@@ -98,6 +98,16 @@ export type NotificationTemplate = $Result.DefaultSelection<Prisma.$Notification
  * 
  */
 export type NotificationLog = $Result.DefaultSelection<Prisma.$NotificationLogPayload>
+/**
+ * Model SecurityAlert
+ * 
+ */
+export type SecurityAlert = $Result.DefaultSelection<Prisma.$SecurityAlertPayload>
+/**
+ * Model FraudRule
+ * 
+ */
+export type FraudRule = $Result.DefaultSelection<Prisma.$FraudRulePayload>
 
 /**
  * Enums
@@ -531,6 +541,26 @@ export class PrismaClient<
     * ```
     */
   get notificationLog(): Prisma.NotificationLogDelegate<ExtArgs>;
+
+  /**
+   * `prisma.securityAlert`: Exposes CRUD operations for the **SecurityAlert** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SecurityAlerts
+    * const securityAlerts = await prisma.securityAlert.findMany()
+    * ```
+    */
+  get securityAlert(): Prisma.SecurityAlertDelegate<ExtArgs>;
+
+  /**
+   * `prisma.fraudRule`: Exposes CRUD operations for the **FraudRule** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FraudRules
+    * const fraudRules = await prisma.fraudRule.findMany()
+    * ```
+    */
+  get fraudRule(): Prisma.FraudRuleDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -988,7 +1018,9 @@ export namespace Prisma {
     SecurityLog: 'SecurityLog',
     Notification: 'Notification',
     NotificationTemplate: 'NotificationTemplate',
-    NotificationLog: 'NotificationLog'
+    NotificationLog: 'NotificationLog',
+    SecurityAlert: 'SecurityAlert',
+    FraudRule: 'FraudRule'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1004,7 +1036,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2198,6 +2230,146 @@ export namespace Prisma {
           }
         }
       }
+      SecurityAlert: {
+        payload: Prisma.$SecurityAlertPayload<ExtArgs>
+        fields: Prisma.SecurityAlertFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SecurityAlertFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SecurityAlertFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          findFirst: {
+            args: Prisma.SecurityAlertFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SecurityAlertFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          findMany: {
+            args: Prisma.SecurityAlertFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>[]
+          }
+          create: {
+            args: Prisma.SecurityAlertCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          createMany: {
+            args: Prisma.SecurityAlertCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SecurityAlertCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>[]
+          }
+          delete: {
+            args: Prisma.SecurityAlertDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          update: {
+            args: Prisma.SecurityAlertUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          deleteMany: {
+            args: Prisma.SecurityAlertDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SecurityAlertUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SecurityAlertUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SecurityAlertPayload>
+          }
+          aggregate: {
+            args: Prisma.SecurityAlertAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSecurityAlert>
+          }
+          groupBy: {
+            args: Prisma.SecurityAlertGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SecurityAlertGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SecurityAlertCountArgs<ExtArgs>
+            result: $Utils.Optional<SecurityAlertCountAggregateOutputType> | number
+          }
+        }
+      }
+      FraudRule: {
+        payload: Prisma.$FraudRulePayload<ExtArgs>
+        fields: Prisma.FraudRuleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FraudRuleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FraudRuleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          findFirst: {
+            args: Prisma.FraudRuleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FraudRuleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          findMany: {
+            args: Prisma.FraudRuleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>[]
+          }
+          create: {
+            args: Prisma.FraudRuleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          createMany: {
+            args: Prisma.FraudRuleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FraudRuleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>[]
+          }
+          delete: {
+            args: Prisma.FraudRuleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          update: {
+            args: Prisma.FraudRuleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          deleteMany: {
+            args: Prisma.FraudRuleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FraudRuleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.FraudRuleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FraudRulePayload>
+          }
+          aggregate: {
+            args: Prisma.FraudRuleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFraudRule>
+          }
+          groupBy: {
+            args: Prisma.FraudRuleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FraudRuleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FraudRuleCountArgs<ExtArgs>
+            result: $Utils.Optional<FraudRuleCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2371,6 +2543,7 @@ export namespace Prisma {
     assignedDisputes: number
     evidenceUploads: number
     securityLogs: number
+    securityAlerts: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2386,6 +2559,7 @@ export namespace Prisma {
     assignedDisputes?: boolean | UserCountOutputTypeCountAssignedDisputesArgs
     evidenceUploads?: boolean | UserCountOutputTypeCountEvidenceUploadsArgs
     securityLogs?: boolean | UserCountOutputTypeCountSecurityLogsArgs
+    securityAlerts?: boolean | UserCountOutputTypeCountSecurityAlertsArgs
   }
 
   // Custom InputTypes
@@ -2481,6 +2655,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSecurityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SecurityLogWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSecurityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityAlertWhereInput
   }
 
 
@@ -2676,8 +2857,18 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    failedLoginAttempts: number | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    failedLoginAttempts: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -2691,6 +2882,8 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2706,6 +2899,8 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2721,11 +2916,21 @@ export namespace Prisma {
     twoFactorSecret: number
     resetToken: number
     resetTokenExpires: number
+    failedLoginAttempts: number
+    lockedUntil: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type UserAvgAggregateInputType = {
+    failedLoginAttempts?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    failedLoginAttempts?: true
+  }
 
   export type UserMinAggregateInputType = {
     id?: true
@@ -2738,6 +2943,8 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2753,6 +2960,8 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2768,6 +2977,8 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2811,6 +3022,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -2841,6 +3064,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -2856,9 +3081,13 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    failedLoginAttempts: number
+    lockedUntil: Date | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -2888,6 +3117,8 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     profile?: boolean | User$profileArgs<ExtArgs>
@@ -2904,6 +3135,7 @@ export namespace Prisma {
     assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
     evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
+    securityAlerts?: boolean | User$securityAlertsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2918,6 +3150,8 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -2933,6 +3167,8 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -2952,6 +3188,7 @@ export namespace Prisma {
     assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
     evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
+    securityAlerts?: boolean | User$securityAlertsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2973,6 +3210,7 @@ export namespace Prisma {
       assignedDisputes: Prisma.$DisputePayload<ExtArgs>[]
       evidenceUploads: Prisma.$EvidencePayload<ExtArgs>[]
       securityLogs: Prisma.$SecurityLogPayload<ExtArgs>[]
+      securityAlerts: Prisma.$SecurityAlertPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2985,6 +3223,8 @@ export namespace Prisma {
       twoFactorSecret: string | null
       resetToken: string | null
       resetTokenExpires: Date | null
+      failedLoginAttempts: number
+      lockedUntil: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -3365,6 +3605,7 @@ export namespace Prisma {
     assignedDisputes<T extends User$assignedDisputesArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
     evidenceUploads<T extends User$evidenceUploadsArgs<ExtArgs> = {}>(args?: Subset<T, User$evidenceUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
     securityLogs<T extends User$securityLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany"> | Null>
+    securityAlerts<T extends User$securityAlertsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3404,6 +3645,8 @@ export namespace Prisma {
     readonly twoFactorSecret: FieldRef<"User", 'String'>
     readonly resetToken: FieldRef<"User", 'String'>
     readonly resetTokenExpires: FieldRef<"User", 'DateTime'>
+    readonly failedLoginAttempts: FieldRef<"User", 'Int'>
+    readonly lockedUntil: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -3987,6 +4230,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SecurityLogScalarFieldEnum | SecurityLogScalarFieldEnum[]
+  }
+
+  /**
+   * User.securityAlerts
+   */
+  export type User$securityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    where?: SecurityAlertWhereInput
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    cursor?: SecurityAlertWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
   }
 
   /**
@@ -14416,6 +14679,9 @@ export namespace Prisma {
     userId: string | null
     token: string | null
     expiresAt: Date | null
+    userAgent: string | null
+    ipAddress: string | null
+    lastActivity: Date | null
     createdAt: Date | null
   }
 
@@ -14424,6 +14690,9 @@ export namespace Prisma {
     userId: string | null
     token: string | null
     expiresAt: Date | null
+    userAgent: string | null
+    ipAddress: string | null
+    lastActivity: Date | null
     createdAt: Date | null
   }
 
@@ -14432,6 +14701,9 @@ export namespace Prisma {
     userId: number
     token: number
     expiresAt: number
+    userAgent: number
+    ipAddress: number
+    lastActivity: number
     createdAt: number
     _all: number
   }
@@ -14442,6 +14714,9 @@ export namespace Prisma {
     userId?: true
     token?: true
     expiresAt?: true
+    userAgent?: true
+    ipAddress?: true
+    lastActivity?: true
     createdAt?: true
   }
 
@@ -14450,6 +14725,9 @@ export namespace Prisma {
     userId?: true
     token?: true
     expiresAt?: true
+    userAgent?: true
+    ipAddress?: true
+    lastActivity?: true
     createdAt?: true
   }
 
@@ -14458,6 +14736,9 @@ export namespace Prisma {
     userId?: true
     token?: true
     expiresAt?: true
+    userAgent?: true
+    ipAddress?: true
+    lastActivity?: true
     createdAt?: true
     _all?: true
   }
@@ -14539,6 +14820,9 @@ export namespace Prisma {
     userId: string
     token: string
     expiresAt: Date
+    userAgent: string | null
+    ipAddress: string | null
+    lastActivity: Date | null
     createdAt: Date
     _count: AuthTokenCountAggregateOutputType | null
     _min: AuthTokenMinAggregateOutputType | null
@@ -14564,6 +14848,9 @@ export namespace Prisma {
     userId?: boolean
     token?: boolean
     expiresAt?: boolean
+    userAgent?: boolean
+    ipAddress?: boolean
+    lastActivity?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["authToken"]>
@@ -14573,6 +14860,9 @@ export namespace Prisma {
     userId?: boolean
     token?: boolean
     expiresAt?: boolean
+    userAgent?: boolean
+    ipAddress?: boolean
+    lastActivity?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["authToken"]>
@@ -14582,6 +14872,9 @@ export namespace Prisma {
     userId?: boolean
     token?: boolean
     expiresAt?: boolean
+    userAgent?: boolean
+    ipAddress?: boolean
+    lastActivity?: boolean
     createdAt?: boolean
   }
 
@@ -14602,6 +14895,9 @@ export namespace Prisma {
       userId: string
       token: string
       expiresAt: Date
+      userAgent: string | null
+      ipAddress: string | null
+      lastActivity: Date | null
       createdAt: Date
     }, ExtArgs["result"]["authToken"]>
     composites: {}
@@ -15001,6 +15297,9 @@ export namespace Prisma {
     readonly userId: FieldRef<"AuthToken", 'String'>
     readonly token: FieldRef<"AuthToken", 'String'>
     readonly expiresAt: FieldRef<"AuthToken", 'DateTime'>
+    readonly userAgent: FieldRef<"AuthToken", 'String'>
+    readonly ipAddress: FieldRef<"AuthToken", 'String'>
+    readonly lastActivity: FieldRef<"AuthToken", 'DateTime'>
     readonly createdAt: FieldRef<"AuthToken", 'DateTime'>
   }
     
@@ -15349,10 +15648,16 @@ export namespace Prisma {
     userId: string | null
     deviceId: string | null
     fingerprint: string | null
-    lastLogin: Date | null
-    userAgent: string | null
+    deviceName: string | null
+    browser: string | null
+    osVersion: string | null
+    location: string | null
     ipAddress: string | null
+    userAgent: string | null
     fcmToken: string | null
+    lastLogin: Date | null
+    lastActivity: Date | null
+    createdAt: Date | null
   }
 
   export type DeviceMaxAggregateOutputType = {
@@ -15360,10 +15665,16 @@ export namespace Prisma {
     userId: string | null
     deviceId: string | null
     fingerprint: string | null
-    lastLogin: Date | null
-    userAgent: string | null
+    deviceName: string | null
+    browser: string | null
+    osVersion: string | null
+    location: string | null
     ipAddress: string | null
+    userAgent: string | null
     fcmToken: string | null
+    lastLogin: Date | null
+    lastActivity: Date | null
+    createdAt: Date | null
   }
 
   export type DeviceCountAggregateOutputType = {
@@ -15371,10 +15682,16 @@ export namespace Prisma {
     userId: number
     deviceId: number
     fingerprint: number
-    lastLogin: number
-    userAgent: number
+    deviceName: number
+    browser: number
+    osVersion: number
+    location: number
     ipAddress: number
+    userAgent: number
     fcmToken: number
+    lastLogin: number
+    lastActivity: number
+    createdAt: number
     _all: number
   }
 
@@ -15384,10 +15701,16 @@ export namespace Prisma {
     userId?: true
     deviceId?: true
     fingerprint?: true
-    lastLogin?: true
-    userAgent?: true
+    deviceName?: true
+    browser?: true
+    osVersion?: true
+    location?: true
     ipAddress?: true
+    userAgent?: true
     fcmToken?: true
+    lastLogin?: true
+    lastActivity?: true
+    createdAt?: true
   }
 
   export type DeviceMaxAggregateInputType = {
@@ -15395,10 +15718,16 @@ export namespace Prisma {
     userId?: true
     deviceId?: true
     fingerprint?: true
-    lastLogin?: true
-    userAgent?: true
+    deviceName?: true
+    browser?: true
+    osVersion?: true
+    location?: true
     ipAddress?: true
+    userAgent?: true
     fcmToken?: true
+    lastLogin?: true
+    lastActivity?: true
+    createdAt?: true
   }
 
   export type DeviceCountAggregateInputType = {
@@ -15406,10 +15735,16 @@ export namespace Prisma {
     userId?: true
     deviceId?: true
     fingerprint?: true
-    lastLogin?: true
-    userAgent?: true
+    deviceName?: true
+    browser?: true
+    osVersion?: true
+    location?: true
     ipAddress?: true
+    userAgent?: true
     fcmToken?: true
+    lastLogin?: true
+    lastActivity?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -15490,10 +15825,16 @@ export namespace Prisma {
     userId: string
     deviceId: string
     fingerprint: string
-    lastLogin: Date
-    userAgent: string | null
+    deviceName: string | null
+    browser: string | null
+    osVersion: string | null
+    location: string | null
     ipAddress: string | null
+    userAgent: string | null
     fcmToken: string | null
+    lastLogin: Date
+    lastActivity: Date | null
+    createdAt: Date
     _count: DeviceCountAggregateOutputType | null
     _min: DeviceMinAggregateOutputType | null
     _max: DeviceMaxAggregateOutputType | null
@@ -15518,10 +15859,16 @@ export namespace Prisma {
     userId?: boolean
     deviceId?: boolean
     fingerprint?: boolean
-    lastLogin?: boolean
-    userAgent?: boolean
+    deviceName?: boolean
+    browser?: boolean
+    osVersion?: boolean
+    location?: boolean
     ipAddress?: boolean
+    userAgent?: boolean
     fcmToken?: boolean
+    lastLogin?: boolean
+    lastActivity?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -15530,10 +15877,16 @@ export namespace Prisma {
     userId?: boolean
     deviceId?: boolean
     fingerprint?: boolean
-    lastLogin?: boolean
-    userAgent?: boolean
+    deviceName?: boolean
+    browser?: boolean
+    osVersion?: boolean
+    location?: boolean
     ipAddress?: boolean
+    userAgent?: boolean
     fcmToken?: boolean
+    lastLogin?: boolean
+    lastActivity?: boolean
+    createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -15542,10 +15895,16 @@ export namespace Prisma {
     userId?: boolean
     deviceId?: boolean
     fingerprint?: boolean
-    lastLogin?: boolean
-    userAgent?: boolean
+    deviceName?: boolean
+    browser?: boolean
+    osVersion?: boolean
+    location?: boolean
     ipAddress?: boolean
+    userAgent?: boolean
     fcmToken?: boolean
+    lastLogin?: boolean
+    lastActivity?: boolean
+    createdAt?: boolean
   }
 
   export type DeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15565,10 +15924,16 @@ export namespace Prisma {
       userId: string
       deviceId: string
       fingerprint: string
-      lastLogin: Date
-      userAgent: string | null
+      deviceName: string | null
+      browser: string | null
+      osVersion: string | null
+      location: string | null
       ipAddress: string | null
+      userAgent: string | null
       fcmToken: string | null
+      lastLogin: Date
+      lastActivity: Date | null
+      createdAt: Date
     }, ExtArgs["result"]["device"]>
     composites: {}
   }
@@ -15967,10 +16332,16 @@ export namespace Prisma {
     readonly userId: FieldRef<"Device", 'String'>
     readonly deviceId: FieldRef<"Device", 'String'>
     readonly fingerprint: FieldRef<"Device", 'String'>
-    readonly lastLogin: FieldRef<"Device", 'DateTime'>
-    readonly userAgent: FieldRef<"Device", 'String'>
+    readonly deviceName: FieldRef<"Device", 'String'>
+    readonly browser: FieldRef<"Device", 'String'>
+    readonly osVersion: FieldRef<"Device", 'String'>
+    readonly location: FieldRef<"Device", 'String'>
     readonly ipAddress: FieldRef<"Device", 'String'>
+    readonly userAgent: FieldRef<"Device", 'String'>
     readonly fcmToken: FieldRef<"Device", 'String'>
+    readonly lastLogin: FieldRef<"Device", 'DateTime'>
+    readonly lastActivity: FieldRef<"Device", 'DateTime'>
+    readonly createdAt: FieldRef<"Device", 'DateTime'>
   }
     
 
@@ -20347,6 +20718,1955 @@ export namespace Prisma {
 
 
   /**
+   * Model SecurityAlert
+   */
+
+  export type AggregateSecurityAlert = {
+    _count: SecurityAlertCountAggregateOutputType | null
+    _min: SecurityAlertMinAggregateOutputType | null
+    _max: SecurityAlertMaxAggregateOutputType | null
+  }
+
+  export type SecurityAlertMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    severity: string | null
+    title: string | null
+    message: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type SecurityAlertMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    severity: string | null
+    title: string | null
+    message: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type SecurityAlertCountAggregateOutputType = {
+    id: number
+    userId: number
+    type: number
+    severity: number
+    title: number
+    message: number
+    metadata: number
+    isRead: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SecurityAlertMinAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    severity?: true
+    title?: true
+    message?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type SecurityAlertMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    severity?: true
+    title?: true
+    message?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type SecurityAlertCountAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    severity?: true
+    title?: true
+    message?: true
+    metadata?: true
+    isRead?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SecurityAlertAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SecurityAlert to aggregate.
+     */
+    where?: SecurityAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityAlerts to fetch.
+     */
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SecurityAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SecurityAlerts
+    **/
+    _count?: true | SecurityAlertCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SecurityAlertMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SecurityAlertMaxAggregateInputType
+  }
+
+  export type GetSecurityAlertAggregateType<T extends SecurityAlertAggregateArgs> = {
+        [P in keyof T & keyof AggregateSecurityAlert]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSecurityAlert[P]>
+      : GetScalarType<T[P], AggregateSecurityAlert[P]>
+  }
+
+
+
+
+  export type SecurityAlertGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityAlertWhereInput
+    orderBy?: SecurityAlertOrderByWithAggregationInput | SecurityAlertOrderByWithAggregationInput[]
+    by: SecurityAlertScalarFieldEnum[] | SecurityAlertScalarFieldEnum
+    having?: SecurityAlertScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SecurityAlertCountAggregateInputType | true
+    _min?: SecurityAlertMinAggregateInputType
+    _max?: SecurityAlertMaxAggregateInputType
+  }
+
+  export type SecurityAlertGroupByOutputType = {
+    id: string
+    userId: string
+    type: string
+    severity: string
+    title: string
+    message: string
+    metadata: JsonValue | null
+    isRead: boolean
+    createdAt: Date
+    _count: SecurityAlertCountAggregateOutputType | null
+    _min: SecurityAlertMinAggregateOutputType | null
+    _max: SecurityAlertMaxAggregateOutputType | null
+  }
+
+  type GetSecurityAlertGroupByPayload<T extends SecurityAlertGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SecurityAlertGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SecurityAlertGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SecurityAlertGroupByOutputType[P]>
+            : GetScalarType<T[P], SecurityAlertGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SecurityAlertSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    severity?: boolean
+    title?: boolean
+    message?: boolean
+    metadata?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["securityAlert"]>
+
+  export type SecurityAlertSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    severity?: boolean
+    title?: boolean
+    message?: boolean
+    metadata?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["securityAlert"]>
+
+  export type SecurityAlertSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    severity?: boolean
+    title?: boolean
+    message?: boolean
+    metadata?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+  }
+
+  export type SecurityAlertInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type SecurityAlertIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $SecurityAlertPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SecurityAlert"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      type: string
+      severity: string
+      title: string
+      message: string
+      metadata: Prisma.JsonValue | null
+      isRead: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["securityAlert"]>
+    composites: {}
+  }
+
+  type SecurityAlertGetPayload<S extends boolean | null | undefined | SecurityAlertDefaultArgs> = $Result.GetResult<Prisma.$SecurityAlertPayload, S>
+
+  type SecurityAlertCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SecurityAlertFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: SecurityAlertCountAggregateInputType | true
+    }
+
+  export interface SecurityAlertDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SecurityAlert'], meta: { name: 'SecurityAlert' } }
+    /**
+     * Find zero or one SecurityAlert that matches the filter.
+     * @param {SecurityAlertFindUniqueArgs} args - Arguments to find a SecurityAlert
+     * @example
+     * // Get one SecurityAlert
+     * const securityAlert = await prisma.securityAlert.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SecurityAlertFindUniqueArgs>(args: SelectSubset<T, SecurityAlertFindUniqueArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one SecurityAlert that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {SecurityAlertFindUniqueOrThrowArgs} args - Arguments to find a SecurityAlert
+     * @example
+     * // Get one SecurityAlert
+     * const securityAlert = await prisma.securityAlert.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SecurityAlertFindUniqueOrThrowArgs>(args: SelectSubset<T, SecurityAlertFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first SecurityAlert that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertFindFirstArgs} args - Arguments to find a SecurityAlert
+     * @example
+     * // Get one SecurityAlert
+     * const securityAlert = await prisma.securityAlert.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SecurityAlertFindFirstArgs>(args?: SelectSubset<T, SecurityAlertFindFirstArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first SecurityAlert that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertFindFirstOrThrowArgs} args - Arguments to find a SecurityAlert
+     * @example
+     * // Get one SecurityAlert
+     * const securityAlert = await prisma.securityAlert.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SecurityAlertFindFirstOrThrowArgs>(args?: SelectSubset<T, SecurityAlertFindFirstOrThrowArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more SecurityAlerts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SecurityAlerts
+     * const securityAlerts = await prisma.securityAlert.findMany()
+     * 
+     * // Get first 10 SecurityAlerts
+     * const securityAlerts = await prisma.securityAlert.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const securityAlertWithIdOnly = await prisma.securityAlert.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SecurityAlertFindManyArgs>(args?: SelectSubset<T, SecurityAlertFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a SecurityAlert.
+     * @param {SecurityAlertCreateArgs} args - Arguments to create a SecurityAlert.
+     * @example
+     * // Create one SecurityAlert
+     * const SecurityAlert = await prisma.securityAlert.create({
+     *   data: {
+     *     // ... data to create a SecurityAlert
+     *   }
+     * })
+     * 
+     */
+    create<T extends SecurityAlertCreateArgs>(args: SelectSubset<T, SecurityAlertCreateArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many SecurityAlerts.
+     * @param {SecurityAlertCreateManyArgs} args - Arguments to create many SecurityAlerts.
+     * @example
+     * // Create many SecurityAlerts
+     * const securityAlert = await prisma.securityAlert.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SecurityAlertCreateManyArgs>(args?: SelectSubset<T, SecurityAlertCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SecurityAlerts and returns the data saved in the database.
+     * @param {SecurityAlertCreateManyAndReturnArgs} args - Arguments to create many SecurityAlerts.
+     * @example
+     * // Create many SecurityAlerts
+     * const securityAlert = await prisma.securityAlert.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SecurityAlerts and only return the `id`
+     * const securityAlertWithIdOnly = await prisma.securityAlert.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SecurityAlertCreateManyAndReturnArgs>(args?: SelectSubset<T, SecurityAlertCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a SecurityAlert.
+     * @param {SecurityAlertDeleteArgs} args - Arguments to delete one SecurityAlert.
+     * @example
+     * // Delete one SecurityAlert
+     * const SecurityAlert = await prisma.securityAlert.delete({
+     *   where: {
+     *     // ... filter to delete one SecurityAlert
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SecurityAlertDeleteArgs>(args: SelectSubset<T, SecurityAlertDeleteArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one SecurityAlert.
+     * @param {SecurityAlertUpdateArgs} args - Arguments to update one SecurityAlert.
+     * @example
+     * // Update one SecurityAlert
+     * const securityAlert = await prisma.securityAlert.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SecurityAlertUpdateArgs>(args: SelectSubset<T, SecurityAlertUpdateArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more SecurityAlerts.
+     * @param {SecurityAlertDeleteManyArgs} args - Arguments to filter SecurityAlerts to delete.
+     * @example
+     * // Delete a few SecurityAlerts
+     * const { count } = await prisma.securityAlert.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SecurityAlertDeleteManyArgs>(args?: SelectSubset<T, SecurityAlertDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SecurityAlerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SecurityAlerts
+     * const securityAlert = await prisma.securityAlert.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SecurityAlertUpdateManyArgs>(args: SelectSubset<T, SecurityAlertUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SecurityAlert.
+     * @param {SecurityAlertUpsertArgs} args - Arguments to update or create a SecurityAlert.
+     * @example
+     * // Update or create a SecurityAlert
+     * const securityAlert = await prisma.securityAlert.upsert({
+     *   create: {
+     *     // ... data to create a SecurityAlert
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SecurityAlert we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SecurityAlertUpsertArgs>(args: SelectSubset<T, SecurityAlertUpsertArgs<ExtArgs>>): Prisma__SecurityAlertClient<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of SecurityAlerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertCountArgs} args - Arguments to filter SecurityAlerts to count.
+     * @example
+     * // Count the number of SecurityAlerts
+     * const count = await prisma.securityAlert.count({
+     *   where: {
+     *     // ... the filter for the SecurityAlerts we want to count
+     *   }
+     * })
+    **/
+    count<T extends SecurityAlertCountArgs>(
+      args?: Subset<T, SecurityAlertCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SecurityAlertCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SecurityAlert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SecurityAlertAggregateArgs>(args: Subset<T, SecurityAlertAggregateArgs>): Prisma.PrismaPromise<GetSecurityAlertAggregateType<T>>
+
+    /**
+     * Group by SecurityAlert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SecurityAlertGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SecurityAlertGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SecurityAlertGroupByArgs['orderBy'] }
+        : { orderBy?: SecurityAlertGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SecurityAlertGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSecurityAlertGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SecurityAlert model
+   */
+  readonly fields: SecurityAlertFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SecurityAlert.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SecurityAlertClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SecurityAlert model
+   */ 
+  interface SecurityAlertFieldRefs {
+    readonly id: FieldRef<"SecurityAlert", 'String'>
+    readonly userId: FieldRef<"SecurityAlert", 'String'>
+    readonly type: FieldRef<"SecurityAlert", 'String'>
+    readonly severity: FieldRef<"SecurityAlert", 'String'>
+    readonly title: FieldRef<"SecurityAlert", 'String'>
+    readonly message: FieldRef<"SecurityAlert", 'String'>
+    readonly metadata: FieldRef<"SecurityAlert", 'Json'>
+    readonly isRead: FieldRef<"SecurityAlert", 'Boolean'>
+    readonly createdAt: FieldRef<"SecurityAlert", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SecurityAlert findUnique
+   */
+  export type SecurityAlertFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityAlert to fetch.
+     */
+    where: SecurityAlertWhereUniqueInput
+  }
+
+  /**
+   * SecurityAlert findUniqueOrThrow
+   */
+  export type SecurityAlertFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityAlert to fetch.
+     */
+    where: SecurityAlertWhereUniqueInput
+  }
+
+  /**
+   * SecurityAlert findFirst
+   */
+  export type SecurityAlertFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityAlert to fetch.
+     */
+    where?: SecurityAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityAlerts to fetch.
+     */
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SecurityAlerts.
+     */
+    cursor?: SecurityAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SecurityAlerts.
+     */
+    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityAlert findFirstOrThrow
+   */
+  export type SecurityAlertFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityAlert to fetch.
+     */
+    where?: SecurityAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityAlerts to fetch.
+     */
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SecurityAlerts.
+     */
+    cursor?: SecurityAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityAlerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SecurityAlerts.
+     */
+    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityAlert findMany
+   */
+  export type SecurityAlertFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter, which SecurityAlerts to fetch.
+     */
+    where?: SecurityAlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SecurityAlerts to fetch.
+     */
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SecurityAlerts.
+     */
+    cursor?: SecurityAlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SecurityAlerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SecurityAlerts.
+     */
+    skip?: number
+    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
+  }
+
+  /**
+   * SecurityAlert create
+   */
+  export type SecurityAlertCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SecurityAlert.
+     */
+    data: XOR<SecurityAlertCreateInput, SecurityAlertUncheckedCreateInput>
+  }
+
+  /**
+   * SecurityAlert createMany
+   */
+  export type SecurityAlertCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SecurityAlerts.
+     */
+    data: SecurityAlertCreateManyInput | SecurityAlertCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SecurityAlert createManyAndReturn
+   */
+  export type SecurityAlertCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many SecurityAlerts.
+     */
+    data: SecurityAlertCreateManyInput | SecurityAlertCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SecurityAlert update
+   */
+  export type SecurityAlertUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SecurityAlert.
+     */
+    data: XOR<SecurityAlertUpdateInput, SecurityAlertUncheckedUpdateInput>
+    /**
+     * Choose, which SecurityAlert to update.
+     */
+    where: SecurityAlertWhereUniqueInput
+  }
+
+  /**
+   * SecurityAlert updateMany
+   */
+  export type SecurityAlertUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SecurityAlerts.
+     */
+    data: XOR<SecurityAlertUpdateManyMutationInput, SecurityAlertUncheckedUpdateManyInput>
+    /**
+     * Filter which SecurityAlerts to update
+     */
+    where?: SecurityAlertWhereInput
+  }
+
+  /**
+   * SecurityAlert upsert
+   */
+  export type SecurityAlertUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SecurityAlert to update in case it exists.
+     */
+    where: SecurityAlertWhereUniqueInput
+    /**
+     * In case the SecurityAlert found by the `where` argument doesn't exist, create a new SecurityAlert with this data.
+     */
+    create: XOR<SecurityAlertCreateInput, SecurityAlertUncheckedCreateInput>
+    /**
+     * In case the SecurityAlert was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SecurityAlertUpdateInput, SecurityAlertUncheckedUpdateInput>
+  }
+
+  /**
+   * SecurityAlert delete
+   */
+  export type SecurityAlertDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    /**
+     * Filter which SecurityAlert to delete.
+     */
+    where: SecurityAlertWhereUniqueInput
+  }
+
+  /**
+   * SecurityAlert deleteMany
+   */
+  export type SecurityAlertDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SecurityAlerts to delete
+     */
+    where?: SecurityAlertWhereInput
+  }
+
+  /**
+   * SecurityAlert without action
+   */
+  export type SecurityAlertDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FraudRule
+   */
+
+  export type AggregateFraudRule = {
+    _count: FraudRuleCountAggregateOutputType | null
+    _avg: FraudRuleAvgAggregateOutputType | null
+    _sum: FraudRuleSumAggregateOutputType | null
+    _min: FraudRuleMinAggregateOutputType | null
+    _max: FraudRuleMaxAggregateOutputType | null
+  }
+
+  export type FraudRuleAvgAggregateOutputType = {
+    threshold: number | null
+  }
+
+  export type FraudRuleSumAggregateOutputType = {
+    threshold: number | null
+  }
+
+  export type FraudRuleMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    code: string | null
+    description: string | null
+    enabled: boolean | null
+    threshold: number | null
+    severity: string | null
+    action: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FraudRuleMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    code: string | null
+    description: string | null
+    enabled: boolean | null
+    threshold: number | null
+    severity: string | null
+    action: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FraudRuleCountAggregateOutputType = {
+    id: number
+    name: number
+    code: number
+    description: number
+    enabled: number
+    threshold: number
+    severity: number
+    action: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FraudRuleAvgAggregateInputType = {
+    threshold?: true
+  }
+
+  export type FraudRuleSumAggregateInputType = {
+    threshold?: true
+  }
+
+  export type FraudRuleMinAggregateInputType = {
+    id?: true
+    name?: true
+    code?: true
+    description?: true
+    enabled?: true
+    threshold?: true
+    severity?: true
+    action?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FraudRuleMaxAggregateInputType = {
+    id?: true
+    name?: true
+    code?: true
+    description?: true
+    enabled?: true
+    threshold?: true
+    severity?: true
+    action?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FraudRuleCountAggregateInputType = {
+    id?: true
+    name?: true
+    code?: true
+    description?: true
+    enabled?: true
+    threshold?: true
+    severity?: true
+    action?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FraudRuleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FraudRule to aggregate.
+     */
+    where?: FraudRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FraudRules to fetch.
+     */
+    orderBy?: FraudRuleOrderByWithRelationInput | FraudRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FraudRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FraudRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FraudRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FraudRules
+    **/
+    _count?: true | FraudRuleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: FraudRuleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: FraudRuleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FraudRuleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FraudRuleMaxAggregateInputType
+  }
+
+  export type GetFraudRuleAggregateType<T extends FraudRuleAggregateArgs> = {
+        [P in keyof T & keyof AggregateFraudRule]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFraudRule[P]>
+      : GetScalarType<T[P], AggregateFraudRule[P]>
+  }
+
+
+
+
+  export type FraudRuleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FraudRuleWhereInput
+    orderBy?: FraudRuleOrderByWithAggregationInput | FraudRuleOrderByWithAggregationInput[]
+    by: FraudRuleScalarFieldEnum[] | FraudRuleScalarFieldEnum
+    having?: FraudRuleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FraudRuleCountAggregateInputType | true
+    _avg?: FraudRuleAvgAggregateInputType
+    _sum?: FraudRuleSumAggregateInputType
+    _min?: FraudRuleMinAggregateInputType
+    _max?: FraudRuleMaxAggregateInputType
+  }
+
+  export type FraudRuleGroupByOutputType = {
+    id: string
+    name: string
+    code: string
+    description: string
+    enabled: boolean
+    threshold: number
+    severity: string
+    action: string
+    createdAt: Date
+    updatedAt: Date
+    _count: FraudRuleCountAggregateOutputType | null
+    _avg: FraudRuleAvgAggregateOutputType | null
+    _sum: FraudRuleSumAggregateOutputType | null
+    _min: FraudRuleMinAggregateOutputType | null
+    _max: FraudRuleMaxAggregateOutputType | null
+  }
+
+  type GetFraudRuleGroupByPayload<T extends FraudRuleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FraudRuleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FraudRuleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FraudRuleGroupByOutputType[P]>
+            : GetScalarType<T[P], FraudRuleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FraudRuleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    code?: boolean
+    description?: boolean
+    enabled?: boolean
+    threshold?: boolean
+    severity?: boolean
+    action?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["fraudRule"]>
+
+  export type FraudRuleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    code?: boolean
+    description?: boolean
+    enabled?: boolean
+    threshold?: boolean
+    severity?: boolean
+    action?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["fraudRule"]>
+
+  export type FraudRuleSelectScalar = {
+    id?: boolean
+    name?: boolean
+    code?: boolean
+    description?: boolean
+    enabled?: boolean
+    threshold?: boolean
+    severity?: boolean
+    action?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $FraudRulePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FraudRule"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      code: string
+      description: string
+      enabled: boolean
+      threshold: number
+      severity: string
+      action: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["fraudRule"]>
+    composites: {}
+  }
+
+  type FraudRuleGetPayload<S extends boolean | null | undefined | FraudRuleDefaultArgs> = $Result.GetResult<Prisma.$FraudRulePayload, S>
+
+  type FraudRuleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<FraudRuleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: FraudRuleCountAggregateInputType | true
+    }
+
+  export interface FraudRuleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FraudRule'], meta: { name: 'FraudRule' } }
+    /**
+     * Find zero or one FraudRule that matches the filter.
+     * @param {FraudRuleFindUniqueArgs} args - Arguments to find a FraudRule
+     * @example
+     * // Get one FraudRule
+     * const fraudRule = await prisma.fraudRule.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FraudRuleFindUniqueArgs>(args: SelectSubset<T, FraudRuleFindUniqueArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one FraudRule that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {FraudRuleFindUniqueOrThrowArgs} args - Arguments to find a FraudRule
+     * @example
+     * // Get one FraudRule
+     * const fraudRule = await prisma.fraudRule.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FraudRuleFindUniqueOrThrowArgs>(args: SelectSubset<T, FraudRuleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first FraudRule that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleFindFirstArgs} args - Arguments to find a FraudRule
+     * @example
+     * // Get one FraudRule
+     * const fraudRule = await prisma.fraudRule.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FraudRuleFindFirstArgs>(args?: SelectSubset<T, FraudRuleFindFirstArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first FraudRule that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleFindFirstOrThrowArgs} args - Arguments to find a FraudRule
+     * @example
+     * // Get one FraudRule
+     * const fraudRule = await prisma.fraudRule.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FraudRuleFindFirstOrThrowArgs>(args?: SelectSubset<T, FraudRuleFindFirstOrThrowArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more FraudRules that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FraudRules
+     * const fraudRules = await prisma.fraudRule.findMany()
+     * 
+     * // Get first 10 FraudRules
+     * const fraudRules = await prisma.fraudRule.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const fraudRuleWithIdOnly = await prisma.fraudRule.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FraudRuleFindManyArgs>(args?: SelectSubset<T, FraudRuleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a FraudRule.
+     * @param {FraudRuleCreateArgs} args - Arguments to create a FraudRule.
+     * @example
+     * // Create one FraudRule
+     * const FraudRule = await prisma.fraudRule.create({
+     *   data: {
+     *     // ... data to create a FraudRule
+     *   }
+     * })
+     * 
+     */
+    create<T extends FraudRuleCreateArgs>(args: SelectSubset<T, FraudRuleCreateArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many FraudRules.
+     * @param {FraudRuleCreateManyArgs} args - Arguments to create many FraudRules.
+     * @example
+     * // Create many FraudRules
+     * const fraudRule = await prisma.fraudRule.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FraudRuleCreateManyArgs>(args?: SelectSubset<T, FraudRuleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FraudRules and returns the data saved in the database.
+     * @param {FraudRuleCreateManyAndReturnArgs} args - Arguments to create many FraudRules.
+     * @example
+     * // Create many FraudRules
+     * const fraudRule = await prisma.fraudRule.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FraudRules and only return the `id`
+     * const fraudRuleWithIdOnly = await prisma.fraudRule.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FraudRuleCreateManyAndReturnArgs>(args?: SelectSubset<T, FraudRuleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a FraudRule.
+     * @param {FraudRuleDeleteArgs} args - Arguments to delete one FraudRule.
+     * @example
+     * // Delete one FraudRule
+     * const FraudRule = await prisma.fraudRule.delete({
+     *   where: {
+     *     // ... filter to delete one FraudRule
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FraudRuleDeleteArgs>(args: SelectSubset<T, FraudRuleDeleteArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one FraudRule.
+     * @param {FraudRuleUpdateArgs} args - Arguments to update one FraudRule.
+     * @example
+     * // Update one FraudRule
+     * const fraudRule = await prisma.fraudRule.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FraudRuleUpdateArgs>(args: SelectSubset<T, FraudRuleUpdateArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more FraudRules.
+     * @param {FraudRuleDeleteManyArgs} args - Arguments to filter FraudRules to delete.
+     * @example
+     * // Delete a few FraudRules
+     * const { count } = await prisma.fraudRule.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FraudRuleDeleteManyArgs>(args?: SelectSubset<T, FraudRuleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FraudRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FraudRules
+     * const fraudRule = await prisma.fraudRule.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FraudRuleUpdateManyArgs>(args: SelectSubset<T, FraudRuleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one FraudRule.
+     * @param {FraudRuleUpsertArgs} args - Arguments to update or create a FraudRule.
+     * @example
+     * // Update or create a FraudRule
+     * const fraudRule = await prisma.fraudRule.upsert({
+     *   create: {
+     *     // ... data to create a FraudRule
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FraudRule we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FraudRuleUpsertArgs>(args: SelectSubset<T, FraudRuleUpsertArgs<ExtArgs>>): Prisma__FraudRuleClient<$Result.GetResult<Prisma.$FraudRulePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of FraudRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleCountArgs} args - Arguments to filter FraudRules to count.
+     * @example
+     * // Count the number of FraudRules
+     * const count = await prisma.fraudRule.count({
+     *   where: {
+     *     // ... the filter for the FraudRules we want to count
+     *   }
+     * })
+    **/
+    count<T extends FraudRuleCountArgs>(
+      args?: Subset<T, FraudRuleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FraudRuleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FraudRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FraudRuleAggregateArgs>(args: Subset<T, FraudRuleAggregateArgs>): Prisma.PrismaPromise<GetFraudRuleAggregateType<T>>
+
+    /**
+     * Group by FraudRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FraudRuleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FraudRuleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FraudRuleGroupByArgs['orderBy'] }
+        : { orderBy?: FraudRuleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FraudRuleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFraudRuleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FraudRule model
+   */
+  readonly fields: FraudRuleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FraudRule.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FraudRuleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FraudRule model
+   */ 
+  interface FraudRuleFieldRefs {
+    readonly id: FieldRef<"FraudRule", 'String'>
+    readonly name: FieldRef<"FraudRule", 'String'>
+    readonly code: FieldRef<"FraudRule", 'String'>
+    readonly description: FieldRef<"FraudRule", 'String'>
+    readonly enabled: FieldRef<"FraudRule", 'Boolean'>
+    readonly threshold: FieldRef<"FraudRule", 'Int'>
+    readonly severity: FieldRef<"FraudRule", 'String'>
+    readonly action: FieldRef<"FraudRule", 'String'>
+    readonly createdAt: FieldRef<"FraudRule", 'DateTime'>
+    readonly updatedAt: FieldRef<"FraudRule", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FraudRule findUnique
+   */
+  export type FraudRuleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter, which FraudRule to fetch.
+     */
+    where: FraudRuleWhereUniqueInput
+  }
+
+  /**
+   * FraudRule findUniqueOrThrow
+   */
+  export type FraudRuleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter, which FraudRule to fetch.
+     */
+    where: FraudRuleWhereUniqueInput
+  }
+
+  /**
+   * FraudRule findFirst
+   */
+  export type FraudRuleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter, which FraudRule to fetch.
+     */
+    where?: FraudRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FraudRules to fetch.
+     */
+    orderBy?: FraudRuleOrderByWithRelationInput | FraudRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FraudRules.
+     */
+    cursor?: FraudRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FraudRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FraudRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FraudRules.
+     */
+    distinct?: FraudRuleScalarFieldEnum | FraudRuleScalarFieldEnum[]
+  }
+
+  /**
+   * FraudRule findFirstOrThrow
+   */
+  export type FraudRuleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter, which FraudRule to fetch.
+     */
+    where?: FraudRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FraudRules to fetch.
+     */
+    orderBy?: FraudRuleOrderByWithRelationInput | FraudRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FraudRules.
+     */
+    cursor?: FraudRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FraudRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FraudRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FraudRules.
+     */
+    distinct?: FraudRuleScalarFieldEnum | FraudRuleScalarFieldEnum[]
+  }
+
+  /**
+   * FraudRule findMany
+   */
+  export type FraudRuleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter, which FraudRules to fetch.
+     */
+    where?: FraudRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FraudRules to fetch.
+     */
+    orderBy?: FraudRuleOrderByWithRelationInput | FraudRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FraudRules.
+     */
+    cursor?: FraudRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FraudRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FraudRules.
+     */
+    skip?: number
+    distinct?: FraudRuleScalarFieldEnum | FraudRuleScalarFieldEnum[]
+  }
+
+  /**
+   * FraudRule create
+   */
+  export type FraudRuleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * The data needed to create a FraudRule.
+     */
+    data: XOR<FraudRuleCreateInput, FraudRuleUncheckedCreateInput>
+  }
+
+  /**
+   * FraudRule createMany
+   */
+  export type FraudRuleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FraudRules.
+     */
+    data: FraudRuleCreateManyInput | FraudRuleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FraudRule createManyAndReturn
+   */
+  export type FraudRuleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many FraudRules.
+     */
+    data: FraudRuleCreateManyInput | FraudRuleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FraudRule update
+   */
+  export type FraudRuleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * The data needed to update a FraudRule.
+     */
+    data: XOR<FraudRuleUpdateInput, FraudRuleUncheckedUpdateInput>
+    /**
+     * Choose, which FraudRule to update.
+     */
+    where: FraudRuleWhereUniqueInput
+  }
+
+  /**
+   * FraudRule updateMany
+   */
+  export type FraudRuleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FraudRules.
+     */
+    data: XOR<FraudRuleUpdateManyMutationInput, FraudRuleUncheckedUpdateManyInput>
+    /**
+     * Filter which FraudRules to update
+     */
+    where?: FraudRuleWhereInput
+  }
+
+  /**
+   * FraudRule upsert
+   */
+  export type FraudRuleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * The filter to search for the FraudRule to update in case it exists.
+     */
+    where: FraudRuleWhereUniqueInput
+    /**
+     * In case the FraudRule found by the `where` argument doesn't exist, create a new FraudRule with this data.
+     */
+    create: XOR<FraudRuleCreateInput, FraudRuleUncheckedCreateInput>
+    /**
+     * In case the FraudRule was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FraudRuleUpdateInput, FraudRuleUncheckedUpdateInput>
+  }
+
+  /**
+   * FraudRule delete
+   */
+  export type FraudRuleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+    /**
+     * Filter which FraudRule to delete.
+     */
+    where: FraudRuleWhereUniqueInput
+  }
+
+  /**
+   * FraudRule deleteMany
+   */
+  export type FraudRuleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FraudRules to delete
+     */
+    where?: FraudRuleWhereInput
+  }
+
+  /**
+   * FraudRule without action
+   */
+  export type FraudRuleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FraudRule
+     */
+    select?: FraudRuleSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -20371,6 +22691,8 @@ export namespace Prisma {
     twoFactorSecret: 'twoFactorSecret',
     resetToken: 'resetToken',
     resetTokenExpires: 'resetTokenExpires',
+    failedLoginAttempts: 'failedLoginAttempts',
+    lockedUntil: 'lockedUntil',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -20535,6 +22857,9 @@ export namespace Prisma {
     userId: 'userId',
     token: 'token',
     expiresAt: 'expiresAt',
+    userAgent: 'userAgent',
+    ipAddress: 'ipAddress',
+    lastActivity: 'lastActivity',
     createdAt: 'createdAt'
   };
 
@@ -20546,10 +22871,16 @@ export namespace Prisma {
     userId: 'userId',
     deviceId: 'deviceId',
     fingerprint: 'fingerprint',
-    lastLogin: 'lastLogin',
-    userAgent: 'userAgent',
+    deviceName: 'deviceName',
+    browser: 'browser',
+    osVersion: 'osVersion',
+    location: 'location',
     ipAddress: 'ipAddress',
-    fcmToken: 'fcmToken'
+    userAgent: 'userAgent',
+    fcmToken: 'fcmToken',
+    lastLogin: 'lastLogin',
+    lastActivity: 'lastActivity',
+    createdAt: 'createdAt'
   };
 
   export type DeviceScalarFieldEnum = (typeof DeviceScalarFieldEnum)[keyof typeof DeviceScalarFieldEnum]
@@ -20626,6 +22957,37 @@ export namespace Prisma {
   };
 
   export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
+
+
+  export const SecurityAlertScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    type: 'type',
+    severity: 'severity',
+    title: 'title',
+    message: 'message',
+    metadata: 'metadata',
+    isRead: 'isRead',
+    createdAt: 'createdAt'
+  };
+
+  export type SecurityAlertScalarFieldEnum = (typeof SecurityAlertScalarFieldEnum)[keyof typeof SecurityAlertScalarFieldEnum]
+
+
+  export const FraudRuleScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    code: 'code',
+    description: 'description',
+    enabled: 'enabled',
+    threshold: 'threshold',
+    severity: 'severity',
+    action: 'action',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FraudRuleScalarFieldEnum = (typeof FraudRuleScalarFieldEnum)[keyof typeof FraudRuleScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -20738,6 +23100,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Currency'
    */
   export type EnumCurrencyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Currency'>
@@ -20762,20 +23138,6 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal[]'
    */
   export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int[]'
-   */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -20901,6 +23263,8 @@ export namespace Prisma {
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
     resetToken?: StringNullableFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    failedLoginAttempts?: IntFilter<"User"> | number
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     profile?: XOR<ProfileNullableRelationFilter, ProfileWhereInput> | null
@@ -20917,6 +23281,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeListRelationFilter
     evidenceUploads?: EvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
+    securityAlerts?: SecurityAlertListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -20930,6 +23295,8 @@ export namespace Prisma {
     twoFactorSecret?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     profile?: ProfileOrderByWithRelationInput
@@ -20946,6 +23313,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeOrderByRelationAggregateInput
     evidenceUploads?: EvidenceOrderByRelationAggregateInput
     securityLogs?: SecurityLogOrderByRelationAggregateInput
+    securityAlerts?: SecurityAlertOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -20962,6 +23330,8 @@ export namespace Prisma {
     twoFactorEnabled?: BoolFilter<"User"> | boolean
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    failedLoginAttempts?: IntFilter<"User"> | number
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     profile?: XOR<ProfileNullableRelationFilter, ProfileWhereInput> | null
@@ -20978,6 +23348,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeListRelationFilter
     evidenceUploads?: EvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
+    securityAlerts?: SecurityAlertListRelationFilter
   }, "id" | "email" | "phone" | "resetToken">
 
   export type UserOrderByWithAggregationInput = {
@@ -20991,11 +23362,15 @@ export namespace Prisma {
     twoFactorSecret?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -21012,6 +23387,8 @@ export namespace Prisma {
     twoFactorSecret?: StringNullableWithAggregatesFilter<"User"> | string | null
     resetToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    failedLoginAttempts?: IntWithAggregatesFilter<"User"> | number
+    lockedUntil?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -21844,6 +24221,9 @@ export namespace Prisma {
     userId?: UuidFilter<"AuthToken"> | string
     token?: StringFilter<"AuthToken"> | string
     expiresAt?: DateTimeFilter<"AuthToken"> | Date | string
+    userAgent?: StringNullableFilter<"AuthToken"> | string | null
+    ipAddress?: StringNullableFilter<"AuthToken"> | string | null
+    lastActivity?: DateTimeNullableFilter<"AuthToken"> | Date | string | null
     createdAt?: DateTimeFilter<"AuthToken"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
   }
@@ -21853,6 +24233,9 @@ export namespace Prisma {
     userId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    lastActivity?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
   }
@@ -21865,6 +24248,9 @@ export namespace Prisma {
     NOT?: AuthTokenWhereInput | AuthTokenWhereInput[]
     userId?: UuidFilter<"AuthToken"> | string
     expiresAt?: DateTimeFilter<"AuthToken"> | Date | string
+    userAgent?: StringNullableFilter<"AuthToken"> | string | null
+    ipAddress?: StringNullableFilter<"AuthToken"> | string | null
+    lastActivity?: DateTimeNullableFilter<"AuthToken"> | Date | string | null
     createdAt?: DateTimeFilter<"AuthToken"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
   }, "id" | "token">
@@ -21874,6 +24260,9 @@ export namespace Prisma {
     userId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    lastActivity?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: AuthTokenCountOrderByAggregateInput
     _max?: AuthTokenMaxOrderByAggregateInput
@@ -21888,6 +24277,9 @@ export namespace Prisma {
     userId?: UuidWithAggregatesFilter<"AuthToken"> | string
     token?: StringWithAggregatesFilter<"AuthToken"> | string
     expiresAt?: DateTimeWithAggregatesFilter<"AuthToken"> | Date | string
+    userAgent?: StringNullableWithAggregatesFilter<"AuthToken"> | string | null
+    ipAddress?: StringNullableWithAggregatesFilter<"AuthToken"> | string | null
+    lastActivity?: DateTimeNullableWithAggregatesFilter<"AuthToken"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"AuthToken"> | Date | string
   }
 
@@ -21899,10 +24291,16 @@ export namespace Prisma {
     userId?: UuidFilter<"Device"> | string
     deviceId?: StringFilter<"Device"> | string
     fingerprint?: StringFilter<"Device"> | string
-    lastLogin?: DateTimeFilter<"Device"> | Date | string
-    userAgent?: StringNullableFilter<"Device"> | string | null
+    deviceName?: StringNullableFilter<"Device"> | string | null
+    browser?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    location?: StringNullableFilter<"Device"> | string | null
     ipAddress?: StringNullableFilter<"Device"> | string | null
+    userAgent?: StringNullableFilter<"Device"> | string | null
     fcmToken?: StringNullableFilter<"Device"> | string | null
+    lastLogin?: DateTimeFilter<"Device"> | Date | string
+    lastActivity?: DateTimeNullableFilter<"Device"> | Date | string | null
+    createdAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
   }
 
@@ -21911,10 +24309,16 @@ export namespace Prisma {
     userId?: SortOrder
     deviceId?: SortOrder
     fingerprint?: SortOrder
-    lastLogin?: SortOrder
-    userAgent?: SortOrderInput | SortOrder
+    deviceName?: SortOrderInput | SortOrder
+    browser?: SortOrderInput | SortOrder
+    osVersion?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
     ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
     fcmToken?: SortOrderInput | SortOrder
+    lastLogin?: SortOrder
+    lastActivity?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -21927,10 +24331,16 @@ export namespace Prisma {
     userId?: UuidFilter<"Device"> | string
     deviceId?: StringFilter<"Device"> | string
     fingerprint?: StringFilter<"Device"> | string
-    lastLogin?: DateTimeFilter<"Device"> | Date | string
-    userAgent?: StringNullableFilter<"Device"> | string | null
+    deviceName?: StringNullableFilter<"Device"> | string | null
+    browser?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    location?: StringNullableFilter<"Device"> | string | null
     ipAddress?: StringNullableFilter<"Device"> | string | null
+    userAgent?: StringNullableFilter<"Device"> | string | null
     fcmToken?: StringNullableFilter<"Device"> | string | null
+    lastLogin?: DateTimeFilter<"Device"> | Date | string
+    lastActivity?: DateTimeNullableFilter<"Device"> | Date | string | null
+    createdAt?: DateTimeFilter<"Device"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
   }, "id" | "userId_deviceId">
 
@@ -21939,10 +24349,16 @@ export namespace Prisma {
     userId?: SortOrder
     deviceId?: SortOrder
     fingerprint?: SortOrder
-    lastLogin?: SortOrder
-    userAgent?: SortOrderInput | SortOrder
+    deviceName?: SortOrderInput | SortOrder
+    browser?: SortOrderInput | SortOrder
+    osVersion?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
     ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
     fcmToken?: SortOrderInput | SortOrder
+    lastLogin?: SortOrder
+    lastActivity?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     _count?: DeviceCountOrderByAggregateInput
     _max?: DeviceMaxOrderByAggregateInput
     _min?: DeviceMinOrderByAggregateInput
@@ -21956,10 +24372,16 @@ export namespace Prisma {
     userId?: UuidWithAggregatesFilter<"Device"> | string
     deviceId?: StringWithAggregatesFilter<"Device"> | string
     fingerprint?: StringWithAggregatesFilter<"Device"> | string
-    lastLogin?: DateTimeWithAggregatesFilter<"Device"> | Date | string
-    userAgent?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    deviceName?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    browser?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    osVersion?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    location?: StringNullableWithAggregatesFilter<"Device"> | string | null
     ipAddress?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"Device"> | string | null
     fcmToken?: StringNullableWithAggregatesFilter<"Device"> | string | null
+    lastLogin?: DateTimeWithAggregatesFilter<"Device"> | Date | string
+    lastActivity?: DateTimeNullableWithAggregatesFilter<"Device"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Device"> | Date | string
   }
 
   export type SecurityLogWhereInput = {
@@ -22326,6 +24748,160 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"NotificationLog"> | Date | string
   }
 
+  export type SecurityAlertWhereInput = {
+    AND?: SecurityAlertWhereInput | SecurityAlertWhereInput[]
+    OR?: SecurityAlertWhereInput[]
+    NOT?: SecurityAlertWhereInput | SecurityAlertWhereInput[]
+    id?: UuidFilter<"SecurityAlert"> | string
+    userId?: UuidFilter<"SecurityAlert"> | string
+    type?: StringFilter<"SecurityAlert"> | string
+    severity?: StringFilter<"SecurityAlert"> | string
+    title?: StringFilter<"SecurityAlert"> | string
+    message?: StringFilter<"SecurityAlert"> | string
+    metadata?: JsonNullableFilter<"SecurityAlert">
+    isRead?: BoolFilter<"SecurityAlert"> | boolean
+    createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type SecurityAlertOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    severity?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type SecurityAlertWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SecurityAlertWhereInput | SecurityAlertWhereInput[]
+    OR?: SecurityAlertWhereInput[]
+    NOT?: SecurityAlertWhereInput | SecurityAlertWhereInput[]
+    userId?: UuidFilter<"SecurityAlert"> | string
+    type?: StringFilter<"SecurityAlert"> | string
+    severity?: StringFilter<"SecurityAlert"> | string
+    title?: StringFilter<"SecurityAlert"> | string
+    message?: StringFilter<"SecurityAlert"> | string
+    metadata?: JsonNullableFilter<"SecurityAlert">
+    isRead?: BoolFilter<"SecurityAlert"> | boolean
+    createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type SecurityAlertOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    severity?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+    _count?: SecurityAlertCountOrderByAggregateInput
+    _max?: SecurityAlertMaxOrderByAggregateInput
+    _min?: SecurityAlertMinOrderByAggregateInput
+  }
+
+  export type SecurityAlertScalarWhereWithAggregatesInput = {
+    AND?: SecurityAlertScalarWhereWithAggregatesInput | SecurityAlertScalarWhereWithAggregatesInput[]
+    OR?: SecurityAlertScalarWhereWithAggregatesInput[]
+    NOT?: SecurityAlertScalarWhereWithAggregatesInput | SecurityAlertScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"SecurityAlert"> | string
+    userId?: UuidWithAggregatesFilter<"SecurityAlert"> | string
+    type?: StringWithAggregatesFilter<"SecurityAlert"> | string
+    severity?: StringWithAggregatesFilter<"SecurityAlert"> | string
+    title?: StringWithAggregatesFilter<"SecurityAlert"> | string
+    message?: StringWithAggregatesFilter<"SecurityAlert"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"SecurityAlert">
+    isRead?: BoolWithAggregatesFilter<"SecurityAlert"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"SecurityAlert"> | Date | string
+  }
+
+  export type FraudRuleWhereInput = {
+    AND?: FraudRuleWhereInput | FraudRuleWhereInput[]
+    OR?: FraudRuleWhereInput[]
+    NOT?: FraudRuleWhereInput | FraudRuleWhereInput[]
+    id?: UuidFilter<"FraudRule"> | string
+    name?: StringFilter<"FraudRule"> | string
+    code?: StringFilter<"FraudRule"> | string
+    description?: StringFilter<"FraudRule"> | string
+    enabled?: BoolFilter<"FraudRule"> | boolean
+    threshold?: IntFilter<"FraudRule"> | number
+    severity?: StringFilter<"FraudRule"> | string
+    action?: StringFilter<"FraudRule"> | string
+    createdAt?: DateTimeFilter<"FraudRule"> | Date | string
+    updatedAt?: DateTimeFilter<"FraudRule"> | Date | string
+  }
+
+  export type FraudRuleOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    enabled?: SortOrder
+    threshold?: SortOrder
+    severity?: SortOrder
+    action?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FraudRuleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name?: string
+    code?: string
+    AND?: FraudRuleWhereInput | FraudRuleWhereInput[]
+    OR?: FraudRuleWhereInput[]
+    NOT?: FraudRuleWhereInput | FraudRuleWhereInput[]
+    description?: StringFilter<"FraudRule"> | string
+    enabled?: BoolFilter<"FraudRule"> | boolean
+    threshold?: IntFilter<"FraudRule"> | number
+    severity?: StringFilter<"FraudRule"> | string
+    action?: StringFilter<"FraudRule"> | string
+    createdAt?: DateTimeFilter<"FraudRule"> | Date | string
+    updatedAt?: DateTimeFilter<"FraudRule"> | Date | string
+  }, "id" | "name" | "code">
+
+  export type FraudRuleOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    enabled?: SortOrder
+    threshold?: SortOrder
+    severity?: SortOrder
+    action?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FraudRuleCountOrderByAggregateInput
+    _avg?: FraudRuleAvgOrderByAggregateInput
+    _max?: FraudRuleMaxOrderByAggregateInput
+    _min?: FraudRuleMinOrderByAggregateInput
+    _sum?: FraudRuleSumOrderByAggregateInput
+  }
+
+  export type FraudRuleScalarWhereWithAggregatesInput = {
+    AND?: FraudRuleScalarWhereWithAggregatesInput | FraudRuleScalarWhereWithAggregatesInput[]
+    OR?: FraudRuleScalarWhereWithAggregatesInput[]
+    NOT?: FraudRuleScalarWhereWithAggregatesInput | FraudRuleScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"FraudRule"> | string
+    name?: StringWithAggregatesFilter<"FraudRule"> | string
+    code?: StringWithAggregatesFilter<"FraudRule"> | string
+    description?: StringWithAggregatesFilter<"FraudRule"> | string
+    enabled?: BoolWithAggregatesFilter<"FraudRule"> | boolean
+    threshold?: IntWithAggregatesFilter<"FraudRule"> | number
+    severity?: StringWithAggregatesFilter<"FraudRule"> | string
+    action?: StringWithAggregatesFilter<"FraudRule"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"FraudRule"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FraudRule"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -22337,6 +24913,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -22353,6 +24931,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -22366,6 +24945,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -22382,6 +24963,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -22395,6 +24977,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -22411,6 +24995,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -22424,6 +25009,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -22440,6 +25027,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -22453,6 +25041,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22468,6 +25058,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22483,6 +25075,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -23360,6 +25954,9 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutAuthTokensInput
   }
@@ -23369,6 +25966,9 @@ export namespace Prisma {
     userId: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -23376,6 +25976,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutAuthTokensNestedInput
   }
@@ -23385,6 +25988,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23393,6 +25999,9 @@ export namespace Prisma {
     userId: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -23400,6 +26009,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23408,6 +26020,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23415,10 +26030,16 @@ export namespace Prisma {
     id?: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
     user: UserCreateNestedOneWithoutDevicesInput
   }
 
@@ -23427,20 +26048,32 @@ export namespace Prisma {
     userId: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
   }
 
   export type DeviceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDevicesNestedInput
   }
 
@@ -23449,10 +26082,16 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceCreateManyInput = {
@@ -23460,20 +26099,32 @@ export namespace Prisma {
     userId: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
   }
 
   export type DeviceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceUncheckedUpdateManyInput = {
@@ -23481,10 +26132,16 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SecurityLogCreateInput = {
@@ -23911,6 +26568,180 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SecurityAlertCreateInput = {
+    id?: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutSecurityAlertsInput
+  }
+
+  export type SecurityAlertUncheckedCreateInput = {
+    id?: string
+    userId: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSecurityAlertsNestedInput
+  }
+
+  export type SecurityAlertUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertCreateManyInput = {
+    id?: string
+    userId: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FraudRuleCreateInput = {
+    id?: string
+    name: string
+    code: string
+    description: string
+    enabled?: boolean
+    threshold?: number
+    severity?: string
+    action?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FraudRuleUncheckedCreateInput = {
+    id?: string
+    name: string
+    code: string
+    description: string
+    enabled?: boolean
+    threshold?: number
+    severity?: string
+    action?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FraudRuleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    threshold?: IntFieldUpdateOperationsInput | number
+    severity?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FraudRuleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    threshold?: IntFieldUpdateOperationsInput | number
+    severity?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FraudRuleCreateManyInput = {
+    id?: string
+    name: string
+    code: string
+    description: string
+    enabled?: boolean
+    threshold?: number
+    severity?: string
+    action?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FraudRuleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    threshold?: IntFieldUpdateOperationsInput | number
+    severity?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FraudRuleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    threshold?: IntFieldUpdateOperationsInput | number
+    severity?: StringFieldUpdateOperationsInput | string
+    action?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -23981,6 +26812,17 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -24064,6 +26906,12 @@ export namespace Prisma {
     none?: SecurityLogWhereInput
   }
 
+  export type SecurityAlertListRelationFilter = {
+    every?: SecurityAlertWhereInput
+    some?: SecurityAlertWhereInput
+    none?: SecurityAlertWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -24109,6 +26957,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type SecurityAlertOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
@@ -24120,8 +26972,14 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -24135,6 +26993,8 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24150,8 +27010,14 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
   }
 
   export type UuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -24245,6 +27111,22 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -24342,17 +27224,6 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type LedgerEntryListRelationFilter = {
@@ -24459,22 +27330,6 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type UuidNullableFilter<$PrismaModel = never> = {
@@ -24994,6 +27849,9 @@ export namespace Prisma {
     userId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
+    userAgent?: SortOrder
+    ipAddress?: SortOrder
+    lastActivity?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25002,6 +27860,9 @@ export namespace Prisma {
     userId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
+    userAgent?: SortOrder
+    ipAddress?: SortOrder
+    lastActivity?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25010,6 +27871,9 @@ export namespace Prisma {
     userId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
+    userAgent?: SortOrder
+    ipAddress?: SortOrder
+    lastActivity?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25023,10 +27887,16 @@ export namespace Prisma {
     userId?: SortOrder
     deviceId?: SortOrder
     fingerprint?: SortOrder
-    lastLogin?: SortOrder
-    userAgent?: SortOrder
+    deviceName?: SortOrder
+    browser?: SortOrder
+    osVersion?: SortOrder
+    location?: SortOrder
     ipAddress?: SortOrder
+    userAgent?: SortOrder
     fcmToken?: SortOrder
+    lastLogin?: SortOrder
+    lastActivity?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type DeviceMaxOrderByAggregateInput = {
@@ -25034,10 +27904,16 @@ export namespace Prisma {
     userId?: SortOrder
     deviceId?: SortOrder
     fingerprint?: SortOrder
-    lastLogin?: SortOrder
-    userAgent?: SortOrder
+    deviceName?: SortOrder
+    browser?: SortOrder
+    osVersion?: SortOrder
+    location?: SortOrder
     ipAddress?: SortOrder
+    userAgent?: SortOrder
     fcmToken?: SortOrder
+    lastLogin?: SortOrder
+    lastActivity?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type DeviceMinOrderByAggregateInput = {
@@ -25045,10 +27921,16 @@ export namespace Prisma {
     userId?: SortOrder
     deviceId?: SortOrder
     fingerprint?: SortOrder
-    lastLogin?: SortOrder
-    userAgent?: SortOrder
+    deviceName?: SortOrder
+    browser?: SortOrder
+    osVersion?: SortOrder
+    location?: SortOrder
     ipAddress?: SortOrder
+    userAgent?: SortOrder
     fcmToken?: SortOrder
+    lastLogin?: SortOrder
+    lastActivity?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type SecurityLogCountOrderByAggregateInput = {
@@ -25268,6 +28150,87 @@ export namespace Prisma {
     _max?: NestedEnumNotificationStatusFilter<$PrismaModel>
   }
 
+  export type SecurityAlertCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    severity?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    metadata?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SecurityAlertMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    severity?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SecurityAlertMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    severity?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type FraudRuleCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    enabled?: SortOrder
+    threshold?: SortOrder
+    severity?: SortOrder
+    action?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FraudRuleAvgOrderByAggregateInput = {
+    threshold?: SortOrder
+  }
+
+  export type FraudRuleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    enabled?: SortOrder
+    threshold?: SortOrder
+    severity?: SortOrder
+    action?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FraudRuleMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    code?: SortOrder
+    description?: SortOrder
+    enabled?: SortOrder
+    threshold?: SortOrder
+    severity?: SortOrder
+    action?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FraudRuleSumOrderByAggregateInput = {
+    threshold?: SortOrder
+  }
+
   export type ProfileCreateNestedOneWithoutUserInput = {
     create?: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutUserInput
@@ -25362,6 +28325,13 @@ export namespace Prisma {
     connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
     createMany?: SecurityLogCreateManyUserInputEnvelope
     connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
+  }
+
+  export type SecurityAlertCreateNestedManyWithoutUserInput = {
+    create?: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput> | SecurityAlertCreateWithoutUserInput[] | SecurityAlertUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutUserInput | SecurityAlertCreateOrConnectWithoutUserInput[]
+    createMany?: SecurityAlertCreateManyUserInputEnvelope
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
   }
 
   export type ProfileUncheckedCreateNestedOneWithoutUserInput = {
@@ -25460,6 +28430,13 @@ export namespace Prisma {
     connect?: SecurityLogWhereUniqueInput | SecurityLogWhereUniqueInput[]
   }
 
+  export type SecurityAlertUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput> | SecurityAlertCreateWithoutUserInput[] | SecurityAlertUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutUserInput | SecurityAlertCreateOrConnectWithoutUserInput[]
+    createMany?: SecurityAlertCreateManyUserInputEnvelope
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -25482,6 +28459,14 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -25676,6 +28661,20 @@ export namespace Prisma {
     deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
   }
 
+  export type SecurityAlertUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput> | SecurityAlertCreateWithoutUserInput[] | SecurityAlertUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutUserInput | SecurityAlertCreateOrConnectWithoutUserInput[]
+    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutUserInput | SecurityAlertUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SecurityAlertCreateManyUserInputEnvelope
+    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    update?: SecurityAlertUpdateWithWhereUniqueWithoutUserInput | SecurityAlertUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SecurityAlertUpdateManyWithWhereWithoutUserInput | SecurityAlertUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+  }
+
   export type ProfileUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutUserInput
@@ -25864,6 +28863,20 @@ export namespace Prisma {
     deleteMany?: SecurityLogScalarWhereInput | SecurityLogScalarWhereInput[]
   }
 
+  export type SecurityAlertUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput> | SecurityAlertCreateWithoutUserInput[] | SecurityAlertUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutUserInput | SecurityAlertCreateOrConnectWithoutUserInput[]
+    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutUserInput | SecurityAlertUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SecurityAlertCreateManyUserInputEnvelope
+    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    update?: SecurityAlertUpdateWithWhereUniqueWithoutUserInput | SecurityAlertUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SecurityAlertUpdateManyWithWhereWithoutUserInput | SecurityAlertUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutProfileInput = {
     create?: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
     connectOrCreate?: UserCreateOrConnectWithoutProfileInput
@@ -25950,14 +28963,6 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type UserUpdateOneRequiredWithoutWalletsNestedInput = {
@@ -26558,6 +29563,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationLogsInput, UserUpdateWithoutNotificationLogsInput>, UserUncheckedUpdateWithoutNotificationLogsInput>
   }
 
+  export type UserCreateNestedOneWithoutSecurityAlertsInput = {
+    create?: XOR<UserCreateWithoutSecurityAlertsInput, UserUncheckedCreateWithoutSecurityAlertsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecurityAlertsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutSecurityAlertsNestedInput = {
+    create?: XOR<UserCreateWithoutSecurityAlertsInput, UserUncheckedCreateWithoutSecurityAlertsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSecurityAlertsInput
+    upsert?: UserUpsertWithoutSecurityAlertsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSecurityAlertsInput, UserUpdateWithoutSecurityAlertsInput>, UserUncheckedUpdateWithoutSecurityAlertsInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -26627,6 +29646,17 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -26650,17 +29680,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -26750,6 +29769,33 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -26806,33 +29852,6 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
@@ -27200,6 +30219,9 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -27207,6 +30229,9 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -27224,20 +30249,32 @@ export namespace Prisma {
     id?: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
   }
 
   export type DeviceUncheckedCreateWithoutUserInput = {
     id?: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
   }
 
   export type DeviceCreateOrConnectWithoutUserInput = {
@@ -27470,6 +30507,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SecurityAlertCreateWithoutUserInput = {
+    id?: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertCreateOrConnectWithoutUserInput = {
+    where: SecurityAlertWhereUniqueInput
+    create: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput>
+  }
+
+  export type SecurityAlertCreateManyUserInputEnvelope = {
+    data: SecurityAlertCreateManyUserInput | SecurityAlertCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProfileUpsertWithoutUserInput = {
     update: XOR<ProfileUpdateWithoutUserInput, ProfileUncheckedUpdateWithoutUserInput>
     create: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
@@ -27668,6 +30737,9 @@ export namespace Prisma {
     userId?: UuidFilter<"AuthToken"> | string
     token?: StringFilter<"AuthToken"> | string
     expiresAt?: DateTimeFilter<"AuthToken"> | Date | string
+    userAgent?: StringNullableFilter<"AuthToken"> | string | null
+    ipAddress?: StringNullableFilter<"AuthToken"> | string | null
+    lastActivity?: DateTimeNullableFilter<"AuthToken"> | Date | string | null
     createdAt?: DateTimeFilter<"AuthToken"> | Date | string
   }
 
@@ -27695,10 +30767,16 @@ export namespace Prisma {
     userId?: UuidFilter<"Device"> | string
     deviceId?: StringFilter<"Device"> | string
     fingerprint?: StringFilter<"Device"> | string
-    lastLogin?: DateTimeFilter<"Device"> | Date | string
-    userAgent?: StringNullableFilter<"Device"> | string | null
+    deviceName?: StringNullableFilter<"Device"> | string | null
+    browser?: StringNullableFilter<"Device"> | string | null
+    osVersion?: StringNullableFilter<"Device"> | string | null
+    location?: StringNullableFilter<"Device"> | string | null
     ipAddress?: StringNullableFilter<"Device"> | string | null
+    userAgent?: StringNullableFilter<"Device"> | string | null
     fcmToken?: StringNullableFilter<"Device"> | string | null
+    lastLogin?: DateTimeFilter<"Device"> | Date | string
+    lastActivity?: DateTimeNullableFilter<"Device"> | Date | string | null
+    createdAt?: DateTimeFilter<"Device"> | Date | string
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
@@ -27882,6 +30960,37 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SecurityLog"> | Date | string
   }
 
+  export type SecurityAlertUpsertWithWhereUniqueWithoutUserInput = {
+    where: SecurityAlertWhereUniqueInput
+    update: XOR<SecurityAlertUpdateWithoutUserInput, SecurityAlertUncheckedUpdateWithoutUserInput>
+    create: XOR<SecurityAlertCreateWithoutUserInput, SecurityAlertUncheckedCreateWithoutUserInput>
+  }
+
+  export type SecurityAlertUpdateWithWhereUniqueWithoutUserInput = {
+    where: SecurityAlertWhereUniqueInput
+    data: XOR<SecurityAlertUpdateWithoutUserInput, SecurityAlertUncheckedUpdateWithoutUserInput>
+  }
+
+  export type SecurityAlertUpdateManyWithWhereWithoutUserInput = {
+    where: SecurityAlertScalarWhereInput
+    data: XOR<SecurityAlertUpdateManyMutationInput, SecurityAlertUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type SecurityAlertScalarWhereInput = {
+    AND?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+    OR?: SecurityAlertScalarWhereInput[]
+    NOT?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+    id?: UuidFilter<"SecurityAlert"> | string
+    userId?: UuidFilter<"SecurityAlert"> | string
+    type?: StringFilter<"SecurityAlert"> | string
+    severity?: StringFilter<"SecurityAlert"> | string
+    title?: StringFilter<"SecurityAlert"> | string
+    message?: StringFilter<"SecurityAlert"> | string
+    metadata?: JsonNullableFilter<"SecurityAlert">
+    isRead?: BoolFilter<"SecurityAlert"> | boolean
+    createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
+  }
+
   export type UserCreateWithoutProfileInput = {
     id?: string
     email?: string | null
@@ -27893,6 +31002,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     preferences?: UserPreferenceCreateNestedOneWithoutUserInput
@@ -27908,6 +31019,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProfileInput = {
@@ -27921,6 +31033,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
@@ -27936,6 +31050,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProfileInput = {
@@ -27965,6 +31080,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
@@ -27980,6 +31097,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProfileInput = {
@@ -27993,6 +31111,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
@@ -28008,6 +31128,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -28021,6 +31142,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -28036,6 +31159,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -28049,6 +31173,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -28064,6 +31190,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -28093,6 +31220,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -28108,6 +31237,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -28121,6 +31251,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -28136,6 +31268,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutWalletsInput = {
@@ -28149,6 +31282,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -28164,6 +31299,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWalletsInput = {
@@ -28177,6 +31313,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -28192,6 +31330,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWalletsInput = {
@@ -28315,6 +31454,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -28330,6 +31471,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWalletsInput = {
@@ -28343,6 +31485,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -28358,6 +31502,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutWalletInput = {
@@ -28868,6 +32013,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -28883,6 +32030,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAdsInput = {
@@ -28896,6 +32044,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -28911,6 +32061,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAdsInput = {
@@ -28984,6 +32135,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -28999,6 +32152,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdsInput = {
@@ -29012,6 +32166,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29027,6 +32183,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrderUpsertWithWhereUniqueWithoutAdInput = {
@@ -29093,6 +32250,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29108,6 +32267,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBuyOrdersInput = {
@@ -29121,6 +32281,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29136,6 +32298,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBuyOrdersInput = {
@@ -29154,6 +32317,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29169,6 +32334,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSellOrdersInput = {
@@ -29182,6 +32348,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29197,6 +32365,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSellOrdersInput = {
@@ -29341,6 +32510,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -29356,6 +32527,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBuyOrdersInput = {
@@ -29369,6 +32541,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29384,6 +32558,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSellOrdersInput = {
@@ -29408,6 +32583,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -29423,6 +32600,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSellOrdersInput = {
@@ -29436,6 +32614,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29451,6 +32631,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutOrderInput = {
@@ -29535,6 +32716,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29550,6 +32733,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInitiatedDisputesInput = {
@@ -29563,6 +32747,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29578,6 +32764,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInitiatedDisputesInput = {
@@ -29596,6 +32783,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29611,6 +32800,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedDisputesInput = {
@@ -29624,6 +32814,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29639,6 +32831,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedDisputesInput = {
@@ -29743,6 +32936,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -29758,6 +32953,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInitiatedDisputesInput = {
@@ -29771,6 +32967,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29786,6 +32984,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutAssignedDisputesInput = {
@@ -29810,6 +33009,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -29825,6 +33026,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedDisputesInput = {
@@ -29838,6 +33040,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29853,6 +33057,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EvidenceUpsertWithWhereUniqueWithoutDisputeInput = {
@@ -29915,6 +33120,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29930,6 +33137,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEvidenceUploadsInput = {
@@ -29943,6 +33151,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29958,6 +33168,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEvidenceUploadsInput = {
@@ -30026,6 +33237,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30041,6 +33254,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEvidenceUploadsInput = {
@@ -30054,6 +33268,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30069,6 +33285,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAuthTokensInput = {
@@ -30082,6 +33299,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -30097,6 +33316,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuthTokensInput = {
@@ -30110,6 +33330,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -30125,6 +33347,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuthTokensInput = {
@@ -30154,6 +33377,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30169,6 +33394,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuthTokensInput = {
@@ -30182,6 +33408,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30197,6 +33425,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -30210,6 +33439,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -30225,6 +33456,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -30238,6 +33470,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -30253,6 +33487,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -30282,6 +33517,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30297,6 +33534,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -30310,6 +33548,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30325,6 +33565,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSecurityLogsInput = {
@@ -30338,6 +33579,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -30353,6 +33596,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSecurityLogsInput = {
@@ -30366,6 +33610,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -30381,6 +33627,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSecurityLogsInput = {
@@ -30410,6 +33657,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30425,6 +33674,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSecurityLogsInput = {
@@ -30438,6 +33688,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30453,6 +33705,7 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -30466,6 +33719,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -30481,6 +33736,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -30494,6 +33750,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -30509,6 +33767,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -30538,6 +33797,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30553,6 +33814,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -30566,6 +33828,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30581,6 +33845,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutNotificationLogsInput = {
@@ -30594,6 +33859,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -30609,6 +33876,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationLogsInput = {
@@ -30622,6 +33890,8 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -30637,6 +33907,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationLogsInput = {
@@ -30666,6 +33937,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -30681,6 +33954,7 @@ export namespace Prisma {
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationLogsInput = {
@@ -30694,6 +33968,8 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -30705,6 +33981,147 @@ export namespace Prisma {
     authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutSecurityAlertsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutSecurityAlertsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutSecurityAlertsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSecurityAlertsInput, UserUncheckedCreateWithoutSecurityAlertsInput>
+  }
+
+  export type UserUpsertWithoutSecurityAlertsInput = {
+    update: XOR<UserUpdateWithoutSecurityAlertsInput, UserUncheckedUpdateWithoutSecurityAlertsInput>
+    create: XOR<UserCreateWithoutSecurityAlertsInput, UserUncheckedCreateWithoutSecurityAlertsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSecurityAlertsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSecurityAlertsInput, UserUncheckedUpdateWithoutSecurityAlertsInput>
+  }
+
+  export type UserUpdateWithoutSecurityAlertsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSecurityAlertsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
@@ -30770,6 +34187,9 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    userAgent?: string | null
+    ipAddress?: string | null
+    lastActivity?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -30777,10 +34197,16 @@ export namespace Prisma {
     id?: string
     deviceId: string
     fingerprint: string
-    lastLogin?: Date | string
-    userAgent?: string | null
+    deviceName?: string | null
+    browser?: string | null
+    osVersion?: string | null
+    location?: string | null
     ipAddress?: string | null
+    userAgent?: string | null
     fcmToken?: string | null
+    lastLogin?: Date | string
+    lastActivity?: Date | string | null
+    createdAt?: Date | string
   }
 
   export type NotificationCreateManyUserInput = {
@@ -30858,6 +34284,17 @@ export namespace Prisma {
     device?: string | null
     success?: boolean
     errorMessage?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertCreateManyUserInput = {
+    id?: string
+    type: string
+    severity?: string
+    title: string
+    message: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: boolean
     createdAt?: Date | string
   }
 
@@ -31046,6 +34483,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31053,6 +34493,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31060,6 +34503,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31067,30 +34513,48 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     deviceId?: StringFieldUpdateOperationsInput | string
     fingerprint?: StringFieldUpdateOperationsInput | string
-    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
-    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceName?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    osVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivity?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUpdateWithoutUserInput = {
@@ -31328,6 +34792,39 @@ export namespace Prisma {
     device?: NullableStringFieldUpdateOperationsInput | string | null
     success?: BoolFieldUpdateOperationsInput | boolean
     errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31808,6 +35305,14 @@ export namespace Prisma {
      * @deprecated Use NotificationLogDefaultArgs instead
      */
     export type NotificationLogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = NotificationLogDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SecurityAlertDefaultArgs instead
+     */
+    export type SecurityAlertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SecurityAlertDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use FraudRuleDefaultArgs instead
+     */
+    export type FraudRuleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FraudRuleDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

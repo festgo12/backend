@@ -11,8 +11,8 @@ export declare class NotificationsController {
         createdAt: Date;
         data: import("@src/generated/client/runtime/library").JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }[]>;
     markAsRead(user: User, id: string): Promise<{
         success: boolean;
@@ -42,8 +42,8 @@ export declare class NotificationsController {
         userId: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         body: string;
-        recipient: string;
         channel: import("@src/generated/client").$Enums.NotificationChannel;
+        recipient: string;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

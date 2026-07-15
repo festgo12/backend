@@ -24,6 +24,7 @@ const notifications_module_1 = require("./modules/notifications/notifications.mo
 const audit_module_1 = require("./modules/audit/audit.module");
 const disputes_module_1 = require("./modules/disputes/disputes.module");
 const upload_module_1 = require("./modules/upload/upload.module");
+const security_module_1 = require("./modules/security/security.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -48,6 +49,7 @@ exports.AppModule = AppModule = __decorate([
             audit_module_1.AuditModule,
             disputes_module_1.DisputesModule,
             upload_module_1.UploadModule,
+            security_module_1.SecurityModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

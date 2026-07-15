@@ -45,11 +45,32 @@ const audit_service_1 = require("./modules/audit/audit.service");
 const helmet_1 = __importDefault(require("helmet"));
 const path_1 = require("path");
 const express = __importStar(require("express"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.use((0, helmet_1.default)());
     app.enableCors();
+    app.use('/auth', (0, express_rate_limit_1.default)({
+        windowMs: 15 * 60 * 1000,
+        max: 20,
+        message: { statusCode: 429, message: 'Too many authentication attempts. Please try again later.' },
+        standardHeaders: true,
+        legacyHeaders: false,
+    }));
+    app.use('/security', (0, express_rate_limit_1.default)({
+        windowMs: 60 * 1000,
+        max: 30,
+        message: { statusCode: 429, message: 'Too many requests. Please try again later.' },
+        standardHeaders: true,
+        legacyHeaders: false,
+    }));
+    app.use((0, express_rate_limit_1.default)({
+        windowMs: 60 * 1000,
+        max: 100,
+        standardHeaders: true,
+        legacyHeaders: false,
+    }));
     app.use('/uploads', express.static((0, path_1.join)(__dirname, '..', 'uploads')));
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

@@ -10,13 +10,19 @@ export declare class NotificationsService {
     constructor(prisma: PrismaService, emailService: EmailService, fcmService: FcmService);
     registerFcmToken(userId: string, deviceId: string, fcmToken: string): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         deviceId: string;
         fingerprint: string;
-        lastLogin: Date;
-        userAgent: string | null;
+        deviceName: string | null;
+        browser: string | null;
+        osVersion: string | null;
+        location: string | null;
         ipAddress: string | null;
+        userAgent: string | null;
         fcmToken: string | null;
+        lastLogin: Date;
+        lastActivity: Date | null;
     }>;
     notifyUser(params: {
         userId: string;
@@ -30,8 +36,8 @@ export declare class NotificationsService {
         createdAt: Date;
         data: Prisma.JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }>;
     getNotifications(userId: string, limit?: number, offset?: number): Promise<{
         title: string;
@@ -39,8 +45,8 @@ export declare class NotificationsService {
         createdAt: Date;
         data: Prisma.JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }[]>;
     markAsRead(userId: string, notificationId: string): Promise<Prisma.BatchPayload>;
     markAllAsRead(userId: string): Promise<Prisma.BatchPayload>;
@@ -89,8 +95,8 @@ export declare class NotificationsService {
         userId: string;
         metadata: Prisma.JsonValue | null;
         body: string;
-        recipient: string;
         channel: import("@src/generated/client").$Enums.NotificationChannel;
+        recipient: string;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

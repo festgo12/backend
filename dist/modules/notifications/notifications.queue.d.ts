@@ -20,8 +20,8 @@ export declare class NotificationsQueue {
         userId: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         body: string;
-        recipient: string;
         channel: import("@src/generated/client").$Enums.NotificationChannel;
+        recipient: string;
         retryCount: number;
         maxRetries: number;
         nextTryAt: Date | null;

@@ -133,6 +133,8 @@ exports.Prisma.UserScalarFieldEnum = {
   twoFactorSecret: 'twoFactorSecret',
   resetToken: 'resetToken',
   resetTokenExpires: 'resetTokenExpires',
+  failedLoginAttempts: 'failedLoginAttempts',
+  lockedUntil: 'lockedUntil',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -264,6 +266,9 @@ exports.Prisma.AuthTokenScalarFieldEnum = {
   userId: 'userId',
   token: 'token',
   expiresAt: 'expiresAt',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
+  lastActivity: 'lastActivity',
   createdAt: 'createdAt'
 };
 
@@ -272,10 +277,16 @@ exports.Prisma.DeviceScalarFieldEnum = {
   userId: 'userId',
   deviceId: 'deviceId',
   fingerprint: 'fingerprint',
-  lastLogin: 'lastLogin',
-  userAgent: 'userAgent',
+  deviceName: 'deviceName',
+  browser: 'browser',
+  osVersion: 'osVersion',
+  location: 'location',
   ipAddress: 'ipAddress',
-  fcmToken: 'fcmToken'
+  userAgent: 'userAgent',
+  fcmToken: 'fcmToken',
+  lastLogin: 'lastLogin',
+  lastActivity: 'lastActivity',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SecurityLogScalarFieldEnum = {
@@ -335,6 +346,31 @@ exports.Prisma.NotificationLogScalarFieldEnum = {
   nextTryAt: 'nextTryAt',
   errorDetails: 'errorDetails',
   metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SecurityAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  severity: 'severity',
+  title: 'title',
+  message: 'message',
+  metadata: 'metadata',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FraudRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  description: 'description',
+  enabled: 'enabled',
+  threshold: 'threshold',
+  severity: 'severity',
+  action: 'action',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -453,7 +489,9 @@ exports.Prisma.ModelName = {
   SecurityLog: 'SecurityLog',
   Notification: 'Notification',
   NotificationTemplate: 'NotificationTemplate',
-  NotificationLog: 'NotificationLog'
+  NotificationLog: 'NotificationLog',
+  SecurityAlert: 'SecurityAlert',
+  FraudRule: 'FraudRule'
 };
 
 /**

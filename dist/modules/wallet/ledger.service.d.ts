@@ -15,10 +15,10 @@ export declare class LedgerService {
         type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
+        metadata: Prisma.JsonValue | null;
         walletId: string;
         amount: Prisma.Decimal;
         reference: string;
-        metadata: Prisma.JsonValue | null;
         transactionId: string | null;
         orderId: string | null;
         balanceAfter: Prisma.Decimal;
