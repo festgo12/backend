@@ -10,5 +10,6 @@ export declare class AuditInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any>;
     private extractIp;
     private writeLog;
+    private isValidUUID;
     private sanitizeResponse;
 }

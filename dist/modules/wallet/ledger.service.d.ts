@@ -17,10 +17,10 @@ export declare class LedgerService {
         createdAt: Date;
         metadata: Prisma.JsonValue | null;
         walletId: string;
-        amount: Prisma.Decimal;
-        reference: string;
         transactionId: string | null;
         orderId: string | null;
+        amount: Prisma.Decimal;
+        reference: string;
         balanceAfter: Prisma.Decimal;
     }>;
 }

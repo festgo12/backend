@@ -69,9 +69,12 @@ let AuditInterceptor = AuditInterceptor_1 = class AuditInterceptor {
         return request.ip || request.socket?.remoteAddress || 'unknown';
     }
     writeLog(auditMeta, data) {
+        const userId = data.actorId || data.userId;
+        if (!userId || !this.isValidUUID(userId))
+            return;
         const resourceId = data.newValue?.id || data.newValue?.orderId || undefined;
         this.auditService.log({
-            userId: data.actorId || data.userId || 'system',
+            userId,
             actorId: data.actorId,
             action: auditMeta.action,
             resource: auditMeta.resource,
@@ -88,6 +91,9 @@ let AuditInterceptor = AuditInterceptor_1 = class AuditInterceptor {
             success: data.success,
             errorMessage: data.errorMessage,
         });
+    }
+    isValidUUID(value) {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
     }
     sanitizeResponse(data) {
         if (!data || typeof data !== 'object')

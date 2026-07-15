@@ -94,10 +94,14 @@ export class AuditInterceptor implements NestInterceptor {
       startTime: number;
     },
   ): void {
+    // Skip audit log if no authenticated user (prevents invalid UUID inserts)
+    const userId = data.actorId || data.userId;
+    if (!userId || !this.isValidUUID(userId)) return;
+
     const resourceId = data.newValue?.id || data.newValue?.orderId || undefined;
 
     this.auditService.log({
-      userId: data.actorId || data.userId || 'system',
+      userId,
       actorId: data.actorId,
       action: auditMeta.action,
       resource: auditMeta.resource,
@@ -114,6 +118,10 @@ export class AuditInterceptor implements NestInterceptor {
       success: data.success,
       errorMessage: data.errorMessage,
     });
+  }
+
+  private isValidUUID(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   }
 
   private sanitizeResponse(data: any): Record<string, any> {
