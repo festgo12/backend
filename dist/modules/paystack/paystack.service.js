@@ -53,12 +53,14 @@ let PaystackService = PaystackService_1 = class PaystackService {
     configService;
     httpService;
     secretKey;
+    webhookSecret;
     baseUrl = 'https://api.paystack.co';
     logger = new common_1.Logger(PaystackService_1.name);
     constructor(configService, httpService) {
         this.configService = configService;
         this.httpService = httpService;
         this.secretKey = this.configService.get('PAYSTACK_SECRET_KEY') || '';
+        this.webhookSecret = this.configService.get('PAYSTACK_WEBHOOK_SECRET') || this.secretKey;
     }
     async initializeTransaction(email, amount, reference, metadata) {
         try {
@@ -167,10 +169,30 @@ let PaystackService = PaystackService_1 = class PaystackService {
             throw error;
         }
     }
-    verifySignature(payload, signature) {
+    async initiateRefund(transactionId, amount) {
+        try {
+            const body = { transaction: transactionId };
+            if (amount) {
+                body.amount = Math.round(amount * 100);
+            }
+            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/refund`, body, {
+                headers: {
+                    Authorization: `Bearer ${this.secretKey}`,
+                    'Content-Type': 'application/json',
+                },
+            }));
+            return response.data;
+        }
+        catch (error) {
+            const errorMessage = error.response?.data?.message || error.message;
+            this.logger.error(`Paystack initiateRefund error: ${errorMessage}`, error.stack);
+            throw new common_1.BadRequestException(`Refund failed: ${errorMessage}`);
+        }
+    }
+    verifySignature(rawBody, signature) {
         const hash = crypto
-            .createHmac('sha512', this.secretKey)
-            .update(JSON.stringify(payload))
+            .createHmac('sha512', this.webhookSecret)
+            .update(rawBody)
             .digest('hex');
         return hash === signature;
     }

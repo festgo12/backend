@@ -678,7 +678,7 @@ export declare class AdminController {
         totalDeposits: number | import("@src/generated/client/runtime/library").Decimal;
         totalWithdrawals: number | import("@src/generated/client/runtime/library").Decimal;
     }>;
-    getPaymentTransactions(page?: string, limit?: string): Promise<{
+    getPaymentTransactions(page?: string, limit?: string, search?: string, status?: string, type?: string, startDate?: string, endDate?: string): Promise<{
         transactions: ({
             wallet: {
                 user: {
@@ -735,6 +735,68 @@ export declare class AdminController {
             limit: number;
             totalPages: number;
         };
+    }>;
+    getPaymentTransactionDetail(transactionId: string): Promise<{
+        wallet: {
+            user: {
+                profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
+                    id: string;
+                    updatedAt: Date;
+                    userId: string;
+                    kycStatus: string;
+                } | null;
+            } & {
+                id: string;
+                email: string | null;
+                phone: string | null;
+                resetToken: string | null;
+                passwordHash: string;
+                role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                twoFactorEnabled: boolean;
+                twoFactorSecret: string | null;
+                resetTokenExpires: Date | null;
+                failedLoginAttempts: number;
+                lockedUntil: Date | null;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            updatedAt: Date;
+            userId: string;
+            version: number;
+            currency: import("@src/generated/client").$Enums.Currency;
+            balance: import("@src/generated/client/runtime/library").Decimal;
+            reservedBalance: import("@src/generated/client/runtime/library").Decimal;
+            address: string | null;
+        };
+        ledgerEntries: {
+            type: import("@src/generated/client").$Enums.LedgerType;
+            id: string;
+            createdAt: Date;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            walletId: string;
+            transactionId: string | null;
+            orderId: string | null;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            reference: string;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
+        }[];
+    } & {
+        type: import("@src/generated/client").$Enums.LedgerType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        walletId: string;
+        amount: import("@src/generated/client/runtime/library").Decimal;
+        reference: string;
+        fee: import("@src/generated/client/runtime/library").Decimal;
     }>;
     getExchangeRates(): {
         rates: Record<string, number>;

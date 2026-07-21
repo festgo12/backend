@@ -375,6 +375,73 @@ exports.Prisma.FraudRuleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GiftCardListingScalarFieldEnum = {
+  id: 'id',
+  sellerId: 'sellerId',
+  brand: 'brand',
+  cardCode: 'cardCode',
+  cardPin: 'cardPin',
+  denomination: 'denomination',
+  cardCurrency: 'cardCurrency',
+  exchangeRate: 'exchangeRate',
+  askingPriceNgn: 'askingPriceNgn',
+  status: 'status',
+  evidenceUrls: 'evidenceUrls',
+  moderatorId: 'moderatorId',
+  moderatorNote: 'moderatorNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.GiftCardOrderScalarFieldEnum = {
+  id: 'id',
+  listingId: 'listingId',
+  buyerId: 'buyerId',
+  sellerId: 'sellerId',
+  status: 'status',
+  denomination: 'denomination',
+  cardCurrency: 'cardCurrency',
+  askingPriceNgn: 'askingPriceNgn',
+  feeAmount: 'feeAmount',
+  totalPaidNgn: 'totalPaidNgn',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.GiftCardEvidenceScalarFieldEnum = {
+  id: 'id',
+  listingId: 'listingId',
+  uploadedBy: 'uploadedBy',
+  fileUrl: 'fileUrl',
+  fileType: 'fileType',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.DailyReportScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  platformFeesNgn: 'platformFeesNgn',
+  tradingVolumeNgn: 'tradingVolumeNgn',
+  tradingVolumeUsd: 'tradingVolumeUsd',
+  totalOrders: 'totalOrders',
+  completedOrders: 'completedOrders',
+  cancelledOrders: 'cancelledOrders',
+  depositsNgn: 'depositsNgn',
+  depositCount: 'depositCount',
+  withdrawalsNgn: 'withdrawalsNgn',
+  withdrawalCount: 'withdrawalCount',
+  giftCardVolumeNgn: 'giftCardVolumeNgn',
+  giftCardCount: 'giftCardCount',
+  newUsers: 'newUsers',
+  totalUsers: 'totalUsers',
+  newDisputes: 'newDisputes',
+  resolvedDisputes: 'resolvedDisputes',
+  fraudEvents: 'fraudEvents',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -472,6 +539,33 @@ exports.NotificationStatus = exports.$Enums.NotificationStatus = {
   RETRYING: 'RETRYING'
 };
 
+exports.GiftCardBrand = exports.$Enums.GiftCardBrand = {
+  AMAZON: 'AMAZON',
+  APPLE: 'APPLE',
+  STEAM: 'STEAM',
+  GOOGLE_PLAY: 'GOOGLE_PLAY',
+  VISA_GIFT: 'VISA_GIFT',
+  MASTERCARD_GIFT: 'MASTERCARD_GIFT',
+  OTHER: 'OTHER'
+};
+
+exports.GiftCardListingStatus = exports.$Enums.GiftCardListingStatus = {
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  ACTIVE: 'ACTIVE',
+  SOLD: 'SOLD',
+  EXPIRED: 'EXPIRED',
+  REJECTED: 'REJECTED',
+  PAUSED: 'PAUSED'
+};
+
+exports.GiftCardOrderStatus = exports.$Enums.GiftCardOrderStatus = {
+  CREATED: 'CREATED',
+  PENDING_DELIVERY: 'PENDING_DELIVERY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  DISPUTED: 'DISPUTED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Profile: 'Profile',
@@ -491,7 +585,11 @@ exports.Prisma.ModelName = {
   NotificationTemplate: 'NotificationTemplate',
   NotificationLog: 'NotificationLog',
   SecurityAlert: 'SecurityAlert',
-  FraudRule: 'FraudRule'
+  FraudRule: 'FraudRule',
+  GiftCardListing: 'GiftCardListing',
+  GiftCardOrder: 'GiftCardOrder',
+  GiftCardEvidence: 'GiftCardEvidence',
+  DailyReport: 'DailyReport'
 };
 
 /**

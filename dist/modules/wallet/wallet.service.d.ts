@@ -117,6 +117,18 @@ export declare class WalletService {
         reservedBalance: Prisma.Decimal;
         address: string | null;
     }>;
+    findTransactionById(id: string): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        metadata: Prisma.JsonValue | null;
+        walletId: string;
+        amount: Prisma.Decimal;
+        reference: string;
+        fee: Prisma.Decimal;
+    } | null>;
     findTransactionByReference(reference: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
         id: string;

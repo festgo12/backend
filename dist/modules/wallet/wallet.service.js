@@ -154,6 +154,11 @@ let WalletService = class WalletService {
             data: { address },
         });
     }
+    async findTransactionById(id) {
+        return this.prisma.walletTransaction.findUnique({
+            where: { id },
+        });
+    }
     async findTransactionByReference(reference) {
         return this.prisma.walletTransaction.findUnique({
             where: { reference },

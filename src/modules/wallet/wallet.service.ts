@@ -193,6 +193,15 @@ export class WalletService {
   }
 
   /**
+   * Finds a transaction by its ID.
+   */
+  async findTransactionById(id: string) {
+    return this.prisma.walletTransaction.findUnique({
+      where: { id },
+    });
+  }
+
+  /**
    * Finds a transaction by its reference.
    */
   async findTransactionByReference(reference: string) {

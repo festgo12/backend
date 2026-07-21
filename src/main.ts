@@ -50,6 +50,9 @@ async function bootstrap() {
     }),
   );
 
+  // Raw body for Paystack webhook signature verification
+  app.use('/paystack/webhook', express.raw({ type: 'application/json' }));
+
   // Static file serving for uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 

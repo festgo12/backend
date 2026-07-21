@@ -3,11 +3,15 @@ import { UserStatus } from '@src/generated/client';
 import { Prisma } from '@src/generated/client';
 import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
+import { PaystackService } from '../paystack/paystack.service';
+import { WalletService } from '../wallet/wallet.service';
 export declare class AdminService {
     private prisma;
     private readonly tatumWithdrawal;
     private readonly exchangeRateService;
-    constructor(prisma: PrismaService, tatumWithdrawal: TatumWithdrawalService, exchangeRateService: TatumExchangeRateService);
+    private readonly paystackService;
+    private readonly walletService;
+    constructor(prisma: PrismaService, tatumWithdrawal: TatumWithdrawalService, exchangeRateService: TatumExchangeRateService, paystackService: PaystackService, walletService: WalletService);
     getUsers(page: number, limit: number, search?: string): Promise<{
         users: ({
             profile: {
@@ -672,7 +676,13 @@ export declare class AdminService {
         totalDeposits: number | Prisma.Decimal;
         totalWithdrawals: number | Prisma.Decimal;
     }>;
-    getPaymentTransactions(page: number, limit: number): Promise<{
+    getPaymentTransactions(page: number, limit: number, filters?: {
+        search?: string;
+        status?: string;
+        type?: string;
+        startDate?: string;
+        endDate?: string;
+    }): Promise<{
         transactions: ({
             wallet: {
                 user: {
@@ -729,6 +739,68 @@ export declare class AdminService {
             limit: number;
             totalPages: number;
         };
+    }>;
+    getPaymentTransactionDetail(transactionId: string): Promise<{
+        wallet: {
+            user: {
+                profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
+                    id: string;
+                    updatedAt: Date;
+                    userId: string;
+                    kycStatus: string;
+                } | null;
+            } & {
+                id: string;
+                email: string | null;
+                phone: string | null;
+                resetToken: string | null;
+                passwordHash: string;
+                role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                twoFactorEnabled: boolean;
+                twoFactorSecret: string | null;
+                resetTokenExpires: Date | null;
+                failedLoginAttempts: number;
+                lockedUntil: Date | null;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            updatedAt: Date;
+            userId: string;
+            version: number;
+            currency: import("@src/generated/client").$Enums.Currency;
+            balance: Prisma.Decimal;
+            reservedBalance: Prisma.Decimal;
+            address: string | null;
+        };
+        ledgerEntries: {
+            type: import("@src/generated/client").$Enums.LedgerType;
+            id: string;
+            createdAt: Date;
+            metadata: Prisma.JsonValue | null;
+            walletId: string;
+            transactionId: string | null;
+            orderId: string | null;
+            amount: Prisma.Decimal;
+            reference: string;
+            balanceAfter: Prisma.Decimal;
+        }[];
+    } & {
+        type: import("@src/generated/client").$Enums.LedgerType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        metadata: Prisma.JsonValue | null;
+        walletId: string;
+        amount: Prisma.Decimal;
+        reference: string;
+        fee: Prisma.Decimal;
     }>;
     getAuditLogs(page: number, limit: number, filters?: {
         action?: string;

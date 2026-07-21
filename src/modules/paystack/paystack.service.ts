@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
 @Injectable()
 export class PaystackService {
   private readonly secretKey: string;
+  private readonly webhookSecret: string;
   private readonly baseUrl = 'https://api.paystack.co';
   private readonly logger = new Logger(PaystackService.name);
 
@@ -16,6 +17,7 @@ export class PaystackService {
     private readonly httpService: HttpService,
   ) {
     this.secretKey = this.configService.get<string>('PAYSTACK_SECRET_KEY') || '';
+    this.webhookSecret = this.configService.get<string>('PAYSTACK_WEBHOOK_SECRET') || this.secretKey;
   }
 
   /**
@@ -28,7 +30,7 @@ export class PaystackService {
           `${this.baseUrl}/transaction/initialize`,
           {
             email,
-            amount: Math.round(amount * 100), // Convert to kobo
+            amount: Math.round(amount * 100),
             reference,
             callback_url: this.configService.get<string>('PAYSTACK_CALLBACK_URL') || 'https://standard.paystack.co/close',
             metadata,
@@ -147,7 +149,7 @@ export class PaystackService {
           `${this.baseUrl}/transfer`,
           {
             source: 'balance',
-            amount: Math.round(amount * 100), // Convert to kobo
+            amount: Math.round(amount * 100),
             recipient,
             reason,
             reference,
@@ -167,14 +169,42 @@ export class PaystackService {
     }
   }
 
+  /**
+   * REFUND: Initiate a refund on Paystack
+   */
+  async initiateRefund(transactionId: string, amount?: number) {
+    try {
+      const body: any = { transaction: transactionId };
+      if (amount) {
+        body.amount = Math.round(amount * 100);
+      }
+      const response: AxiosResponse = await lastValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/refund`,
+          body,
+          {
+            headers: {
+              Authorization: `Bearer ${this.secretKey}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      this.logger.error(`Paystack initiateRefund error: ${errorMessage}`, error.stack);
+      throw new BadRequestException(`Refund failed: ${errorMessage}`);
+    }
+  }
 
   /**
-   * WEBHOOK: Verify Signature
+   * WEBHOOK: Verify Signature using raw body
    */
-  verifySignature(payload: any, signature: string): boolean {
+  verifySignature(rawBody: string, signature: string): boolean {
     const hash = crypto
-      .createHmac('sha512', this.secretKey)
-      .update(JSON.stringify(payload))
+      .createHmac('sha512', this.webhookSecret)
+      .update(rawBody)
       .digest('hex');
     return hash === signature;
   }

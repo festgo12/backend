@@ -8,7 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletModule = void 0;
 const common_1 = require("@nestjs/common");
-const axios_1 = require("@nestjs/axios");
 const wallet_service_1 = require("./wallet.service");
 const ledger_service_1 = require("./ledger.service");
 const wallet_controller_1 = require("./wallet.controller");
@@ -20,7 +19,6 @@ exports.WalletModule = WalletModule;
 exports.WalletModule = WalletModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            axios_1.HttpModule,
             (0, common_1.forwardRef)(() => paystack_module_1.PaystackModule),
         ],
         controllers: [wallet_controller_1.WalletController],

@@ -71,6 +71,7 @@ async function bootstrap() {
         standardHeaders: true,
         legacyHeaders: false,
     }));
+    app.use('/paystack/webhook', express.raw({ type: 'application/json' }));
     app.use('/uploads', express.static((0, path_1.join)(__dirname, '..', 'uploads')));
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

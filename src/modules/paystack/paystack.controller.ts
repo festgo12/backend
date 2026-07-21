@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger, Param, Req } from '@nestjs/common';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { Currency, LedgerType, Role } from '@src/generated/client';
@@ -9,6 +9,11 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { PaystackService } from './paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { AuditLog } from '../audit/audit.decorator';
+import { InitializeDepositDto } from './dto/initialize-deposit.dto';
+import { InitiateTransferDto } from './dto/initiate-transfer.dto';
+import { VerifyAccountDto } from './dto/verify-account.dto';
+import { InitiateRefundDto } from './dto/initiate-refund.dto';
+import type { Request } from 'express';
 
 @ApiTags('Paystack Payment')
 @Controller('paystack')
@@ -25,27 +30,25 @@ export class PaystackController {
   @Post('initialize')
   @AuditLog('WALLET_DEPOSIT', 'WALLET')
   @ApiOperation({ summary: 'Initialize a deposit transaction' })
-  async initialize(@GetUser() user: User, @Body('amount') amount: number) {
+  async initialize(@GetUser() user: User, @Body() dto: InitializeDepositDto) {
     if (!user.email) throw new BadRequestException('User email is required for Paystack');
-    if (!amount || amount <= 0) throw new BadRequestException('Invalid amount');
 
     try {
       const reference = `DEP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const result = await this.paystackService.initializeTransaction(user.email, amount, reference, {
+      const result = await this.paystackService.initializeTransaction(user.email, dto.amount, reference, {
         userId: user.id,
         type: 'DEPOSIT',
       });
 
-      // Create a pending transaction in our DB
       const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
-      
+
       await this.walletService.createTransaction({
         walletId: wallet.id,
         type: LedgerType.DEPOSIT,
-        amount,
+        amount: dto.amount,
         reference,
         status: 'PENDING',
-        metadata: { 
+        metadata: {
           paystack_ref: result.data.reference,
         },
       });
@@ -67,12 +70,8 @@ export class PaystackController {
   @UseGuards(JwtAuthGuard)
   @Get('verify-account')
   @ApiOperation({ summary: 'Verify bank account number' })
-  async verifyAccount(
-    @Query('accountNumber') accountNumber: string,
-    @Query('bankCode') bankCode: string,
-  ) {
-    if (!accountNumber || !bankCode) throw new BadRequestException('Missing parameters');
-    return this.paystackService.verifyAccountNumber(accountNumber, bankCode);
+  async verifyAccount(@Query() dto: VerifyAccountDto) {
+    return this.paystackService.verifyAccountNumber(dto.accountNumber, dto.bankCode);
   }
 
   @ApiBearerAuth()
@@ -88,7 +87,7 @@ export class PaystackController {
         if (transaction && transaction.status !== 'COMPLETED') {
           this.logger.log(`Paystack manual verification success for ref: ${reference}`);
           await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED', {
-            paystack_data: verification.data
+            paystack_data: verification.data,
           });
         }
         return { status: 'success', data: verification.data };
@@ -105,66 +104,80 @@ export class PaystackController {
   @Post('transfer')
   @AuditLog('WALLET_WITHDRAWAL', 'WALLET')
   @ApiOperation({ summary: 'Initiate a withdrawal (transfer)' })
-  async initiateTransfer(
-    @GetUser() user: User,
-    @Body('amount') amount: number,
-    @Body('accountNumber') accountNumber: string,
-    @Body('bankCode') bankCode: string,
-    @Body('accountName') accountName: string,
-  ) {
-    if (!amount || amount <= 0) throw new BadRequestException('Invalid amount');
-
-    // 1. Check if user has enough balance
+  async initiateTransfer(@GetUser() user: User, @Body() dto: InitiateTransferDto) {
     const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
-    if (wallet.balance.toNumber() < amount) {
+    if (wallet.balance.toNumber() < dto.amount) {
       throw new BadRequestException('Insufficient balance');
     }
 
-    // 2. Create Transfer Recipient
     const recipientResult = await this.paystackService.createTransferRecipient(
-      accountName,
-      accountNumber,
-      bankCode,
+      dto.accountName,
+      dto.accountNumber,
+      dto.bankCode,
     );
     const recipientCode = recipientResult.data.recipient_code;
 
-    // 3. Initiate Transfer
     const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const transferResult = await this.paystackService.initiateTransfer(
-      amount,
+      dto.amount,
       recipientCode,
       `P2N Withdrawal for ${user.email}`,
       reference,
     );
 
-    // 4. Log the transaction as pending/processing and debit/reserve balance
-    // This part requires careful financial logic (Reserving balance)
     await this.walletService.createTransaction({
       walletId: wallet.id,
       type: LedgerType.WITHDRAWAL,
-      amount: -amount, // Negative for withdrawal
+      amount: -dto.amount,
       reference,
-      metadata: { 
+      status: 'PROCESSING',
+      metadata: {
         paystack_transfer_code: transferResult.data.transfer_code,
-        status: 'PROCESSING'
+        paystack_recipient_code: recipientCode,
+        account_number: dto.accountNumber,
+        bank_code: dto.bankCode,
+        account_name: dto.accountName,
       },
     });
 
     return transferResult;
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Post('refund')
+  @AuditLog('PAYMENT_REFUND', 'WALLET')
+  @ApiOperation({ summary: 'Initiate a refund (admin only)' })
+  async initiateRefund(@GetUser() user: User, @Body() dto: InitiateRefundDto) {
+    const transaction = await this.walletService.findTransactionById(dto.transactionId);
+    if (!transaction) throw new BadRequestException('Transaction not found');
+    if (transaction.status !== 'COMPLETED') throw new BadRequestException('Only completed transactions can be refunded');
+
+    const paystackRef = (transaction.metadata as any)?.paystack_ref;
+    if (!paystackRef) throw new BadRequestException('No Paystack reference found for this transaction');
+
+    const refundResult = await this.paystackService.initiateRefund(paystackRef, dto.amount);
+
+    await this.walletService.reverseTransaction(
+      dto.transactionId,
+      `Refund initiated by admin ${user.email}`,
+    );
+
+    return refundResult;
+  }
 
   @Post('webhook')
   @ApiOperation({ summary: 'Paystack Webhook' })
-  async handleWebhook(@Body() payload: any, @Headers('x-paystack-signature') signature: string) {
-    if (!this.paystackService.verifySignature(payload, signature)) {
-      this.logger.warn('Invalid Paystack Webhook Sig received');
+  async handleWebhook(@Req() req: Request, @Body() payload: any, @Headers('x-paystack-signature') signature: string) {
+    const rawBody = (req as any).rawBody;
+    if (!rawBody || !this.paystackService.verifySignature(rawBody, signature)) {
+      this.logger.warn('Invalid Paystack Webhook Signature received');
       throw new BadRequestException('Invalid signature');
     }
 
     this.logger.log(`Received Paystack Webhook: ${payload.event}`);
 
-    // Process events
     switch (payload.event) {
       case 'charge.success':
         await this.handleChargeSuccess(payload.data);
@@ -187,31 +200,29 @@ export class PaystackController {
 
   private async handleChargeSuccess(data: any) {
     this.logger.log(`Handling charge.success for ref: ${data.reference}`);
-    
-    // 1. Find the pending transaction
+
     const transaction = await this.walletService.findTransactionByReference(data.reference);
     if (!transaction || transaction.status === 'COMPLETED') return;
 
-    // 2. Complete the transaction and credit the wallet
     await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED', {
-      paystack_data: data
+      paystack_data: data,
     });
   }
 
   private async handleTransferSuccess(data: any) {
     this.logger.log(`Handling transfer.success for ref: ${data.reference}`);
-    
+
     const transaction = await this.walletService.findTransactionByReference(data.reference);
     if (!transaction || transaction.status === 'COMPLETED') return;
 
     await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED', {
-      paystack_data: data
+      paystack_data: data,
     });
   }
 
   private async handleTransferFailed(data: any) {
     this.logger.log(`Handling transfer.failed for ref: ${data.reference}`);
-    
+
     const transaction = await this.walletService.findTransactionByReference(data.reference);
     if (!transaction || transaction.status === 'FAILED' || transaction.status === 'REVERSED') return;
 
@@ -220,7 +231,7 @@ export class PaystackController {
 
   private async handleTransferReversed(data: any) {
     this.logger.log(`Handling transfer.reversed for ref: ${data.reference}`);
-    
+
     const transaction = await this.walletService.findTransactionByReference(data.reference);
     if (!transaction || transaction.status === 'REVERSED') return;
 

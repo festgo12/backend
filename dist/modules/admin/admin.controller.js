@@ -77,8 +77,13 @@ let AdminController = class AdminController {
     getPaymentStats() {
         return this.adminService.getPaymentStats();
     }
-    getPaymentTransactions(page = '1', limit = '10') {
-        return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+    getPaymentTransactions(page = '1', limit = '10', search, status, type, startDate, endDate) {
+        return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit), {
+            search, status, type, startDate, endDate,
+        });
+    }
+    getPaymentTransactionDetail(transactionId) {
+        return this.adminService.getPaymentTransactionDetail(transactionId);
     }
     getExchangeRates() {
         return this.exchangeRateService.getRateInfo();
@@ -240,10 +245,23 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Monitor NGN payment transactions' }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('search')),
+    __param(3, (0, common_1.Query)('status')),
+    __param(4, (0, common_1.Query)('type')),
+    __param(5, (0, common_1.Query)('startDate')),
+    __param(6, (0, common_1.Query)('endDate')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getPaymentTransactions", null);
+__decorate([
+    (0, common_1.Get)('payments/transactions/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get detailed payment transaction info' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getPaymentTransactionDetail", null);
 __decorate([
     (0, common_1.Get)('exchange-rates'),
     (0, swagger_1.ApiOperation)({ summary: 'Get current exchange rates' }),

@@ -17,6 +17,8 @@ import { AuditModule } from './modules/audit/audit.module';
 import { DisputesModule } from './modules/disputes/disputes.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { SecurityModule } from './modules/security/security.module';
+import { GiftCardModule } from './modules/gift-card/gift-card.module';
+import { ReportingModule } from './modules/reporting/reporting.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -39,6 +41,8 @@ import { AppService } from './app.service';
     DisputesModule,
     UploadModule,
     SecurityModule,
+    GiftCardModule,
+    ReportingModule,
   ],
 
   controllers: [AppController],

@@ -4,6 +4,7 @@ export declare class PaystackService {
     private readonly configService;
     private readonly httpService;
     private readonly secretKey;
+    private readonly webhookSecret;
     private readonly baseUrl;
     private readonly logger;
     constructor(configService: ConfigService, httpService: HttpService);
@@ -13,5 +14,6 @@ export declare class PaystackService {
     verifyAccountNumber(accountNumber: string, bankCode: string): Promise<any>;
     createTransferRecipient(name: string, accountNumber: string, bankCode: string): Promise<any>;
     initiateTransfer(amount: number, recipient: string, reason: string, reference: string): Promise<any>;
-    verifySignature(payload: any, signature: string): boolean;
+    initiateRefund(transactionId: string, amount?: number): Promise<any>;
+    verifySignature(rawBody: string, signature: string): boolean;
 }

@@ -4,6 +4,8 @@ import { UserStatus, Currency, LedgerType } from '@src/generated/client';
 import { Prisma } from '@src/generated/client';
 import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
+import { PaystackService } from '../paystack/paystack.service';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AdminService {
@@ -11,6 +13,8 @@ export class AdminService {
     private prisma: PrismaService,
     private readonly tatumWithdrawal: TatumWithdrawalService,
     private readonly exchangeRateService: TatumExchangeRateService,
+    private readonly paystackService: PaystackService,
+    private readonly walletService: WalletService,
   ) {}
 
   async getUsers(page: number, limit: number, search?: string) {
@@ -320,23 +324,70 @@ export class AdminService {
     };
   }
 
-  async getPaymentTransactions(page: number, limit: number) {
+  async getPaymentTransactions(
+    page: number,
+    limit: number,
+    filters?: {
+      search?: string;
+      status?: string;
+      type?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ) {
     const skip = (page - 1) * limit;
+    const where: any = { wallet: { currency: 'NGN' } };
+
+    if (filters?.status) where.status = filters.status;
+    if (filters?.type) where.type = filters.type;
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
+      if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
+    }
+    if (filters?.search) {
+      where.OR = [
+        { reference: { contains: filters.search, mode: 'insensitive' } },
+        { wallet: { user: { email: { contains: filters.search, mode: 'insensitive' } } } },
+        { wallet: { user: { profile: { firstName: { contains: filters.search, mode: 'insensitive' } } } } },
+        { wallet: { user: { profile: { lastName: { contains: filters.search, mode: 'insensitive' } } } } },
+      ];
+    }
+
     const [transactions, total] = await Promise.all([
       this.prisma.walletTransaction.findMany({
-        where: { wallet: { currency: 'NGN' } },
+        where,
         skip,
         take: limit,
         include: { wallet: { include: { user: { include: { profile: true } } } } },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.walletTransaction.count({ where: { wallet: { currency: 'NGN' } } }),
+      this.prisma.walletTransaction.count({ where }),
     ]);
 
     return {
       transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  async getPaymentTransactionDetail(transactionId: string) {
+    const transaction = await this.prisma.walletTransaction.findUnique({
+      where: { id: transactionId },
+      include: {
+        wallet: {
+          include: {
+            user: {
+              include: { profile: true },
+            },
+          },
+        },
+        ledgerEntries: true,
+      },
+    });
+
+    if (!transaction) throw new NotFoundException('Transaction not found');
+    return transaction;
   }
 
   async getAuditLogs(

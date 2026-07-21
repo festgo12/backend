@@ -108,6 +108,26 @@ export type SecurityAlert = $Result.DefaultSelection<Prisma.$SecurityAlertPayloa
  * 
  */
 export type FraudRule = $Result.DefaultSelection<Prisma.$FraudRulePayload>
+/**
+ * Model GiftCardListing
+ * 
+ */
+export type GiftCardListing = $Result.DefaultSelection<Prisma.$GiftCardListingPayload>
+/**
+ * Model GiftCardOrder
+ * 
+ */
+export type GiftCardOrder = $Result.DefaultSelection<Prisma.$GiftCardOrderPayload>
+/**
+ * Model GiftCardEvidence
+ * 
+ */
+export type GiftCardEvidence = $Result.DefaultSelection<Prisma.$GiftCardEvidencePayload>
+/**
+ * Model DailyReport
+ * 
+ */
+export type DailyReport = $Result.DefaultSelection<Prisma.$DailyReportPayload>
 
 /**
  * Enums
@@ -211,6 +231,42 @@ export const NotificationStatus: {
 
 export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus]
 
+
+export const GiftCardBrand: {
+  AMAZON: 'AMAZON',
+  APPLE: 'APPLE',
+  STEAM: 'STEAM',
+  GOOGLE_PLAY: 'GOOGLE_PLAY',
+  VISA_GIFT: 'VISA_GIFT',
+  MASTERCARD_GIFT: 'MASTERCARD_GIFT',
+  OTHER: 'OTHER'
+};
+
+export type GiftCardBrand = (typeof GiftCardBrand)[keyof typeof GiftCardBrand]
+
+
+export const GiftCardListingStatus: {
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  ACTIVE: 'ACTIVE',
+  SOLD: 'SOLD',
+  EXPIRED: 'EXPIRED',
+  REJECTED: 'REJECTED',
+  PAUSED: 'PAUSED'
+};
+
+export type GiftCardListingStatus = (typeof GiftCardListingStatus)[keyof typeof GiftCardListingStatus]
+
+
+export const GiftCardOrderStatus: {
+  CREATED: 'CREATED',
+  PENDING_DELIVERY: 'PENDING_DELIVERY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  DISPUTED: 'DISPUTED'
+};
+
+export type GiftCardOrderStatus = (typeof GiftCardOrderStatus)[keyof typeof GiftCardOrderStatus]
+
 }
 
 export type Role = $Enums.Role
@@ -248,6 +304,18 @@ export const NotificationChannel: typeof $Enums.NotificationChannel
 export type NotificationStatus = $Enums.NotificationStatus
 
 export const NotificationStatus: typeof $Enums.NotificationStatus
+
+export type GiftCardBrand = $Enums.GiftCardBrand
+
+export const GiftCardBrand: typeof $Enums.GiftCardBrand
+
+export type GiftCardListingStatus = $Enums.GiftCardListingStatus
+
+export const GiftCardListingStatus: typeof $Enums.GiftCardListingStatus
+
+export type GiftCardOrderStatus = $Enums.GiftCardOrderStatus
+
+export const GiftCardOrderStatus: typeof $Enums.GiftCardOrderStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -561,6 +629,46 @@ export class PrismaClient<
     * ```
     */
   get fraudRule(): Prisma.FraudRuleDelegate<ExtArgs>;
+
+  /**
+   * `prisma.giftCardListing`: Exposes CRUD operations for the **GiftCardListing** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GiftCardListings
+    * const giftCardListings = await prisma.giftCardListing.findMany()
+    * ```
+    */
+  get giftCardListing(): Prisma.GiftCardListingDelegate<ExtArgs>;
+
+  /**
+   * `prisma.giftCardOrder`: Exposes CRUD operations for the **GiftCardOrder** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GiftCardOrders
+    * const giftCardOrders = await prisma.giftCardOrder.findMany()
+    * ```
+    */
+  get giftCardOrder(): Prisma.GiftCardOrderDelegate<ExtArgs>;
+
+  /**
+   * `prisma.giftCardEvidence`: Exposes CRUD operations for the **GiftCardEvidence** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GiftCardEvidences
+    * const giftCardEvidences = await prisma.giftCardEvidence.findMany()
+    * ```
+    */
+  get giftCardEvidence(): Prisma.GiftCardEvidenceDelegate<ExtArgs>;
+
+  /**
+   * `prisma.dailyReport`: Exposes CRUD operations for the **DailyReport** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DailyReports
+    * const dailyReports = await prisma.dailyReport.findMany()
+    * ```
+    */
+  get dailyReport(): Prisma.DailyReportDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1020,7 +1128,11 @@ export namespace Prisma {
     NotificationTemplate: 'NotificationTemplate',
     NotificationLog: 'NotificationLog',
     SecurityAlert: 'SecurityAlert',
-    FraudRule: 'FraudRule'
+    FraudRule: 'FraudRule',
+    GiftCardListing: 'GiftCardListing',
+    GiftCardOrder: 'GiftCardOrder',
+    GiftCardEvidence: 'GiftCardEvidence',
+    DailyReport: 'DailyReport'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1036,7 +1148,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "dailyReport"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2370,6 +2482,286 @@ export namespace Prisma {
           }
         }
       }
+      GiftCardListing: {
+        payload: Prisma.$GiftCardListingPayload<ExtArgs>
+        fields: Prisma.GiftCardListingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GiftCardListingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GiftCardListingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          findFirst: {
+            args: Prisma.GiftCardListingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GiftCardListingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          findMany: {
+            args: Prisma.GiftCardListingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>[]
+          }
+          create: {
+            args: Prisma.GiftCardListingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          createMany: {
+            args: Prisma.GiftCardListingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GiftCardListingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>[]
+          }
+          delete: {
+            args: Prisma.GiftCardListingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          update: {
+            args: Prisma.GiftCardListingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          deleteMany: {
+            args: Prisma.GiftCardListingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GiftCardListingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.GiftCardListingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardListingPayload>
+          }
+          aggregate: {
+            args: Prisma.GiftCardListingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGiftCardListing>
+          }
+          groupBy: {
+            args: Prisma.GiftCardListingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardListingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GiftCardListingCountArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardListingCountAggregateOutputType> | number
+          }
+        }
+      }
+      GiftCardOrder: {
+        payload: Prisma.$GiftCardOrderPayload<ExtArgs>
+        fields: Prisma.GiftCardOrderFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GiftCardOrderFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GiftCardOrderFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          findFirst: {
+            args: Prisma.GiftCardOrderFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GiftCardOrderFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          findMany: {
+            args: Prisma.GiftCardOrderFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>[]
+          }
+          create: {
+            args: Prisma.GiftCardOrderCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          createMany: {
+            args: Prisma.GiftCardOrderCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GiftCardOrderCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>[]
+          }
+          delete: {
+            args: Prisma.GiftCardOrderDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          update: {
+            args: Prisma.GiftCardOrderUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          deleteMany: {
+            args: Prisma.GiftCardOrderDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GiftCardOrderUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.GiftCardOrderUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardOrderPayload>
+          }
+          aggregate: {
+            args: Prisma.GiftCardOrderAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGiftCardOrder>
+          }
+          groupBy: {
+            args: Prisma.GiftCardOrderGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardOrderGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GiftCardOrderCountArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardOrderCountAggregateOutputType> | number
+          }
+        }
+      }
+      GiftCardEvidence: {
+        payload: Prisma.$GiftCardEvidencePayload<ExtArgs>
+        fields: Prisma.GiftCardEvidenceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GiftCardEvidenceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GiftCardEvidenceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          findFirst: {
+            args: Prisma.GiftCardEvidenceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GiftCardEvidenceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          findMany: {
+            args: Prisma.GiftCardEvidenceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>[]
+          }
+          create: {
+            args: Prisma.GiftCardEvidenceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          createMany: {
+            args: Prisma.GiftCardEvidenceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GiftCardEvidenceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>[]
+          }
+          delete: {
+            args: Prisma.GiftCardEvidenceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          update: {
+            args: Prisma.GiftCardEvidenceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          deleteMany: {
+            args: Prisma.GiftCardEvidenceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GiftCardEvidenceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.GiftCardEvidenceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GiftCardEvidencePayload>
+          }
+          aggregate: {
+            args: Prisma.GiftCardEvidenceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGiftCardEvidence>
+          }
+          groupBy: {
+            args: Prisma.GiftCardEvidenceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardEvidenceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GiftCardEvidenceCountArgs<ExtArgs>
+            result: $Utils.Optional<GiftCardEvidenceCountAggregateOutputType> | number
+          }
+        }
+      }
+      DailyReport: {
+        payload: Prisma.$DailyReportPayload<ExtArgs>
+        fields: Prisma.DailyReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DailyReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DailyReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          findFirst: {
+            args: Prisma.DailyReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DailyReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          findMany: {
+            args: Prisma.DailyReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>[]
+          }
+          create: {
+            args: Prisma.DailyReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          createMany: {
+            args: Prisma.DailyReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DailyReportCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>[]
+          }
+          delete: {
+            args: Prisma.DailyReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          update: {
+            args: Prisma.DailyReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.DailyReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DailyReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DailyReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyReportPayload>
+          }
+          aggregate: {
+            args: Prisma.DailyReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDailyReport>
+          }
+          groupBy: {
+            args: Prisma.DailyReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DailyReportGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DailyReportCountArgs<ExtArgs>
+            result: $Utils.Optional<DailyReportCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2542,6 +2934,11 @@ export namespace Prisma {
     initiatedDisputes: number
     assignedDisputes: number
     evidenceUploads: number
+    giftCardListings: number
+    moderatedListings: number
+    giftCardBuyerOrders: number
+    giftCardSellerOrders: number
+    giftCardEvidence: number
     securityLogs: number
     securityAlerts: number
   }
@@ -2558,6 +2955,11 @@ export namespace Prisma {
     initiatedDisputes?: boolean | UserCountOutputTypeCountInitiatedDisputesArgs
     assignedDisputes?: boolean | UserCountOutputTypeCountAssignedDisputesArgs
     evidenceUploads?: boolean | UserCountOutputTypeCountEvidenceUploadsArgs
+    giftCardListings?: boolean | UserCountOutputTypeCountGiftCardListingsArgs
+    moderatedListings?: boolean | UserCountOutputTypeCountModeratedListingsArgs
+    giftCardBuyerOrders?: boolean | UserCountOutputTypeCountGiftCardBuyerOrdersArgs
+    giftCardSellerOrders?: boolean | UserCountOutputTypeCountGiftCardSellerOrdersArgs
+    giftCardEvidence?: boolean | UserCountOutputTypeCountGiftCardEvidenceArgs
     securityLogs?: boolean | UserCountOutputTypeCountSecurityLogsArgs
     securityAlerts?: boolean | UserCountOutputTypeCountSecurityAlertsArgs
   }
@@ -2648,6 +3050,41 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountEvidenceUploadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EvidenceWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGiftCardListingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardListingWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountModeratedListingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardListingWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGiftCardBuyerOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardOrderWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGiftCardSellerOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardOrderWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGiftCardEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardEvidenceWhereInput
   }
 
   /**
@@ -2844,6 +3281,46 @@ export namespace Prisma {
    */
   export type DisputeCountOutputTypeCountEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EvidenceWhereInput
+  }
+
+
+  /**
+   * Count Type GiftCardListingCountOutputType
+   */
+
+  export type GiftCardListingCountOutputType = {
+    orders: number
+    evidenceRecords: number
+  }
+
+  export type GiftCardListingCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    orders?: boolean | GiftCardListingCountOutputTypeCountOrdersArgs
+    evidenceRecords?: boolean | GiftCardListingCountOutputTypeCountEvidenceRecordsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * GiftCardListingCountOutputType without action
+   */
+  export type GiftCardListingCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListingCountOutputType
+     */
+    select?: GiftCardListingCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * GiftCardListingCountOutputType without action
+   */
+  export type GiftCardListingCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardOrderWhereInput
+  }
+
+  /**
+   * GiftCardListingCountOutputType without action
+   */
+  export type GiftCardListingCountOutputTypeCountEvidenceRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardEvidenceWhereInput
   }
 
 
@@ -3134,6 +3611,11 @@ export namespace Prisma {
     initiatedDisputes?: boolean | User$initiatedDisputesArgs<ExtArgs>
     assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
     evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
+    giftCardListings?: boolean | User$giftCardListingsArgs<ExtArgs>
+    moderatedListings?: boolean | User$moderatedListingsArgs<ExtArgs>
+    giftCardBuyerOrders?: boolean | User$giftCardBuyerOrdersArgs<ExtArgs>
+    giftCardSellerOrders?: boolean | User$giftCardSellerOrdersArgs<ExtArgs>
+    giftCardEvidence?: boolean | User$giftCardEvidenceArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     securityAlerts?: boolean | User$securityAlertsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -3187,6 +3669,11 @@ export namespace Prisma {
     initiatedDisputes?: boolean | User$initiatedDisputesArgs<ExtArgs>
     assignedDisputes?: boolean | User$assignedDisputesArgs<ExtArgs>
     evidenceUploads?: boolean | User$evidenceUploadsArgs<ExtArgs>
+    giftCardListings?: boolean | User$giftCardListingsArgs<ExtArgs>
+    moderatedListings?: boolean | User$moderatedListingsArgs<ExtArgs>
+    giftCardBuyerOrders?: boolean | User$giftCardBuyerOrdersArgs<ExtArgs>
+    giftCardSellerOrders?: boolean | User$giftCardSellerOrdersArgs<ExtArgs>
+    giftCardEvidence?: boolean | User$giftCardEvidenceArgs<ExtArgs>
     securityLogs?: boolean | User$securityLogsArgs<ExtArgs>
     securityAlerts?: boolean | User$securityAlertsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -3209,6 +3696,11 @@ export namespace Prisma {
       initiatedDisputes: Prisma.$DisputePayload<ExtArgs>[]
       assignedDisputes: Prisma.$DisputePayload<ExtArgs>[]
       evidenceUploads: Prisma.$EvidencePayload<ExtArgs>[]
+      giftCardListings: Prisma.$GiftCardListingPayload<ExtArgs>[]
+      moderatedListings: Prisma.$GiftCardListingPayload<ExtArgs>[]
+      giftCardBuyerOrders: Prisma.$GiftCardOrderPayload<ExtArgs>[]
+      giftCardSellerOrders: Prisma.$GiftCardOrderPayload<ExtArgs>[]
+      giftCardEvidence: Prisma.$GiftCardEvidencePayload<ExtArgs>[]
       securityLogs: Prisma.$SecurityLogPayload<ExtArgs>[]
       securityAlerts: Prisma.$SecurityAlertPayload<ExtArgs>[]
     }
@@ -3604,6 +4096,11 @@ export namespace Prisma {
     initiatedDisputes<T extends User$initiatedDisputesArgs<ExtArgs> = {}>(args?: Subset<T, User$initiatedDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
     assignedDisputes<T extends User$assignedDisputesArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedDisputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
     evidenceUploads<T extends User$evidenceUploadsArgs<ExtArgs> = {}>(args?: Subset<T, User$evidenceUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
+    giftCardListings<T extends User$giftCardListingsArgs<ExtArgs> = {}>(args?: Subset<T, User$giftCardListingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findMany"> | Null>
+    moderatedListings<T extends User$moderatedListingsArgs<ExtArgs> = {}>(args?: Subset<T, User$moderatedListingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findMany"> | Null>
+    giftCardBuyerOrders<T extends User$giftCardBuyerOrdersArgs<ExtArgs> = {}>(args?: Subset<T, User$giftCardBuyerOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findMany"> | Null>
+    giftCardSellerOrders<T extends User$giftCardSellerOrdersArgs<ExtArgs> = {}>(args?: Subset<T, User$giftCardSellerOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findMany"> | Null>
+    giftCardEvidence<T extends User$giftCardEvidenceArgs<ExtArgs> = {}>(args?: Subset<T, User$giftCardEvidenceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findMany"> | Null>
     securityLogs<T extends User$securityLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityLogPayload<ExtArgs>, T, "findMany"> | Null>
     securityAlerts<T extends User$securityAlertsArgs<ExtArgs> = {}>(args?: Subset<T, User$securityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findMany"> | Null>
     /**
@@ -4210,6 +4707,106 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EvidenceScalarFieldEnum | EvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * User.giftCardListings
+   */
+  export type User$giftCardListingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    where?: GiftCardListingWhereInput
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    cursor?: GiftCardListingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardListingScalarFieldEnum | GiftCardListingScalarFieldEnum[]
+  }
+
+  /**
+   * User.moderatedListings
+   */
+  export type User$moderatedListingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    where?: GiftCardListingWhereInput
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    cursor?: GiftCardListingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardListingScalarFieldEnum | GiftCardListingScalarFieldEnum[]
+  }
+
+  /**
+   * User.giftCardBuyerOrders
+   */
+  export type User$giftCardBuyerOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    where?: GiftCardOrderWhereInput
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    cursor?: GiftCardOrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * User.giftCardSellerOrders
+   */
+  export type User$giftCardSellerOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    where?: GiftCardOrderWhereInput
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    cursor?: GiftCardOrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * User.giftCardEvidence
+   */
+  export type User$giftCardEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    where?: GiftCardEvidenceWhereInput
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardEvidenceScalarFieldEnum | GiftCardEvidenceScalarFieldEnum[]
   }
 
   /**
@@ -22667,6 +23264,4382 @@ export namespace Prisma {
 
 
   /**
+   * Model GiftCardListing
+   */
+
+  export type AggregateGiftCardListing = {
+    _count: GiftCardListingCountAggregateOutputType | null
+    _avg: GiftCardListingAvgAggregateOutputType | null
+    _sum: GiftCardListingSumAggregateOutputType | null
+    _min: GiftCardListingMinAggregateOutputType | null
+    _max: GiftCardListingMaxAggregateOutputType | null
+  }
+
+  export type GiftCardListingAvgAggregateOutputType = {
+    denomination: Decimal | null
+    exchangeRate: Decimal | null
+    askingPriceNgn: Decimal | null
+    version: number | null
+  }
+
+  export type GiftCardListingSumAggregateOutputType = {
+    denomination: Decimal | null
+    exchangeRate: Decimal | null
+    askingPriceNgn: Decimal | null
+    version: number | null
+  }
+
+  export type GiftCardListingMinAggregateOutputType = {
+    id: string | null
+    sellerId: string | null
+    brand: $Enums.GiftCardBrand | null
+    cardCode: string | null
+    cardPin: string | null
+    denomination: Decimal | null
+    cardCurrency: string | null
+    exchangeRate: Decimal | null
+    askingPriceNgn: Decimal | null
+    status: $Enums.GiftCardListingStatus | null
+    moderatorId: string | null
+    moderatorNote: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    version: number | null
+  }
+
+  export type GiftCardListingMaxAggregateOutputType = {
+    id: string | null
+    sellerId: string | null
+    brand: $Enums.GiftCardBrand | null
+    cardCode: string | null
+    cardPin: string | null
+    denomination: Decimal | null
+    cardCurrency: string | null
+    exchangeRate: Decimal | null
+    askingPriceNgn: Decimal | null
+    status: $Enums.GiftCardListingStatus | null
+    moderatorId: string | null
+    moderatorNote: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    version: number | null
+  }
+
+  export type GiftCardListingCountAggregateOutputType = {
+    id: number
+    sellerId: number
+    brand: number
+    cardCode: number
+    cardPin: number
+    denomination: number
+    cardCurrency: number
+    exchangeRate: number
+    askingPriceNgn: number
+    status: number
+    evidenceUrls: number
+    moderatorId: number
+    moderatorNote: number
+    createdAt: number
+    updatedAt: number
+    version: number
+    _all: number
+  }
+
+
+  export type GiftCardListingAvgAggregateInputType = {
+    denomination?: true
+    exchangeRate?: true
+    askingPriceNgn?: true
+    version?: true
+  }
+
+  export type GiftCardListingSumAggregateInputType = {
+    denomination?: true
+    exchangeRate?: true
+    askingPriceNgn?: true
+    version?: true
+  }
+
+  export type GiftCardListingMinAggregateInputType = {
+    id?: true
+    sellerId?: true
+    brand?: true
+    cardCode?: true
+    cardPin?: true
+    denomination?: true
+    cardCurrency?: true
+    exchangeRate?: true
+    askingPriceNgn?: true
+    status?: true
+    moderatorId?: true
+    moderatorNote?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+  }
+
+  export type GiftCardListingMaxAggregateInputType = {
+    id?: true
+    sellerId?: true
+    brand?: true
+    cardCode?: true
+    cardPin?: true
+    denomination?: true
+    cardCurrency?: true
+    exchangeRate?: true
+    askingPriceNgn?: true
+    status?: true
+    moderatorId?: true
+    moderatorNote?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+  }
+
+  export type GiftCardListingCountAggregateInputType = {
+    id?: true
+    sellerId?: true
+    brand?: true
+    cardCode?: true
+    cardPin?: true
+    denomination?: true
+    cardCurrency?: true
+    exchangeRate?: true
+    askingPriceNgn?: true
+    status?: true
+    evidenceUrls?: true
+    moderatorId?: true
+    moderatorNote?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+    _all?: true
+  }
+
+  export type GiftCardListingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardListing to aggregate.
+     */
+    where?: GiftCardListingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardListings to fetch.
+     */
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GiftCardListingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardListings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardListings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GiftCardListings
+    **/
+    _count?: true | GiftCardListingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: GiftCardListingAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GiftCardListingSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GiftCardListingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GiftCardListingMaxAggregateInputType
+  }
+
+  export type GetGiftCardListingAggregateType<T extends GiftCardListingAggregateArgs> = {
+        [P in keyof T & keyof AggregateGiftCardListing]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGiftCardListing[P]>
+      : GetScalarType<T[P], AggregateGiftCardListing[P]>
+  }
+
+
+
+
+  export type GiftCardListingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardListingWhereInput
+    orderBy?: GiftCardListingOrderByWithAggregationInput | GiftCardListingOrderByWithAggregationInput[]
+    by: GiftCardListingScalarFieldEnum[] | GiftCardListingScalarFieldEnum
+    having?: GiftCardListingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GiftCardListingCountAggregateInputType | true
+    _avg?: GiftCardListingAvgAggregateInputType
+    _sum?: GiftCardListingSumAggregateInputType
+    _min?: GiftCardListingMinAggregateInputType
+    _max?: GiftCardListingMaxAggregateInputType
+  }
+
+  export type GiftCardListingGroupByOutputType = {
+    id: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin: string | null
+    denomination: Decimal
+    cardCurrency: string
+    exchangeRate: Decimal
+    askingPriceNgn: Decimal
+    status: $Enums.GiftCardListingStatus
+    evidenceUrls: JsonValue | null
+    moderatorId: string | null
+    moderatorNote: string | null
+    createdAt: Date
+    updatedAt: Date
+    version: number
+    _count: GiftCardListingCountAggregateOutputType | null
+    _avg: GiftCardListingAvgAggregateOutputType | null
+    _sum: GiftCardListingSumAggregateOutputType | null
+    _min: GiftCardListingMinAggregateOutputType | null
+    _max: GiftCardListingMaxAggregateOutputType | null
+  }
+
+  type GetGiftCardListingGroupByPayload<T extends GiftCardListingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GiftCardListingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GiftCardListingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GiftCardListingGroupByOutputType[P]>
+            : GetScalarType<T[P], GiftCardListingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GiftCardListingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sellerId?: boolean
+    brand?: boolean
+    cardCode?: boolean
+    cardPin?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    exchangeRate?: boolean
+    askingPriceNgn?: boolean
+    status?: boolean
+    evidenceUrls?: boolean
+    moderatorId?: boolean
+    moderatorNote?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    moderator?: boolean | GiftCardListing$moderatorArgs<ExtArgs>
+    orders?: boolean | GiftCardListing$ordersArgs<ExtArgs>
+    evidenceRecords?: boolean | GiftCardListing$evidenceRecordsArgs<ExtArgs>
+    _count?: boolean | GiftCardListingCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardListing"]>
+
+  export type GiftCardListingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sellerId?: boolean
+    brand?: boolean
+    cardCode?: boolean
+    cardPin?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    exchangeRate?: boolean
+    askingPriceNgn?: boolean
+    status?: boolean
+    evidenceUrls?: boolean
+    moderatorId?: boolean
+    moderatorNote?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    moderator?: boolean | GiftCardListing$moderatorArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardListing"]>
+
+  export type GiftCardListingSelectScalar = {
+    id?: boolean
+    sellerId?: boolean
+    brand?: boolean
+    cardCode?: boolean
+    cardPin?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    exchangeRate?: boolean
+    askingPriceNgn?: boolean
+    status?: boolean
+    evidenceUrls?: boolean
+    moderatorId?: boolean
+    moderatorNote?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+  }
+
+  export type GiftCardListingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    moderator?: boolean | GiftCardListing$moderatorArgs<ExtArgs>
+    orders?: boolean | GiftCardListing$ordersArgs<ExtArgs>
+    evidenceRecords?: boolean | GiftCardListing$evidenceRecordsArgs<ExtArgs>
+    _count?: boolean | GiftCardListingCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type GiftCardListingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    moderator?: boolean | GiftCardListing$moderatorArgs<ExtArgs>
+  }
+
+  export type $GiftCardListingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GiftCardListing"
+    objects: {
+      seller: Prisma.$UserPayload<ExtArgs>
+      moderator: Prisma.$UserPayload<ExtArgs> | null
+      orders: Prisma.$GiftCardOrderPayload<ExtArgs>[]
+      evidenceRecords: Prisma.$GiftCardEvidencePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sellerId: string
+      brand: $Enums.GiftCardBrand
+      cardCode: string
+      cardPin: string | null
+      denomination: Prisma.Decimal
+      cardCurrency: string
+      exchangeRate: Prisma.Decimal
+      askingPriceNgn: Prisma.Decimal
+      status: $Enums.GiftCardListingStatus
+      evidenceUrls: Prisma.JsonValue | null
+      moderatorId: string | null
+      moderatorNote: string | null
+      createdAt: Date
+      updatedAt: Date
+      version: number
+    }, ExtArgs["result"]["giftCardListing"]>
+    composites: {}
+  }
+
+  type GiftCardListingGetPayload<S extends boolean | null | undefined | GiftCardListingDefaultArgs> = $Result.GetResult<Prisma.$GiftCardListingPayload, S>
+
+  type GiftCardListingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<GiftCardListingFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: GiftCardListingCountAggregateInputType | true
+    }
+
+  export interface GiftCardListingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GiftCardListing'], meta: { name: 'GiftCardListing' } }
+    /**
+     * Find zero or one GiftCardListing that matches the filter.
+     * @param {GiftCardListingFindUniqueArgs} args - Arguments to find a GiftCardListing
+     * @example
+     * // Get one GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GiftCardListingFindUniqueArgs>(args: SelectSubset<T, GiftCardListingFindUniqueArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one GiftCardListing that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {GiftCardListingFindUniqueOrThrowArgs} args - Arguments to find a GiftCardListing
+     * @example
+     * // Get one GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GiftCardListingFindUniqueOrThrowArgs>(args: SelectSubset<T, GiftCardListingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first GiftCardListing that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingFindFirstArgs} args - Arguments to find a GiftCardListing
+     * @example
+     * // Get one GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GiftCardListingFindFirstArgs>(args?: SelectSubset<T, GiftCardListingFindFirstArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first GiftCardListing that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingFindFirstOrThrowArgs} args - Arguments to find a GiftCardListing
+     * @example
+     * // Get one GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GiftCardListingFindFirstOrThrowArgs>(args?: SelectSubset<T, GiftCardListingFindFirstOrThrowArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more GiftCardListings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GiftCardListings
+     * const giftCardListings = await prisma.giftCardListing.findMany()
+     * 
+     * // Get first 10 GiftCardListings
+     * const giftCardListings = await prisma.giftCardListing.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const giftCardListingWithIdOnly = await prisma.giftCardListing.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GiftCardListingFindManyArgs>(args?: SelectSubset<T, GiftCardListingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a GiftCardListing.
+     * @param {GiftCardListingCreateArgs} args - Arguments to create a GiftCardListing.
+     * @example
+     * // Create one GiftCardListing
+     * const GiftCardListing = await prisma.giftCardListing.create({
+     *   data: {
+     *     // ... data to create a GiftCardListing
+     *   }
+     * })
+     * 
+     */
+    create<T extends GiftCardListingCreateArgs>(args: SelectSubset<T, GiftCardListingCreateArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many GiftCardListings.
+     * @param {GiftCardListingCreateManyArgs} args - Arguments to create many GiftCardListings.
+     * @example
+     * // Create many GiftCardListings
+     * const giftCardListing = await prisma.giftCardListing.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GiftCardListingCreateManyArgs>(args?: SelectSubset<T, GiftCardListingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GiftCardListings and returns the data saved in the database.
+     * @param {GiftCardListingCreateManyAndReturnArgs} args - Arguments to create many GiftCardListings.
+     * @example
+     * // Create many GiftCardListings
+     * const giftCardListing = await prisma.giftCardListing.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GiftCardListings and only return the `id`
+     * const giftCardListingWithIdOnly = await prisma.giftCardListing.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GiftCardListingCreateManyAndReturnArgs>(args?: SelectSubset<T, GiftCardListingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a GiftCardListing.
+     * @param {GiftCardListingDeleteArgs} args - Arguments to delete one GiftCardListing.
+     * @example
+     * // Delete one GiftCardListing
+     * const GiftCardListing = await prisma.giftCardListing.delete({
+     *   where: {
+     *     // ... filter to delete one GiftCardListing
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GiftCardListingDeleteArgs>(args: SelectSubset<T, GiftCardListingDeleteArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one GiftCardListing.
+     * @param {GiftCardListingUpdateArgs} args - Arguments to update one GiftCardListing.
+     * @example
+     * // Update one GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GiftCardListingUpdateArgs>(args: SelectSubset<T, GiftCardListingUpdateArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more GiftCardListings.
+     * @param {GiftCardListingDeleteManyArgs} args - Arguments to filter GiftCardListings to delete.
+     * @example
+     * // Delete a few GiftCardListings
+     * const { count } = await prisma.giftCardListing.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GiftCardListingDeleteManyArgs>(args?: SelectSubset<T, GiftCardListingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GiftCardListings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GiftCardListings
+     * const giftCardListing = await prisma.giftCardListing.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GiftCardListingUpdateManyArgs>(args: SelectSubset<T, GiftCardListingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GiftCardListing.
+     * @param {GiftCardListingUpsertArgs} args - Arguments to update or create a GiftCardListing.
+     * @example
+     * // Update or create a GiftCardListing
+     * const giftCardListing = await prisma.giftCardListing.upsert({
+     *   create: {
+     *     // ... data to create a GiftCardListing
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GiftCardListing we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GiftCardListingUpsertArgs>(args: SelectSubset<T, GiftCardListingUpsertArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of GiftCardListings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingCountArgs} args - Arguments to filter GiftCardListings to count.
+     * @example
+     * // Count the number of GiftCardListings
+     * const count = await prisma.giftCardListing.count({
+     *   where: {
+     *     // ... the filter for the GiftCardListings we want to count
+     *   }
+     * })
+    **/
+    count<T extends GiftCardListingCountArgs>(
+      args?: Subset<T, GiftCardListingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GiftCardListingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GiftCardListing.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GiftCardListingAggregateArgs>(args: Subset<T, GiftCardListingAggregateArgs>): Prisma.PrismaPromise<GetGiftCardListingAggregateType<T>>
+
+    /**
+     * Group by GiftCardListing.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardListingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GiftCardListingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GiftCardListingGroupByArgs['orderBy'] }
+        : { orderBy?: GiftCardListingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GiftCardListingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGiftCardListingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GiftCardListing model
+   */
+  readonly fields: GiftCardListingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GiftCardListing.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GiftCardListingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    seller<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    moderator<T extends GiftCardListing$moderatorArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardListing$moderatorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    orders<T extends GiftCardListing$ordersArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardListing$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findMany"> | Null>
+    evidenceRecords<T extends GiftCardListing$evidenceRecordsArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardListing$evidenceRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GiftCardListing model
+   */ 
+  interface GiftCardListingFieldRefs {
+    readonly id: FieldRef<"GiftCardListing", 'String'>
+    readonly sellerId: FieldRef<"GiftCardListing", 'String'>
+    readonly brand: FieldRef<"GiftCardListing", 'GiftCardBrand'>
+    readonly cardCode: FieldRef<"GiftCardListing", 'String'>
+    readonly cardPin: FieldRef<"GiftCardListing", 'String'>
+    readonly denomination: FieldRef<"GiftCardListing", 'Decimal'>
+    readonly cardCurrency: FieldRef<"GiftCardListing", 'String'>
+    readonly exchangeRate: FieldRef<"GiftCardListing", 'Decimal'>
+    readonly askingPriceNgn: FieldRef<"GiftCardListing", 'Decimal'>
+    readonly status: FieldRef<"GiftCardListing", 'GiftCardListingStatus'>
+    readonly evidenceUrls: FieldRef<"GiftCardListing", 'Json'>
+    readonly moderatorId: FieldRef<"GiftCardListing", 'String'>
+    readonly moderatorNote: FieldRef<"GiftCardListing", 'String'>
+    readonly createdAt: FieldRef<"GiftCardListing", 'DateTime'>
+    readonly updatedAt: FieldRef<"GiftCardListing", 'DateTime'>
+    readonly version: FieldRef<"GiftCardListing", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GiftCardListing findUnique
+   */
+  export type GiftCardListingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardListing to fetch.
+     */
+    where: GiftCardListingWhereUniqueInput
+  }
+
+  /**
+   * GiftCardListing findUniqueOrThrow
+   */
+  export type GiftCardListingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardListing to fetch.
+     */
+    where: GiftCardListingWhereUniqueInput
+  }
+
+  /**
+   * GiftCardListing findFirst
+   */
+  export type GiftCardListingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardListing to fetch.
+     */
+    where?: GiftCardListingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardListings to fetch.
+     */
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardListings.
+     */
+    cursor?: GiftCardListingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardListings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardListings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardListings.
+     */
+    distinct?: GiftCardListingScalarFieldEnum | GiftCardListingScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardListing findFirstOrThrow
+   */
+  export type GiftCardListingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardListing to fetch.
+     */
+    where?: GiftCardListingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardListings to fetch.
+     */
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardListings.
+     */
+    cursor?: GiftCardListingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardListings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardListings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardListings.
+     */
+    distinct?: GiftCardListingScalarFieldEnum | GiftCardListingScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardListing findMany
+   */
+  export type GiftCardListingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardListings to fetch.
+     */
+    where?: GiftCardListingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardListings to fetch.
+     */
+    orderBy?: GiftCardListingOrderByWithRelationInput | GiftCardListingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GiftCardListings.
+     */
+    cursor?: GiftCardListingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardListings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardListings.
+     */
+    skip?: number
+    distinct?: GiftCardListingScalarFieldEnum | GiftCardListingScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardListing create
+   */
+  export type GiftCardListingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GiftCardListing.
+     */
+    data: XOR<GiftCardListingCreateInput, GiftCardListingUncheckedCreateInput>
+  }
+
+  /**
+   * GiftCardListing createMany
+   */
+  export type GiftCardListingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GiftCardListings.
+     */
+    data: GiftCardListingCreateManyInput | GiftCardListingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GiftCardListing createManyAndReturn
+   */
+  export type GiftCardListingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many GiftCardListings.
+     */
+    data: GiftCardListingCreateManyInput | GiftCardListingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GiftCardListing update
+   */
+  export type GiftCardListingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GiftCardListing.
+     */
+    data: XOR<GiftCardListingUpdateInput, GiftCardListingUncheckedUpdateInput>
+    /**
+     * Choose, which GiftCardListing to update.
+     */
+    where: GiftCardListingWhereUniqueInput
+  }
+
+  /**
+   * GiftCardListing updateMany
+   */
+  export type GiftCardListingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GiftCardListings.
+     */
+    data: XOR<GiftCardListingUpdateManyMutationInput, GiftCardListingUncheckedUpdateManyInput>
+    /**
+     * Filter which GiftCardListings to update
+     */
+    where?: GiftCardListingWhereInput
+  }
+
+  /**
+   * GiftCardListing upsert
+   */
+  export type GiftCardListingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GiftCardListing to update in case it exists.
+     */
+    where: GiftCardListingWhereUniqueInput
+    /**
+     * In case the GiftCardListing found by the `where` argument doesn't exist, create a new GiftCardListing with this data.
+     */
+    create: XOR<GiftCardListingCreateInput, GiftCardListingUncheckedCreateInput>
+    /**
+     * In case the GiftCardListing was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GiftCardListingUpdateInput, GiftCardListingUncheckedUpdateInput>
+  }
+
+  /**
+   * GiftCardListing delete
+   */
+  export type GiftCardListingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+    /**
+     * Filter which GiftCardListing to delete.
+     */
+    where: GiftCardListingWhereUniqueInput
+  }
+
+  /**
+   * GiftCardListing deleteMany
+   */
+  export type GiftCardListingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardListings to delete
+     */
+    where?: GiftCardListingWhereInput
+  }
+
+  /**
+   * GiftCardListing.moderator
+   */
+  export type GiftCardListing$moderatorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * GiftCardListing.orders
+   */
+  export type GiftCardListing$ordersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    where?: GiftCardOrderWhereInput
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    cursor?: GiftCardOrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardListing.evidenceRecords
+   */
+  export type GiftCardListing$evidenceRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    where?: GiftCardEvidenceWhereInput
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GiftCardEvidenceScalarFieldEnum | GiftCardEvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardListing without action
+   */
+  export type GiftCardListingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardListing
+     */
+    select?: GiftCardListingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardListingInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GiftCardOrder
+   */
+
+  export type AggregateGiftCardOrder = {
+    _count: GiftCardOrderCountAggregateOutputType | null
+    _avg: GiftCardOrderAvgAggregateOutputType | null
+    _sum: GiftCardOrderSumAggregateOutputType | null
+    _min: GiftCardOrderMinAggregateOutputType | null
+    _max: GiftCardOrderMaxAggregateOutputType | null
+  }
+
+  export type GiftCardOrderAvgAggregateOutputType = {
+    denomination: Decimal | null
+    askingPriceNgn: Decimal | null
+    feeAmount: Decimal | null
+    totalPaidNgn: Decimal | null
+    version: number | null
+  }
+
+  export type GiftCardOrderSumAggregateOutputType = {
+    denomination: Decimal | null
+    askingPriceNgn: Decimal | null
+    feeAmount: Decimal | null
+    totalPaidNgn: Decimal | null
+    version: number | null
+  }
+
+  export type GiftCardOrderMinAggregateOutputType = {
+    id: string | null
+    listingId: string | null
+    buyerId: string | null
+    sellerId: string | null
+    status: $Enums.GiftCardOrderStatus | null
+    denomination: Decimal | null
+    cardCurrency: string | null
+    askingPriceNgn: Decimal | null
+    feeAmount: Decimal | null
+    totalPaidNgn: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    version: number | null
+  }
+
+  export type GiftCardOrderMaxAggregateOutputType = {
+    id: string | null
+    listingId: string | null
+    buyerId: string | null
+    sellerId: string | null
+    status: $Enums.GiftCardOrderStatus | null
+    denomination: Decimal | null
+    cardCurrency: string | null
+    askingPriceNgn: Decimal | null
+    feeAmount: Decimal | null
+    totalPaidNgn: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    version: number | null
+  }
+
+  export type GiftCardOrderCountAggregateOutputType = {
+    id: number
+    listingId: number
+    buyerId: number
+    sellerId: number
+    status: number
+    denomination: number
+    cardCurrency: number
+    askingPriceNgn: number
+    feeAmount: number
+    totalPaidNgn: number
+    createdAt: number
+    updatedAt: number
+    version: number
+    _all: number
+  }
+
+
+  export type GiftCardOrderAvgAggregateInputType = {
+    denomination?: true
+    askingPriceNgn?: true
+    feeAmount?: true
+    totalPaidNgn?: true
+    version?: true
+  }
+
+  export type GiftCardOrderSumAggregateInputType = {
+    denomination?: true
+    askingPriceNgn?: true
+    feeAmount?: true
+    totalPaidNgn?: true
+    version?: true
+  }
+
+  export type GiftCardOrderMinAggregateInputType = {
+    id?: true
+    listingId?: true
+    buyerId?: true
+    sellerId?: true
+    status?: true
+    denomination?: true
+    cardCurrency?: true
+    askingPriceNgn?: true
+    feeAmount?: true
+    totalPaidNgn?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+  }
+
+  export type GiftCardOrderMaxAggregateInputType = {
+    id?: true
+    listingId?: true
+    buyerId?: true
+    sellerId?: true
+    status?: true
+    denomination?: true
+    cardCurrency?: true
+    askingPriceNgn?: true
+    feeAmount?: true
+    totalPaidNgn?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+  }
+
+  export type GiftCardOrderCountAggregateInputType = {
+    id?: true
+    listingId?: true
+    buyerId?: true
+    sellerId?: true
+    status?: true
+    denomination?: true
+    cardCurrency?: true
+    askingPriceNgn?: true
+    feeAmount?: true
+    totalPaidNgn?: true
+    createdAt?: true
+    updatedAt?: true
+    version?: true
+    _all?: true
+  }
+
+  export type GiftCardOrderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardOrder to aggregate.
+     */
+    where?: GiftCardOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardOrders to fetch.
+     */
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GiftCardOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GiftCardOrders
+    **/
+    _count?: true | GiftCardOrderCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: GiftCardOrderAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GiftCardOrderSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GiftCardOrderMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GiftCardOrderMaxAggregateInputType
+  }
+
+  export type GetGiftCardOrderAggregateType<T extends GiftCardOrderAggregateArgs> = {
+        [P in keyof T & keyof AggregateGiftCardOrder]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGiftCardOrder[P]>
+      : GetScalarType<T[P], AggregateGiftCardOrder[P]>
+  }
+
+
+
+
+  export type GiftCardOrderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardOrderWhereInput
+    orderBy?: GiftCardOrderOrderByWithAggregationInput | GiftCardOrderOrderByWithAggregationInput[]
+    by: GiftCardOrderScalarFieldEnum[] | GiftCardOrderScalarFieldEnum
+    having?: GiftCardOrderScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GiftCardOrderCountAggregateInputType | true
+    _avg?: GiftCardOrderAvgAggregateInputType
+    _sum?: GiftCardOrderSumAggregateInputType
+    _min?: GiftCardOrderMinAggregateInputType
+    _max?: GiftCardOrderMaxAggregateInputType
+  }
+
+  export type GiftCardOrderGroupByOutputType = {
+    id: string
+    listingId: string
+    buyerId: string
+    sellerId: string
+    status: $Enums.GiftCardOrderStatus
+    denomination: Decimal
+    cardCurrency: string
+    askingPriceNgn: Decimal
+    feeAmount: Decimal
+    totalPaidNgn: Decimal
+    createdAt: Date
+    updatedAt: Date
+    version: number
+    _count: GiftCardOrderCountAggregateOutputType | null
+    _avg: GiftCardOrderAvgAggregateOutputType | null
+    _sum: GiftCardOrderSumAggregateOutputType | null
+    _min: GiftCardOrderMinAggregateOutputType | null
+    _max: GiftCardOrderMaxAggregateOutputType | null
+  }
+
+  type GetGiftCardOrderGroupByPayload<T extends GiftCardOrderGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GiftCardOrderGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GiftCardOrderGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GiftCardOrderGroupByOutputType[P]>
+            : GetScalarType<T[P], GiftCardOrderGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GiftCardOrderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    listingId?: boolean
+    buyerId?: boolean
+    sellerId?: boolean
+    status?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    askingPriceNgn?: boolean
+    feeAmount?: boolean
+    totalPaidNgn?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardOrder"]>
+
+  export type GiftCardOrderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    listingId?: boolean
+    buyerId?: boolean
+    sellerId?: boolean
+    status?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    askingPriceNgn?: boolean
+    feeAmount?: boolean
+    totalPaidNgn?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardOrder"]>
+
+  export type GiftCardOrderSelectScalar = {
+    id?: boolean
+    listingId?: boolean
+    buyerId?: boolean
+    sellerId?: boolean
+    status?: boolean
+    denomination?: boolean
+    cardCurrency?: boolean
+    askingPriceNgn?: boolean
+    feeAmount?: boolean
+    totalPaidNgn?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    version?: boolean
+  }
+
+  export type GiftCardOrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GiftCardOrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $GiftCardOrderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GiftCardOrder"
+    objects: {
+      listing: Prisma.$GiftCardListingPayload<ExtArgs>
+      buyer: Prisma.$UserPayload<ExtArgs>
+      seller: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      listingId: string
+      buyerId: string
+      sellerId: string
+      status: $Enums.GiftCardOrderStatus
+      denomination: Prisma.Decimal
+      cardCurrency: string
+      askingPriceNgn: Prisma.Decimal
+      feeAmount: Prisma.Decimal
+      totalPaidNgn: Prisma.Decimal
+      createdAt: Date
+      updatedAt: Date
+      version: number
+    }, ExtArgs["result"]["giftCardOrder"]>
+    composites: {}
+  }
+
+  type GiftCardOrderGetPayload<S extends boolean | null | undefined | GiftCardOrderDefaultArgs> = $Result.GetResult<Prisma.$GiftCardOrderPayload, S>
+
+  type GiftCardOrderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<GiftCardOrderFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: GiftCardOrderCountAggregateInputType | true
+    }
+
+  export interface GiftCardOrderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GiftCardOrder'], meta: { name: 'GiftCardOrder' } }
+    /**
+     * Find zero or one GiftCardOrder that matches the filter.
+     * @param {GiftCardOrderFindUniqueArgs} args - Arguments to find a GiftCardOrder
+     * @example
+     * // Get one GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GiftCardOrderFindUniqueArgs>(args: SelectSubset<T, GiftCardOrderFindUniqueArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one GiftCardOrder that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {GiftCardOrderFindUniqueOrThrowArgs} args - Arguments to find a GiftCardOrder
+     * @example
+     * // Get one GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GiftCardOrderFindUniqueOrThrowArgs>(args: SelectSubset<T, GiftCardOrderFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first GiftCardOrder that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderFindFirstArgs} args - Arguments to find a GiftCardOrder
+     * @example
+     * // Get one GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GiftCardOrderFindFirstArgs>(args?: SelectSubset<T, GiftCardOrderFindFirstArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first GiftCardOrder that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderFindFirstOrThrowArgs} args - Arguments to find a GiftCardOrder
+     * @example
+     * // Get one GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GiftCardOrderFindFirstOrThrowArgs>(args?: SelectSubset<T, GiftCardOrderFindFirstOrThrowArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more GiftCardOrders that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GiftCardOrders
+     * const giftCardOrders = await prisma.giftCardOrder.findMany()
+     * 
+     * // Get first 10 GiftCardOrders
+     * const giftCardOrders = await prisma.giftCardOrder.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const giftCardOrderWithIdOnly = await prisma.giftCardOrder.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GiftCardOrderFindManyArgs>(args?: SelectSubset<T, GiftCardOrderFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a GiftCardOrder.
+     * @param {GiftCardOrderCreateArgs} args - Arguments to create a GiftCardOrder.
+     * @example
+     * // Create one GiftCardOrder
+     * const GiftCardOrder = await prisma.giftCardOrder.create({
+     *   data: {
+     *     // ... data to create a GiftCardOrder
+     *   }
+     * })
+     * 
+     */
+    create<T extends GiftCardOrderCreateArgs>(args: SelectSubset<T, GiftCardOrderCreateArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many GiftCardOrders.
+     * @param {GiftCardOrderCreateManyArgs} args - Arguments to create many GiftCardOrders.
+     * @example
+     * // Create many GiftCardOrders
+     * const giftCardOrder = await prisma.giftCardOrder.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GiftCardOrderCreateManyArgs>(args?: SelectSubset<T, GiftCardOrderCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GiftCardOrders and returns the data saved in the database.
+     * @param {GiftCardOrderCreateManyAndReturnArgs} args - Arguments to create many GiftCardOrders.
+     * @example
+     * // Create many GiftCardOrders
+     * const giftCardOrder = await prisma.giftCardOrder.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GiftCardOrders and only return the `id`
+     * const giftCardOrderWithIdOnly = await prisma.giftCardOrder.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GiftCardOrderCreateManyAndReturnArgs>(args?: SelectSubset<T, GiftCardOrderCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a GiftCardOrder.
+     * @param {GiftCardOrderDeleteArgs} args - Arguments to delete one GiftCardOrder.
+     * @example
+     * // Delete one GiftCardOrder
+     * const GiftCardOrder = await prisma.giftCardOrder.delete({
+     *   where: {
+     *     // ... filter to delete one GiftCardOrder
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GiftCardOrderDeleteArgs>(args: SelectSubset<T, GiftCardOrderDeleteArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one GiftCardOrder.
+     * @param {GiftCardOrderUpdateArgs} args - Arguments to update one GiftCardOrder.
+     * @example
+     * // Update one GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GiftCardOrderUpdateArgs>(args: SelectSubset<T, GiftCardOrderUpdateArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more GiftCardOrders.
+     * @param {GiftCardOrderDeleteManyArgs} args - Arguments to filter GiftCardOrders to delete.
+     * @example
+     * // Delete a few GiftCardOrders
+     * const { count } = await prisma.giftCardOrder.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GiftCardOrderDeleteManyArgs>(args?: SelectSubset<T, GiftCardOrderDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GiftCardOrders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GiftCardOrders
+     * const giftCardOrder = await prisma.giftCardOrder.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GiftCardOrderUpdateManyArgs>(args: SelectSubset<T, GiftCardOrderUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GiftCardOrder.
+     * @param {GiftCardOrderUpsertArgs} args - Arguments to update or create a GiftCardOrder.
+     * @example
+     * // Update or create a GiftCardOrder
+     * const giftCardOrder = await prisma.giftCardOrder.upsert({
+     *   create: {
+     *     // ... data to create a GiftCardOrder
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GiftCardOrder we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GiftCardOrderUpsertArgs>(args: SelectSubset<T, GiftCardOrderUpsertArgs<ExtArgs>>): Prisma__GiftCardOrderClient<$Result.GetResult<Prisma.$GiftCardOrderPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of GiftCardOrders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderCountArgs} args - Arguments to filter GiftCardOrders to count.
+     * @example
+     * // Count the number of GiftCardOrders
+     * const count = await prisma.giftCardOrder.count({
+     *   where: {
+     *     // ... the filter for the GiftCardOrders we want to count
+     *   }
+     * })
+    **/
+    count<T extends GiftCardOrderCountArgs>(
+      args?: Subset<T, GiftCardOrderCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GiftCardOrderCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GiftCardOrder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GiftCardOrderAggregateArgs>(args: Subset<T, GiftCardOrderAggregateArgs>): Prisma.PrismaPromise<GetGiftCardOrderAggregateType<T>>
+
+    /**
+     * Group by GiftCardOrder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardOrderGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GiftCardOrderGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GiftCardOrderGroupByArgs['orderBy'] }
+        : { orderBy?: GiftCardOrderGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GiftCardOrderGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGiftCardOrderGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GiftCardOrder model
+   */
+  readonly fields: GiftCardOrderFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GiftCardOrder.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GiftCardOrderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    listing<T extends GiftCardListingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardListingDefaultArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    buyer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    seller<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GiftCardOrder model
+   */ 
+  interface GiftCardOrderFieldRefs {
+    readonly id: FieldRef<"GiftCardOrder", 'String'>
+    readonly listingId: FieldRef<"GiftCardOrder", 'String'>
+    readonly buyerId: FieldRef<"GiftCardOrder", 'String'>
+    readonly sellerId: FieldRef<"GiftCardOrder", 'String'>
+    readonly status: FieldRef<"GiftCardOrder", 'GiftCardOrderStatus'>
+    readonly denomination: FieldRef<"GiftCardOrder", 'Decimal'>
+    readonly cardCurrency: FieldRef<"GiftCardOrder", 'String'>
+    readonly askingPriceNgn: FieldRef<"GiftCardOrder", 'Decimal'>
+    readonly feeAmount: FieldRef<"GiftCardOrder", 'Decimal'>
+    readonly totalPaidNgn: FieldRef<"GiftCardOrder", 'Decimal'>
+    readonly createdAt: FieldRef<"GiftCardOrder", 'DateTime'>
+    readonly updatedAt: FieldRef<"GiftCardOrder", 'DateTime'>
+    readonly version: FieldRef<"GiftCardOrder", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GiftCardOrder findUnique
+   */
+  export type GiftCardOrderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardOrder to fetch.
+     */
+    where: GiftCardOrderWhereUniqueInput
+  }
+
+  /**
+   * GiftCardOrder findUniqueOrThrow
+   */
+  export type GiftCardOrderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardOrder to fetch.
+     */
+    where: GiftCardOrderWhereUniqueInput
+  }
+
+  /**
+   * GiftCardOrder findFirst
+   */
+  export type GiftCardOrderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardOrder to fetch.
+     */
+    where?: GiftCardOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardOrders to fetch.
+     */
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardOrders.
+     */
+    cursor?: GiftCardOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardOrders.
+     */
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardOrder findFirstOrThrow
+   */
+  export type GiftCardOrderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardOrder to fetch.
+     */
+    where?: GiftCardOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardOrders to fetch.
+     */
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardOrders.
+     */
+    cursor?: GiftCardOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardOrders.
+     */
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardOrder findMany
+   */
+  export type GiftCardOrderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardOrders to fetch.
+     */
+    where?: GiftCardOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardOrders to fetch.
+     */
+    orderBy?: GiftCardOrderOrderByWithRelationInput | GiftCardOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GiftCardOrders.
+     */
+    cursor?: GiftCardOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardOrders.
+     */
+    skip?: number
+    distinct?: GiftCardOrderScalarFieldEnum | GiftCardOrderScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardOrder create
+   */
+  export type GiftCardOrderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GiftCardOrder.
+     */
+    data: XOR<GiftCardOrderCreateInput, GiftCardOrderUncheckedCreateInput>
+  }
+
+  /**
+   * GiftCardOrder createMany
+   */
+  export type GiftCardOrderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GiftCardOrders.
+     */
+    data: GiftCardOrderCreateManyInput | GiftCardOrderCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GiftCardOrder createManyAndReturn
+   */
+  export type GiftCardOrderCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many GiftCardOrders.
+     */
+    data: GiftCardOrderCreateManyInput | GiftCardOrderCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GiftCardOrder update
+   */
+  export type GiftCardOrderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GiftCardOrder.
+     */
+    data: XOR<GiftCardOrderUpdateInput, GiftCardOrderUncheckedUpdateInput>
+    /**
+     * Choose, which GiftCardOrder to update.
+     */
+    where: GiftCardOrderWhereUniqueInput
+  }
+
+  /**
+   * GiftCardOrder updateMany
+   */
+  export type GiftCardOrderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GiftCardOrders.
+     */
+    data: XOR<GiftCardOrderUpdateManyMutationInput, GiftCardOrderUncheckedUpdateManyInput>
+    /**
+     * Filter which GiftCardOrders to update
+     */
+    where?: GiftCardOrderWhereInput
+  }
+
+  /**
+   * GiftCardOrder upsert
+   */
+  export type GiftCardOrderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GiftCardOrder to update in case it exists.
+     */
+    where: GiftCardOrderWhereUniqueInput
+    /**
+     * In case the GiftCardOrder found by the `where` argument doesn't exist, create a new GiftCardOrder with this data.
+     */
+    create: XOR<GiftCardOrderCreateInput, GiftCardOrderUncheckedCreateInput>
+    /**
+     * In case the GiftCardOrder was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GiftCardOrderUpdateInput, GiftCardOrderUncheckedUpdateInput>
+  }
+
+  /**
+   * GiftCardOrder delete
+   */
+  export type GiftCardOrderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+    /**
+     * Filter which GiftCardOrder to delete.
+     */
+    where: GiftCardOrderWhereUniqueInput
+  }
+
+  /**
+   * GiftCardOrder deleteMany
+   */
+  export type GiftCardOrderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardOrders to delete
+     */
+    where?: GiftCardOrderWhereInput
+  }
+
+  /**
+   * GiftCardOrder without action
+   */
+  export type GiftCardOrderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardOrder
+     */
+    select?: GiftCardOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardOrderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GiftCardEvidence
+   */
+
+  export type AggregateGiftCardEvidence = {
+    _count: GiftCardEvidenceCountAggregateOutputType | null
+    _min: GiftCardEvidenceMinAggregateOutputType | null
+    _max: GiftCardEvidenceMaxAggregateOutputType | null
+  }
+
+  export type GiftCardEvidenceMinAggregateOutputType = {
+    id: string | null
+    listingId: string | null
+    uploadedBy: string | null
+    fileUrl: string | null
+    fileType: string | null
+    createdAt: Date | null
+  }
+
+  export type GiftCardEvidenceMaxAggregateOutputType = {
+    id: string | null
+    listingId: string | null
+    uploadedBy: string | null
+    fileUrl: string | null
+    fileType: string | null
+    createdAt: Date | null
+  }
+
+  export type GiftCardEvidenceCountAggregateOutputType = {
+    id: number
+    listingId: number
+    uploadedBy: number
+    fileUrl: number
+    fileType: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type GiftCardEvidenceMinAggregateInputType = {
+    id?: true
+    listingId?: true
+    uploadedBy?: true
+    fileUrl?: true
+    fileType?: true
+    createdAt?: true
+  }
+
+  export type GiftCardEvidenceMaxAggregateInputType = {
+    id?: true
+    listingId?: true
+    uploadedBy?: true
+    fileUrl?: true
+    fileType?: true
+    createdAt?: true
+  }
+
+  export type GiftCardEvidenceCountAggregateInputType = {
+    id?: true
+    listingId?: true
+    uploadedBy?: true
+    fileUrl?: true
+    fileType?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type GiftCardEvidenceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardEvidence to aggregate.
+     */
+    where?: GiftCardEvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardEvidences to fetch.
+     */
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardEvidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardEvidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GiftCardEvidences
+    **/
+    _count?: true | GiftCardEvidenceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GiftCardEvidenceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GiftCardEvidenceMaxAggregateInputType
+  }
+
+  export type GetGiftCardEvidenceAggregateType<T extends GiftCardEvidenceAggregateArgs> = {
+        [P in keyof T & keyof AggregateGiftCardEvidence]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGiftCardEvidence[P]>
+      : GetScalarType<T[P], AggregateGiftCardEvidence[P]>
+  }
+
+
+
+
+  export type GiftCardEvidenceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GiftCardEvidenceWhereInput
+    orderBy?: GiftCardEvidenceOrderByWithAggregationInput | GiftCardEvidenceOrderByWithAggregationInput[]
+    by: GiftCardEvidenceScalarFieldEnum[] | GiftCardEvidenceScalarFieldEnum
+    having?: GiftCardEvidenceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GiftCardEvidenceCountAggregateInputType | true
+    _min?: GiftCardEvidenceMinAggregateInputType
+    _max?: GiftCardEvidenceMaxAggregateInputType
+  }
+
+  export type GiftCardEvidenceGroupByOutputType = {
+    id: string
+    listingId: string
+    uploadedBy: string
+    fileUrl: string
+    fileType: string
+    createdAt: Date
+    _count: GiftCardEvidenceCountAggregateOutputType | null
+    _min: GiftCardEvidenceMinAggregateOutputType | null
+    _max: GiftCardEvidenceMaxAggregateOutputType | null
+  }
+
+  type GetGiftCardEvidenceGroupByPayload<T extends GiftCardEvidenceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GiftCardEvidenceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GiftCardEvidenceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GiftCardEvidenceGroupByOutputType[P]>
+            : GetScalarType<T[P], GiftCardEvidenceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GiftCardEvidenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    listingId?: boolean
+    uploadedBy?: boolean
+    fileUrl?: boolean
+    fileType?: boolean
+    createdAt?: boolean
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    uploader?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardEvidence"]>
+
+  export type GiftCardEvidenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    listingId?: boolean
+    uploadedBy?: boolean
+    fileUrl?: boolean
+    fileType?: boolean
+    createdAt?: boolean
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    uploader?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["giftCardEvidence"]>
+
+  export type GiftCardEvidenceSelectScalar = {
+    id?: boolean
+    listingId?: boolean
+    uploadedBy?: boolean
+    fileUrl?: boolean
+    fileType?: boolean
+    createdAt?: boolean
+  }
+
+  export type GiftCardEvidenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    uploader?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type GiftCardEvidenceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    listing?: boolean | GiftCardListingDefaultArgs<ExtArgs>
+    uploader?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $GiftCardEvidencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GiftCardEvidence"
+    objects: {
+      listing: Prisma.$GiftCardListingPayload<ExtArgs>
+      uploader: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      listingId: string
+      uploadedBy: string
+      fileUrl: string
+      fileType: string
+      createdAt: Date
+    }, ExtArgs["result"]["giftCardEvidence"]>
+    composites: {}
+  }
+
+  type GiftCardEvidenceGetPayload<S extends boolean | null | undefined | GiftCardEvidenceDefaultArgs> = $Result.GetResult<Prisma.$GiftCardEvidencePayload, S>
+
+  type GiftCardEvidenceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<GiftCardEvidenceFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: GiftCardEvidenceCountAggregateInputType | true
+    }
+
+  export interface GiftCardEvidenceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GiftCardEvidence'], meta: { name: 'GiftCardEvidence' } }
+    /**
+     * Find zero or one GiftCardEvidence that matches the filter.
+     * @param {GiftCardEvidenceFindUniqueArgs} args - Arguments to find a GiftCardEvidence
+     * @example
+     * // Get one GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GiftCardEvidenceFindUniqueArgs>(args: SelectSubset<T, GiftCardEvidenceFindUniqueArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one GiftCardEvidence that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {GiftCardEvidenceFindUniqueOrThrowArgs} args - Arguments to find a GiftCardEvidence
+     * @example
+     * // Get one GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GiftCardEvidenceFindUniqueOrThrowArgs>(args: SelectSubset<T, GiftCardEvidenceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first GiftCardEvidence that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceFindFirstArgs} args - Arguments to find a GiftCardEvidence
+     * @example
+     * // Get one GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GiftCardEvidenceFindFirstArgs>(args?: SelectSubset<T, GiftCardEvidenceFindFirstArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first GiftCardEvidence that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceFindFirstOrThrowArgs} args - Arguments to find a GiftCardEvidence
+     * @example
+     * // Get one GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GiftCardEvidenceFindFirstOrThrowArgs>(args?: SelectSubset<T, GiftCardEvidenceFindFirstOrThrowArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more GiftCardEvidences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GiftCardEvidences
+     * const giftCardEvidences = await prisma.giftCardEvidence.findMany()
+     * 
+     * // Get first 10 GiftCardEvidences
+     * const giftCardEvidences = await prisma.giftCardEvidence.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const giftCardEvidenceWithIdOnly = await prisma.giftCardEvidence.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GiftCardEvidenceFindManyArgs>(args?: SelectSubset<T, GiftCardEvidenceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a GiftCardEvidence.
+     * @param {GiftCardEvidenceCreateArgs} args - Arguments to create a GiftCardEvidence.
+     * @example
+     * // Create one GiftCardEvidence
+     * const GiftCardEvidence = await prisma.giftCardEvidence.create({
+     *   data: {
+     *     // ... data to create a GiftCardEvidence
+     *   }
+     * })
+     * 
+     */
+    create<T extends GiftCardEvidenceCreateArgs>(args: SelectSubset<T, GiftCardEvidenceCreateArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many GiftCardEvidences.
+     * @param {GiftCardEvidenceCreateManyArgs} args - Arguments to create many GiftCardEvidences.
+     * @example
+     * // Create many GiftCardEvidences
+     * const giftCardEvidence = await prisma.giftCardEvidence.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GiftCardEvidenceCreateManyArgs>(args?: SelectSubset<T, GiftCardEvidenceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GiftCardEvidences and returns the data saved in the database.
+     * @param {GiftCardEvidenceCreateManyAndReturnArgs} args - Arguments to create many GiftCardEvidences.
+     * @example
+     * // Create many GiftCardEvidences
+     * const giftCardEvidence = await prisma.giftCardEvidence.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GiftCardEvidences and only return the `id`
+     * const giftCardEvidenceWithIdOnly = await prisma.giftCardEvidence.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GiftCardEvidenceCreateManyAndReturnArgs>(args?: SelectSubset<T, GiftCardEvidenceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a GiftCardEvidence.
+     * @param {GiftCardEvidenceDeleteArgs} args - Arguments to delete one GiftCardEvidence.
+     * @example
+     * // Delete one GiftCardEvidence
+     * const GiftCardEvidence = await prisma.giftCardEvidence.delete({
+     *   where: {
+     *     // ... filter to delete one GiftCardEvidence
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GiftCardEvidenceDeleteArgs>(args: SelectSubset<T, GiftCardEvidenceDeleteArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one GiftCardEvidence.
+     * @param {GiftCardEvidenceUpdateArgs} args - Arguments to update one GiftCardEvidence.
+     * @example
+     * // Update one GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GiftCardEvidenceUpdateArgs>(args: SelectSubset<T, GiftCardEvidenceUpdateArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more GiftCardEvidences.
+     * @param {GiftCardEvidenceDeleteManyArgs} args - Arguments to filter GiftCardEvidences to delete.
+     * @example
+     * // Delete a few GiftCardEvidences
+     * const { count } = await prisma.giftCardEvidence.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GiftCardEvidenceDeleteManyArgs>(args?: SelectSubset<T, GiftCardEvidenceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GiftCardEvidences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GiftCardEvidences
+     * const giftCardEvidence = await prisma.giftCardEvidence.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GiftCardEvidenceUpdateManyArgs>(args: SelectSubset<T, GiftCardEvidenceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one GiftCardEvidence.
+     * @param {GiftCardEvidenceUpsertArgs} args - Arguments to update or create a GiftCardEvidence.
+     * @example
+     * // Update or create a GiftCardEvidence
+     * const giftCardEvidence = await prisma.giftCardEvidence.upsert({
+     *   create: {
+     *     // ... data to create a GiftCardEvidence
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GiftCardEvidence we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GiftCardEvidenceUpsertArgs>(args: SelectSubset<T, GiftCardEvidenceUpsertArgs<ExtArgs>>): Prisma__GiftCardEvidenceClient<$Result.GetResult<Prisma.$GiftCardEvidencePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of GiftCardEvidences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceCountArgs} args - Arguments to filter GiftCardEvidences to count.
+     * @example
+     * // Count the number of GiftCardEvidences
+     * const count = await prisma.giftCardEvidence.count({
+     *   where: {
+     *     // ... the filter for the GiftCardEvidences we want to count
+     *   }
+     * })
+    **/
+    count<T extends GiftCardEvidenceCountArgs>(
+      args?: Subset<T, GiftCardEvidenceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GiftCardEvidenceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GiftCardEvidence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GiftCardEvidenceAggregateArgs>(args: Subset<T, GiftCardEvidenceAggregateArgs>): Prisma.PrismaPromise<GetGiftCardEvidenceAggregateType<T>>
+
+    /**
+     * Group by GiftCardEvidence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GiftCardEvidenceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GiftCardEvidenceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GiftCardEvidenceGroupByArgs['orderBy'] }
+        : { orderBy?: GiftCardEvidenceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GiftCardEvidenceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGiftCardEvidenceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GiftCardEvidence model
+   */
+  readonly fields: GiftCardEvidenceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GiftCardEvidence.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GiftCardEvidenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    listing<T extends GiftCardListingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardListingDefaultArgs<ExtArgs>>): Prisma__GiftCardListingClient<$Result.GetResult<Prisma.$GiftCardListingPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    uploader<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GiftCardEvidence model
+   */ 
+  interface GiftCardEvidenceFieldRefs {
+    readonly id: FieldRef<"GiftCardEvidence", 'String'>
+    readonly listingId: FieldRef<"GiftCardEvidence", 'String'>
+    readonly uploadedBy: FieldRef<"GiftCardEvidence", 'String'>
+    readonly fileUrl: FieldRef<"GiftCardEvidence", 'String'>
+    readonly fileType: FieldRef<"GiftCardEvidence", 'String'>
+    readonly createdAt: FieldRef<"GiftCardEvidence", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GiftCardEvidence findUnique
+   */
+  export type GiftCardEvidenceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardEvidence to fetch.
+     */
+    where: GiftCardEvidenceWhereUniqueInput
+  }
+
+  /**
+   * GiftCardEvidence findUniqueOrThrow
+   */
+  export type GiftCardEvidenceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardEvidence to fetch.
+     */
+    where: GiftCardEvidenceWhereUniqueInput
+  }
+
+  /**
+   * GiftCardEvidence findFirst
+   */
+  export type GiftCardEvidenceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardEvidence to fetch.
+     */
+    where?: GiftCardEvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardEvidences to fetch.
+     */
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardEvidences.
+     */
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardEvidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardEvidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardEvidences.
+     */
+    distinct?: GiftCardEvidenceScalarFieldEnum | GiftCardEvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardEvidence findFirstOrThrow
+   */
+  export type GiftCardEvidenceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardEvidence to fetch.
+     */
+    where?: GiftCardEvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardEvidences to fetch.
+     */
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GiftCardEvidences.
+     */
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardEvidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardEvidences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GiftCardEvidences.
+     */
+    distinct?: GiftCardEvidenceScalarFieldEnum | GiftCardEvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardEvidence findMany
+   */
+  export type GiftCardEvidenceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter, which GiftCardEvidences to fetch.
+     */
+    where?: GiftCardEvidenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GiftCardEvidences to fetch.
+     */
+    orderBy?: GiftCardEvidenceOrderByWithRelationInput | GiftCardEvidenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GiftCardEvidences.
+     */
+    cursor?: GiftCardEvidenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GiftCardEvidences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GiftCardEvidences.
+     */
+    skip?: number
+    distinct?: GiftCardEvidenceScalarFieldEnum | GiftCardEvidenceScalarFieldEnum[]
+  }
+
+  /**
+   * GiftCardEvidence create
+   */
+  export type GiftCardEvidenceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * The data needed to create a GiftCardEvidence.
+     */
+    data: XOR<GiftCardEvidenceCreateInput, GiftCardEvidenceUncheckedCreateInput>
+  }
+
+  /**
+   * GiftCardEvidence createMany
+   */
+  export type GiftCardEvidenceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GiftCardEvidences.
+     */
+    data: GiftCardEvidenceCreateManyInput | GiftCardEvidenceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GiftCardEvidence createManyAndReturn
+   */
+  export type GiftCardEvidenceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many GiftCardEvidences.
+     */
+    data: GiftCardEvidenceCreateManyInput | GiftCardEvidenceCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * GiftCardEvidence update
+   */
+  export type GiftCardEvidenceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * The data needed to update a GiftCardEvidence.
+     */
+    data: XOR<GiftCardEvidenceUpdateInput, GiftCardEvidenceUncheckedUpdateInput>
+    /**
+     * Choose, which GiftCardEvidence to update.
+     */
+    where: GiftCardEvidenceWhereUniqueInput
+  }
+
+  /**
+   * GiftCardEvidence updateMany
+   */
+  export type GiftCardEvidenceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GiftCardEvidences.
+     */
+    data: XOR<GiftCardEvidenceUpdateManyMutationInput, GiftCardEvidenceUncheckedUpdateManyInput>
+    /**
+     * Filter which GiftCardEvidences to update
+     */
+    where?: GiftCardEvidenceWhereInput
+  }
+
+  /**
+   * GiftCardEvidence upsert
+   */
+  export type GiftCardEvidenceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * The filter to search for the GiftCardEvidence to update in case it exists.
+     */
+    where: GiftCardEvidenceWhereUniqueInput
+    /**
+     * In case the GiftCardEvidence found by the `where` argument doesn't exist, create a new GiftCardEvidence with this data.
+     */
+    create: XOR<GiftCardEvidenceCreateInput, GiftCardEvidenceUncheckedCreateInput>
+    /**
+     * In case the GiftCardEvidence was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GiftCardEvidenceUpdateInput, GiftCardEvidenceUncheckedUpdateInput>
+  }
+
+  /**
+   * GiftCardEvidence delete
+   */
+  export type GiftCardEvidenceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+    /**
+     * Filter which GiftCardEvidence to delete.
+     */
+    where: GiftCardEvidenceWhereUniqueInput
+  }
+
+  /**
+   * GiftCardEvidence deleteMany
+   */
+  export type GiftCardEvidenceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GiftCardEvidences to delete
+     */
+    where?: GiftCardEvidenceWhereInput
+  }
+
+  /**
+   * GiftCardEvidence without action
+   */
+  export type GiftCardEvidenceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardEvidence
+     */
+    select?: GiftCardEvidenceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardEvidenceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DailyReport
+   */
+
+  export type AggregateDailyReport = {
+    _count: DailyReportCountAggregateOutputType | null
+    _avg: DailyReportAvgAggregateOutputType | null
+    _sum: DailyReportSumAggregateOutputType | null
+    _min: DailyReportMinAggregateOutputType | null
+    _max: DailyReportMaxAggregateOutputType | null
+  }
+
+  export type DailyReportAvgAggregateOutputType = {
+    platformFeesNgn: Decimal | null
+    tradingVolumeNgn: Decimal | null
+    tradingVolumeUsd: Decimal | null
+    totalOrders: number | null
+    completedOrders: number | null
+    cancelledOrders: number | null
+    depositsNgn: Decimal | null
+    depositCount: number | null
+    withdrawalsNgn: Decimal | null
+    withdrawalCount: number | null
+    giftCardVolumeNgn: Decimal | null
+    giftCardCount: number | null
+    newUsers: number | null
+    totalUsers: number | null
+    newDisputes: number | null
+    resolvedDisputes: number | null
+    fraudEvents: number | null
+  }
+
+  export type DailyReportSumAggregateOutputType = {
+    platformFeesNgn: Decimal | null
+    tradingVolumeNgn: Decimal | null
+    tradingVolumeUsd: Decimal | null
+    totalOrders: number | null
+    completedOrders: number | null
+    cancelledOrders: number | null
+    depositsNgn: Decimal | null
+    depositCount: number | null
+    withdrawalsNgn: Decimal | null
+    withdrawalCount: number | null
+    giftCardVolumeNgn: Decimal | null
+    giftCardCount: number | null
+    newUsers: number | null
+    totalUsers: number | null
+    newDisputes: number | null
+    resolvedDisputes: number | null
+    fraudEvents: number | null
+  }
+
+  export type DailyReportMinAggregateOutputType = {
+    id: string | null
+    date: Date | null
+    platformFeesNgn: Decimal | null
+    tradingVolumeNgn: Decimal | null
+    tradingVolumeUsd: Decimal | null
+    totalOrders: number | null
+    completedOrders: number | null
+    cancelledOrders: number | null
+    depositsNgn: Decimal | null
+    depositCount: number | null
+    withdrawalsNgn: Decimal | null
+    withdrawalCount: number | null
+    giftCardVolumeNgn: Decimal | null
+    giftCardCount: number | null
+    newUsers: number | null
+    totalUsers: number | null
+    newDisputes: number | null
+    resolvedDisputes: number | null
+    fraudEvents: number | null
+    createdAt: Date | null
+  }
+
+  export type DailyReportMaxAggregateOutputType = {
+    id: string | null
+    date: Date | null
+    platformFeesNgn: Decimal | null
+    tradingVolumeNgn: Decimal | null
+    tradingVolumeUsd: Decimal | null
+    totalOrders: number | null
+    completedOrders: number | null
+    cancelledOrders: number | null
+    depositsNgn: Decimal | null
+    depositCount: number | null
+    withdrawalsNgn: Decimal | null
+    withdrawalCount: number | null
+    giftCardVolumeNgn: Decimal | null
+    giftCardCount: number | null
+    newUsers: number | null
+    totalUsers: number | null
+    newDisputes: number | null
+    resolvedDisputes: number | null
+    fraudEvents: number | null
+    createdAt: Date | null
+  }
+
+  export type DailyReportCountAggregateOutputType = {
+    id: number
+    date: number
+    platformFeesNgn: number
+    tradingVolumeNgn: number
+    tradingVolumeUsd: number
+    totalOrders: number
+    completedOrders: number
+    cancelledOrders: number
+    depositsNgn: number
+    depositCount: number
+    withdrawalsNgn: number
+    withdrawalCount: number
+    giftCardVolumeNgn: number
+    giftCardCount: number
+    newUsers: number
+    totalUsers: number
+    newDisputes: number
+    resolvedDisputes: number
+    fraudEvents: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type DailyReportAvgAggregateInputType = {
+    platformFeesNgn?: true
+    tradingVolumeNgn?: true
+    tradingVolumeUsd?: true
+    totalOrders?: true
+    completedOrders?: true
+    cancelledOrders?: true
+    depositsNgn?: true
+    depositCount?: true
+    withdrawalsNgn?: true
+    withdrawalCount?: true
+    giftCardVolumeNgn?: true
+    giftCardCount?: true
+    newUsers?: true
+    totalUsers?: true
+    newDisputes?: true
+    resolvedDisputes?: true
+    fraudEvents?: true
+  }
+
+  export type DailyReportSumAggregateInputType = {
+    platformFeesNgn?: true
+    tradingVolumeNgn?: true
+    tradingVolumeUsd?: true
+    totalOrders?: true
+    completedOrders?: true
+    cancelledOrders?: true
+    depositsNgn?: true
+    depositCount?: true
+    withdrawalsNgn?: true
+    withdrawalCount?: true
+    giftCardVolumeNgn?: true
+    giftCardCount?: true
+    newUsers?: true
+    totalUsers?: true
+    newDisputes?: true
+    resolvedDisputes?: true
+    fraudEvents?: true
+  }
+
+  export type DailyReportMinAggregateInputType = {
+    id?: true
+    date?: true
+    platformFeesNgn?: true
+    tradingVolumeNgn?: true
+    tradingVolumeUsd?: true
+    totalOrders?: true
+    completedOrders?: true
+    cancelledOrders?: true
+    depositsNgn?: true
+    depositCount?: true
+    withdrawalsNgn?: true
+    withdrawalCount?: true
+    giftCardVolumeNgn?: true
+    giftCardCount?: true
+    newUsers?: true
+    totalUsers?: true
+    newDisputes?: true
+    resolvedDisputes?: true
+    fraudEvents?: true
+    createdAt?: true
+  }
+
+  export type DailyReportMaxAggregateInputType = {
+    id?: true
+    date?: true
+    platformFeesNgn?: true
+    tradingVolumeNgn?: true
+    tradingVolumeUsd?: true
+    totalOrders?: true
+    completedOrders?: true
+    cancelledOrders?: true
+    depositsNgn?: true
+    depositCount?: true
+    withdrawalsNgn?: true
+    withdrawalCount?: true
+    giftCardVolumeNgn?: true
+    giftCardCount?: true
+    newUsers?: true
+    totalUsers?: true
+    newDisputes?: true
+    resolvedDisputes?: true
+    fraudEvents?: true
+    createdAt?: true
+  }
+
+  export type DailyReportCountAggregateInputType = {
+    id?: true
+    date?: true
+    platformFeesNgn?: true
+    tradingVolumeNgn?: true
+    tradingVolumeUsd?: true
+    totalOrders?: true
+    completedOrders?: true
+    cancelledOrders?: true
+    depositsNgn?: true
+    depositCount?: true
+    withdrawalsNgn?: true
+    withdrawalCount?: true
+    giftCardVolumeNgn?: true
+    giftCardCount?: true
+    newUsers?: true
+    totalUsers?: true
+    newDisputes?: true
+    resolvedDisputes?: true
+    fraudEvents?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type DailyReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyReport to aggregate.
+     */
+    where?: DailyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyReports to fetch.
+     */
+    orderBy?: DailyReportOrderByWithRelationInput | DailyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DailyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DailyReports
+    **/
+    _count?: true | DailyReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DailyReportAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DailyReportSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DailyReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DailyReportMaxAggregateInputType
+  }
+
+  export type GetDailyReportAggregateType<T extends DailyReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateDailyReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDailyReport[P]>
+      : GetScalarType<T[P], AggregateDailyReport[P]>
+  }
+
+
+
+
+  export type DailyReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyReportWhereInput
+    orderBy?: DailyReportOrderByWithAggregationInput | DailyReportOrderByWithAggregationInput[]
+    by: DailyReportScalarFieldEnum[] | DailyReportScalarFieldEnum
+    having?: DailyReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DailyReportCountAggregateInputType | true
+    _avg?: DailyReportAvgAggregateInputType
+    _sum?: DailyReportSumAggregateInputType
+    _min?: DailyReportMinAggregateInputType
+    _max?: DailyReportMaxAggregateInputType
+  }
+
+  export type DailyReportGroupByOutputType = {
+    id: string
+    date: Date
+    platformFeesNgn: Decimal
+    tradingVolumeNgn: Decimal
+    tradingVolumeUsd: Decimal
+    totalOrders: number
+    completedOrders: number
+    cancelledOrders: number
+    depositsNgn: Decimal
+    depositCount: number
+    withdrawalsNgn: Decimal
+    withdrawalCount: number
+    giftCardVolumeNgn: Decimal
+    giftCardCount: number
+    newUsers: number
+    totalUsers: number
+    newDisputes: number
+    resolvedDisputes: number
+    fraudEvents: number
+    createdAt: Date
+    _count: DailyReportCountAggregateOutputType | null
+    _avg: DailyReportAvgAggregateOutputType | null
+    _sum: DailyReportSumAggregateOutputType | null
+    _min: DailyReportMinAggregateOutputType | null
+    _max: DailyReportMaxAggregateOutputType | null
+  }
+
+  type GetDailyReportGroupByPayload<T extends DailyReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DailyReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DailyReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DailyReportGroupByOutputType[P]>
+            : GetScalarType<T[P], DailyReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DailyReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    date?: boolean
+    platformFeesNgn?: boolean
+    tradingVolumeNgn?: boolean
+    tradingVolumeUsd?: boolean
+    totalOrders?: boolean
+    completedOrders?: boolean
+    cancelledOrders?: boolean
+    depositsNgn?: boolean
+    depositCount?: boolean
+    withdrawalsNgn?: boolean
+    withdrawalCount?: boolean
+    giftCardVolumeNgn?: boolean
+    giftCardCount?: boolean
+    newUsers?: boolean
+    totalUsers?: boolean
+    newDisputes?: boolean
+    resolvedDisputes?: boolean
+    fraudEvents?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["dailyReport"]>
+
+  export type DailyReportSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    date?: boolean
+    platformFeesNgn?: boolean
+    tradingVolumeNgn?: boolean
+    tradingVolumeUsd?: boolean
+    totalOrders?: boolean
+    completedOrders?: boolean
+    cancelledOrders?: boolean
+    depositsNgn?: boolean
+    depositCount?: boolean
+    withdrawalsNgn?: boolean
+    withdrawalCount?: boolean
+    giftCardVolumeNgn?: boolean
+    giftCardCount?: boolean
+    newUsers?: boolean
+    totalUsers?: boolean
+    newDisputes?: boolean
+    resolvedDisputes?: boolean
+    fraudEvents?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["dailyReport"]>
+
+  export type DailyReportSelectScalar = {
+    id?: boolean
+    date?: boolean
+    platformFeesNgn?: boolean
+    tradingVolumeNgn?: boolean
+    tradingVolumeUsd?: boolean
+    totalOrders?: boolean
+    completedOrders?: boolean
+    cancelledOrders?: boolean
+    depositsNgn?: boolean
+    depositCount?: boolean
+    withdrawalsNgn?: boolean
+    withdrawalCount?: boolean
+    giftCardVolumeNgn?: boolean
+    giftCardCount?: boolean
+    newUsers?: boolean
+    totalUsers?: boolean
+    newDisputes?: boolean
+    resolvedDisputes?: boolean
+    fraudEvents?: boolean
+    createdAt?: boolean
+  }
+
+
+  export type $DailyReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DailyReport"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      date: Date
+      platformFeesNgn: Prisma.Decimal
+      tradingVolumeNgn: Prisma.Decimal
+      tradingVolumeUsd: Prisma.Decimal
+      totalOrders: number
+      completedOrders: number
+      cancelledOrders: number
+      depositsNgn: Prisma.Decimal
+      depositCount: number
+      withdrawalsNgn: Prisma.Decimal
+      withdrawalCount: number
+      giftCardVolumeNgn: Prisma.Decimal
+      giftCardCount: number
+      newUsers: number
+      totalUsers: number
+      newDisputes: number
+      resolvedDisputes: number
+      fraudEvents: number
+      createdAt: Date
+    }, ExtArgs["result"]["dailyReport"]>
+    composites: {}
+  }
+
+  type DailyReportGetPayload<S extends boolean | null | undefined | DailyReportDefaultArgs> = $Result.GetResult<Prisma.$DailyReportPayload, S>
+
+  type DailyReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DailyReportFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DailyReportCountAggregateInputType | true
+    }
+
+  export interface DailyReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DailyReport'], meta: { name: 'DailyReport' } }
+    /**
+     * Find zero or one DailyReport that matches the filter.
+     * @param {DailyReportFindUniqueArgs} args - Arguments to find a DailyReport
+     * @example
+     * // Get one DailyReport
+     * const dailyReport = await prisma.dailyReport.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DailyReportFindUniqueArgs>(args: SelectSubset<T, DailyReportFindUniqueArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DailyReport that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DailyReportFindUniqueOrThrowArgs} args - Arguments to find a DailyReport
+     * @example
+     * // Get one DailyReport
+     * const dailyReport = await prisma.dailyReport.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DailyReportFindUniqueOrThrowArgs>(args: SelectSubset<T, DailyReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DailyReport that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportFindFirstArgs} args - Arguments to find a DailyReport
+     * @example
+     * // Get one DailyReport
+     * const dailyReport = await prisma.dailyReport.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DailyReportFindFirstArgs>(args?: SelectSubset<T, DailyReportFindFirstArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DailyReport that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportFindFirstOrThrowArgs} args - Arguments to find a DailyReport
+     * @example
+     * // Get one DailyReport
+     * const dailyReport = await prisma.dailyReport.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DailyReportFindFirstOrThrowArgs>(args?: SelectSubset<T, DailyReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DailyReports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DailyReports
+     * const dailyReports = await prisma.dailyReport.findMany()
+     * 
+     * // Get first 10 DailyReports
+     * const dailyReports = await prisma.dailyReport.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const dailyReportWithIdOnly = await prisma.dailyReport.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DailyReportFindManyArgs>(args?: SelectSubset<T, DailyReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DailyReport.
+     * @param {DailyReportCreateArgs} args - Arguments to create a DailyReport.
+     * @example
+     * // Create one DailyReport
+     * const DailyReport = await prisma.dailyReport.create({
+     *   data: {
+     *     // ... data to create a DailyReport
+     *   }
+     * })
+     * 
+     */
+    create<T extends DailyReportCreateArgs>(args: SelectSubset<T, DailyReportCreateArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DailyReports.
+     * @param {DailyReportCreateManyArgs} args - Arguments to create many DailyReports.
+     * @example
+     * // Create many DailyReports
+     * const dailyReport = await prisma.dailyReport.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DailyReportCreateManyArgs>(args?: SelectSubset<T, DailyReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DailyReports and returns the data saved in the database.
+     * @param {DailyReportCreateManyAndReturnArgs} args - Arguments to create many DailyReports.
+     * @example
+     * // Create many DailyReports
+     * const dailyReport = await prisma.dailyReport.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DailyReports and only return the `id`
+     * const dailyReportWithIdOnly = await prisma.dailyReport.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DailyReportCreateManyAndReturnArgs>(args?: SelectSubset<T, DailyReportCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DailyReport.
+     * @param {DailyReportDeleteArgs} args - Arguments to delete one DailyReport.
+     * @example
+     * // Delete one DailyReport
+     * const DailyReport = await prisma.dailyReport.delete({
+     *   where: {
+     *     // ... filter to delete one DailyReport
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DailyReportDeleteArgs>(args: SelectSubset<T, DailyReportDeleteArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DailyReport.
+     * @param {DailyReportUpdateArgs} args - Arguments to update one DailyReport.
+     * @example
+     * // Update one DailyReport
+     * const dailyReport = await prisma.dailyReport.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DailyReportUpdateArgs>(args: SelectSubset<T, DailyReportUpdateArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DailyReports.
+     * @param {DailyReportDeleteManyArgs} args - Arguments to filter DailyReports to delete.
+     * @example
+     * // Delete a few DailyReports
+     * const { count } = await prisma.dailyReport.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DailyReportDeleteManyArgs>(args?: SelectSubset<T, DailyReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DailyReports
+     * const dailyReport = await prisma.dailyReport.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DailyReportUpdateManyArgs>(args: SelectSubset<T, DailyReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DailyReport.
+     * @param {DailyReportUpsertArgs} args - Arguments to update or create a DailyReport.
+     * @example
+     * // Update or create a DailyReport
+     * const dailyReport = await prisma.dailyReport.upsert({
+     *   create: {
+     *     // ... data to create a DailyReport
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DailyReport we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DailyReportUpsertArgs>(args: SelectSubset<T, DailyReportUpsertArgs<ExtArgs>>): Prisma__DailyReportClient<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DailyReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportCountArgs} args - Arguments to filter DailyReports to count.
+     * @example
+     * // Count the number of DailyReports
+     * const count = await prisma.dailyReport.count({
+     *   where: {
+     *     // ... the filter for the DailyReports we want to count
+     *   }
+     * })
+    **/
+    count<T extends DailyReportCountArgs>(
+      args?: Subset<T, DailyReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DailyReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DailyReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DailyReportAggregateArgs>(args: Subset<T, DailyReportAggregateArgs>): Prisma.PrismaPromise<GetDailyReportAggregateType<T>>
+
+    /**
+     * Group by DailyReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DailyReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DailyReportGroupByArgs['orderBy'] }
+        : { orderBy?: DailyReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DailyReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDailyReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DailyReport model
+   */
+  readonly fields: DailyReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DailyReport.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DailyReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DailyReport model
+   */ 
+  interface DailyReportFieldRefs {
+    readonly id: FieldRef<"DailyReport", 'String'>
+    readonly date: FieldRef<"DailyReport", 'DateTime'>
+    readonly platformFeesNgn: FieldRef<"DailyReport", 'Decimal'>
+    readonly tradingVolumeNgn: FieldRef<"DailyReport", 'Decimal'>
+    readonly tradingVolumeUsd: FieldRef<"DailyReport", 'Decimal'>
+    readonly totalOrders: FieldRef<"DailyReport", 'Int'>
+    readonly completedOrders: FieldRef<"DailyReport", 'Int'>
+    readonly cancelledOrders: FieldRef<"DailyReport", 'Int'>
+    readonly depositsNgn: FieldRef<"DailyReport", 'Decimal'>
+    readonly depositCount: FieldRef<"DailyReport", 'Int'>
+    readonly withdrawalsNgn: FieldRef<"DailyReport", 'Decimal'>
+    readonly withdrawalCount: FieldRef<"DailyReport", 'Int'>
+    readonly giftCardVolumeNgn: FieldRef<"DailyReport", 'Decimal'>
+    readonly giftCardCount: FieldRef<"DailyReport", 'Int'>
+    readonly newUsers: FieldRef<"DailyReport", 'Int'>
+    readonly totalUsers: FieldRef<"DailyReport", 'Int'>
+    readonly newDisputes: FieldRef<"DailyReport", 'Int'>
+    readonly resolvedDisputes: FieldRef<"DailyReport", 'Int'>
+    readonly fraudEvents: FieldRef<"DailyReport", 'Int'>
+    readonly createdAt: FieldRef<"DailyReport", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DailyReport findUnique
+   */
+  export type DailyReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter, which DailyReport to fetch.
+     */
+    where: DailyReportWhereUniqueInput
+  }
+
+  /**
+   * DailyReport findUniqueOrThrow
+   */
+  export type DailyReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter, which DailyReport to fetch.
+     */
+    where: DailyReportWhereUniqueInput
+  }
+
+  /**
+   * DailyReport findFirst
+   */
+  export type DailyReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter, which DailyReport to fetch.
+     */
+    where?: DailyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyReports to fetch.
+     */
+    orderBy?: DailyReportOrderByWithRelationInput | DailyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyReports.
+     */
+    cursor?: DailyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyReports.
+     */
+    distinct?: DailyReportScalarFieldEnum | DailyReportScalarFieldEnum[]
+  }
+
+  /**
+   * DailyReport findFirstOrThrow
+   */
+  export type DailyReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter, which DailyReport to fetch.
+     */
+    where?: DailyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyReports to fetch.
+     */
+    orderBy?: DailyReportOrderByWithRelationInput | DailyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyReports.
+     */
+    cursor?: DailyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyReports.
+     */
+    distinct?: DailyReportScalarFieldEnum | DailyReportScalarFieldEnum[]
+  }
+
+  /**
+   * DailyReport findMany
+   */
+  export type DailyReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter, which DailyReports to fetch.
+     */
+    where?: DailyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyReports to fetch.
+     */
+    orderBy?: DailyReportOrderByWithRelationInput | DailyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DailyReports.
+     */
+    cursor?: DailyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyReports.
+     */
+    skip?: number
+    distinct?: DailyReportScalarFieldEnum | DailyReportScalarFieldEnum[]
+  }
+
+  /**
+   * DailyReport create
+   */
+  export type DailyReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * The data needed to create a DailyReport.
+     */
+    data: XOR<DailyReportCreateInput, DailyReportUncheckedCreateInput>
+  }
+
+  /**
+   * DailyReport createMany
+   */
+  export type DailyReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DailyReports.
+     */
+    data: DailyReportCreateManyInput | DailyReportCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyReport createManyAndReturn
+   */
+  export type DailyReportCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DailyReports.
+     */
+    data: DailyReportCreateManyInput | DailyReportCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyReport update
+   */
+  export type DailyReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * The data needed to update a DailyReport.
+     */
+    data: XOR<DailyReportUpdateInput, DailyReportUncheckedUpdateInput>
+    /**
+     * Choose, which DailyReport to update.
+     */
+    where: DailyReportWhereUniqueInput
+  }
+
+  /**
+   * DailyReport updateMany
+   */
+  export type DailyReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DailyReports.
+     */
+    data: XOR<DailyReportUpdateManyMutationInput, DailyReportUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyReports to update
+     */
+    where?: DailyReportWhereInput
+  }
+
+  /**
+   * DailyReport upsert
+   */
+  export type DailyReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * The filter to search for the DailyReport to update in case it exists.
+     */
+    where: DailyReportWhereUniqueInput
+    /**
+     * In case the DailyReport found by the `where` argument doesn't exist, create a new DailyReport with this data.
+     */
+    create: XOR<DailyReportCreateInput, DailyReportUncheckedCreateInput>
+    /**
+     * In case the DailyReport was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DailyReportUpdateInput, DailyReportUncheckedUpdateInput>
+  }
+
+  /**
+   * DailyReport delete
+   */
+  export type DailyReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+    /**
+     * Filter which DailyReport to delete.
+     */
+    where: DailyReportWhereUniqueInput
+  }
+
+  /**
+   * DailyReport deleteMany
+   */
+  export type DailyReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyReports to delete
+     */
+    where?: DailyReportWhereInput
+  }
+
+  /**
+   * DailyReport without action
+   */
+  export type DailyReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyReport
+     */
+    select?: DailyReportSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -22990,6 +27963,85 @@ export namespace Prisma {
   export type FraudRuleScalarFieldEnum = (typeof FraudRuleScalarFieldEnum)[keyof typeof FraudRuleScalarFieldEnum]
 
 
+  export const GiftCardListingScalarFieldEnum: {
+    id: 'id',
+    sellerId: 'sellerId',
+    brand: 'brand',
+    cardCode: 'cardCode',
+    cardPin: 'cardPin',
+    denomination: 'denomination',
+    cardCurrency: 'cardCurrency',
+    exchangeRate: 'exchangeRate',
+    askingPriceNgn: 'askingPriceNgn',
+    status: 'status',
+    evidenceUrls: 'evidenceUrls',
+    moderatorId: 'moderatorId',
+    moderatorNote: 'moderatorNote',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    version: 'version'
+  };
+
+  export type GiftCardListingScalarFieldEnum = (typeof GiftCardListingScalarFieldEnum)[keyof typeof GiftCardListingScalarFieldEnum]
+
+
+  export const GiftCardOrderScalarFieldEnum: {
+    id: 'id',
+    listingId: 'listingId',
+    buyerId: 'buyerId',
+    sellerId: 'sellerId',
+    status: 'status',
+    denomination: 'denomination',
+    cardCurrency: 'cardCurrency',
+    askingPriceNgn: 'askingPriceNgn',
+    feeAmount: 'feeAmount',
+    totalPaidNgn: 'totalPaidNgn',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    version: 'version'
+  };
+
+  export type GiftCardOrderScalarFieldEnum = (typeof GiftCardOrderScalarFieldEnum)[keyof typeof GiftCardOrderScalarFieldEnum]
+
+
+  export const GiftCardEvidenceScalarFieldEnum: {
+    id: 'id',
+    listingId: 'listingId',
+    uploadedBy: 'uploadedBy',
+    fileUrl: 'fileUrl',
+    fileType: 'fileType',
+    createdAt: 'createdAt'
+  };
+
+  export type GiftCardEvidenceScalarFieldEnum = (typeof GiftCardEvidenceScalarFieldEnum)[keyof typeof GiftCardEvidenceScalarFieldEnum]
+
+
+  export const DailyReportScalarFieldEnum: {
+    id: 'id',
+    date: 'date',
+    platformFeesNgn: 'platformFeesNgn',
+    tradingVolumeNgn: 'tradingVolumeNgn',
+    tradingVolumeUsd: 'tradingVolumeUsd',
+    totalOrders: 'totalOrders',
+    completedOrders: 'completedOrders',
+    cancelledOrders: 'cancelledOrders',
+    depositsNgn: 'depositsNgn',
+    depositCount: 'depositCount',
+    withdrawalsNgn: 'withdrawalsNgn',
+    withdrawalCount: 'withdrawalCount',
+    giftCardVolumeNgn: 'giftCardVolumeNgn',
+    giftCardCount: 'giftCardCount',
+    newUsers: 'newUsers',
+    totalUsers: 'totalUsers',
+    newDisputes: 'newDisputes',
+    resolvedDisputes: 'resolvedDisputes',
+    fraudEvents: 'fraudEvents',
+    createdAt: 'createdAt'
+  };
+
+  export type DailyReportScalarFieldEnum = (typeof DailyReportScalarFieldEnum)[keyof typeof DailyReportScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -23233,6 +28285,48 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'GiftCardBrand'
+   */
+  export type EnumGiftCardBrandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardBrand'>
+    
+
+
+  /**
+   * Reference to a field of type 'GiftCardBrand[]'
+   */
+  export type ListEnumGiftCardBrandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardBrand[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'GiftCardListingStatus'
+   */
+  export type EnumGiftCardListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardListingStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'GiftCardListingStatus[]'
+   */
+  export type ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardListingStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'GiftCardOrderStatus'
+   */
+  export type EnumGiftCardOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardOrderStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'GiftCardOrderStatus[]'
+   */
+  export type ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftCardOrderStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -23280,6 +28374,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeListRelationFilter
     assignedDisputes?: DisputeListRelationFilter
     evidenceUploads?: EvidenceListRelationFilter
+    giftCardListings?: GiftCardListingListRelationFilter
+    moderatedListings?: GiftCardListingListRelationFilter
+    giftCardBuyerOrders?: GiftCardOrderListRelationFilter
+    giftCardSellerOrders?: GiftCardOrderListRelationFilter
+    giftCardEvidence?: GiftCardEvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
     securityAlerts?: SecurityAlertListRelationFilter
   }
@@ -23312,6 +28411,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeOrderByRelationAggregateInput
     assignedDisputes?: DisputeOrderByRelationAggregateInput
     evidenceUploads?: EvidenceOrderByRelationAggregateInput
+    giftCardListings?: GiftCardListingOrderByRelationAggregateInput
+    moderatedListings?: GiftCardListingOrderByRelationAggregateInput
+    giftCardBuyerOrders?: GiftCardOrderOrderByRelationAggregateInput
+    giftCardSellerOrders?: GiftCardOrderOrderByRelationAggregateInput
+    giftCardEvidence?: GiftCardEvidenceOrderByRelationAggregateInput
     securityLogs?: SecurityLogOrderByRelationAggregateInput
     securityAlerts?: SecurityAlertOrderByRelationAggregateInput
   }
@@ -23347,6 +28451,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeListRelationFilter
     assignedDisputes?: DisputeListRelationFilter
     evidenceUploads?: EvidenceListRelationFilter
+    giftCardListings?: GiftCardListingListRelationFilter
+    moderatedListings?: GiftCardListingListRelationFilter
+    giftCardBuyerOrders?: GiftCardOrderListRelationFilter
+    giftCardSellerOrders?: GiftCardOrderListRelationFilter
+    giftCardEvidence?: GiftCardEvidenceListRelationFilter
     securityLogs?: SecurityLogListRelationFilter
     securityAlerts?: SecurityAlertListRelationFilter
   }, "id" | "email" | "phone" | "resetToken">
@@ -24902,6 +30011,422 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"FraudRule"> | Date | string
   }
 
+  export type GiftCardListingWhereInput = {
+    AND?: GiftCardListingWhereInput | GiftCardListingWhereInput[]
+    OR?: GiftCardListingWhereInput[]
+    NOT?: GiftCardListingWhereInput | GiftCardListingWhereInput[]
+    id?: UuidFilter<"GiftCardListing"> | string
+    sellerId?: UuidFilter<"GiftCardListing"> | string
+    brand?: EnumGiftCardBrandFilter<"GiftCardListing"> | $Enums.GiftCardBrand
+    cardCode?: StringFilter<"GiftCardListing"> | string
+    cardPin?: StringNullableFilter<"GiftCardListing"> | string | null
+    denomination?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardListing"> | string
+    exchangeRate?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFilter<"GiftCardListing"> | $Enums.GiftCardListingStatus
+    evidenceUrls?: JsonNullableFilter<"GiftCardListing">
+    moderatorId?: UuidNullableFilter<"GiftCardListing"> | string | null
+    moderatorNote?: StringNullableFilter<"GiftCardListing"> | string | null
+    createdAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    version?: IntFilter<"GiftCardListing"> | number
+    seller?: XOR<UserRelationFilter, UserWhereInput>
+    moderator?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    orders?: GiftCardOrderListRelationFilter
+    evidenceRecords?: GiftCardEvidenceListRelationFilter
+  }
+
+  export type GiftCardListingOrderByWithRelationInput = {
+    id?: SortOrder
+    sellerId?: SortOrder
+    brand?: SortOrder
+    cardCode?: SortOrder
+    cardPin?: SortOrderInput | SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    status?: SortOrder
+    evidenceUrls?: SortOrderInput | SortOrder
+    moderatorId?: SortOrderInput | SortOrder
+    moderatorNote?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+    seller?: UserOrderByWithRelationInput
+    moderator?: UserOrderByWithRelationInput
+    orders?: GiftCardOrderOrderByRelationAggregateInput
+    evidenceRecords?: GiftCardEvidenceOrderByRelationAggregateInput
+  }
+
+  export type GiftCardListingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GiftCardListingWhereInput | GiftCardListingWhereInput[]
+    OR?: GiftCardListingWhereInput[]
+    NOT?: GiftCardListingWhereInput | GiftCardListingWhereInput[]
+    sellerId?: UuidFilter<"GiftCardListing"> | string
+    brand?: EnumGiftCardBrandFilter<"GiftCardListing"> | $Enums.GiftCardBrand
+    cardCode?: StringFilter<"GiftCardListing"> | string
+    cardPin?: StringNullableFilter<"GiftCardListing"> | string | null
+    denomination?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardListing"> | string
+    exchangeRate?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFilter<"GiftCardListing"> | $Enums.GiftCardListingStatus
+    evidenceUrls?: JsonNullableFilter<"GiftCardListing">
+    moderatorId?: UuidNullableFilter<"GiftCardListing"> | string | null
+    moderatorNote?: StringNullableFilter<"GiftCardListing"> | string | null
+    createdAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    version?: IntFilter<"GiftCardListing"> | number
+    seller?: XOR<UserRelationFilter, UserWhereInput>
+    moderator?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    orders?: GiftCardOrderListRelationFilter
+    evidenceRecords?: GiftCardEvidenceListRelationFilter
+  }, "id">
+
+  export type GiftCardListingOrderByWithAggregationInput = {
+    id?: SortOrder
+    sellerId?: SortOrder
+    brand?: SortOrder
+    cardCode?: SortOrder
+    cardPin?: SortOrderInput | SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    status?: SortOrder
+    evidenceUrls?: SortOrderInput | SortOrder
+    moderatorId?: SortOrderInput | SortOrder
+    moderatorNote?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+    _count?: GiftCardListingCountOrderByAggregateInput
+    _avg?: GiftCardListingAvgOrderByAggregateInput
+    _max?: GiftCardListingMaxOrderByAggregateInput
+    _min?: GiftCardListingMinOrderByAggregateInput
+    _sum?: GiftCardListingSumOrderByAggregateInput
+  }
+
+  export type GiftCardListingScalarWhereWithAggregatesInput = {
+    AND?: GiftCardListingScalarWhereWithAggregatesInput | GiftCardListingScalarWhereWithAggregatesInput[]
+    OR?: GiftCardListingScalarWhereWithAggregatesInput[]
+    NOT?: GiftCardListingScalarWhereWithAggregatesInput | GiftCardListingScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"GiftCardListing"> | string
+    sellerId?: UuidWithAggregatesFilter<"GiftCardListing"> | string
+    brand?: EnumGiftCardBrandWithAggregatesFilter<"GiftCardListing"> | $Enums.GiftCardBrand
+    cardCode?: StringWithAggregatesFilter<"GiftCardListing"> | string
+    cardPin?: StringNullableWithAggregatesFilter<"GiftCardListing"> | string | null
+    denomination?: DecimalWithAggregatesFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringWithAggregatesFilter<"GiftCardListing"> | string
+    exchangeRate?: DecimalWithAggregatesFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalWithAggregatesFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusWithAggregatesFilter<"GiftCardListing"> | $Enums.GiftCardListingStatus
+    evidenceUrls?: JsonNullableWithAggregatesFilter<"GiftCardListing">
+    moderatorId?: UuidNullableWithAggregatesFilter<"GiftCardListing"> | string | null
+    moderatorNote?: StringNullableWithAggregatesFilter<"GiftCardListing"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"GiftCardListing"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GiftCardListing"> | Date | string
+    version?: IntWithAggregatesFilter<"GiftCardListing"> | number
+  }
+
+  export type GiftCardOrderWhereInput = {
+    AND?: GiftCardOrderWhereInput | GiftCardOrderWhereInput[]
+    OR?: GiftCardOrderWhereInput[]
+    NOT?: GiftCardOrderWhereInput | GiftCardOrderWhereInput[]
+    id?: UuidFilter<"GiftCardOrder"> | string
+    listingId?: UuidFilter<"GiftCardOrder"> | string
+    buyerId?: UuidFilter<"GiftCardOrder"> | string
+    sellerId?: UuidFilter<"GiftCardOrder"> | string
+    status?: EnumGiftCardOrderStatusFilter<"GiftCardOrder"> | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardOrder"> | string
+    askingPriceNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    version?: IntFilter<"GiftCardOrder"> | number
+    listing?: XOR<GiftCardListingRelationFilter, GiftCardListingWhereInput>
+    buyer?: XOR<UserRelationFilter, UserWhereInput>
+    seller?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type GiftCardOrderOrderByWithRelationInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    buyerId?: SortOrder
+    sellerId?: SortOrder
+    status?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+    listing?: GiftCardListingOrderByWithRelationInput
+    buyer?: UserOrderByWithRelationInput
+    seller?: UserOrderByWithRelationInput
+  }
+
+  export type GiftCardOrderWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GiftCardOrderWhereInput | GiftCardOrderWhereInput[]
+    OR?: GiftCardOrderWhereInput[]
+    NOT?: GiftCardOrderWhereInput | GiftCardOrderWhereInput[]
+    listingId?: UuidFilter<"GiftCardOrder"> | string
+    buyerId?: UuidFilter<"GiftCardOrder"> | string
+    sellerId?: UuidFilter<"GiftCardOrder"> | string
+    status?: EnumGiftCardOrderStatusFilter<"GiftCardOrder"> | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardOrder"> | string
+    askingPriceNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    version?: IntFilter<"GiftCardOrder"> | number
+    listing?: XOR<GiftCardListingRelationFilter, GiftCardListingWhereInput>
+    buyer?: XOR<UserRelationFilter, UserWhereInput>
+    seller?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type GiftCardOrderOrderByWithAggregationInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    buyerId?: SortOrder
+    sellerId?: SortOrder
+    status?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+    _count?: GiftCardOrderCountOrderByAggregateInput
+    _avg?: GiftCardOrderAvgOrderByAggregateInput
+    _max?: GiftCardOrderMaxOrderByAggregateInput
+    _min?: GiftCardOrderMinOrderByAggregateInput
+    _sum?: GiftCardOrderSumOrderByAggregateInput
+  }
+
+  export type GiftCardOrderScalarWhereWithAggregatesInput = {
+    AND?: GiftCardOrderScalarWhereWithAggregatesInput | GiftCardOrderScalarWhereWithAggregatesInput[]
+    OR?: GiftCardOrderScalarWhereWithAggregatesInput[]
+    NOT?: GiftCardOrderScalarWhereWithAggregatesInput | GiftCardOrderScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"GiftCardOrder"> | string
+    listingId?: UuidWithAggregatesFilter<"GiftCardOrder"> | string
+    buyerId?: UuidWithAggregatesFilter<"GiftCardOrder"> | string
+    sellerId?: UuidWithAggregatesFilter<"GiftCardOrder"> | string
+    status?: EnumGiftCardOrderStatusWithAggregatesFilter<"GiftCardOrder"> | $Enums.GiftCardOrderStatus
+    denomination?: DecimalWithAggregatesFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringWithAggregatesFilter<"GiftCardOrder"> | string
+    askingPriceNgn?: DecimalWithAggregatesFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalWithAggregatesFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalWithAggregatesFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeWithAggregatesFilter<"GiftCardOrder"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GiftCardOrder"> | Date | string
+    version?: IntWithAggregatesFilter<"GiftCardOrder"> | number
+  }
+
+  export type GiftCardEvidenceWhereInput = {
+    AND?: GiftCardEvidenceWhereInput | GiftCardEvidenceWhereInput[]
+    OR?: GiftCardEvidenceWhereInput[]
+    NOT?: GiftCardEvidenceWhereInput | GiftCardEvidenceWhereInput[]
+    id?: UuidFilter<"GiftCardEvidence"> | string
+    listingId?: UuidFilter<"GiftCardEvidence"> | string
+    uploadedBy?: UuidFilter<"GiftCardEvidence"> | string
+    fileUrl?: StringFilter<"GiftCardEvidence"> | string
+    fileType?: StringFilter<"GiftCardEvidence"> | string
+    createdAt?: DateTimeFilter<"GiftCardEvidence"> | Date | string
+    listing?: XOR<GiftCardListingRelationFilter, GiftCardListingWhereInput>
+    uploader?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type GiftCardEvidenceOrderByWithRelationInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    uploadedBy?: SortOrder
+    fileUrl?: SortOrder
+    fileType?: SortOrder
+    createdAt?: SortOrder
+    listing?: GiftCardListingOrderByWithRelationInput
+    uploader?: UserOrderByWithRelationInput
+  }
+
+  export type GiftCardEvidenceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GiftCardEvidenceWhereInput | GiftCardEvidenceWhereInput[]
+    OR?: GiftCardEvidenceWhereInput[]
+    NOT?: GiftCardEvidenceWhereInput | GiftCardEvidenceWhereInput[]
+    listingId?: UuidFilter<"GiftCardEvidence"> | string
+    uploadedBy?: UuidFilter<"GiftCardEvidence"> | string
+    fileUrl?: StringFilter<"GiftCardEvidence"> | string
+    fileType?: StringFilter<"GiftCardEvidence"> | string
+    createdAt?: DateTimeFilter<"GiftCardEvidence"> | Date | string
+    listing?: XOR<GiftCardListingRelationFilter, GiftCardListingWhereInput>
+    uploader?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type GiftCardEvidenceOrderByWithAggregationInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    uploadedBy?: SortOrder
+    fileUrl?: SortOrder
+    fileType?: SortOrder
+    createdAt?: SortOrder
+    _count?: GiftCardEvidenceCountOrderByAggregateInput
+    _max?: GiftCardEvidenceMaxOrderByAggregateInput
+    _min?: GiftCardEvidenceMinOrderByAggregateInput
+  }
+
+  export type GiftCardEvidenceScalarWhereWithAggregatesInput = {
+    AND?: GiftCardEvidenceScalarWhereWithAggregatesInput | GiftCardEvidenceScalarWhereWithAggregatesInput[]
+    OR?: GiftCardEvidenceScalarWhereWithAggregatesInput[]
+    NOT?: GiftCardEvidenceScalarWhereWithAggregatesInput | GiftCardEvidenceScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"GiftCardEvidence"> | string
+    listingId?: UuidWithAggregatesFilter<"GiftCardEvidence"> | string
+    uploadedBy?: UuidWithAggregatesFilter<"GiftCardEvidence"> | string
+    fileUrl?: StringWithAggregatesFilter<"GiftCardEvidence"> | string
+    fileType?: StringWithAggregatesFilter<"GiftCardEvidence"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"GiftCardEvidence"> | Date | string
+  }
+
+  export type DailyReportWhereInput = {
+    AND?: DailyReportWhereInput | DailyReportWhereInput[]
+    OR?: DailyReportWhereInput[]
+    NOT?: DailyReportWhereInput | DailyReportWhereInput[]
+    id?: UuidFilter<"DailyReport"> | string
+    date?: DateTimeFilter<"DailyReport"> | Date | string
+    platformFeesNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFilter<"DailyReport"> | number
+    completedOrders?: IntFilter<"DailyReport"> | number
+    cancelledOrders?: IntFilter<"DailyReport"> | number
+    depositsNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFilter<"DailyReport"> | number
+    withdrawalsNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFilter<"DailyReport"> | number
+    giftCardVolumeNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFilter<"DailyReport"> | number
+    newUsers?: IntFilter<"DailyReport"> | number
+    totalUsers?: IntFilter<"DailyReport"> | number
+    newDisputes?: IntFilter<"DailyReport"> | number
+    resolvedDisputes?: IntFilter<"DailyReport"> | number
+    fraudEvents?: IntFilter<"DailyReport"> | number
+    createdAt?: DateTimeFilter<"DailyReport"> | Date | string
+  }
+
+  export type DailyReportOrderByWithRelationInput = {
+    id?: SortOrder
+    date?: SortOrder
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    date?: Date | string
+    AND?: DailyReportWhereInput | DailyReportWhereInput[]
+    OR?: DailyReportWhereInput[]
+    NOT?: DailyReportWhereInput | DailyReportWhereInput[]
+    platformFeesNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFilter<"DailyReport"> | number
+    completedOrders?: IntFilter<"DailyReport"> | number
+    cancelledOrders?: IntFilter<"DailyReport"> | number
+    depositsNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFilter<"DailyReport"> | number
+    withdrawalsNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFilter<"DailyReport"> | number
+    giftCardVolumeNgn?: DecimalFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFilter<"DailyReport"> | number
+    newUsers?: IntFilter<"DailyReport"> | number
+    totalUsers?: IntFilter<"DailyReport"> | number
+    newDisputes?: IntFilter<"DailyReport"> | number
+    resolvedDisputes?: IntFilter<"DailyReport"> | number
+    fraudEvents?: IntFilter<"DailyReport"> | number
+    createdAt?: DateTimeFilter<"DailyReport"> | Date | string
+  }, "id" | "date">
+
+  export type DailyReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    date?: SortOrder
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+    createdAt?: SortOrder
+    _count?: DailyReportCountOrderByAggregateInput
+    _avg?: DailyReportAvgOrderByAggregateInput
+    _max?: DailyReportMaxOrderByAggregateInput
+    _min?: DailyReportMinOrderByAggregateInput
+    _sum?: DailyReportSumOrderByAggregateInput
+  }
+
+  export type DailyReportScalarWhereWithAggregatesInput = {
+    AND?: DailyReportScalarWhereWithAggregatesInput | DailyReportScalarWhereWithAggregatesInput[]
+    OR?: DailyReportScalarWhereWithAggregatesInput[]
+    NOT?: DailyReportScalarWhereWithAggregatesInput | DailyReportScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"DailyReport"> | string
+    date?: DateTimeWithAggregatesFilter<"DailyReport"> | Date | string
+    platformFeesNgn?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntWithAggregatesFilter<"DailyReport"> | number
+    completedOrders?: IntWithAggregatesFilter<"DailyReport"> | number
+    cancelledOrders?: IntWithAggregatesFilter<"DailyReport"> | number
+    depositsNgn?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    depositCount?: IntWithAggregatesFilter<"DailyReport"> | number
+    withdrawalsNgn?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntWithAggregatesFilter<"DailyReport"> | number
+    giftCardVolumeNgn?: DecimalWithAggregatesFilter<"DailyReport"> | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntWithAggregatesFilter<"DailyReport"> | number
+    newUsers?: IntWithAggregatesFilter<"DailyReport"> | number
+    totalUsers?: IntWithAggregatesFilter<"DailyReport"> | number
+    newDisputes?: IntWithAggregatesFilter<"DailyReport"> | number
+    resolvedDisputes?: IntWithAggregatesFilter<"DailyReport"> | number
+    fraudEvents?: IntWithAggregatesFilter<"DailyReport"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"DailyReport"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -24930,6 +30455,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -24962,6 +30492,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -24994,6 +30529,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -25026,6 +30566,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -26742,6 +32287,476 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GiftCardListingCreateInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    seller: UserCreateNestedOneWithoutGiftCardListingsInput
+    moderator?: UserCreateNestedOneWithoutModeratedListingsInput
+    orders?: GiftCardOrderCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUncheckedCreateInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    orders?: GiftCardOrderUncheckedCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceUncheckedCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    seller?: UserUpdateOneRequiredWithoutGiftCardListingsNestedInput
+    moderator?: UserUpdateOneWithoutModeratedListingsNestedInput
+    orders?: GiftCardOrderUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    orders?: GiftCardOrderUncheckedUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUncheckedUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingCreateManyInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardListingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardListingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderCreateInput = {
+    id?: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    listing: GiftCardListingCreateNestedOneWithoutOrdersInput
+    buyer: UserCreateNestedOneWithoutGiftCardBuyerOrdersInput
+    seller: UserCreateNestedOneWithoutGiftCardSellerOrdersInput
+  }
+
+  export type GiftCardOrderUncheckedCreateInput = {
+    id?: string
+    listingId: string
+    buyerId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    listing?: GiftCardListingUpdateOneRequiredWithoutOrdersNestedInput
+    buyer?: UserUpdateOneRequiredWithoutGiftCardBuyerOrdersNestedInput
+    seller?: UserUpdateOneRequiredWithoutGiftCardSellerOrdersNestedInput
+  }
+
+  export type GiftCardOrderUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderCreateManyInput = {
+    id?: string
+    listingId: string
+    buyerId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardEvidenceCreateInput = {
+    id?: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+    listing: GiftCardListingCreateNestedOneWithoutEvidenceRecordsInput
+    uploader: UserCreateNestedOneWithoutGiftCardEvidenceInput
+  }
+
+  export type GiftCardEvidenceUncheckedCreateInput = {
+    id?: string
+    listingId: string
+    uploadedBy: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+  }
+
+  export type GiftCardEvidenceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listing?: GiftCardListingUpdateOneRequiredWithoutEvidenceRecordsNestedInput
+    uploader?: UserUpdateOneRequiredWithoutGiftCardEvidenceNestedInput
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GiftCardEvidenceCreateManyInput = {
+    id?: string
+    listingId: string
+    uploadedBy: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+  }
+
+  export type GiftCardEvidenceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyReportCreateInput = {
+    id?: string
+    date: Date | string
+    platformFeesNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: Decimal | DecimalJsLike | number | string
+    totalOrders?: number
+    completedOrders?: number
+    cancelledOrders?: number
+    depositsNgn?: Decimal | DecimalJsLike | number | string
+    depositCount?: number
+    withdrawalsNgn?: Decimal | DecimalJsLike | number | string
+    withdrawalCount?: number
+    giftCardVolumeNgn?: Decimal | DecimalJsLike | number | string
+    giftCardCount?: number
+    newUsers?: number
+    totalUsers?: number
+    newDisputes?: number
+    resolvedDisputes?: number
+    fraudEvents?: number
+    createdAt?: Date | string
+  }
+
+  export type DailyReportUncheckedCreateInput = {
+    id?: string
+    date: Date | string
+    platformFeesNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: Decimal | DecimalJsLike | number | string
+    totalOrders?: number
+    completedOrders?: number
+    cancelledOrders?: number
+    depositsNgn?: Decimal | DecimalJsLike | number | string
+    depositCount?: number
+    withdrawalsNgn?: Decimal | DecimalJsLike | number | string
+    withdrawalCount?: number
+    giftCardVolumeNgn?: Decimal | DecimalJsLike | number | string
+    giftCardCount?: number
+    newUsers?: number
+    totalUsers?: number
+    newDisputes?: number
+    resolvedDisputes?: number
+    fraudEvents?: number
+    createdAt?: Date | string
+  }
+
+  export type DailyReportUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformFeesNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFieldUpdateOperationsInput | number
+    completedOrders?: IntFieldUpdateOperationsInput | number
+    cancelledOrders?: IntFieldUpdateOperationsInput | number
+    depositsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFieldUpdateOperationsInput | number
+    withdrawalsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFieldUpdateOperationsInput | number
+    giftCardVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFieldUpdateOperationsInput | number
+    newUsers?: IntFieldUpdateOperationsInput | number
+    totalUsers?: IntFieldUpdateOperationsInput | number
+    newDisputes?: IntFieldUpdateOperationsInput | number
+    resolvedDisputes?: IntFieldUpdateOperationsInput | number
+    fraudEvents?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyReportUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformFeesNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFieldUpdateOperationsInput | number
+    completedOrders?: IntFieldUpdateOperationsInput | number
+    cancelledOrders?: IntFieldUpdateOperationsInput | number
+    depositsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFieldUpdateOperationsInput | number
+    withdrawalsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFieldUpdateOperationsInput | number
+    giftCardVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFieldUpdateOperationsInput | number
+    newUsers?: IntFieldUpdateOperationsInput | number
+    totalUsers?: IntFieldUpdateOperationsInput | number
+    newDisputes?: IntFieldUpdateOperationsInput | number
+    resolvedDisputes?: IntFieldUpdateOperationsInput | number
+    fraudEvents?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyReportCreateManyInput = {
+    id?: string
+    date: Date | string
+    platformFeesNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: Decimal | DecimalJsLike | number | string
+    totalOrders?: number
+    completedOrders?: number
+    cancelledOrders?: number
+    depositsNgn?: Decimal | DecimalJsLike | number | string
+    depositCount?: number
+    withdrawalsNgn?: Decimal | DecimalJsLike | number | string
+    withdrawalCount?: number
+    giftCardVolumeNgn?: Decimal | DecimalJsLike | number | string
+    giftCardCount?: number
+    newUsers?: number
+    totalUsers?: number
+    newDisputes?: number
+    resolvedDisputes?: number
+    fraudEvents?: number
+    createdAt?: Date | string
+  }
+
+  export type DailyReportUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformFeesNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFieldUpdateOperationsInput | number
+    completedOrders?: IntFieldUpdateOperationsInput | number
+    cancelledOrders?: IntFieldUpdateOperationsInput | number
+    depositsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFieldUpdateOperationsInput | number
+    withdrawalsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFieldUpdateOperationsInput | number
+    giftCardVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFieldUpdateOperationsInput | number
+    newUsers?: IntFieldUpdateOperationsInput | number
+    totalUsers?: IntFieldUpdateOperationsInput | number
+    newDisputes?: IntFieldUpdateOperationsInput | number
+    resolvedDisputes?: IntFieldUpdateOperationsInput | number
+    fraudEvents?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyReportUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformFeesNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    tradingVolumeUsd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalOrders?: IntFieldUpdateOperationsInput | number
+    completedOrders?: IntFieldUpdateOperationsInput | number
+    cancelledOrders?: IntFieldUpdateOperationsInput | number
+    depositsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    depositCount?: IntFieldUpdateOperationsInput | number
+    withdrawalsNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    withdrawalCount?: IntFieldUpdateOperationsInput | number
+    giftCardVolumeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    giftCardCount?: IntFieldUpdateOperationsInput | number
+    newUsers?: IntFieldUpdateOperationsInput | number
+    totalUsers?: IntFieldUpdateOperationsInput | number
+    newDisputes?: IntFieldUpdateOperationsInput | number
+    resolvedDisputes?: IntFieldUpdateOperationsInput | number
+    fraudEvents?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -26900,6 +32915,24 @@ export namespace Prisma {
     none?: EvidenceWhereInput
   }
 
+  export type GiftCardListingListRelationFilter = {
+    every?: GiftCardListingWhereInput
+    some?: GiftCardListingWhereInput
+    none?: GiftCardListingWhereInput
+  }
+
+  export type GiftCardOrderListRelationFilter = {
+    every?: GiftCardOrderWhereInput
+    some?: GiftCardOrderWhereInput
+    none?: GiftCardOrderWhereInput
+  }
+
+  export type GiftCardEvidenceListRelationFilter = {
+    every?: GiftCardEvidenceWhereInput
+    some?: GiftCardEvidenceWhereInput
+    none?: GiftCardEvidenceWhereInput
+  }
+
   export type SecurityLogListRelationFilter = {
     every?: SecurityLogWhereInput
     some?: SecurityLogWhereInput
@@ -26950,6 +32983,18 @@ export namespace Prisma {
   }
 
   export type EvidenceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GiftCardListingOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GiftCardOrderOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GiftCardEvidenceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -28231,6 +34276,331 @@ export namespace Prisma {
     threshold?: SortOrder
   }
 
+  export type EnumGiftCardBrandFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardBrand | EnumGiftCardBrandFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardBrandFilter<$PrismaModel> | $Enums.GiftCardBrand
+  }
+
+  export type EnumGiftCardListingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardListingStatus | EnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardListingStatusFilter<$PrismaModel> | $Enums.GiftCardListingStatus
+  }
+
+  export type GiftCardListingCountOrderByAggregateInput = {
+    id?: SortOrder
+    sellerId?: SortOrder
+    brand?: SortOrder
+    cardCode?: SortOrder
+    cardPin?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    status?: SortOrder
+    evidenceUrls?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNote?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardListingAvgOrderByAggregateInput = {
+    denomination?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardListingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sellerId?: SortOrder
+    brand?: SortOrder
+    cardCode?: SortOrder
+    cardPin?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNote?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardListingMinOrderByAggregateInput = {
+    id?: SortOrder
+    sellerId?: SortOrder
+    brand?: SortOrder
+    cardCode?: SortOrder
+    cardPin?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    status?: SortOrder
+    moderatorId?: SortOrder
+    moderatorNote?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardListingSumOrderByAggregateInput = {
+    denomination?: SortOrder
+    exchangeRate?: SortOrder
+    askingPriceNgn?: SortOrder
+    version?: SortOrder
+  }
+
+  export type EnumGiftCardBrandWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardBrand | EnumGiftCardBrandFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardBrandWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardBrand
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardBrandFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardBrandFilter<$PrismaModel>
+  }
+
+  export type EnumGiftCardListingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardListingStatus | EnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardListingStatusWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardListingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardListingStatusFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardListingStatusFilter<$PrismaModel>
+  }
+
+  export type EnumGiftCardOrderStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardOrderStatus | EnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel> | $Enums.GiftCardOrderStatus
+  }
+
+  export type GiftCardListingRelationFilter = {
+    is?: GiftCardListingWhereInput
+    isNot?: GiftCardListingWhereInput
+  }
+
+  export type GiftCardOrderCountOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    buyerId?: SortOrder
+    sellerId?: SortOrder
+    status?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardOrderAvgOrderByAggregateInput = {
+    denomination?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardOrderMaxOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    buyerId?: SortOrder
+    sellerId?: SortOrder
+    status?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardOrderMinOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    buyerId?: SortOrder
+    sellerId?: SortOrder
+    status?: SortOrder
+    denomination?: SortOrder
+    cardCurrency?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    version?: SortOrder
+  }
+
+  export type GiftCardOrderSumOrderByAggregateInput = {
+    denomination?: SortOrder
+    askingPriceNgn?: SortOrder
+    feeAmount?: SortOrder
+    totalPaidNgn?: SortOrder
+    version?: SortOrder
+  }
+
+  export type EnumGiftCardOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardOrderStatus | EnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardOrderStatusWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardOrderStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
+  }
+
+  export type GiftCardEvidenceCountOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    uploadedBy?: SortOrder
+    fileUrl?: SortOrder
+    fileType?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GiftCardEvidenceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    uploadedBy?: SortOrder
+    fileUrl?: SortOrder
+    fileType?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type GiftCardEvidenceMinOrderByAggregateInput = {
+    id?: SortOrder
+    listingId?: SortOrder
+    uploadedBy?: SortOrder
+    fileUrl?: SortOrder
+    fileType?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyReportAvgOrderByAggregateInput = {
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+  }
+
+  export type DailyReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyReportSumOrderByAggregateInput = {
+    platformFeesNgn?: SortOrder
+    tradingVolumeNgn?: SortOrder
+    tradingVolumeUsd?: SortOrder
+    totalOrders?: SortOrder
+    completedOrders?: SortOrder
+    cancelledOrders?: SortOrder
+    depositsNgn?: SortOrder
+    depositCount?: SortOrder
+    withdrawalsNgn?: SortOrder
+    withdrawalCount?: SortOrder
+    giftCardVolumeNgn?: SortOrder
+    giftCardCount?: SortOrder
+    newUsers?: SortOrder
+    totalUsers?: SortOrder
+    newDisputes?: SortOrder
+    resolvedDisputes?: SortOrder
+    fraudEvents?: SortOrder
+  }
+
   export type ProfileCreateNestedOneWithoutUserInput = {
     create?: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutUserInput
@@ -28318,6 +34688,41 @@ export namespace Prisma {
     connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
     createMany?: EvidenceCreateManyUploadedByInputEnvelope
     connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+  }
+
+  export type GiftCardListingCreateNestedManyWithoutSellerInput = {
+    create?: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput> | GiftCardListingCreateWithoutSellerInput[] | GiftCardListingUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutSellerInput | GiftCardListingCreateOrConnectWithoutSellerInput[]
+    createMany?: GiftCardListingCreateManySellerInputEnvelope
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+  }
+
+  export type GiftCardListingCreateNestedManyWithoutModeratorInput = {
+    create?: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput> | GiftCardListingCreateWithoutModeratorInput[] | GiftCardListingUncheckedCreateWithoutModeratorInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutModeratorInput | GiftCardListingCreateOrConnectWithoutModeratorInput[]
+    createMany?: GiftCardListingCreateManyModeratorInputEnvelope
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+  }
+
+  export type GiftCardOrderCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput> | GiftCardOrderCreateWithoutBuyerInput[] | GiftCardOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutBuyerInput | GiftCardOrderCreateOrConnectWithoutBuyerInput[]
+    createMany?: GiftCardOrderCreateManyBuyerInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardOrderCreateNestedManyWithoutSellerInput = {
+    create?: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput> | GiftCardOrderCreateWithoutSellerInput[] | GiftCardOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutSellerInput | GiftCardOrderCreateOrConnectWithoutSellerInput[]
+    createMany?: GiftCardOrderCreateManySellerInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardEvidenceCreateNestedManyWithoutUploaderInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput> | GiftCardEvidenceCreateWithoutUploaderInput[] | GiftCardEvidenceUncheckedCreateWithoutUploaderInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutUploaderInput | GiftCardEvidenceCreateOrConnectWithoutUploaderInput[]
+    createMany?: GiftCardEvidenceCreateManyUploaderInputEnvelope
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
   }
 
   export type SecurityLogCreateNestedManyWithoutUserInput = {
@@ -28421,6 +34826,41 @@ export namespace Prisma {
     connectOrCreate?: EvidenceCreateOrConnectWithoutUploadedByInput | EvidenceCreateOrConnectWithoutUploadedByInput[]
     createMany?: EvidenceCreateManyUploadedByInputEnvelope
     connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
+  }
+
+  export type GiftCardListingUncheckedCreateNestedManyWithoutSellerInput = {
+    create?: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput> | GiftCardListingCreateWithoutSellerInput[] | GiftCardListingUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutSellerInput | GiftCardListingCreateOrConnectWithoutSellerInput[]
+    createMany?: GiftCardListingCreateManySellerInputEnvelope
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+  }
+
+  export type GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput = {
+    create?: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput> | GiftCardListingCreateWithoutModeratorInput[] | GiftCardListingUncheckedCreateWithoutModeratorInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutModeratorInput | GiftCardListingCreateOrConnectWithoutModeratorInput[]
+    createMany?: GiftCardListingCreateManyModeratorInputEnvelope
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+  }
+
+  export type GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput> | GiftCardOrderCreateWithoutBuyerInput[] | GiftCardOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutBuyerInput | GiftCardOrderCreateOrConnectWithoutBuyerInput[]
+    createMany?: GiftCardOrderCreateManyBuyerInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput = {
+    create?: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput> | GiftCardOrderCreateWithoutSellerInput[] | GiftCardOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutSellerInput | GiftCardOrderCreateOrConnectWithoutSellerInput[]
+    createMany?: GiftCardOrderCreateManySellerInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput> | GiftCardEvidenceCreateWithoutUploaderInput[] | GiftCardEvidenceUncheckedCreateWithoutUploaderInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutUploaderInput | GiftCardEvidenceCreateOrConnectWithoutUploaderInput[]
+    createMany?: GiftCardEvidenceCreateManyUploaderInputEnvelope
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
   }
 
   export type SecurityLogUncheckedCreateNestedManyWithoutUserInput = {
@@ -28647,6 +35087,76 @@ export namespace Prisma {
     deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
   }
 
+  export type GiftCardListingUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput> | GiftCardListingCreateWithoutSellerInput[] | GiftCardListingUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutSellerInput | GiftCardListingCreateOrConnectWithoutSellerInput[]
+    upsert?: GiftCardListingUpsertWithWhereUniqueWithoutSellerInput | GiftCardListingUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: GiftCardListingCreateManySellerInputEnvelope
+    set?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    disconnect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    delete?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    update?: GiftCardListingUpdateWithWhereUniqueWithoutSellerInput | GiftCardListingUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: GiftCardListingUpdateManyWithWhereWithoutSellerInput | GiftCardListingUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+  }
+
+  export type GiftCardListingUpdateManyWithoutModeratorNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput> | GiftCardListingCreateWithoutModeratorInput[] | GiftCardListingUncheckedCreateWithoutModeratorInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutModeratorInput | GiftCardListingCreateOrConnectWithoutModeratorInput[]
+    upsert?: GiftCardListingUpsertWithWhereUniqueWithoutModeratorInput | GiftCardListingUpsertWithWhereUniqueWithoutModeratorInput[]
+    createMany?: GiftCardListingCreateManyModeratorInputEnvelope
+    set?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    disconnect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    delete?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    update?: GiftCardListingUpdateWithWhereUniqueWithoutModeratorInput | GiftCardListingUpdateWithWhereUniqueWithoutModeratorInput[]
+    updateMany?: GiftCardListingUpdateManyWithWhereWithoutModeratorInput | GiftCardListingUpdateManyWithWhereWithoutModeratorInput[]
+    deleteMany?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+  }
+
+  export type GiftCardOrderUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput> | GiftCardOrderCreateWithoutBuyerInput[] | GiftCardOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutBuyerInput | GiftCardOrderCreateOrConnectWithoutBuyerInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutBuyerInput | GiftCardOrderUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: GiftCardOrderCreateManyBuyerInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutBuyerInput | GiftCardOrderUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutBuyerInput | GiftCardOrderUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardOrderUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput> | GiftCardOrderCreateWithoutSellerInput[] | GiftCardOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutSellerInput | GiftCardOrderCreateOrConnectWithoutSellerInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutSellerInput | GiftCardOrderUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: GiftCardOrderCreateManySellerInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutSellerInput | GiftCardOrderUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutSellerInput | GiftCardOrderUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardEvidenceUpdateManyWithoutUploaderNestedInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput> | GiftCardEvidenceCreateWithoutUploaderInput[] | GiftCardEvidenceUncheckedCreateWithoutUploaderInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutUploaderInput | GiftCardEvidenceCreateOrConnectWithoutUploaderInput[]
+    upsert?: GiftCardEvidenceUpsertWithWhereUniqueWithoutUploaderInput | GiftCardEvidenceUpsertWithWhereUniqueWithoutUploaderInput[]
+    createMany?: GiftCardEvidenceCreateManyUploaderInputEnvelope
+    set?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    disconnect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    delete?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    update?: GiftCardEvidenceUpdateWithWhereUniqueWithoutUploaderInput | GiftCardEvidenceUpdateWithWhereUniqueWithoutUploaderInput[]
+    updateMany?: GiftCardEvidenceUpdateManyWithWhereWithoutUploaderInput | GiftCardEvidenceUpdateManyWithWhereWithoutUploaderInput[]
+    deleteMany?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
+  }
+
   export type SecurityLogUpdateManyWithoutUserNestedInput = {
     create?: XOR<SecurityLogCreateWithoutUserInput, SecurityLogUncheckedCreateWithoutUserInput> | SecurityLogCreateWithoutUserInput[] | SecurityLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SecurityLogCreateOrConnectWithoutUserInput | SecurityLogCreateOrConnectWithoutUserInput[]
@@ -28847,6 +35357,76 @@ export namespace Prisma {
     update?: EvidenceUpdateWithWhereUniqueWithoutUploadedByInput | EvidenceUpdateWithWhereUniqueWithoutUploadedByInput[]
     updateMany?: EvidenceUpdateManyWithWhereWithoutUploadedByInput | EvidenceUpdateManyWithWhereWithoutUploadedByInput[]
     deleteMany?: EvidenceScalarWhereInput | EvidenceScalarWhereInput[]
+  }
+
+  export type GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput> | GiftCardListingCreateWithoutSellerInput[] | GiftCardListingUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutSellerInput | GiftCardListingCreateOrConnectWithoutSellerInput[]
+    upsert?: GiftCardListingUpsertWithWhereUniqueWithoutSellerInput | GiftCardListingUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: GiftCardListingCreateManySellerInputEnvelope
+    set?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    disconnect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    delete?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    update?: GiftCardListingUpdateWithWhereUniqueWithoutSellerInput | GiftCardListingUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: GiftCardListingUpdateManyWithWhereWithoutSellerInput | GiftCardListingUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+  }
+
+  export type GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput> | GiftCardListingCreateWithoutModeratorInput[] | GiftCardListingUncheckedCreateWithoutModeratorInput[]
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutModeratorInput | GiftCardListingCreateOrConnectWithoutModeratorInput[]
+    upsert?: GiftCardListingUpsertWithWhereUniqueWithoutModeratorInput | GiftCardListingUpsertWithWhereUniqueWithoutModeratorInput[]
+    createMany?: GiftCardListingCreateManyModeratorInputEnvelope
+    set?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    disconnect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    delete?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    connect?: GiftCardListingWhereUniqueInput | GiftCardListingWhereUniqueInput[]
+    update?: GiftCardListingUpdateWithWhereUniqueWithoutModeratorInput | GiftCardListingUpdateWithWhereUniqueWithoutModeratorInput[]
+    updateMany?: GiftCardListingUpdateManyWithWhereWithoutModeratorInput | GiftCardListingUpdateManyWithWhereWithoutModeratorInput[]
+    deleteMany?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput> | GiftCardOrderCreateWithoutBuyerInput[] | GiftCardOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutBuyerInput | GiftCardOrderCreateOrConnectWithoutBuyerInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutBuyerInput | GiftCardOrderUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: GiftCardOrderCreateManyBuyerInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutBuyerInput | GiftCardOrderUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutBuyerInput | GiftCardOrderUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput> | GiftCardOrderCreateWithoutSellerInput[] | GiftCardOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutSellerInput | GiftCardOrderCreateOrConnectWithoutSellerInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutSellerInput | GiftCardOrderUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: GiftCardOrderCreateManySellerInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutSellerInput | GiftCardOrderUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutSellerInput | GiftCardOrderUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput> | GiftCardEvidenceCreateWithoutUploaderInput[] | GiftCardEvidenceUncheckedCreateWithoutUploaderInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutUploaderInput | GiftCardEvidenceCreateOrConnectWithoutUploaderInput[]
+    upsert?: GiftCardEvidenceUpsertWithWhereUniqueWithoutUploaderInput | GiftCardEvidenceUpsertWithWhereUniqueWithoutUploaderInput[]
+    createMany?: GiftCardEvidenceCreateManyUploaderInputEnvelope
+    set?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    disconnect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    delete?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    update?: GiftCardEvidenceUpdateWithWhereUniqueWithoutUploaderInput | GiftCardEvidenceUpdateWithWhereUniqueWithoutUploaderInput[]
+    updateMany?: GiftCardEvidenceUpdateManyWithWhereWithoutUploaderInput | GiftCardEvidenceUpdateManyWithWhereWithoutUploaderInput[]
+    deleteMany?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
   }
 
   export type SecurityLogUncheckedUpdateManyWithoutUserNestedInput = {
@@ -29577,6 +36157,202 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSecurityAlertsInput, UserUpdateWithoutSecurityAlertsInput>, UserUncheckedUpdateWithoutSecurityAlertsInput>
   }
 
+  export type UserCreateNestedOneWithoutGiftCardListingsInput = {
+    create?: XOR<UserCreateWithoutGiftCardListingsInput, UserUncheckedCreateWithoutGiftCardListingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardListingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutModeratedListingsInput = {
+    create?: XOR<UserCreateWithoutModeratedListingsInput, UserUncheckedCreateWithoutModeratedListingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutModeratedListingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GiftCardOrderCreateNestedManyWithoutListingInput = {
+    create?: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput> | GiftCardOrderCreateWithoutListingInput[] | GiftCardOrderUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutListingInput | GiftCardOrderCreateOrConnectWithoutListingInput[]
+    createMany?: GiftCardOrderCreateManyListingInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardEvidenceCreateNestedManyWithoutListingInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput> | GiftCardEvidenceCreateWithoutListingInput[] | GiftCardEvidenceUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutListingInput | GiftCardEvidenceCreateOrConnectWithoutListingInput[]
+    createMany?: GiftCardEvidenceCreateManyListingInputEnvelope
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+  }
+
+  export type GiftCardOrderUncheckedCreateNestedManyWithoutListingInput = {
+    create?: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput> | GiftCardOrderCreateWithoutListingInput[] | GiftCardOrderUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutListingInput | GiftCardOrderCreateOrConnectWithoutListingInput[]
+    createMany?: GiftCardOrderCreateManyListingInputEnvelope
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+  }
+
+  export type GiftCardEvidenceUncheckedCreateNestedManyWithoutListingInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput> | GiftCardEvidenceCreateWithoutListingInput[] | GiftCardEvidenceUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutListingInput | GiftCardEvidenceCreateOrConnectWithoutListingInput[]
+    createMany?: GiftCardEvidenceCreateManyListingInputEnvelope
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+  }
+
+  export type EnumGiftCardBrandFieldUpdateOperationsInput = {
+    set?: $Enums.GiftCardBrand
+  }
+
+  export type EnumGiftCardListingStatusFieldUpdateOperationsInput = {
+    set?: $Enums.GiftCardListingStatus
+  }
+
+  export type UserUpdateOneRequiredWithoutGiftCardListingsNestedInput = {
+    create?: XOR<UserCreateWithoutGiftCardListingsInput, UserUncheckedCreateWithoutGiftCardListingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardListingsInput
+    upsert?: UserUpsertWithoutGiftCardListingsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardListingsInput, UserUpdateWithoutGiftCardListingsInput>, UserUncheckedUpdateWithoutGiftCardListingsInput>
+  }
+
+  export type UserUpdateOneWithoutModeratedListingsNestedInput = {
+    create?: XOR<UserCreateWithoutModeratedListingsInput, UserUncheckedCreateWithoutModeratedListingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutModeratedListingsInput
+    upsert?: UserUpsertWithoutModeratedListingsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutModeratedListingsInput, UserUpdateWithoutModeratedListingsInput>, UserUncheckedUpdateWithoutModeratedListingsInput>
+  }
+
+  export type GiftCardOrderUpdateManyWithoutListingNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput> | GiftCardOrderCreateWithoutListingInput[] | GiftCardOrderUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutListingInput | GiftCardOrderCreateOrConnectWithoutListingInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutListingInput | GiftCardOrderUpsertWithWhereUniqueWithoutListingInput[]
+    createMany?: GiftCardOrderCreateManyListingInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutListingInput | GiftCardOrderUpdateWithWhereUniqueWithoutListingInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutListingInput | GiftCardOrderUpdateManyWithWhereWithoutListingInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardEvidenceUpdateManyWithoutListingNestedInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput> | GiftCardEvidenceCreateWithoutListingInput[] | GiftCardEvidenceUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutListingInput | GiftCardEvidenceCreateOrConnectWithoutListingInput[]
+    upsert?: GiftCardEvidenceUpsertWithWhereUniqueWithoutListingInput | GiftCardEvidenceUpsertWithWhereUniqueWithoutListingInput[]
+    createMany?: GiftCardEvidenceCreateManyListingInputEnvelope
+    set?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    disconnect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    delete?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    update?: GiftCardEvidenceUpdateWithWhereUniqueWithoutListingInput | GiftCardEvidenceUpdateWithWhereUniqueWithoutListingInput[]
+    updateMany?: GiftCardEvidenceUpdateManyWithWhereWithoutListingInput | GiftCardEvidenceUpdateManyWithWhereWithoutListingInput[]
+    deleteMany?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutListingNestedInput = {
+    create?: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput> | GiftCardOrderCreateWithoutListingInput[] | GiftCardOrderUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardOrderCreateOrConnectWithoutListingInput | GiftCardOrderCreateOrConnectWithoutListingInput[]
+    upsert?: GiftCardOrderUpsertWithWhereUniqueWithoutListingInput | GiftCardOrderUpsertWithWhereUniqueWithoutListingInput[]
+    createMany?: GiftCardOrderCreateManyListingInputEnvelope
+    set?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    disconnect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    delete?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    connect?: GiftCardOrderWhereUniqueInput | GiftCardOrderWhereUniqueInput[]
+    update?: GiftCardOrderUpdateWithWhereUniqueWithoutListingInput | GiftCardOrderUpdateWithWhereUniqueWithoutListingInput[]
+    updateMany?: GiftCardOrderUpdateManyWithWhereWithoutListingInput | GiftCardOrderUpdateManyWithWhereWithoutListingInput[]
+    deleteMany?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateManyWithoutListingNestedInput = {
+    create?: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput> | GiftCardEvidenceCreateWithoutListingInput[] | GiftCardEvidenceUncheckedCreateWithoutListingInput[]
+    connectOrCreate?: GiftCardEvidenceCreateOrConnectWithoutListingInput | GiftCardEvidenceCreateOrConnectWithoutListingInput[]
+    upsert?: GiftCardEvidenceUpsertWithWhereUniqueWithoutListingInput | GiftCardEvidenceUpsertWithWhereUniqueWithoutListingInput[]
+    createMany?: GiftCardEvidenceCreateManyListingInputEnvelope
+    set?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    disconnect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    delete?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    connect?: GiftCardEvidenceWhereUniqueInput | GiftCardEvidenceWhereUniqueInput[]
+    update?: GiftCardEvidenceUpdateWithWhereUniqueWithoutListingInput | GiftCardEvidenceUpdateWithWhereUniqueWithoutListingInput[]
+    updateMany?: GiftCardEvidenceUpdateManyWithWhereWithoutListingInput | GiftCardEvidenceUpdateManyWithWhereWithoutListingInput[]
+    deleteMany?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
+  }
+
+  export type GiftCardListingCreateNestedOneWithoutOrdersInput = {
+    create?: XOR<GiftCardListingCreateWithoutOrdersInput, GiftCardListingUncheckedCreateWithoutOrdersInput>
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutOrdersInput
+    connect?: GiftCardListingWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGiftCardBuyerOrdersInput = {
+    create?: XOR<UserCreateWithoutGiftCardBuyerOrdersInput, UserUncheckedCreateWithoutGiftCardBuyerOrdersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardBuyerOrdersInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGiftCardSellerOrdersInput = {
+    create?: XOR<UserCreateWithoutGiftCardSellerOrdersInput, UserUncheckedCreateWithoutGiftCardSellerOrdersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardSellerOrdersInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumGiftCardOrderStatusFieldUpdateOperationsInput = {
+    set?: $Enums.GiftCardOrderStatus
+  }
+
+  export type GiftCardListingUpdateOneRequiredWithoutOrdersNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutOrdersInput, GiftCardListingUncheckedCreateWithoutOrdersInput>
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutOrdersInput
+    upsert?: GiftCardListingUpsertWithoutOrdersInput
+    connect?: GiftCardListingWhereUniqueInput
+    update?: XOR<XOR<GiftCardListingUpdateToOneWithWhereWithoutOrdersInput, GiftCardListingUpdateWithoutOrdersInput>, GiftCardListingUncheckedUpdateWithoutOrdersInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutGiftCardBuyerOrdersNestedInput = {
+    create?: XOR<UserCreateWithoutGiftCardBuyerOrdersInput, UserUncheckedCreateWithoutGiftCardBuyerOrdersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardBuyerOrdersInput
+    upsert?: UserUpsertWithoutGiftCardBuyerOrdersInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardBuyerOrdersInput, UserUpdateWithoutGiftCardBuyerOrdersInput>, UserUncheckedUpdateWithoutGiftCardBuyerOrdersInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutGiftCardSellerOrdersNestedInput = {
+    create?: XOR<UserCreateWithoutGiftCardSellerOrdersInput, UserUncheckedCreateWithoutGiftCardSellerOrdersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardSellerOrdersInput
+    upsert?: UserUpsertWithoutGiftCardSellerOrdersInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardSellerOrdersInput, UserUpdateWithoutGiftCardSellerOrdersInput>, UserUncheckedUpdateWithoutGiftCardSellerOrdersInput>
+  }
+
+  export type GiftCardListingCreateNestedOneWithoutEvidenceRecordsInput = {
+    create?: XOR<GiftCardListingCreateWithoutEvidenceRecordsInput, GiftCardListingUncheckedCreateWithoutEvidenceRecordsInput>
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutEvidenceRecordsInput
+    connect?: GiftCardListingWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGiftCardEvidenceInput = {
+    create?: XOR<UserCreateWithoutGiftCardEvidenceInput, UserUncheckedCreateWithoutGiftCardEvidenceInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardEvidenceInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GiftCardListingUpdateOneRequiredWithoutEvidenceRecordsNestedInput = {
+    create?: XOR<GiftCardListingCreateWithoutEvidenceRecordsInput, GiftCardListingUncheckedCreateWithoutEvidenceRecordsInput>
+    connectOrCreate?: GiftCardListingCreateOrConnectWithoutEvidenceRecordsInput
+    upsert?: GiftCardListingUpsertWithoutEvidenceRecordsInput
+    connect?: GiftCardListingWhereUniqueInput
+    update?: XOR<XOR<GiftCardListingUpdateToOneWithWhereWithoutEvidenceRecordsInput, GiftCardListingUpdateWithoutEvidenceRecordsInput>, GiftCardListingUncheckedUpdateWithoutEvidenceRecordsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutGiftCardEvidenceNestedInput = {
+    create?: XOR<UserCreateWithoutGiftCardEvidenceInput, UserUncheckedCreateWithoutGiftCardEvidenceInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGiftCardEvidenceInput
+    upsert?: UserUpsertWithoutGiftCardEvidenceInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardEvidenceInput, UserUpdateWithoutGiftCardEvidenceInput>, UserUncheckedUpdateWithoutGiftCardEvidenceInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -30001,6 +36777,57 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumNotificationStatusFilter<$PrismaModel>
     _max?: NestedEnumNotificationStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumGiftCardBrandFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardBrand | EnumGiftCardBrandFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardBrandFilter<$PrismaModel> | $Enums.GiftCardBrand
+  }
+
+  export type NestedEnumGiftCardListingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardListingStatus | EnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardListingStatusFilter<$PrismaModel> | $Enums.GiftCardListingStatus
+  }
+
+  export type NestedEnumGiftCardBrandWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardBrand | EnumGiftCardBrandFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardBrand[] | ListEnumGiftCardBrandFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardBrandWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardBrand
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardBrandFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardBrandFilter<$PrismaModel>
+  }
+
+  export type NestedEnumGiftCardListingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardListingStatus | EnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardListingStatus[] | ListEnumGiftCardListingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardListingStatusWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardListingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardListingStatusFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardListingStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumGiftCardOrderStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardOrderStatus | EnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel> | $Enums.GiftCardOrderStatus
+  }
+
+  export type NestedEnumGiftCardOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GiftCardOrderStatus | EnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.GiftCardOrderStatus[] | ListEnumGiftCardOrderStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumGiftCardOrderStatusWithAggregatesFilter<$PrismaModel> | $Enums.GiftCardOrderStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
+    _max?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
   }
 
   export type ProfileCreateWithoutUserInput = {
@@ -30465,6 +37292,212 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type GiftCardListingCreateWithoutSellerInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    moderator?: UserCreateNestedOneWithoutModeratedListingsInput
+    orders?: GiftCardOrderCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUncheckedCreateWithoutSellerInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    orders?: GiftCardOrderUncheckedCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceUncheckedCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingCreateOrConnectWithoutSellerInput = {
+    where: GiftCardListingWhereUniqueInput
+    create: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput>
+  }
+
+  export type GiftCardListingCreateManySellerInputEnvelope = {
+    data: GiftCardListingCreateManySellerInput | GiftCardListingCreateManySellerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GiftCardListingCreateWithoutModeratorInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    seller: UserCreateNestedOneWithoutGiftCardListingsInput
+    orders?: GiftCardOrderCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUncheckedCreateWithoutModeratorInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    orders?: GiftCardOrderUncheckedCreateNestedManyWithoutListingInput
+    evidenceRecords?: GiftCardEvidenceUncheckedCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingCreateOrConnectWithoutModeratorInput = {
+    where: GiftCardListingWhereUniqueInput
+    create: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput>
+  }
+
+  export type GiftCardListingCreateManyModeratorInputEnvelope = {
+    data: GiftCardListingCreateManyModeratorInput | GiftCardListingCreateManyModeratorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GiftCardOrderCreateWithoutBuyerInput = {
+    id?: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    listing: GiftCardListingCreateNestedOneWithoutOrdersInput
+    seller: UserCreateNestedOneWithoutGiftCardSellerOrdersInput
+  }
+
+  export type GiftCardOrderUncheckedCreateWithoutBuyerInput = {
+    id?: string
+    listingId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderCreateOrConnectWithoutBuyerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    create: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type GiftCardOrderCreateManyBuyerInputEnvelope = {
+    data: GiftCardOrderCreateManyBuyerInput | GiftCardOrderCreateManyBuyerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GiftCardOrderCreateWithoutSellerInput = {
+    id?: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    listing: GiftCardListingCreateNestedOneWithoutOrdersInput
+    buyer: UserCreateNestedOneWithoutGiftCardBuyerOrdersInput
+  }
+
+  export type GiftCardOrderUncheckedCreateWithoutSellerInput = {
+    id?: string
+    listingId: string
+    buyerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderCreateOrConnectWithoutSellerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    create: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput>
+  }
+
+  export type GiftCardOrderCreateManySellerInputEnvelope = {
+    data: GiftCardOrderCreateManySellerInput | GiftCardOrderCreateManySellerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GiftCardEvidenceCreateWithoutUploaderInput = {
+    id?: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+    listing: GiftCardListingCreateNestedOneWithoutEvidenceRecordsInput
+  }
+
+  export type GiftCardEvidenceUncheckedCreateWithoutUploaderInput = {
+    id?: string
+    listingId: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+  }
+
+  export type GiftCardEvidenceCreateOrConnectWithoutUploaderInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    create: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput>
+  }
+
+  export type GiftCardEvidenceCreateManyUploaderInputEnvelope = {
+    data: GiftCardEvidenceCreateManyUploaderInput | GiftCardEvidenceCreateManyUploaderInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SecurityLogCreateWithoutUserInput = {
     id?: string
     actorId?: string | null
@@ -30924,6 +37957,139 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Evidence"> | Date | string
   }
 
+  export type GiftCardListingUpsertWithWhereUniqueWithoutSellerInput = {
+    where: GiftCardListingWhereUniqueInput
+    update: XOR<GiftCardListingUpdateWithoutSellerInput, GiftCardListingUncheckedUpdateWithoutSellerInput>
+    create: XOR<GiftCardListingCreateWithoutSellerInput, GiftCardListingUncheckedCreateWithoutSellerInput>
+  }
+
+  export type GiftCardListingUpdateWithWhereUniqueWithoutSellerInput = {
+    where: GiftCardListingWhereUniqueInput
+    data: XOR<GiftCardListingUpdateWithoutSellerInput, GiftCardListingUncheckedUpdateWithoutSellerInput>
+  }
+
+  export type GiftCardListingUpdateManyWithWhereWithoutSellerInput = {
+    where: GiftCardListingScalarWhereInput
+    data: XOR<GiftCardListingUpdateManyMutationInput, GiftCardListingUncheckedUpdateManyWithoutSellerInput>
+  }
+
+  export type GiftCardListingScalarWhereInput = {
+    AND?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+    OR?: GiftCardListingScalarWhereInput[]
+    NOT?: GiftCardListingScalarWhereInput | GiftCardListingScalarWhereInput[]
+    id?: UuidFilter<"GiftCardListing"> | string
+    sellerId?: UuidFilter<"GiftCardListing"> | string
+    brand?: EnumGiftCardBrandFilter<"GiftCardListing"> | $Enums.GiftCardBrand
+    cardCode?: StringFilter<"GiftCardListing"> | string
+    cardPin?: StringNullableFilter<"GiftCardListing"> | string | null
+    denomination?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardListing"> | string
+    exchangeRate?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFilter<"GiftCardListing"> | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFilter<"GiftCardListing"> | $Enums.GiftCardListingStatus
+    evidenceUrls?: JsonNullableFilter<"GiftCardListing">
+    moderatorId?: UuidNullableFilter<"GiftCardListing"> | string | null
+    moderatorNote?: StringNullableFilter<"GiftCardListing"> | string | null
+    createdAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardListing"> | Date | string
+    version?: IntFilter<"GiftCardListing"> | number
+  }
+
+  export type GiftCardListingUpsertWithWhereUniqueWithoutModeratorInput = {
+    where: GiftCardListingWhereUniqueInput
+    update: XOR<GiftCardListingUpdateWithoutModeratorInput, GiftCardListingUncheckedUpdateWithoutModeratorInput>
+    create: XOR<GiftCardListingCreateWithoutModeratorInput, GiftCardListingUncheckedCreateWithoutModeratorInput>
+  }
+
+  export type GiftCardListingUpdateWithWhereUniqueWithoutModeratorInput = {
+    where: GiftCardListingWhereUniqueInput
+    data: XOR<GiftCardListingUpdateWithoutModeratorInput, GiftCardListingUncheckedUpdateWithoutModeratorInput>
+  }
+
+  export type GiftCardListingUpdateManyWithWhereWithoutModeratorInput = {
+    where: GiftCardListingScalarWhereInput
+    data: XOR<GiftCardListingUpdateManyMutationInput, GiftCardListingUncheckedUpdateManyWithoutModeratorInput>
+  }
+
+  export type GiftCardOrderUpsertWithWhereUniqueWithoutBuyerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    update: XOR<GiftCardOrderUpdateWithoutBuyerInput, GiftCardOrderUncheckedUpdateWithoutBuyerInput>
+    create: XOR<GiftCardOrderCreateWithoutBuyerInput, GiftCardOrderUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type GiftCardOrderUpdateWithWhereUniqueWithoutBuyerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    data: XOR<GiftCardOrderUpdateWithoutBuyerInput, GiftCardOrderUncheckedUpdateWithoutBuyerInput>
+  }
+
+  export type GiftCardOrderUpdateManyWithWhereWithoutBuyerInput = {
+    where: GiftCardOrderScalarWhereInput
+    data: XOR<GiftCardOrderUpdateManyMutationInput, GiftCardOrderUncheckedUpdateManyWithoutBuyerInput>
+  }
+
+  export type GiftCardOrderScalarWhereInput = {
+    AND?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+    OR?: GiftCardOrderScalarWhereInput[]
+    NOT?: GiftCardOrderScalarWhereInput | GiftCardOrderScalarWhereInput[]
+    id?: UuidFilter<"GiftCardOrder"> | string
+    listingId?: UuidFilter<"GiftCardOrder"> | string
+    buyerId?: UuidFilter<"GiftCardOrder"> | string
+    sellerId?: UuidFilter<"GiftCardOrder"> | string
+    status?: EnumGiftCardOrderStatusFilter<"GiftCardOrder"> | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFilter<"GiftCardOrder"> | string
+    askingPriceNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFilter<"GiftCardOrder"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    updatedAt?: DateTimeFilter<"GiftCardOrder"> | Date | string
+    version?: IntFilter<"GiftCardOrder"> | number
+  }
+
+  export type GiftCardOrderUpsertWithWhereUniqueWithoutSellerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    update: XOR<GiftCardOrderUpdateWithoutSellerInput, GiftCardOrderUncheckedUpdateWithoutSellerInput>
+    create: XOR<GiftCardOrderCreateWithoutSellerInput, GiftCardOrderUncheckedCreateWithoutSellerInput>
+  }
+
+  export type GiftCardOrderUpdateWithWhereUniqueWithoutSellerInput = {
+    where: GiftCardOrderWhereUniqueInput
+    data: XOR<GiftCardOrderUpdateWithoutSellerInput, GiftCardOrderUncheckedUpdateWithoutSellerInput>
+  }
+
+  export type GiftCardOrderUpdateManyWithWhereWithoutSellerInput = {
+    where: GiftCardOrderScalarWhereInput
+    data: XOR<GiftCardOrderUpdateManyMutationInput, GiftCardOrderUncheckedUpdateManyWithoutSellerInput>
+  }
+
+  export type GiftCardEvidenceUpsertWithWhereUniqueWithoutUploaderInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    update: XOR<GiftCardEvidenceUpdateWithoutUploaderInput, GiftCardEvidenceUncheckedUpdateWithoutUploaderInput>
+    create: XOR<GiftCardEvidenceCreateWithoutUploaderInput, GiftCardEvidenceUncheckedCreateWithoutUploaderInput>
+  }
+
+  export type GiftCardEvidenceUpdateWithWhereUniqueWithoutUploaderInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    data: XOR<GiftCardEvidenceUpdateWithoutUploaderInput, GiftCardEvidenceUncheckedUpdateWithoutUploaderInput>
+  }
+
+  export type GiftCardEvidenceUpdateManyWithWhereWithoutUploaderInput = {
+    where: GiftCardEvidenceScalarWhereInput
+    data: XOR<GiftCardEvidenceUpdateManyMutationInput, GiftCardEvidenceUncheckedUpdateManyWithoutUploaderInput>
+  }
+
+  export type GiftCardEvidenceScalarWhereInput = {
+    AND?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
+    OR?: GiftCardEvidenceScalarWhereInput[]
+    NOT?: GiftCardEvidenceScalarWhereInput | GiftCardEvidenceScalarWhereInput[]
+    id?: UuidFilter<"GiftCardEvidence"> | string
+    listingId?: UuidFilter<"GiftCardEvidence"> | string
+    uploadedBy?: UuidFilter<"GiftCardEvidence"> | string
+    fileUrl?: StringFilter<"GiftCardEvidence"> | string
+    fileType?: StringFilter<"GiftCardEvidence"> | string
+    createdAt?: DateTimeFilter<"GiftCardEvidence"> | Date | string
+  }
+
   export type SecurityLogUpsertWithWhereUniqueWithoutUserInput = {
     where: SecurityLogWhereUniqueInput
     update: XOR<SecurityLogUpdateWithoutUserInput, SecurityLogUncheckedUpdateWithoutUserInput>
@@ -31018,6 +38184,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -31049,6 +38220,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -31096,6 +38272,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -31127,6 +38308,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -31158,6 +38344,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -31189,6 +38380,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -31236,6 +38432,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -31267,6 +38468,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -31298,6 +38504,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -31329,6 +38540,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -31470,6 +38686,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -31501,6 +38722,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -32029,6 +39255,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -32060,6 +39291,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -32151,6 +39387,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -32182,6 +39423,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -32266,6 +39512,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -32297,6 +39548,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -32333,6 +39589,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -32364,6 +39625,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -32526,6 +39792,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -32557,6 +39828,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -32599,6 +39875,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -32630,6 +39911,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -32732,6 +40018,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -32763,6 +40054,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -32799,6 +40095,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -32830,6 +40131,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -32952,6 +40258,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -32983,6 +40294,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33025,6 +40341,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33056,6 +40377,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33136,6 +40462,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -33167,6 +40498,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -33253,6 +40589,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33284,6 +40625,11 @@ export namespace Prisma {
     notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33315,6 +40661,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -33346,6 +40697,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -33393,6 +40749,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33424,6 +40785,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33455,6 +40821,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -33486,6 +40857,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -33533,6 +40909,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33564,6 +40945,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33596,6 +40982,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
 
@@ -33627,6 +41018,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -33674,6 +41070,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
 
@@ -33705,6 +41106,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -33735,6 +41141,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -33766,6 +41177,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -33813,6 +41229,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33844,6 +41265,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -33875,6 +41301,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
   }
@@ -33906,6 +41337,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
     securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
   }
@@ -33953,6 +41389,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
   }
@@ -33984,6 +41425,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -34016,6 +41462,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
   }
 
@@ -34047,6 +41498,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
     assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
     evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
     securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -34094,6 +41550,11 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
   }
 
@@ -34125,7 +41586,1102 @@ export namespace Prisma {
     initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
     assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
     evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
     securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutGiftCardListingsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGiftCardListingsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGiftCardListingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGiftCardListingsInput, UserUncheckedCreateWithoutGiftCardListingsInput>
+  }
+
+  export type UserCreateWithoutModeratedListingsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutModeratedListingsInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutModeratedListingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutModeratedListingsInput, UserUncheckedCreateWithoutModeratedListingsInput>
+  }
+
+  export type GiftCardOrderCreateWithoutListingInput = {
+    id?: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    buyer: UserCreateNestedOneWithoutGiftCardBuyerOrdersInput
+    seller: UserCreateNestedOneWithoutGiftCardSellerOrdersInput
+  }
+
+  export type GiftCardOrderUncheckedCreateWithoutListingInput = {
+    id?: string
+    buyerId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderCreateOrConnectWithoutListingInput = {
+    where: GiftCardOrderWhereUniqueInput
+    create: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput>
+  }
+
+  export type GiftCardOrderCreateManyListingInputEnvelope = {
+    data: GiftCardOrderCreateManyListingInput | GiftCardOrderCreateManyListingInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type GiftCardEvidenceCreateWithoutListingInput = {
+    id?: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+    uploader: UserCreateNestedOneWithoutGiftCardEvidenceInput
+  }
+
+  export type GiftCardEvidenceUncheckedCreateWithoutListingInput = {
+    id?: string
+    uploadedBy: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+  }
+
+  export type GiftCardEvidenceCreateOrConnectWithoutListingInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    create: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput>
+  }
+
+  export type GiftCardEvidenceCreateManyListingInputEnvelope = {
+    data: GiftCardEvidenceCreateManyListingInput | GiftCardEvidenceCreateManyListingInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutGiftCardListingsInput = {
+    update: XOR<UserUpdateWithoutGiftCardListingsInput, UserUncheckedUpdateWithoutGiftCardListingsInput>
+    create: XOR<UserCreateWithoutGiftCardListingsInput, UserUncheckedCreateWithoutGiftCardListingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGiftCardListingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGiftCardListingsInput, UserUncheckedUpdateWithoutGiftCardListingsInput>
+  }
+
+  export type UserUpdateWithoutGiftCardListingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGiftCardListingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutModeratedListingsInput = {
+    update: XOR<UserUpdateWithoutModeratedListingsInput, UserUncheckedUpdateWithoutModeratedListingsInput>
+    create: XOR<UserCreateWithoutModeratedListingsInput, UserUncheckedCreateWithoutModeratedListingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutModeratedListingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutModeratedListingsInput, UserUncheckedUpdateWithoutModeratedListingsInput>
+  }
+
+  export type UserUpdateWithoutModeratedListingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutModeratedListingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type GiftCardOrderUpsertWithWhereUniqueWithoutListingInput = {
+    where: GiftCardOrderWhereUniqueInput
+    update: XOR<GiftCardOrderUpdateWithoutListingInput, GiftCardOrderUncheckedUpdateWithoutListingInput>
+    create: XOR<GiftCardOrderCreateWithoutListingInput, GiftCardOrderUncheckedCreateWithoutListingInput>
+  }
+
+  export type GiftCardOrderUpdateWithWhereUniqueWithoutListingInput = {
+    where: GiftCardOrderWhereUniqueInput
+    data: XOR<GiftCardOrderUpdateWithoutListingInput, GiftCardOrderUncheckedUpdateWithoutListingInput>
+  }
+
+  export type GiftCardOrderUpdateManyWithWhereWithoutListingInput = {
+    where: GiftCardOrderScalarWhereInput
+    data: XOR<GiftCardOrderUpdateManyMutationInput, GiftCardOrderUncheckedUpdateManyWithoutListingInput>
+  }
+
+  export type GiftCardEvidenceUpsertWithWhereUniqueWithoutListingInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    update: XOR<GiftCardEvidenceUpdateWithoutListingInput, GiftCardEvidenceUncheckedUpdateWithoutListingInput>
+    create: XOR<GiftCardEvidenceCreateWithoutListingInput, GiftCardEvidenceUncheckedCreateWithoutListingInput>
+  }
+
+  export type GiftCardEvidenceUpdateWithWhereUniqueWithoutListingInput = {
+    where: GiftCardEvidenceWhereUniqueInput
+    data: XOR<GiftCardEvidenceUpdateWithoutListingInput, GiftCardEvidenceUncheckedUpdateWithoutListingInput>
+  }
+
+  export type GiftCardEvidenceUpdateManyWithWhereWithoutListingInput = {
+    where: GiftCardEvidenceScalarWhereInput
+    data: XOR<GiftCardEvidenceUpdateManyMutationInput, GiftCardEvidenceUncheckedUpdateManyWithoutListingInput>
+  }
+
+  export type GiftCardListingCreateWithoutOrdersInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    seller: UserCreateNestedOneWithoutGiftCardListingsInput
+    moderator?: UserCreateNestedOneWithoutModeratedListingsInput
+    evidenceRecords?: GiftCardEvidenceCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUncheckedCreateWithoutOrdersInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    evidenceRecords?: GiftCardEvidenceUncheckedCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingCreateOrConnectWithoutOrdersInput = {
+    where: GiftCardListingWhereUniqueInput
+    create: XOR<GiftCardListingCreateWithoutOrdersInput, GiftCardListingUncheckedCreateWithoutOrdersInput>
+  }
+
+  export type UserCreateWithoutGiftCardBuyerOrdersInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGiftCardBuyerOrdersInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGiftCardBuyerOrdersInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGiftCardBuyerOrdersInput, UserUncheckedCreateWithoutGiftCardBuyerOrdersInput>
+  }
+
+  export type UserCreateWithoutGiftCardSellerOrdersInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardEvidence?: GiftCardEvidenceCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGiftCardSellerOrdersInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedCreateNestedManyWithoutUploaderInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGiftCardSellerOrdersInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGiftCardSellerOrdersInput, UserUncheckedCreateWithoutGiftCardSellerOrdersInput>
+  }
+
+  export type GiftCardListingUpsertWithoutOrdersInput = {
+    update: XOR<GiftCardListingUpdateWithoutOrdersInput, GiftCardListingUncheckedUpdateWithoutOrdersInput>
+    create: XOR<GiftCardListingCreateWithoutOrdersInput, GiftCardListingUncheckedCreateWithoutOrdersInput>
+    where?: GiftCardListingWhereInput
+  }
+
+  export type GiftCardListingUpdateToOneWithWhereWithoutOrdersInput = {
+    where?: GiftCardListingWhereInput
+    data: XOR<GiftCardListingUpdateWithoutOrdersInput, GiftCardListingUncheckedUpdateWithoutOrdersInput>
+  }
+
+  export type GiftCardListingUpdateWithoutOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    seller?: UserUpdateOneRequiredWithoutGiftCardListingsNestedInput
+    moderator?: UserUpdateOneWithoutModeratedListingsNestedInput
+    evidenceRecords?: GiftCardEvidenceUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateWithoutOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    evidenceRecords?: GiftCardEvidenceUncheckedUpdateManyWithoutListingNestedInput
+  }
+
+  export type UserUpsertWithoutGiftCardBuyerOrdersInput = {
+    update: XOR<UserUpdateWithoutGiftCardBuyerOrdersInput, UserUncheckedUpdateWithoutGiftCardBuyerOrdersInput>
+    create: XOR<UserCreateWithoutGiftCardBuyerOrdersInput, UserUncheckedCreateWithoutGiftCardBuyerOrdersInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGiftCardBuyerOrdersInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGiftCardBuyerOrdersInput, UserUncheckedUpdateWithoutGiftCardBuyerOrdersInput>
+  }
+
+  export type UserUpdateWithoutGiftCardBuyerOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGiftCardBuyerOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutGiftCardSellerOrdersInput = {
+    update: XOR<UserUpdateWithoutGiftCardSellerOrdersInput, UserUncheckedUpdateWithoutGiftCardSellerOrdersInput>
+    create: XOR<UserCreateWithoutGiftCardSellerOrdersInput, UserUncheckedCreateWithoutGiftCardSellerOrdersInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGiftCardSellerOrdersInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGiftCardSellerOrdersInput, UserUncheckedUpdateWithoutGiftCardSellerOrdersInput>
+  }
+
+  export type UserUpdateWithoutGiftCardSellerOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGiftCardSellerOrdersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardEvidence?: GiftCardEvidenceUncheckedUpdateManyWithoutUploaderNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type GiftCardListingCreateWithoutEvidenceRecordsInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    seller: UserCreateNestedOneWithoutGiftCardListingsInput
+    moderator?: UserCreateNestedOneWithoutModeratedListingsInput
+    orders?: GiftCardOrderCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingUncheckedCreateWithoutEvidenceRecordsInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    orders?: GiftCardOrderUncheckedCreateNestedManyWithoutListingInput
+  }
+
+  export type GiftCardListingCreateOrConnectWithoutEvidenceRecordsInput = {
+    where: GiftCardListingWhereUniqueInput
+    create: XOR<GiftCardListingCreateWithoutEvidenceRecordsInput, GiftCardListingUncheckedCreateWithoutEvidenceRecordsInput>
+  }
+
+  export type UserCreateWithoutGiftCardEvidenceInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceCreateNestedOneWithoutUserInput
+    wallets?: WalletCreateNestedManyWithoutUserInput
+    ads?: AdCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenCreateNestedManyWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderCreateNestedManyWithoutSellerInput
+    securityLogs?: SecurityLogCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGiftCardEvidenceInput = {
+    id?: string
+    email?: string | null
+    phone?: string | null
+    passwordHash: string
+    role?: $Enums.Role
+    status?: $Enums.UserStatus
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    resetToken?: string | null
+    resetTokenExpires?: Date | string | null
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+    wallets?: WalletUncheckedCreateNestedManyWithoutUserInput
+    ads?: AdUncheckedCreateNestedManyWithoutSellerInput
+    buyOrders?: OrderUncheckedCreateNestedManyWithoutBuyerInput
+    sellOrders?: OrderUncheckedCreateNestedManyWithoutSellerInput
+    authTokens?: AuthTokenUncheckedCreateNestedManyWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    notificationLogs?: NotificationLogUncheckedCreateNestedManyWithoutUserInput
+    initiatedDisputes?: DisputeUncheckedCreateNestedManyWithoutInitiatorInput
+    assignedDisputes?: DisputeUncheckedCreateNestedManyWithoutAssigneeInput
+    evidenceUploads?: EvidenceUncheckedCreateNestedManyWithoutUploadedByInput
+    giftCardListings?: GiftCardListingUncheckedCreateNestedManyWithoutSellerInput
+    moderatedListings?: GiftCardListingUncheckedCreateNestedManyWithoutModeratorInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutBuyerInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedCreateNestedManyWithoutSellerInput
+    securityLogs?: SecurityLogUncheckedCreateNestedManyWithoutUserInput
+    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGiftCardEvidenceInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGiftCardEvidenceInput, UserUncheckedCreateWithoutGiftCardEvidenceInput>
+  }
+
+  export type GiftCardListingUpsertWithoutEvidenceRecordsInput = {
+    update: XOR<GiftCardListingUpdateWithoutEvidenceRecordsInput, GiftCardListingUncheckedUpdateWithoutEvidenceRecordsInput>
+    create: XOR<GiftCardListingCreateWithoutEvidenceRecordsInput, GiftCardListingUncheckedCreateWithoutEvidenceRecordsInput>
+    where?: GiftCardListingWhereInput
+  }
+
+  export type GiftCardListingUpdateToOneWithWhereWithoutEvidenceRecordsInput = {
+    where?: GiftCardListingWhereInput
+    data: XOR<GiftCardListingUpdateWithoutEvidenceRecordsInput, GiftCardListingUncheckedUpdateWithoutEvidenceRecordsInput>
+  }
+
+  export type GiftCardListingUpdateWithoutEvidenceRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    seller?: UserUpdateOneRequiredWithoutGiftCardListingsNestedInput
+    moderator?: UserUpdateOneWithoutModeratedListingsNestedInput
+    orders?: GiftCardOrderUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateWithoutEvidenceRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    orders?: GiftCardOrderUncheckedUpdateManyWithoutListingNestedInput
+  }
+
+  export type UserUpsertWithoutGiftCardEvidenceInput = {
+    update: XOR<UserUpdateWithoutGiftCardEvidenceInput, UserUncheckedUpdateWithoutGiftCardEvidenceInput>
+    create: XOR<UserCreateWithoutGiftCardEvidenceInput, UserUncheckedCreateWithoutGiftCardEvidenceInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGiftCardEvidenceInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGiftCardEvidenceInput, UserUncheckedUpdateWithoutGiftCardEvidenceInput>
+  }
+
+  export type UserUpdateWithoutGiftCardEvidenceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateOneWithoutUserNestedInput
+    wallets?: WalletUpdateManyWithoutUserNestedInput
+    ads?: AdUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUpdateManyWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUpdateManyWithoutSellerNestedInput
+    securityLogs?: SecurityLogUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGiftCardEvidenceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+    wallets?: WalletUncheckedUpdateManyWithoutUserNestedInput
+    ads?: AdUncheckedUpdateManyWithoutSellerNestedInput
+    buyOrders?: OrderUncheckedUpdateManyWithoutBuyerNestedInput
+    sellOrders?: OrderUncheckedUpdateManyWithoutSellerNestedInput
+    authTokens?: AuthTokenUncheckedUpdateManyWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    notificationLogs?: NotificationLogUncheckedUpdateManyWithoutUserNestedInput
+    initiatedDisputes?: DisputeUncheckedUpdateManyWithoutInitiatorNestedInput
+    assignedDisputes?: DisputeUncheckedUpdateManyWithoutAssigneeNestedInput
+    evidenceUploads?: EvidenceUncheckedUpdateManyWithoutUploadedByNestedInput
+    giftCardListings?: GiftCardListingUncheckedUpdateManyWithoutSellerNestedInput
+    moderatedListings?: GiftCardListingUncheckedUpdateManyWithoutModeratorNestedInput
+    giftCardBuyerOrders?: GiftCardOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    giftCardSellerOrders?: GiftCardOrderUncheckedUpdateManyWithoutSellerNestedInput
+    securityLogs?: SecurityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type WalletCreateManyUserInput = {
@@ -34268,6 +42824,80 @@ export namespace Prisma {
     fileName: string
     fileType: string
     fileSize: number
+    createdAt?: Date | string
+  }
+
+  export type GiftCardListingCreateManySellerInput = {
+    id?: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: string | null
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardListingCreateManyModeratorInput = {
+    id?: string
+    sellerId: string
+    brand: $Enums.GiftCardBrand
+    cardCode: string
+    cardPin?: string | null
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    exchangeRate: Decimal | DecimalJsLike | number | string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    status?: $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderCreateManyBuyerInput = {
+    id?: string
+    listingId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardOrderCreateManySellerInput = {
+    id?: string
+    listingId: string
+    buyerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardEvidenceCreateManyUploaderInput = {
+    id?: string
+    listingId: string
+    fileUrl: string
+    fileType: string
     createdAt?: Date | string
   }
 
@@ -34747,6 +43377,236 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GiftCardListingUpdateWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    moderator?: UserUpdateOneWithoutModeratedListingsNestedInput
+    orders?: GiftCardOrderUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    orders?: GiftCardOrderUncheckedUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUncheckedUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateManyWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorId?: NullableStringFieldUpdateOperationsInput | string | null
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardListingUpdateWithoutModeratorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    seller?: UserUpdateOneRequiredWithoutGiftCardListingsNestedInput
+    orders?: GiftCardOrderUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateWithoutModeratorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    orders?: GiftCardOrderUncheckedUpdateManyWithoutListingNestedInput
+    evidenceRecords?: GiftCardEvidenceUncheckedUpdateManyWithoutListingNestedInput
+  }
+
+  export type GiftCardListingUncheckedUpdateManyWithoutModeratorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    brand?: EnumGiftCardBrandFieldUpdateOperationsInput | $Enums.GiftCardBrand
+    cardCode?: StringFieldUpdateOperationsInput | string
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    exchangeRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumGiftCardListingStatusFieldUpdateOperationsInput | $Enums.GiftCardListingStatus
+    evidenceUrls?: NullableJsonNullValueInput | InputJsonValue
+    moderatorNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUpdateWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    listing?: GiftCardListingUpdateOneRequiredWithoutOrdersNestedInput
+    seller?: UserUpdateOneRequiredWithoutGiftCardSellerOrdersNestedInput
+  }
+
+  export type GiftCardOrderUncheckedUpdateWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutBuyerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUpdateWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    listing?: GiftCardListingUpdateOneRequiredWithoutOrdersNestedInput
+    buyer?: UserUpdateOneRequiredWithoutGiftCardBuyerOrdersNestedInput
+  }
+
+  export type GiftCardOrderUncheckedUpdateWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutSellerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardEvidenceUpdateWithoutUploaderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listing?: GiftCardListingUpdateOneRequiredWithoutEvidenceRecordsNestedInput
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateWithoutUploaderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateManyWithoutUploaderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    listingId?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SecurityLogUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     actorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35208,6 +44068,98 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type GiftCardOrderCreateManyListingInput = {
+    id?: string
+    buyerId: string
+    sellerId: string
+    status?: $Enums.GiftCardOrderStatus
+    denomination: Decimal | DecimalJsLike | number | string
+    cardCurrency: string
+    askingPriceNgn: Decimal | DecimalJsLike | number | string
+    feeAmount?: Decimal | DecimalJsLike | number | string
+    totalPaidNgn: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardEvidenceCreateManyListingInput = {
+    id?: string
+    uploadedBy: string
+    fileUrl: string
+    fileType: string
+    createdAt?: Date | string
+  }
+
+  export type GiftCardOrderUpdateWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    buyer?: UserUpdateOneRequiredWithoutGiftCardBuyerOrdersNestedInput
+    seller?: UserUpdateOneRequiredWithoutGiftCardSellerOrdersNestedInput
+  }
+
+  export type GiftCardOrderUncheckedUpdateWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardOrderUncheckedUpdateManyWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    buyerId?: StringFieldUpdateOperationsInput | string
+    sellerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumGiftCardOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardOrderStatus
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    cardCurrency?: StringFieldUpdateOperationsInput | string
+    askingPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    totalPaidNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type GiftCardEvidenceUpdateWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploader?: UserUpdateOneRequiredWithoutGiftCardEvidenceNestedInput
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GiftCardEvidenceUncheckedUpdateManyWithoutListingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploadedBy?: StringFieldUpdateOperationsInput | string
+    fileUrl?: StringFieldUpdateOperationsInput | string
+    fileType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -35237,6 +44189,10 @@ export namespace Prisma {
      * @deprecated Use DisputeCountOutputTypeDefaultArgs instead
      */
     export type DisputeCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DisputeCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GiftCardListingCountOutputTypeDefaultArgs instead
+     */
+    export type GiftCardListingCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardListingCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */
@@ -35313,6 +44269,22 @@ export namespace Prisma {
      * @deprecated Use FraudRuleDefaultArgs instead
      */
     export type FraudRuleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = FraudRuleDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GiftCardListingDefaultArgs instead
+     */
+    export type GiftCardListingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardListingDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GiftCardOrderDefaultArgs instead
+     */
+    export type GiftCardOrderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardOrderDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GiftCardEvidenceDefaultArgs instead
+     */
+    export type GiftCardEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardEvidenceDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DailyReportDefaultArgs instead
+     */
+    export type DailyReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DailyReportDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

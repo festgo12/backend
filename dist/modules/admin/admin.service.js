@@ -14,14 +14,20 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const tatum_withdrawal_service_1 = require("../tatum/tatum-withdrawal.service");
 const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
+const paystack_service_1 = require("../paystack/paystack.service");
+const wallet_service_1 = require("../wallet/wallet.service");
 let AdminService = class AdminService {
     prisma;
     tatumWithdrawal;
     exchangeRateService;
-    constructor(prisma, tatumWithdrawal, exchangeRateService) {
+    paystackService;
+    walletService;
+    constructor(prisma, tatumWithdrawal, exchangeRateService, paystackService, walletService) {
         this.prisma = prisma;
         this.tatumWithdrawal = tatumWithdrawal;
         this.exchangeRateService = exchangeRateService;
+        this.paystackService = paystackService;
+        this.walletService = walletService;
     }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
@@ -287,22 +293,60 @@ let AdminService = class AdminService {
             totalWithdrawals: totalWithdrawals._sum.amount || 0,
         };
     }
-    async getPaymentTransactions(page, limit) {
+    async getPaymentTransactions(page, limit, filters) {
         const skip = (page - 1) * limit;
+        const where = { wallet: { currency: 'NGN' } };
+        if (filters?.status)
+            where.status = filters.status;
+        if (filters?.type)
+            where.type = filters.type;
+        if (filters?.startDate || filters?.endDate) {
+            where.createdAt = {};
+            if (filters.startDate)
+                where.createdAt.gte = new Date(filters.startDate);
+            if (filters.endDate)
+                where.createdAt.lte = new Date(filters.endDate);
+        }
+        if (filters?.search) {
+            where.OR = [
+                { reference: { contains: filters.search, mode: 'insensitive' } },
+                { wallet: { user: { email: { contains: filters.search, mode: 'insensitive' } } } },
+                { wallet: { user: { profile: { firstName: { contains: filters.search, mode: 'insensitive' } } } } },
+                { wallet: { user: { profile: { lastName: { contains: filters.search, mode: 'insensitive' } } } } },
+            ];
+        }
         const [transactions, total] = await Promise.all([
             this.prisma.walletTransaction.findMany({
-                where: { wallet: { currency: 'NGN' } },
+                where,
                 skip,
                 take: limit,
                 include: { wallet: { include: { user: { include: { profile: true } } } } },
                 orderBy: { createdAt: 'desc' },
             }),
-            this.prisma.walletTransaction.count({ where: { wallet: { currency: 'NGN' } } }),
+            this.prisma.walletTransaction.count({ where }),
         ]);
         return {
             transactions,
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
+    }
+    async getPaymentTransactionDetail(transactionId) {
+        const transaction = await this.prisma.walletTransaction.findUnique({
+            where: { id: transactionId },
+            include: {
+                wallet: {
+                    include: {
+                        user: {
+                            include: { profile: true },
+                        },
+                    },
+                },
+                ledgerEntries: true,
+            },
+        });
+        if (!transaction)
+            throw new common_1.NotFoundException('Transaction not found');
+        return transaction;
     }
     async getAuditLogs(page, limit, filters) {
         const skip = (page - 1) * limit;
@@ -403,6 +447,8 @@ exports.AdminService = AdminService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         tatum_withdrawal_service_1.TatumWithdrawalService,
-        tatum_exchange_rate_service_1.TatumExchangeRateService])
+        tatum_exchange_rate_service_1.TatumExchangeRateService,
+        paystack_service_1.PaystackService,
+        wallet_service_1.WalletService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

@@ -136,8 +136,21 @@ export class AdminController {
   getPaymentTransactions(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('type') type?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
-    return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit));
+    return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit), {
+      search, status, type, startDate, endDate,
+    });
+  }
+
+  @Get('payments/transactions/:id')
+  @ApiOperation({ summary: 'Get detailed payment transaction info' })
+  getPaymentTransactionDetail(@Param('id') transactionId: string) {
+    return this.adminService.getPaymentTransactionDetail(transactionId);
   }
 
   @Get('exchange-rates')
