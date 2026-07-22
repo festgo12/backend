@@ -12,11 +12,13 @@ const orders_service_1 = require("./orders.service");
 const orders_controller_1 = require("./orders.controller");
 const orders_events_handler_1 = require("./orders.events.handler");
 const orders_scheduler_1 = require("./orders.scheduler");
+const notifications_module_1 = require("../notifications/notifications.module");
 let OrdersModule = class OrdersModule {
 };
 exports.OrdersModule = OrdersModule;
 exports.OrdersModule = OrdersModule = __decorate([
     (0, common_1.Module)({
+        imports: [notifications_module_1.NotificationsModule],
         controllers: [orders_controller_1.OrdersController],
         providers: [orders_service_1.OrdersService, orders_events_handler_1.OrdersEventsHandler, orders_scheduler_1.OrdersScheduler],
         exports: [orders_service_1.OrdersService],

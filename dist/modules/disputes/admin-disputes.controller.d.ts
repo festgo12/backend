@@ -34,10 +34,10 @@ export declare class AdminDisputesController {
                 sellerId: string;
                 buyerId: string;
                 version: number;
-                adId: string;
                 fiatAmount: import("@src/generated/client/runtime/library").Decimal;
                 cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
                 feeAmount: import("@src/generated/client/runtime/library").Decimal;
+                adId: string;
             };
             evidence: {
                 id: string;
@@ -203,10 +203,10 @@ export declare class AdminDisputesController {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
+            adId: string;
         };
         evidence: ({
             uploadedBy: {
@@ -282,10 +282,10 @@ export declare class AdminDisputesController {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
+            adId: string;
         };
         evidence: {
             id: string;
@@ -334,10 +334,10 @@ export declare class AdminDisputesController {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
+            adId: string;
         };
         evidence: {
             id: string;
@@ -373,10 +373,10 @@ export declare class AdminDisputesController {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
+            adId: string;
         };
         evidence: {
             id: string;
@@ -424,9 +424,9 @@ export declare class AdminDisputesController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
 }

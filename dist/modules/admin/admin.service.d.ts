@@ -399,10 +399,10 @@ export declare class AdminService {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: Prisma.Decimal;
             cryptoAmount: Prisma.Decimal;
             feeAmount: Prisma.Decimal;
+            adId: string;
         })[];
         meta: {
             total: number;
@@ -532,10 +532,10 @@ export declare class AdminService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Prisma.Decimal;
         cryptoAmount: Prisma.Decimal;
         feeAmount: Prisma.Decimal;
+        adId: string;
     }>;
     getBlockchainTransactions(page: number, limit: number): Promise<{
         transactions: ({
@@ -857,6 +857,21 @@ export declare class AdminService {
             count: number;
         }[];
     }>;
+    getFeeConfigs(): Promise<{
+        id: string;
+        updatedAt: Date;
+        key: string;
+        value: Prisma.Decimal;
+        label: string;
+    }[]>;
+    updateFeeConfig(key: string, value: number): Promise<{
+        id: string;
+        updatedAt: Date;
+        key: string;
+        value: Prisma.Decimal;
+        label: string;
+    }>;
+    getFeeValue(key: string): Promise<number>;
     getUserAuditTrail(userId: string, page: number, limit: number): Promise<{
         logs: ({
             user: {

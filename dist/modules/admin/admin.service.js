@@ -422,6 +422,37 @@ let AdminService = class AdminService {
             byAction: byAction.map((a) => ({ action: a.action, count: a._count.action })),
         };
     }
+    async getFeeConfigs() {
+        const configs = await this.prisma.platformFeeConfig.findMany({
+            orderBy: { key: 'asc' },
+        });
+        if (configs.length === 0) {
+            const defaults = [
+                { key: 'trade_buy_fee_percent', value: 0.5, label: 'Trade Fee (Buy Side) %' },
+                { key: 'trade_sell_fee_percent', value: 0.5, label: 'Trade Fee (Sell Side) %' },
+                { key: 'trade_sponsored_fee_percent', value: 0.5, label: 'Sponsored Ad Fee %' },
+            ];
+            await this.prisma.platformFeeConfig.createMany({ data: defaults });
+            return this.prisma.platformFeeConfig.findMany({ orderBy: { key: 'asc' } });
+        }
+        return configs;
+    }
+    async updateFeeConfig(key, value) {
+        if (value < 0 || value > 10) {
+            throw new common_1.BadRequestException('Fee percentage must be between 0 and 10');
+        }
+        const existing = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+        if (!existing)
+            throw new common_1.NotFoundException(`Fee config '${key}' not found`);
+        return this.prisma.platformFeeConfig.update({
+            where: { key },
+            data: { value },
+        });
+    }
+    async getFeeValue(key) {
+        const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+        return config ? Number(config.value) : 0.5;
+    }
     async getUserAuditTrail(userId, page, limit) {
         const skip = (page - 1) * limit;
         const [logs, total] = await Promise.all([

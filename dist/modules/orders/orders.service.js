@@ -22,6 +22,10 @@ let OrdersService = class OrdersService {
         this.prisma = prisma;
         this.eventEmitter = eventEmitter;
     }
+    async getFeePercent(key) {
+        const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+        return config ? Number(config.value) : 0.5;
+    }
     async createOrder(buyerId, dto) {
         return this.prisma.$transaction(async (tx) => {
             const ad = await tx.ad.findUnique({
@@ -119,8 +123,10 @@ let OrdersService = class OrdersService {
             }
             const cryptoAmount = new library_1.Decimal(order.cryptoAmount.toString());
             const fiatAmount = new library_1.Decimal(order.fiatAmount.toString());
-            const buyerFee = cryptoAmount.times(0.005).toDecimalPlaces(8);
-            const sellerFee = fiatAmount.times(0.005).toDecimalPlaces(2);
+            const buyFeePercent = await this.getFeePercent('trade_buy_fee_percent');
+            const sellFeePercent = await this.getFeePercent('trade_sell_fee_percent');
+            const buyerFee = cryptoAmount.times(buyFeePercent / 100).toDecimalPlaces(8);
+            const sellerFee = fiatAmount.times(sellFeePercent / 100).toDecimalPlaces(2);
             const approvedOrder = await tx.order.update({
                 where: { id: order.id },
                 data: {

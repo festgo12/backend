@@ -10,7 +10,12 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
+
+  private async getFeePercent(key: string): Promise<number> {
+    const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+    return config ? Number(config.value) : 0.5;
+  }
 
   async createOrder(buyerId: string, dto: CreateOrderDto) {
     return this.prisma.$transaction(async (tx) => {
@@ -135,9 +140,10 @@ export class OrdersService {
       const cryptoAmount = new Decimal(order.cryptoAmount.toString());
       const fiatAmount = new Decimal(order.fiatAmount.toString());
 
-      // Calculate Fees (0.5% per side)
-      const buyerFee = cryptoAmount.times(0.005).toDecimalPlaces(8);
-      const sellerFee = fiatAmount.times(0.005).toDecimalPlaces(2);
+      const buyFeePercent = await this.getFeePercent('trade_buy_fee_percent');
+      const sellFeePercent = await this.getFeePercent('trade_sell_fee_percent');
+      const buyerFee = cryptoAmount.times(buyFeePercent / 100).toDecimalPlaces(8);
+      const sellerFee = fiatAmount.times(sellFeePercent / 100).toDecimalPlaces(2);
 
       // --- STAGE 1: Transition status to APPROVED (Locks crypto logic) ---
       const approvedOrder = await tx.order.update({

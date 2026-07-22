@@ -6,6 +6,7 @@ export declare class OrdersService {
     private prisma;
     private eventEmitter;
     constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
+    private getFeePercent;
     createOrder(buyerId: string, dto: CreateOrderDto): Promise<{
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
@@ -16,10 +17,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     approveOrder(orderId: string, sellerId: string): Promise<{
         id: string;
@@ -31,10 +32,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     declineOrder(orderId: string, initiatorId: string): Promise<{
         id: string;
@@ -46,10 +47,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     expireOrder(orderId: string): Promise<{
         id: string;
@@ -61,10 +62,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     flagFraud(orderId: string, initiatorId: string): Promise<{
         id: string;
@@ -76,10 +77,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     getOrder(orderId: string, userId: string): Promise<{
         ad: {
@@ -139,10 +140,10 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     }>;
     listUserOrders(userId: string): Promise<({
         ad: {
@@ -170,9 +171,9 @@ export declare class OrdersService {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
+        adId: string;
     })[]>;
 }

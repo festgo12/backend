@@ -1,5 +1,6 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateAdDto, UpdateAdDto, SearchAdsDto } from './dto/ad.dto';
+import { Decimal } from '@src/generated/client/runtime/library';
 export declare class MarketplaceService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -12,10 +13,10 @@ export declare class MarketplaceService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
-        quantity: import("@src/generated/client/runtime/library").Decimal;
-        minLimit: import("@src/generated/client/runtime/library").Decimal;
-        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        price: Decimal;
+        quantity: Decimal;
+        minLimit: Decimal;
+        maxLimit: Decimal;
         isSponsored: boolean;
     }>;
     updateAd(userId: string, adId: string, dto: UpdateAdDto): Promise<{
@@ -27,10 +28,10 @@ export declare class MarketplaceService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
-        quantity: import("@src/generated/client/runtime/library").Decimal;
-        minLimit: import("@src/generated/client/runtime/library").Decimal;
-        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        price: Decimal;
+        quantity: Decimal;
+        minLimit: Decimal;
+        maxLimit: Decimal;
         isSponsored: boolean;
     }>;
     deleteAd(userId: string, adId: string): Promise<{
@@ -42,10 +43,10 @@ export declare class MarketplaceService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
-        quantity: import("@src/generated/client/runtime/library").Decimal;
-        minLimit: import("@src/generated/client/runtime/library").Decimal;
-        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        price: Decimal;
+        quantity: Decimal;
+        minLimit: Decimal;
+        maxLimit: Decimal;
         isSponsored: boolean;
     }>;
     listUserAds(userId: string): Promise<{
@@ -57,15 +58,23 @@ export declare class MarketplaceService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
-        quantity: import("@src/generated/client/runtime/library").Decimal;
-        minLimit: import("@src/generated/client/runtime/library").Decimal;
-        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        price: Decimal;
+        quantity: Decimal;
+        minLimit: Decimal;
+        maxLimit: Decimal;
         isSponsored: boolean;
     }[]>;
+    getSellerStats(sellerId: string): Promise<{
+        totalOrders: number;
+        completedOrders: number;
+        completionRate: number;
+    }>;
+    private getSellerStatsBatch;
     searchAds(dto: SearchAdsDto): Promise<{
-        items: ({
+        items: {
             seller: {
+                totalOrders: number;
+                completionRate: number;
                 profile: {
                     firstName: string | null;
                     kycStatus: string;
@@ -75,7 +84,6 @@ export declare class MarketplaceService {
                     lastLogin: Date;
                 }[];
             };
-        } & {
             type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
@@ -84,12 +92,12 @@ export declare class MarketplaceService {
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: import("@src/generated/client/runtime/library").Decimal;
-            quantity: import("@src/generated/client/runtime/library").Decimal;
-            minLimit: import("@src/generated/client/runtime/library").Decimal;
-            maxLimit: import("@src/generated/client/runtime/library").Decimal;
+            price: Decimal;
+            quantity: Decimal;
+            minLimit: Decimal;
+            maxLimit: Decimal;
             isSponsored: boolean;
-        })[];
+        }[];
         meta: {
             total: number;
             page: number;

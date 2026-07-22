@@ -419,6 +419,14 @@ exports.Prisma.GiftCardEvidenceScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PlatformFeeConfigScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  label: 'label',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.DailyReportScalarFieldEnum = {
   id: 'id',
   date: 'date',
@@ -589,6 +597,7 @@ exports.Prisma.ModelName = {
   GiftCardListing: 'GiftCardListing',
   GiftCardOrder: 'GiftCardOrder',
   GiftCardEvidence: 'GiftCardEvidence',
+  PlatformFeeConfig: 'PlatformFeeConfig',
   DailyReport: 'DailyReport'
 };
 

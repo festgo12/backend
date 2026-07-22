@@ -124,6 +124,11 @@ export type GiftCardOrder = $Result.DefaultSelection<Prisma.$GiftCardOrderPayloa
  */
 export type GiftCardEvidence = $Result.DefaultSelection<Prisma.$GiftCardEvidencePayload>
 /**
+ * Model PlatformFeeConfig
+ * 
+ */
+export type PlatformFeeConfig = $Result.DefaultSelection<Prisma.$PlatformFeeConfigPayload>
+/**
  * Model DailyReport
  * 
  */
@@ -661,6 +666,16 @@ export class PrismaClient<
   get giftCardEvidence(): Prisma.GiftCardEvidenceDelegate<ExtArgs>;
 
   /**
+   * `prisma.platformFeeConfig`: Exposes CRUD operations for the **PlatformFeeConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PlatformFeeConfigs
+    * const platformFeeConfigs = await prisma.platformFeeConfig.findMany()
+    * ```
+    */
+  get platformFeeConfig(): Prisma.PlatformFeeConfigDelegate<ExtArgs>;
+
+  /**
    * `prisma.dailyReport`: Exposes CRUD operations for the **DailyReport** model.
     * Example usage:
     * ```ts
@@ -1132,6 +1147,7 @@ export namespace Prisma {
     GiftCardListing: 'GiftCardListing',
     GiftCardOrder: 'GiftCardOrder',
     GiftCardEvidence: 'GiftCardEvidence',
+    PlatformFeeConfig: 'PlatformFeeConfig',
     DailyReport: 'DailyReport'
   };
 
@@ -1148,7 +1164,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "dailyReport"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "dailyReport"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2689,6 +2705,76 @@ export namespace Prisma {
           count: {
             args: Prisma.GiftCardEvidenceCountArgs<ExtArgs>
             result: $Utils.Optional<GiftCardEvidenceCountAggregateOutputType> | number
+          }
+        }
+      }
+      PlatformFeeConfig: {
+        payload: Prisma.$PlatformFeeConfigPayload<ExtArgs>
+        fields: Prisma.PlatformFeeConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PlatformFeeConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PlatformFeeConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.PlatformFeeConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PlatformFeeConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          findMany: {
+            args: Prisma.PlatformFeeConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>[]
+          }
+          create: {
+            args: Prisma.PlatformFeeConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          createMany: {
+            args: Prisma.PlatformFeeConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PlatformFeeConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.PlatformFeeConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          update: {
+            args: Prisma.PlatformFeeConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.PlatformFeeConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PlatformFeeConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PlatformFeeConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformFeeConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.PlatformFeeConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePlatformFeeConfig>
+          }
+          groupBy: {
+            args: Prisma.PlatformFeeConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PlatformFeeConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PlatformFeeConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<PlatformFeeConfigCountAggregateOutputType> | number
           }
         }
       }
@@ -26484,6 +26570,918 @@ export namespace Prisma {
 
 
   /**
+   * Model PlatformFeeConfig
+   */
+
+  export type AggregatePlatformFeeConfig = {
+    _count: PlatformFeeConfigCountAggregateOutputType | null
+    _avg: PlatformFeeConfigAvgAggregateOutputType | null
+    _sum: PlatformFeeConfigSumAggregateOutputType | null
+    _min: PlatformFeeConfigMinAggregateOutputType | null
+    _max: PlatformFeeConfigMaxAggregateOutputType | null
+  }
+
+  export type PlatformFeeConfigAvgAggregateOutputType = {
+    value: Decimal | null
+  }
+
+  export type PlatformFeeConfigSumAggregateOutputType = {
+    value: Decimal | null
+  }
+
+  export type PlatformFeeConfigMinAggregateOutputType = {
+    id: string | null
+    key: string | null
+    value: Decimal | null
+    label: string | null
+    updatedAt: Date | null
+  }
+
+  export type PlatformFeeConfigMaxAggregateOutputType = {
+    id: string | null
+    key: string | null
+    value: Decimal | null
+    label: string | null
+    updatedAt: Date | null
+  }
+
+  export type PlatformFeeConfigCountAggregateOutputType = {
+    id: number
+    key: number
+    value: number
+    label: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PlatformFeeConfigAvgAggregateInputType = {
+    value?: true
+  }
+
+  export type PlatformFeeConfigSumAggregateInputType = {
+    value?: true
+  }
+
+  export type PlatformFeeConfigMinAggregateInputType = {
+    id?: true
+    key?: true
+    value?: true
+    label?: true
+    updatedAt?: true
+  }
+
+  export type PlatformFeeConfigMaxAggregateInputType = {
+    id?: true
+    key?: true
+    value?: true
+    label?: true
+    updatedAt?: true
+  }
+
+  export type PlatformFeeConfigCountAggregateInputType = {
+    id?: true
+    key?: true
+    value?: true
+    label?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PlatformFeeConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformFeeConfig to aggregate.
+     */
+    where?: PlatformFeeConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformFeeConfigs to fetch.
+     */
+    orderBy?: PlatformFeeConfigOrderByWithRelationInput | PlatformFeeConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PlatformFeeConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformFeeConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformFeeConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PlatformFeeConfigs
+    **/
+    _count?: true | PlatformFeeConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PlatformFeeConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PlatformFeeConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PlatformFeeConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PlatformFeeConfigMaxAggregateInputType
+  }
+
+  export type GetPlatformFeeConfigAggregateType<T extends PlatformFeeConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregatePlatformFeeConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePlatformFeeConfig[P]>
+      : GetScalarType<T[P], AggregatePlatformFeeConfig[P]>
+  }
+
+
+
+
+  export type PlatformFeeConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlatformFeeConfigWhereInput
+    orderBy?: PlatformFeeConfigOrderByWithAggregationInput | PlatformFeeConfigOrderByWithAggregationInput[]
+    by: PlatformFeeConfigScalarFieldEnum[] | PlatformFeeConfigScalarFieldEnum
+    having?: PlatformFeeConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PlatformFeeConfigCountAggregateInputType | true
+    _avg?: PlatformFeeConfigAvgAggregateInputType
+    _sum?: PlatformFeeConfigSumAggregateInputType
+    _min?: PlatformFeeConfigMinAggregateInputType
+    _max?: PlatformFeeConfigMaxAggregateInputType
+  }
+
+  export type PlatformFeeConfigGroupByOutputType = {
+    id: string
+    key: string
+    value: Decimal
+    label: string
+    updatedAt: Date
+    _count: PlatformFeeConfigCountAggregateOutputType | null
+    _avg: PlatformFeeConfigAvgAggregateOutputType | null
+    _sum: PlatformFeeConfigSumAggregateOutputType | null
+    _min: PlatformFeeConfigMinAggregateOutputType | null
+    _max: PlatformFeeConfigMaxAggregateOutputType | null
+  }
+
+  type GetPlatformFeeConfigGroupByPayload<T extends PlatformFeeConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PlatformFeeConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PlatformFeeConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PlatformFeeConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], PlatformFeeConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PlatformFeeConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    key?: boolean
+    value?: boolean
+    label?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["platformFeeConfig"]>
+
+  export type PlatformFeeConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    key?: boolean
+    value?: boolean
+    label?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["platformFeeConfig"]>
+
+  export type PlatformFeeConfigSelectScalar = {
+    id?: boolean
+    key?: boolean
+    value?: boolean
+    label?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $PlatformFeeConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PlatformFeeConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      key: string
+      value: Prisma.Decimal
+      label: string
+      updatedAt: Date
+    }, ExtArgs["result"]["platformFeeConfig"]>
+    composites: {}
+  }
+
+  type PlatformFeeConfigGetPayload<S extends boolean | null | undefined | PlatformFeeConfigDefaultArgs> = $Result.GetResult<Prisma.$PlatformFeeConfigPayload, S>
+
+  type PlatformFeeConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PlatformFeeConfigFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PlatformFeeConfigCountAggregateInputType | true
+    }
+
+  export interface PlatformFeeConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PlatformFeeConfig'], meta: { name: 'PlatformFeeConfig' } }
+    /**
+     * Find zero or one PlatformFeeConfig that matches the filter.
+     * @param {PlatformFeeConfigFindUniqueArgs} args - Arguments to find a PlatformFeeConfig
+     * @example
+     * // Get one PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PlatformFeeConfigFindUniqueArgs>(args: SelectSubset<T, PlatformFeeConfigFindUniqueArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PlatformFeeConfig that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PlatformFeeConfigFindUniqueOrThrowArgs} args - Arguments to find a PlatformFeeConfig
+     * @example
+     * // Get one PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PlatformFeeConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, PlatformFeeConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PlatformFeeConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigFindFirstArgs} args - Arguments to find a PlatformFeeConfig
+     * @example
+     * // Get one PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PlatformFeeConfigFindFirstArgs>(args?: SelectSubset<T, PlatformFeeConfigFindFirstArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PlatformFeeConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigFindFirstOrThrowArgs} args - Arguments to find a PlatformFeeConfig
+     * @example
+     * // Get one PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PlatformFeeConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, PlatformFeeConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PlatformFeeConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PlatformFeeConfigs
+     * const platformFeeConfigs = await prisma.platformFeeConfig.findMany()
+     * 
+     * // Get first 10 PlatformFeeConfigs
+     * const platformFeeConfigs = await prisma.platformFeeConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const platformFeeConfigWithIdOnly = await prisma.platformFeeConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PlatformFeeConfigFindManyArgs>(args?: SelectSubset<T, PlatformFeeConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PlatformFeeConfig.
+     * @param {PlatformFeeConfigCreateArgs} args - Arguments to create a PlatformFeeConfig.
+     * @example
+     * // Create one PlatformFeeConfig
+     * const PlatformFeeConfig = await prisma.platformFeeConfig.create({
+     *   data: {
+     *     // ... data to create a PlatformFeeConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends PlatformFeeConfigCreateArgs>(args: SelectSubset<T, PlatformFeeConfigCreateArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PlatformFeeConfigs.
+     * @param {PlatformFeeConfigCreateManyArgs} args - Arguments to create many PlatformFeeConfigs.
+     * @example
+     * // Create many PlatformFeeConfigs
+     * const platformFeeConfig = await prisma.platformFeeConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PlatformFeeConfigCreateManyArgs>(args?: SelectSubset<T, PlatformFeeConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PlatformFeeConfigs and returns the data saved in the database.
+     * @param {PlatformFeeConfigCreateManyAndReturnArgs} args - Arguments to create many PlatformFeeConfigs.
+     * @example
+     * // Create many PlatformFeeConfigs
+     * const platformFeeConfig = await prisma.platformFeeConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PlatformFeeConfigs and only return the `id`
+     * const platformFeeConfigWithIdOnly = await prisma.platformFeeConfig.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PlatformFeeConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, PlatformFeeConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PlatformFeeConfig.
+     * @param {PlatformFeeConfigDeleteArgs} args - Arguments to delete one PlatformFeeConfig.
+     * @example
+     * // Delete one PlatformFeeConfig
+     * const PlatformFeeConfig = await prisma.platformFeeConfig.delete({
+     *   where: {
+     *     // ... filter to delete one PlatformFeeConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PlatformFeeConfigDeleteArgs>(args: SelectSubset<T, PlatformFeeConfigDeleteArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PlatformFeeConfig.
+     * @param {PlatformFeeConfigUpdateArgs} args - Arguments to update one PlatformFeeConfig.
+     * @example
+     * // Update one PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PlatformFeeConfigUpdateArgs>(args: SelectSubset<T, PlatformFeeConfigUpdateArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PlatformFeeConfigs.
+     * @param {PlatformFeeConfigDeleteManyArgs} args - Arguments to filter PlatformFeeConfigs to delete.
+     * @example
+     * // Delete a few PlatformFeeConfigs
+     * const { count } = await prisma.platformFeeConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PlatformFeeConfigDeleteManyArgs>(args?: SelectSubset<T, PlatformFeeConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlatformFeeConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PlatformFeeConfigs
+     * const platformFeeConfig = await prisma.platformFeeConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PlatformFeeConfigUpdateManyArgs>(args: SelectSubset<T, PlatformFeeConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PlatformFeeConfig.
+     * @param {PlatformFeeConfigUpsertArgs} args - Arguments to update or create a PlatformFeeConfig.
+     * @example
+     * // Update or create a PlatformFeeConfig
+     * const platformFeeConfig = await prisma.platformFeeConfig.upsert({
+     *   create: {
+     *     // ... data to create a PlatformFeeConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PlatformFeeConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PlatformFeeConfigUpsertArgs>(args: SelectSubset<T, PlatformFeeConfigUpsertArgs<ExtArgs>>): Prisma__PlatformFeeConfigClient<$Result.GetResult<Prisma.$PlatformFeeConfigPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PlatformFeeConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigCountArgs} args - Arguments to filter PlatformFeeConfigs to count.
+     * @example
+     * // Count the number of PlatformFeeConfigs
+     * const count = await prisma.platformFeeConfig.count({
+     *   where: {
+     *     // ... the filter for the PlatformFeeConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends PlatformFeeConfigCountArgs>(
+      args?: Subset<T, PlatformFeeConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PlatformFeeConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PlatformFeeConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PlatformFeeConfigAggregateArgs>(args: Subset<T, PlatformFeeConfigAggregateArgs>): Prisma.PrismaPromise<GetPlatformFeeConfigAggregateType<T>>
+
+    /**
+     * Group by PlatformFeeConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformFeeConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PlatformFeeConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PlatformFeeConfigGroupByArgs['orderBy'] }
+        : { orderBy?: PlatformFeeConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PlatformFeeConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPlatformFeeConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PlatformFeeConfig model
+   */
+  readonly fields: PlatformFeeConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PlatformFeeConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PlatformFeeConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PlatformFeeConfig model
+   */ 
+  interface PlatformFeeConfigFieldRefs {
+    readonly id: FieldRef<"PlatformFeeConfig", 'String'>
+    readonly key: FieldRef<"PlatformFeeConfig", 'String'>
+    readonly value: FieldRef<"PlatformFeeConfig", 'Decimal'>
+    readonly label: FieldRef<"PlatformFeeConfig", 'String'>
+    readonly updatedAt: FieldRef<"PlatformFeeConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PlatformFeeConfig findUnique
+   */
+  export type PlatformFeeConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which PlatformFeeConfig to fetch.
+     */
+    where: PlatformFeeConfigWhereUniqueInput
+  }
+
+  /**
+   * PlatformFeeConfig findUniqueOrThrow
+   */
+  export type PlatformFeeConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which PlatformFeeConfig to fetch.
+     */
+    where: PlatformFeeConfigWhereUniqueInput
+  }
+
+  /**
+   * PlatformFeeConfig findFirst
+   */
+  export type PlatformFeeConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which PlatformFeeConfig to fetch.
+     */
+    where?: PlatformFeeConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformFeeConfigs to fetch.
+     */
+    orderBy?: PlatformFeeConfigOrderByWithRelationInput | PlatformFeeConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformFeeConfigs.
+     */
+    cursor?: PlatformFeeConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformFeeConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformFeeConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformFeeConfigs.
+     */
+    distinct?: PlatformFeeConfigScalarFieldEnum | PlatformFeeConfigScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformFeeConfig findFirstOrThrow
+   */
+  export type PlatformFeeConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which PlatformFeeConfig to fetch.
+     */
+    where?: PlatformFeeConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformFeeConfigs to fetch.
+     */
+    orderBy?: PlatformFeeConfigOrderByWithRelationInput | PlatformFeeConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformFeeConfigs.
+     */
+    cursor?: PlatformFeeConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformFeeConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformFeeConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformFeeConfigs.
+     */
+    distinct?: PlatformFeeConfigScalarFieldEnum | PlatformFeeConfigScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformFeeConfig findMany
+   */
+  export type PlatformFeeConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which PlatformFeeConfigs to fetch.
+     */
+    where?: PlatformFeeConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformFeeConfigs to fetch.
+     */
+    orderBy?: PlatformFeeConfigOrderByWithRelationInput | PlatformFeeConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PlatformFeeConfigs.
+     */
+    cursor?: PlatformFeeConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformFeeConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformFeeConfigs.
+     */
+    skip?: number
+    distinct?: PlatformFeeConfigScalarFieldEnum | PlatformFeeConfigScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformFeeConfig create
+   */
+  export type PlatformFeeConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to create a PlatformFeeConfig.
+     */
+    data: XOR<PlatformFeeConfigCreateInput, PlatformFeeConfigUncheckedCreateInput>
+  }
+
+  /**
+   * PlatformFeeConfig createMany
+   */
+  export type PlatformFeeConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PlatformFeeConfigs.
+     */
+    data: PlatformFeeConfigCreateManyInput | PlatformFeeConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlatformFeeConfig createManyAndReturn
+   */
+  export type PlatformFeeConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PlatformFeeConfigs.
+     */
+    data: PlatformFeeConfigCreateManyInput | PlatformFeeConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlatformFeeConfig update
+   */
+  export type PlatformFeeConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to update a PlatformFeeConfig.
+     */
+    data: XOR<PlatformFeeConfigUpdateInput, PlatformFeeConfigUncheckedUpdateInput>
+    /**
+     * Choose, which PlatformFeeConfig to update.
+     */
+    where: PlatformFeeConfigWhereUniqueInput
+  }
+
+  /**
+   * PlatformFeeConfig updateMany
+   */
+  export type PlatformFeeConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PlatformFeeConfigs.
+     */
+    data: XOR<PlatformFeeConfigUpdateManyMutationInput, PlatformFeeConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which PlatformFeeConfigs to update
+     */
+    where?: PlatformFeeConfigWhereInput
+  }
+
+  /**
+   * PlatformFeeConfig upsert
+   */
+  export type PlatformFeeConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * The filter to search for the PlatformFeeConfig to update in case it exists.
+     */
+    where: PlatformFeeConfigWhereUniqueInput
+    /**
+     * In case the PlatformFeeConfig found by the `where` argument doesn't exist, create a new PlatformFeeConfig with this data.
+     */
+    create: XOR<PlatformFeeConfigCreateInput, PlatformFeeConfigUncheckedCreateInput>
+    /**
+     * In case the PlatformFeeConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PlatformFeeConfigUpdateInput, PlatformFeeConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * PlatformFeeConfig delete
+   */
+  export type PlatformFeeConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+    /**
+     * Filter which PlatformFeeConfig to delete.
+     */
+    where: PlatformFeeConfigWhereUniqueInput
+  }
+
+  /**
+   * PlatformFeeConfig deleteMany
+   */
+  export type PlatformFeeConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformFeeConfigs to delete
+     */
+    where?: PlatformFeeConfigWhereInput
+  }
+
+  /**
+   * PlatformFeeConfig without action
+   */
+  export type PlatformFeeConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformFeeConfig
+     */
+    select?: PlatformFeeConfigSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Model DailyReport
    */
 
@@ -28014,6 +29012,17 @@ export namespace Prisma {
   };
 
   export type GiftCardEvidenceScalarFieldEnum = (typeof GiftCardEvidenceScalarFieldEnum)[keyof typeof GiftCardEvidenceScalarFieldEnum]
+
+
+  export const PlatformFeeConfigScalarFieldEnum: {
+    id: 'id',
+    key: 'key',
+    value: 'value',
+    label: 'label',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PlatformFeeConfigScalarFieldEnum = (typeof PlatformFeeConfigScalarFieldEnum)[keyof typeof PlatformFeeConfigScalarFieldEnum]
 
 
   export const DailyReportScalarFieldEnum: {
@@ -30296,6 +31305,60 @@ export namespace Prisma {
     fileUrl?: StringWithAggregatesFilter<"GiftCardEvidence"> | string
     fileType?: StringWithAggregatesFilter<"GiftCardEvidence"> | string
     createdAt?: DateTimeWithAggregatesFilter<"GiftCardEvidence"> | Date | string
+  }
+
+  export type PlatformFeeConfigWhereInput = {
+    AND?: PlatformFeeConfigWhereInput | PlatformFeeConfigWhereInput[]
+    OR?: PlatformFeeConfigWhereInput[]
+    NOT?: PlatformFeeConfigWhereInput | PlatformFeeConfigWhereInput[]
+    id?: UuidFilter<"PlatformFeeConfig"> | string
+    key?: StringFilter<"PlatformFeeConfig"> | string
+    value?: DecimalFilter<"PlatformFeeConfig"> | Decimal | DecimalJsLike | number | string
+    label?: StringFilter<"PlatformFeeConfig"> | string
+    updatedAt?: DateTimeFilter<"PlatformFeeConfig"> | Date | string
+  }
+
+  export type PlatformFeeConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformFeeConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    key?: string
+    AND?: PlatformFeeConfigWhereInput | PlatformFeeConfigWhereInput[]
+    OR?: PlatformFeeConfigWhereInput[]
+    NOT?: PlatformFeeConfigWhereInput | PlatformFeeConfigWhereInput[]
+    value?: DecimalFilter<"PlatformFeeConfig"> | Decimal | DecimalJsLike | number | string
+    label?: StringFilter<"PlatformFeeConfig"> | string
+    updatedAt?: DateTimeFilter<"PlatformFeeConfig"> | Date | string
+  }, "id" | "key">
+
+  export type PlatformFeeConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PlatformFeeConfigCountOrderByAggregateInput
+    _avg?: PlatformFeeConfigAvgOrderByAggregateInput
+    _max?: PlatformFeeConfigMaxOrderByAggregateInput
+    _min?: PlatformFeeConfigMinOrderByAggregateInput
+    _sum?: PlatformFeeConfigSumOrderByAggregateInput
+  }
+
+  export type PlatformFeeConfigScalarWhereWithAggregatesInput = {
+    AND?: PlatformFeeConfigScalarWhereWithAggregatesInput | PlatformFeeConfigScalarWhereWithAggregatesInput[]
+    OR?: PlatformFeeConfigScalarWhereWithAggregatesInput[]
+    NOT?: PlatformFeeConfigScalarWhereWithAggregatesInput | PlatformFeeConfigScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"PlatformFeeConfig"> | string
+    key?: StringWithAggregatesFilter<"PlatformFeeConfig"> | string
+    value?: DecimalWithAggregatesFilter<"PlatformFeeConfig"> | Decimal | DecimalJsLike | number | string
+    label?: StringWithAggregatesFilter<"PlatformFeeConfig"> | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PlatformFeeConfig"> | Date | string
   }
 
   export type DailyReportWhereInput = {
@@ -32596,6 +33659,62 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PlatformFeeConfigCreateInput = {
+    id?: string
+    key: string
+    value: Decimal | DecimalJsLike | number | string
+    label: string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformFeeConfigUncheckedCreateInput = {
+    id?: string
+    key: string
+    value: Decimal | DecimalJsLike | number | string
+    label: string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformFeeConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformFeeConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformFeeConfigCreateManyInput = {
+    id?: string
+    key: string
+    value: Decimal | DecimalJsLike | number | string
+    label: string
+    updatedAt?: Date | string
+  }
+
+  export type PlatformFeeConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformFeeConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type DailyReportCreateInput = {
     id?: string
     date: Date | string
@@ -34490,6 +35609,38 @@ export namespace Prisma {
     fileUrl?: SortOrder
     fileType?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type PlatformFeeConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformFeeConfigAvgOrderByAggregateInput = {
+    value?: SortOrder
+  }
+
+  export type PlatformFeeConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformFeeConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PlatformFeeConfigSumOrderByAggregateInput = {
+    value?: SortOrder
   }
 
   export type DailyReportCountOrderByAggregateInput = {
@@ -44281,6 +45432,10 @@ export namespace Prisma {
      * @deprecated Use GiftCardEvidenceDefaultArgs instead
      */
     export type GiftCardEvidenceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardEvidenceDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PlatformFeeConfigDefaultArgs instead
+     */
+    export type PlatformFeeConfigArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PlatformFeeConfigDefaultArgs<ExtArgs>
     /**
      * @deprecated Use DailyReportDefaultArgs instead
      */

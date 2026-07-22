@@ -4,8 +4,10 @@ export declare class MarketplaceController {
     private readonly marketplaceService;
     constructor(marketplaceService: MarketplaceService);
     searchAds(dto: SearchAdsDto): Promise<{
-        items: ({
+        items: {
             seller: {
+                totalOrders: number;
+                completionRate: number;
                 profile: {
                     firstName: string | null;
                     kycStatus: string;
@@ -15,7 +17,6 @@ export declare class MarketplaceController {
                     lastLogin: Date;
                 }[];
             };
-        } & {
             type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
@@ -29,7 +30,7 @@ export declare class MarketplaceController {
             minLimit: import("@src/generated/client/runtime/library").Decimal;
             maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
-        })[];
+        }[];
         meta: {
             total: number;
             page: number;
@@ -96,5 +97,10 @@ export declare class MarketplaceController {
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
+    }>;
+    getSellerStats(id: string): Promise<{
+        totalOrders: number;
+        completedOrders: number;
+        completionRate: number;
     }>;
 }

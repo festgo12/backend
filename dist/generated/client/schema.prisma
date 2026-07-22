@@ -518,6 +518,16 @@ model GiftCardEvidence {
   @@index([listingId])
 }
 
+model PlatformFeeConfig {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  value     Decimal  @db.Decimal(10, 4)
+  label     String
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
 model DailyReport {
   id                String   @id @default(uuid()) @db.Uuid
   date              DateTime @unique

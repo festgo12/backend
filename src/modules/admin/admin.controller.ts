@@ -207,6 +207,21 @@ export class AdminController {
     return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
   }
 
+  // ─── Fee Configuration ─────────────────────────────────────────────────────
+
+  @Get('fees')
+  @ApiOperation({ summary: 'Get all platform fee configurations' })
+  getFeeConfigs() {
+    return this.adminService.getFeeConfigs();
+  }
+
+  @Patch('fees/:key')
+  @AuditLog('ADMIN_FEE_UPDATE', 'PLATFORM_CONFIG')
+  @ApiOperation({ summary: 'Update a platform fee configuration' })
+  updateFeeConfig(@Param('key') key: string, @Body('value') value: number) {
+    return this.adminService.updateFeeConfig(key, value);
+  }
+
   // ─── Webhook Subscription Management ──────────────────────────────────────
 
   @Get('webhooks')

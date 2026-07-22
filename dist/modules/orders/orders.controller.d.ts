@@ -13,10 +13,10 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
     findAll(req: any): Promise<({
         ad: {
@@ -44,10 +44,10 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     })[]>;
     findOne(id: string, req: any): Promise<{
         ad: {
@@ -107,10 +107,10 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
     approve(id: string, req: any): Promise<{
         id: string;
@@ -122,10 +122,10 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
     decline(id: string, req: any): Promise<{
         id: string;
@@ -137,10 +137,10 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
     flagFraud(id: string, req: any): Promise<{
         id: string;
@@ -152,9 +152,9 @@ export declare class OrdersController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
 }

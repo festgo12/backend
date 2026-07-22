@@ -14,21 +14,23 @@ exports.OrdersEventsHandler = void 0;
 const common_1 = require("@nestjs/common");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
     prisma;
+    notifications;
     logger = new common_1.Logger(OrdersEventsHandler_1.name);
-    constructor(prisma) {
+    constructor(prisma, notifications) {
         this.prisma = prisma;
+        this.notifications = notifications;
     }
     async handleOrderCreated(order) {
         this.logger.log(`Order created: ${order.id}`);
-        await this.prisma.notification.create({
-            data: {
-                userId: order.sellerId,
-                title: 'New Buy Order',
-                body: `You have a new buy order for ${order.cryptoAmount} NGN. Please approve within 15 minutes.`,
-                data: { orderId: order.id },
-            },
+        await this.notifications.notifyUser({
+            userId: order.sellerId,
+            type: 'ORDER_CREATED',
+            data: { orderId: order.id, cryptoAmount: order.cryptoAmount.toString(), fiatAmount: order.fiatAmount.toString() },
+            customTitle: 'New Buy Order',
+            customBody: `You have a new buy order for ${order.cryptoAmount} NGN. Please approve within 15 minutes.`,
         });
         await this.prisma.securityLog.create({
             data: {
@@ -40,21 +42,19 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
     }
     async handleOrderCompleted(order) {
         this.logger.log(`Order completed: ${order.id}`);
-        await this.prisma.notification.createMany({
-            data: [
-                {
-                    userId: order.buyerId,
-                    title: 'Order Completed',
-                    body: `Your order for ${order.cryptoAmount} has been completed.`,
-                    data: { orderId: order.id },
-                },
-                {
-                    userId: order.sellerId,
-                    title: 'Order Completed',
-                    body: `Your sale for ${order.fiatAmount} NGN has been completed.`,
-                    data: { orderId: order.id },
-                },
-            ],
+        await this.notifications.notifyUser({
+            userId: order.buyerId,
+            type: 'ORDER_COMPLETED',
+            data: { orderId: order.id, cryptoAmount: order.cryptoAmount.toString(), fiatAmount: order.fiatAmount.toString() },
+            customTitle: 'Order Completed',
+            customBody: `Your order for ${order.cryptoAmount} has been completed.`,
+        });
+        await this.notifications.notifyUser({
+            userId: order.sellerId,
+            type: 'ORDER_COMPLETED',
+            data: { orderId: order.id, cryptoAmount: order.cryptoAmount.toString(), fiatAmount: order.fiatAmount.toString() },
+            customTitle: 'Order Completed',
+            customBody: `Your sale for ${order.fiatAmount} NGN has been completed.`,
         });
         await this.prisma.securityLog.create({
             data: {
@@ -68,13 +68,12 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
         const { order, initiatorId } = payload;
         this.logger.log(`Order declined: ${order.id} by ${initiatorId}`);
         const otherPartyId = initiatorId === order.buyerId ? order.sellerId : order.buyerId;
-        await this.prisma.notification.create({
-            data: {
-                userId: otherPartyId,
-                title: 'Order Cancelled/Declined',
-                body: `The order ${order.id} has been cancelled or declined.`,
-                data: { orderId: order.id },
-            },
+        await this.notifications.notifyUser({
+            userId: otherPartyId,
+            type: 'ORDER_DECLINED',
+            data: { orderId: order.id },
+            customTitle: 'Order Cancelled/Declined',
+            customBody: `The order ${order.id} has been cancelled or declined.`,
         });
         await this.prisma.securityLog.create({
             data: {
@@ -86,21 +85,19 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
     }
     async handleOrderExpired(order) {
         this.logger.log(`Order expired: ${order.id}`);
-        await this.prisma.notification.createMany({
-            data: [
-                {
-                    userId: order.buyerId,
-                    title: 'Order Expired',
-                    body: `Your order for ${order.cryptoAmount} has expired.`,
-                    data: { orderId: order.id },
-                },
-                {
-                    userId: order.sellerId,
-                    title: 'Order Expired',
-                    body: `The order for ${order.fiatAmount} NGN has expired.`,
-                    data: { orderId: order.id },
-                },
-            ],
+        await this.notifications.notifyUser({
+            userId: order.buyerId,
+            type: 'ORDER_EXPIRED',
+            data: { orderId: order.id, cryptoAmount: order.cryptoAmount.toString(), fiatAmount: order.fiatAmount.toString() },
+            customTitle: 'Order Expired',
+            customBody: `Your order for ${order.cryptoAmount} has expired.`,
+        });
+        await this.notifications.notifyUser({
+            userId: order.sellerId,
+            type: 'ORDER_EXPIRED',
+            data: { orderId: order.id, cryptoAmount: order.cryptoAmount.toString(), fiatAmount: order.fiatAmount.toString() },
+            customTitle: 'Order Expired',
+            customBody: `The order for ${order.fiatAmount} NGN has expired.`,
         });
         await this.prisma.securityLog.create({
             data: {
@@ -113,21 +110,19 @@ let OrdersEventsHandler = OrdersEventsHandler_1 = class OrdersEventsHandler {
     async handleOrderFraudFlagged(payload) {
         const { order, initiatorId } = payload;
         this.logger.warn(`Order ${order.id} flagged as FRAUD by ${initiatorId}`);
-        await this.prisma.notification.createMany({
-            data: [
-                {
-                    userId: order.buyerId,
-                    title: 'Order Flagged for Fraud',
-                    body: `The order ${order.id} has been flagged for fraud and cancelled.`,
-                    data: { orderId: order.id },
-                },
-                {
-                    userId: order.sellerId,
-                    title: 'Order Flagged for Fraud',
-                    body: `The order ${order.id} has been flagged for fraud and cancelled.`,
-                    data: { orderId: order.id },
-                },
-            ],
+        await this.notifications.notifyUser({
+            userId: order.buyerId,
+            type: 'ORDER_FRAUD_FLAGGED',
+            data: { orderId: order.id, status: order.status },
+            customTitle: 'Order Flagged for Fraud',
+            customBody: `The order ${order.id} has been flagged for fraud and cancelled.`,
+        });
+        await this.notifications.notifyUser({
+            userId: order.sellerId,
+            type: 'ORDER_FRAUD_FLAGGED',
+            data: { orderId: order.id, status: order.status },
+            customTitle: 'Order Flagged for Fraud',
+            customBody: `The order ${order.id} has been flagged for fraud and cancelled.`,
         });
         await this.prisma.securityLog.create({
             data: {
@@ -171,6 +166,7 @@ __decorate([
 ], OrdersEventsHandler.prototype, "handleOrderFraudFlagged", null);
 exports.OrdersEventsHandler = OrdersEventsHandler = OrdersEventsHandler_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], OrdersEventsHandler);
 //# sourceMappingURL=orders.events.handler.js.map

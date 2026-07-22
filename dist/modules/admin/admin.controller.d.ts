@@ -396,10 +396,10 @@ export declare class AdminController {
             sellerId: string;
             buyerId: string;
             version: number;
-            adId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
+            adId: string;
         })[];
         meta: {
             total: number;
@@ -529,10 +529,10 @@ export declare class AdminController {
         sellerId: string;
         buyerId: string;
         version: number;
-        adId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
     }>;
     getBlockchainStats(): Promise<{
         balances: {
@@ -888,6 +888,20 @@ export declare class AdminController {
             limit: number;
             totalPages: number;
         };
+    }>;
+    getFeeConfigs(): Promise<{
+        id: string;
+        updatedAt: Date;
+        key: string;
+        value: import("@src/generated/client/runtime/library").Decimal;
+        label: string;
+    }[]>;
+    updateFeeConfig(key: string, value: number): Promise<{
+        id: string;
+        updatedAt: Date;
+        key: string;
+        value: import("@src/generated/client/runtime/library").Decimal;
+        label: string;
     }>;
     getWebhookSubscriptions(): {
         total: number;

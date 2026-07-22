@@ -105,6 +105,12 @@ let AdminController = class AdminController {
     getUserAuditTrail(userId, page = '1', limit = '20') {
         return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
     }
+    getFeeConfigs() {
+        return this.adminService.getFeeConfigs();
+    }
+    updateFeeConfig(key, value) {
+        return this.adminService.updateFeeConfig(key, value);
+    }
     getWebhookSubscriptions() {
         return this.webhookService.getSubscriptionSummary();
     }
@@ -310,6 +316,23 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getUserAuditTrail", null);
+__decorate([
+    (0, common_1.Get)('fees'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all platform fee configurations' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getFeeConfigs", null);
+__decorate([
+    (0, common_1.Patch)('fees/:key'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_FEE_UPDATE', 'PLATFORM_CONFIG'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a platform fee configuration' }),
+    __param(0, (0, common_1.Param)('key')),
+    __param(1, (0, common_1.Body)('value')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "updateFeeConfig", null);
 __decorate([
     (0, common_1.Get)('webhooks'),
     (0, swagger_1.ApiOperation)({ summary: 'List active Tatum webhook subscriptions' }),

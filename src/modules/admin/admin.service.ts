@@ -478,6 +478,47 @@ export class AdminService {
     };
   }
 
+  // ─── Fee Configuration ─────────────────────────────────────────────────────
+
+  async getFeeConfigs() {
+    const configs = await this.prisma.platformFeeConfig.findMany({
+      orderBy: { key: 'asc' },
+    });
+
+    if (configs.length === 0) {
+      const defaults = [
+        { key: 'trade_buy_fee_percent', value: 0.5, label: 'Trade Fee (Buy Side) %' },
+        { key: 'trade_sell_fee_percent', value: 0.5, label: 'Trade Fee (Sell Side) %' },
+        { key: 'trade_sponsored_fee_percent', value: 0.5, label: 'Sponsored Ad Fee %' },
+      ];
+      await this.prisma.platformFeeConfig.createMany({ data: defaults });
+      return this.prisma.platformFeeConfig.findMany({ orderBy: { key: 'asc' } });
+    }
+
+    return configs;
+  }
+
+  async updateFeeConfig(key: string, value: number) {
+    if (value < 0 || value > 10) {
+      throw new BadRequestException('Fee percentage must be between 0 and 10');
+    }
+
+    const existing = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+    if (!existing) throw new NotFoundException(`Fee config '${key}' not found`);
+
+    return this.prisma.platformFeeConfig.update({
+      where: { key },
+      data: { value },
+    });
+  }
+
+  async getFeeValue(key: string): Promise<number> {
+    const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+    return config ? Number(config.value) : 0.5;
+  }
+
+  // ─── User Audit Trail ─────────────────────────────────────────────────────
+
   async getUserAuditTrail(userId: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
 

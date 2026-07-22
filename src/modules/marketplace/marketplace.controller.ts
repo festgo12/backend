@@ -46,4 +46,10 @@ export class MarketplaceController {
   deleteAd(@Request() req, @Param('id') id: string) {
     return this.marketplaceService.deleteAd(req.user.id, id);
   }
+
+  @Get('sellers/:id/stats')
+  @ApiOperation({ summary: 'Get seller order stats' })
+  getSellerStats(@Param('id') id: string) {
+    return this.marketplaceService.getSellerStats(id);
+  }
 }

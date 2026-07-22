@@ -172,7 +172,7 @@ export class FraudRulesService {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const [historicalCount, recentCount] = await Promise.all([
+    const [historicalOrders, recentOrders, historicalVolumeResult] = await Promise.all([
       this.prisma.order.count({
         where: {
           OR: [{ buyerId: userId }, { sellerId: userId }],
@@ -185,18 +185,32 @@ export class FraudRulesService {
           createdAt: { gte: oneDayAgo },
         },
       }),
+      this.prisma.order.aggregate({
+        where: {
+          OR: [{ buyerId: userId }, { sellerId: userId }],
+          createdAt: { gte: thirtyDaysAgo, lt: oneDayAgo },
+        },
+        _sum: { fiatAmount: true },
+      }),
     ]);
 
-    const dailyAverage = historicalCount / 30;
+    const historicalVolume = Number(historicalVolumeResult._sum.fiatAmount || 0);
 
-    if (dailyAverage > 0 && recentCount >= dailyAverage * rule.threshold) {
+    // Minimum floor: skip if fewer than 10 orders or less than ₦1M total volume in 30 days
+    if (historicalOrders < 10 || historicalVolume < 1000000) {
+      return;
+    }
+
+    const dailyAverage = historicalOrders / 30;
+
+    if (dailyAverage > 0 && recentOrders >= dailyAverage * rule.threshold) {
       await this.alertEngine.createAlert({
         userId,
         type: rule.code,
         severity: rule.severity,
         title: 'Unusual Trading Volume',
-        message: `Your recent trading volume (${recentCount} orders today) significantly exceeds your daily average (${dailyAverage.toFixed(1)}).`,
-        metadata: { recentCount, dailyAverage: Math.round(dailyAverage * 10) / 10 },
+        message: `Your recent trading volume (${recentOrders} orders today) significantly exceeds your daily average (${dailyAverage.toFixed(1)}).`,
+        metadata: { recentOrders, dailyAverage: Math.round(dailyAverage * 10) / 10, historicalVolume },
       });
     }
   }
