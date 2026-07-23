@@ -8,7 +8,6 @@ export declare class TatumWebhookController {
     private readonly walletService;
     private readonly prisma;
     private readonly logger;
-    private readonly CONFIRMATION_THRESHOLDS;
     constructor(webhookService: TatumWebhookService, depositService: TatumDepositService, walletService: WalletService, prisma: PrismaService);
     handleWebhook(payload: any, signature: string): Promise<{
         received: boolean;
@@ -21,7 +20,6 @@ export declare class TatumWebhookController {
         userId: any;
     }>;
     private handleIncomingDeposit;
-    private handleConfirmation;
     private handleOutgoingSuccess;
     private handleOutgoingFailed;
 }

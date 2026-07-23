@@ -133,6 +133,11 @@ export type PlatformFeeConfig = $Result.DefaultSelection<Prisma.$PlatformFeeConf
  * 
  */
 export type DailyReport = $Result.DefaultSelection<Prisma.$DailyReportPayload>
+/**
+ * Model HelpContent
+ * 
+ */
+export type HelpContent = $Result.DefaultSelection<Prisma.$HelpContentPayload>
 
 /**
  * Enums
@@ -684,6 +689,16 @@ export class PrismaClient<
     * ```
     */
   get dailyReport(): Prisma.DailyReportDelegate<ExtArgs>;
+
+  /**
+   * `prisma.helpContent`: Exposes CRUD operations for the **HelpContent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HelpContents
+    * const helpContents = await prisma.helpContent.findMany()
+    * ```
+    */
+  get helpContent(): Prisma.HelpContentDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1148,7 +1163,8 @@ export namespace Prisma {
     GiftCardOrder: 'GiftCardOrder',
     GiftCardEvidence: 'GiftCardEvidence',
     PlatformFeeConfig: 'PlatformFeeConfig',
-    DailyReport: 'DailyReport'
+    DailyReport: 'DailyReport',
+    HelpContent: 'HelpContent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1164,7 +1180,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "dailyReport"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "dailyReport" | "helpContent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2848,6 +2864,76 @@ export namespace Prisma {
           }
         }
       }
+      HelpContent: {
+        payload: Prisma.$HelpContentPayload<ExtArgs>
+        fields: Prisma.HelpContentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HelpContentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HelpContentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          findFirst: {
+            args: Prisma.HelpContentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HelpContentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          findMany: {
+            args: Prisma.HelpContentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>[]
+          }
+          create: {
+            args: Prisma.HelpContentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          createMany: {
+            args: Prisma.HelpContentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HelpContentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>[]
+          }
+          delete: {
+            args: Prisma.HelpContentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          update: {
+            args: Prisma.HelpContentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          deleteMany: {
+            args: Prisma.HelpContentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HelpContentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.HelpContentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HelpContentPayload>
+          }
+          aggregate: {
+            args: Prisma.HelpContentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHelpContent>
+          }
+          groupBy: {
+            args: Prisma.HelpContentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HelpContentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HelpContentCountArgs<ExtArgs>
+            result: $Utils.Optional<HelpContentCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3445,6 +3531,12 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    emailVerificationToken: string | null
+    emailVerificationExpires: Date | null
+    emailVerified: boolean | null
+    phoneVerificationToken: string | null
+    phoneVerificationExpires: Date | null
+    phoneVerified: boolean | null
     failedLoginAttempts: number | null
     lockedUntil: Date | null
     createdAt: Date | null
@@ -3462,6 +3554,12 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    emailVerificationToken: string | null
+    emailVerificationExpires: Date | null
+    emailVerified: boolean | null
+    phoneVerificationToken: string | null
+    phoneVerificationExpires: Date | null
+    phoneVerified: boolean | null
     failedLoginAttempts: number | null
     lockedUntil: Date | null
     createdAt: Date | null
@@ -3479,6 +3577,12 @@ export namespace Prisma {
     twoFactorSecret: number
     resetToken: number
     resetTokenExpires: number
+    emailVerificationToken: number
+    emailVerificationExpires: number
+    emailVerified: number
+    phoneVerificationToken: number
+    phoneVerificationExpires: number
+    phoneVerified: number
     failedLoginAttempts: number
     lockedUntil: number
     createdAt: number
@@ -3506,6 +3610,12 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    emailVerificationToken?: true
+    emailVerificationExpires?: true
+    emailVerified?: true
+    phoneVerificationToken?: true
+    phoneVerificationExpires?: true
+    phoneVerified?: true
     failedLoginAttempts?: true
     lockedUntil?: true
     createdAt?: true
@@ -3523,6 +3633,12 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    emailVerificationToken?: true
+    emailVerificationExpires?: true
+    emailVerified?: true
+    phoneVerificationToken?: true
+    phoneVerificationExpires?: true
+    phoneVerified?: true
     failedLoginAttempts?: true
     lockedUntil?: true
     createdAt?: true
@@ -3540,6 +3656,12 @@ export namespace Prisma {
     twoFactorSecret?: true
     resetToken?: true
     resetTokenExpires?: true
+    emailVerificationToken?: true
+    emailVerificationExpires?: true
+    emailVerified?: true
+    phoneVerificationToken?: true
+    phoneVerificationExpires?: true
+    phoneVerified?: true
     failedLoginAttempts?: true
     lockedUntil?: true
     createdAt?: true
@@ -3644,6 +3766,12 @@ export namespace Prisma {
     twoFactorSecret: string | null
     resetToken: string | null
     resetTokenExpires: Date | null
+    emailVerificationToken: string | null
+    emailVerificationExpires: Date | null
+    emailVerified: boolean
+    phoneVerificationToken: string | null
+    phoneVerificationExpires: Date | null
+    phoneVerified: boolean
     failedLoginAttempts: number
     lockedUntil: Date | null
     createdAt: Date
@@ -3680,6 +3808,12 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    emailVerificationToken?: boolean
+    emailVerificationExpires?: boolean
+    emailVerified?: boolean
+    phoneVerificationToken?: boolean
+    phoneVerificationExpires?: boolean
+    phoneVerified?: boolean
     failedLoginAttempts?: boolean
     lockedUntil?: boolean
     createdAt?: boolean
@@ -3718,6 +3852,12 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    emailVerificationToken?: boolean
+    emailVerificationExpires?: boolean
+    emailVerified?: boolean
+    phoneVerificationToken?: boolean
+    phoneVerificationExpires?: boolean
+    phoneVerified?: boolean
     failedLoginAttempts?: boolean
     lockedUntil?: boolean
     createdAt?: boolean
@@ -3735,6 +3875,12 @@ export namespace Prisma {
     twoFactorSecret?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
+    emailVerificationToken?: boolean
+    emailVerificationExpires?: boolean
+    emailVerified?: boolean
+    phoneVerificationToken?: boolean
+    phoneVerificationExpires?: boolean
+    phoneVerified?: boolean
     failedLoginAttempts?: boolean
     lockedUntil?: boolean
     createdAt?: boolean
@@ -3801,6 +3947,12 @@ export namespace Prisma {
       twoFactorSecret: string | null
       resetToken: string | null
       resetTokenExpires: Date | null
+      emailVerificationToken: string | null
+      emailVerificationExpires: Date | null
+      emailVerified: boolean
+      phoneVerificationToken: string | null
+      phoneVerificationExpires: Date | null
+      phoneVerified: boolean
       failedLoginAttempts: number
       lockedUntil: Date | null
       createdAt: Date
@@ -4228,6 +4380,12 @@ export namespace Prisma {
     readonly twoFactorSecret: FieldRef<"User", 'String'>
     readonly resetToken: FieldRef<"User", 'String'>
     readonly resetTokenExpires: FieldRef<"User", 'DateTime'>
+    readonly emailVerificationToken: FieldRef<"User", 'String'>
+    readonly emailVerificationExpires: FieldRef<"User", 'DateTime'>
+    readonly emailVerified: FieldRef<"User", 'Boolean'>
+    readonly phoneVerificationToken: FieldRef<"User", 'String'>
+    readonly phoneVerificationExpires: FieldRef<"User", 'DateTime'>
+    readonly phoneVerified: FieldRef<"User", 'Boolean'>
     readonly failedLoginAttempts: FieldRef<"User", 'Int'>
     readonly lockedUntil: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -28638,6 +28796,954 @@ export namespace Prisma {
 
 
   /**
+   * Model HelpContent
+   */
+
+  export type AggregateHelpContent = {
+    _count: HelpContentCountAggregateOutputType | null
+    _avg: HelpContentAvgAggregateOutputType | null
+    _sum: HelpContentSumAggregateOutputType | null
+    _min: HelpContentMinAggregateOutputType | null
+    _max: HelpContentMaxAggregateOutputType | null
+  }
+
+  export type HelpContentAvgAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type HelpContentSumAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type HelpContentMinAggregateOutputType = {
+    id: string | null
+    category: string | null
+    title: string | null
+    content: string | null
+    sortOrder: number | null
+    active: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HelpContentMaxAggregateOutputType = {
+    id: string | null
+    category: string | null
+    title: string | null
+    content: string | null
+    sortOrder: number | null
+    active: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HelpContentCountAggregateOutputType = {
+    id: number
+    category: number
+    title: number
+    content: number
+    sortOrder: number
+    active: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type HelpContentAvgAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type HelpContentSumAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type HelpContentMinAggregateInputType = {
+    id?: true
+    category?: true
+    title?: true
+    content?: true
+    sortOrder?: true
+    active?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HelpContentMaxAggregateInputType = {
+    id?: true
+    category?: true
+    title?: true
+    content?: true
+    sortOrder?: true
+    active?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HelpContentCountAggregateInputType = {
+    id?: true
+    category?: true
+    title?: true
+    content?: true
+    sortOrder?: true
+    active?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type HelpContentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HelpContent to aggregate.
+     */
+    where?: HelpContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelpContents to fetch.
+     */
+    orderBy?: HelpContentOrderByWithRelationInput | HelpContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HelpContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelpContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelpContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HelpContents
+    **/
+    _count?: true | HelpContentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: HelpContentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: HelpContentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HelpContentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HelpContentMaxAggregateInputType
+  }
+
+  export type GetHelpContentAggregateType<T extends HelpContentAggregateArgs> = {
+        [P in keyof T & keyof AggregateHelpContent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHelpContent[P]>
+      : GetScalarType<T[P], AggregateHelpContent[P]>
+  }
+
+
+
+
+  export type HelpContentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HelpContentWhereInput
+    orderBy?: HelpContentOrderByWithAggregationInput | HelpContentOrderByWithAggregationInput[]
+    by: HelpContentScalarFieldEnum[] | HelpContentScalarFieldEnum
+    having?: HelpContentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HelpContentCountAggregateInputType | true
+    _avg?: HelpContentAvgAggregateInputType
+    _sum?: HelpContentSumAggregateInputType
+    _min?: HelpContentMinAggregateInputType
+    _max?: HelpContentMaxAggregateInputType
+  }
+
+  export type HelpContentGroupByOutputType = {
+    id: string
+    category: string
+    title: string
+    content: string
+    sortOrder: number
+    active: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: HelpContentCountAggregateOutputType | null
+    _avg: HelpContentAvgAggregateOutputType | null
+    _sum: HelpContentSumAggregateOutputType | null
+    _min: HelpContentMinAggregateOutputType | null
+    _max: HelpContentMaxAggregateOutputType | null
+  }
+
+  type GetHelpContentGroupByPayload<T extends HelpContentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HelpContentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HelpContentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HelpContentGroupByOutputType[P]>
+            : GetScalarType<T[P], HelpContentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HelpContentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    category?: boolean
+    title?: boolean
+    content?: boolean
+    sortOrder?: boolean
+    active?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["helpContent"]>
+
+  export type HelpContentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    category?: boolean
+    title?: boolean
+    content?: boolean
+    sortOrder?: boolean
+    active?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["helpContent"]>
+
+  export type HelpContentSelectScalar = {
+    id?: boolean
+    category?: boolean
+    title?: boolean
+    content?: boolean
+    sortOrder?: boolean
+    active?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $HelpContentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HelpContent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      category: string
+      title: string
+      content: string
+      sortOrder: number
+      active: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["helpContent"]>
+    composites: {}
+  }
+
+  type HelpContentGetPayload<S extends boolean | null | undefined | HelpContentDefaultArgs> = $Result.GetResult<Prisma.$HelpContentPayload, S>
+
+  type HelpContentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<HelpContentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: HelpContentCountAggregateInputType | true
+    }
+
+  export interface HelpContentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HelpContent'], meta: { name: 'HelpContent' } }
+    /**
+     * Find zero or one HelpContent that matches the filter.
+     * @param {HelpContentFindUniqueArgs} args - Arguments to find a HelpContent
+     * @example
+     * // Get one HelpContent
+     * const helpContent = await prisma.helpContent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HelpContentFindUniqueArgs>(args: SelectSubset<T, HelpContentFindUniqueArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one HelpContent that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {HelpContentFindUniqueOrThrowArgs} args - Arguments to find a HelpContent
+     * @example
+     * // Get one HelpContent
+     * const helpContent = await prisma.helpContent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HelpContentFindUniqueOrThrowArgs>(args: SelectSubset<T, HelpContentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first HelpContent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentFindFirstArgs} args - Arguments to find a HelpContent
+     * @example
+     * // Get one HelpContent
+     * const helpContent = await prisma.helpContent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HelpContentFindFirstArgs>(args?: SelectSubset<T, HelpContentFindFirstArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first HelpContent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentFindFirstOrThrowArgs} args - Arguments to find a HelpContent
+     * @example
+     * // Get one HelpContent
+     * const helpContent = await prisma.helpContent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HelpContentFindFirstOrThrowArgs>(args?: SelectSubset<T, HelpContentFindFirstOrThrowArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more HelpContents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HelpContents
+     * const helpContents = await prisma.helpContent.findMany()
+     * 
+     * // Get first 10 HelpContents
+     * const helpContents = await prisma.helpContent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const helpContentWithIdOnly = await prisma.helpContent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HelpContentFindManyArgs>(args?: SelectSubset<T, HelpContentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a HelpContent.
+     * @param {HelpContentCreateArgs} args - Arguments to create a HelpContent.
+     * @example
+     * // Create one HelpContent
+     * const HelpContent = await prisma.helpContent.create({
+     *   data: {
+     *     // ... data to create a HelpContent
+     *   }
+     * })
+     * 
+     */
+    create<T extends HelpContentCreateArgs>(args: SelectSubset<T, HelpContentCreateArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many HelpContents.
+     * @param {HelpContentCreateManyArgs} args - Arguments to create many HelpContents.
+     * @example
+     * // Create many HelpContents
+     * const helpContent = await prisma.helpContent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HelpContentCreateManyArgs>(args?: SelectSubset<T, HelpContentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many HelpContents and returns the data saved in the database.
+     * @param {HelpContentCreateManyAndReturnArgs} args - Arguments to create many HelpContents.
+     * @example
+     * // Create many HelpContents
+     * const helpContent = await prisma.helpContent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many HelpContents and only return the `id`
+     * const helpContentWithIdOnly = await prisma.helpContent.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HelpContentCreateManyAndReturnArgs>(args?: SelectSubset<T, HelpContentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a HelpContent.
+     * @param {HelpContentDeleteArgs} args - Arguments to delete one HelpContent.
+     * @example
+     * // Delete one HelpContent
+     * const HelpContent = await prisma.helpContent.delete({
+     *   where: {
+     *     // ... filter to delete one HelpContent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HelpContentDeleteArgs>(args: SelectSubset<T, HelpContentDeleteArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one HelpContent.
+     * @param {HelpContentUpdateArgs} args - Arguments to update one HelpContent.
+     * @example
+     * // Update one HelpContent
+     * const helpContent = await prisma.helpContent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HelpContentUpdateArgs>(args: SelectSubset<T, HelpContentUpdateArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more HelpContents.
+     * @param {HelpContentDeleteManyArgs} args - Arguments to filter HelpContents to delete.
+     * @example
+     * // Delete a few HelpContents
+     * const { count } = await prisma.helpContent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HelpContentDeleteManyArgs>(args?: SelectSubset<T, HelpContentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HelpContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HelpContents
+     * const helpContent = await prisma.helpContent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HelpContentUpdateManyArgs>(args: SelectSubset<T, HelpContentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one HelpContent.
+     * @param {HelpContentUpsertArgs} args - Arguments to update or create a HelpContent.
+     * @example
+     * // Update or create a HelpContent
+     * const helpContent = await prisma.helpContent.upsert({
+     *   create: {
+     *     // ... data to create a HelpContent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HelpContent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HelpContentUpsertArgs>(args: SelectSubset<T, HelpContentUpsertArgs<ExtArgs>>): Prisma__HelpContentClient<$Result.GetResult<Prisma.$HelpContentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of HelpContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentCountArgs} args - Arguments to filter HelpContents to count.
+     * @example
+     * // Count the number of HelpContents
+     * const count = await prisma.helpContent.count({
+     *   where: {
+     *     // ... the filter for the HelpContents we want to count
+     *   }
+     * })
+    **/
+    count<T extends HelpContentCountArgs>(
+      args?: Subset<T, HelpContentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HelpContentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HelpContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HelpContentAggregateArgs>(args: Subset<T, HelpContentAggregateArgs>): Prisma.PrismaPromise<GetHelpContentAggregateType<T>>
+
+    /**
+     * Group by HelpContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HelpContentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HelpContentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HelpContentGroupByArgs['orderBy'] }
+        : { orderBy?: HelpContentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HelpContentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHelpContentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HelpContent model
+   */
+  readonly fields: HelpContentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HelpContent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HelpContentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HelpContent model
+   */ 
+  interface HelpContentFieldRefs {
+    readonly id: FieldRef<"HelpContent", 'String'>
+    readonly category: FieldRef<"HelpContent", 'String'>
+    readonly title: FieldRef<"HelpContent", 'String'>
+    readonly content: FieldRef<"HelpContent", 'String'>
+    readonly sortOrder: FieldRef<"HelpContent", 'Int'>
+    readonly active: FieldRef<"HelpContent", 'Boolean'>
+    readonly createdAt: FieldRef<"HelpContent", 'DateTime'>
+    readonly updatedAt: FieldRef<"HelpContent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HelpContent findUnique
+   */
+  export type HelpContentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter, which HelpContent to fetch.
+     */
+    where: HelpContentWhereUniqueInput
+  }
+
+  /**
+   * HelpContent findUniqueOrThrow
+   */
+  export type HelpContentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter, which HelpContent to fetch.
+     */
+    where: HelpContentWhereUniqueInput
+  }
+
+  /**
+   * HelpContent findFirst
+   */
+  export type HelpContentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter, which HelpContent to fetch.
+     */
+    where?: HelpContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelpContents to fetch.
+     */
+    orderBy?: HelpContentOrderByWithRelationInput | HelpContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HelpContents.
+     */
+    cursor?: HelpContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelpContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelpContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HelpContents.
+     */
+    distinct?: HelpContentScalarFieldEnum | HelpContentScalarFieldEnum[]
+  }
+
+  /**
+   * HelpContent findFirstOrThrow
+   */
+  export type HelpContentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter, which HelpContent to fetch.
+     */
+    where?: HelpContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelpContents to fetch.
+     */
+    orderBy?: HelpContentOrderByWithRelationInput | HelpContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HelpContents.
+     */
+    cursor?: HelpContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelpContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelpContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HelpContents.
+     */
+    distinct?: HelpContentScalarFieldEnum | HelpContentScalarFieldEnum[]
+  }
+
+  /**
+   * HelpContent findMany
+   */
+  export type HelpContentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter, which HelpContents to fetch.
+     */
+    where?: HelpContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HelpContents to fetch.
+     */
+    orderBy?: HelpContentOrderByWithRelationInput | HelpContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HelpContents.
+     */
+    cursor?: HelpContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HelpContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HelpContents.
+     */
+    skip?: number
+    distinct?: HelpContentScalarFieldEnum | HelpContentScalarFieldEnum[]
+  }
+
+  /**
+   * HelpContent create
+   */
+  export type HelpContentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * The data needed to create a HelpContent.
+     */
+    data: XOR<HelpContentCreateInput, HelpContentUncheckedCreateInput>
+  }
+
+  /**
+   * HelpContent createMany
+   */
+  export type HelpContentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HelpContents.
+     */
+    data: HelpContentCreateManyInput | HelpContentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HelpContent createManyAndReturn
+   */
+  export type HelpContentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many HelpContents.
+     */
+    data: HelpContentCreateManyInput | HelpContentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HelpContent update
+   */
+  export type HelpContentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * The data needed to update a HelpContent.
+     */
+    data: XOR<HelpContentUpdateInput, HelpContentUncheckedUpdateInput>
+    /**
+     * Choose, which HelpContent to update.
+     */
+    where: HelpContentWhereUniqueInput
+  }
+
+  /**
+   * HelpContent updateMany
+   */
+  export type HelpContentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HelpContents.
+     */
+    data: XOR<HelpContentUpdateManyMutationInput, HelpContentUncheckedUpdateManyInput>
+    /**
+     * Filter which HelpContents to update
+     */
+    where?: HelpContentWhereInput
+  }
+
+  /**
+   * HelpContent upsert
+   */
+  export type HelpContentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * The filter to search for the HelpContent to update in case it exists.
+     */
+    where: HelpContentWhereUniqueInput
+    /**
+     * In case the HelpContent found by the `where` argument doesn't exist, create a new HelpContent with this data.
+     */
+    create: XOR<HelpContentCreateInput, HelpContentUncheckedCreateInput>
+    /**
+     * In case the HelpContent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HelpContentUpdateInput, HelpContentUncheckedUpdateInput>
+  }
+
+  /**
+   * HelpContent delete
+   */
+  export type HelpContentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+    /**
+     * Filter which HelpContent to delete.
+     */
+    where: HelpContentWhereUniqueInput
+  }
+
+  /**
+   * HelpContent deleteMany
+   */
+  export type HelpContentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HelpContents to delete
+     */
+    where?: HelpContentWhereInput
+  }
+
+  /**
+   * HelpContent without action
+   */
+  export type HelpContentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HelpContent
+     */
+    select?: HelpContentSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -28662,6 +29768,12 @@ export namespace Prisma {
     twoFactorSecret: 'twoFactorSecret',
     resetToken: 'resetToken',
     resetTokenExpires: 'resetTokenExpires',
+    emailVerificationToken: 'emailVerificationToken',
+    emailVerificationExpires: 'emailVerificationExpires',
+    emailVerified: 'emailVerified',
+    phoneVerificationToken: 'phoneVerificationToken',
+    phoneVerificationExpires: 'phoneVerificationExpires',
+    phoneVerified: 'phoneVerified',
     failedLoginAttempts: 'failedLoginAttempts',
     lockedUntil: 'lockedUntil',
     createdAt: 'createdAt',
@@ -29051,6 +30163,20 @@ export namespace Prisma {
   export type DailyReportScalarFieldEnum = (typeof DailyReportScalarFieldEnum)[keyof typeof DailyReportScalarFieldEnum]
 
 
+  export const HelpContentScalarFieldEnum: {
+    id: 'id',
+    category: 'category',
+    title: 'title',
+    content: 'content',
+    sortOrder: 'sortOrder',
+    active: 'active',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type HelpContentScalarFieldEnum = (typeof HelpContentScalarFieldEnum)[keyof typeof HelpContentScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -29366,6 +30492,12 @@ export namespace Prisma {
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
     resetToken?: StringNullableFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerificationToken?: StringNullableFilter<"User"> | string | null
+    emailVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerified?: BoolFilter<"User"> | boolean
+    phoneVerificationToken?: StringNullableFilter<"User"> | string | null
+    phoneVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolFilter<"User"> | boolean
     failedLoginAttempts?: IntFilter<"User"> | number
     lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -29403,6 +30535,12 @@ export namespace Prisma {
     twoFactorSecret?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
+    emailVerificationToken?: SortOrderInput | SortOrder
+    emailVerificationExpires?: SortOrderInput | SortOrder
+    emailVerified?: SortOrder
+    phoneVerificationToken?: SortOrderInput | SortOrder
+    phoneVerificationExpires?: SortOrderInput | SortOrder
+    phoneVerified?: SortOrder
     failedLoginAttempts?: SortOrder
     lockedUntil?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -29443,6 +30581,12 @@ export namespace Prisma {
     twoFactorEnabled?: BoolFilter<"User"> | boolean
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerificationToken?: StringNullableFilter<"User"> | string | null
+    emailVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    emailVerified?: BoolFilter<"User"> | boolean
+    phoneVerificationToken?: StringNullableFilter<"User"> | string | null
+    phoneVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolFilter<"User"> | boolean
     failedLoginAttempts?: IntFilter<"User"> | number
     lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -29480,6 +30624,12 @@ export namespace Prisma {
     twoFactorSecret?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
+    emailVerificationToken?: SortOrderInput | SortOrder
+    emailVerificationExpires?: SortOrderInput | SortOrder
+    emailVerified?: SortOrder
+    phoneVerificationToken?: SortOrderInput | SortOrder
+    phoneVerificationExpires?: SortOrderInput | SortOrder
+    phoneVerified?: SortOrder
     failedLoginAttempts?: SortOrder
     lockedUntil?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -29505,6 +30655,12 @@ export namespace Prisma {
     twoFactorSecret?: StringNullableWithAggregatesFilter<"User"> | string | null
     resetToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    emailVerificationToken?: StringNullableWithAggregatesFilter<"User"> | string | null
+    emailVerificationExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    emailVerified?: BoolWithAggregatesFilter<"User"> | boolean
+    phoneVerificationToken?: StringNullableWithAggregatesFilter<"User"> | string | null
+    phoneVerificationExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    phoneVerified?: BoolWithAggregatesFilter<"User"> | boolean
     failedLoginAttempts?: IntWithAggregatesFilter<"User"> | number
     lockedUntil?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -31490,6 +32646,75 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"DailyReport"> | Date | string
   }
 
+  export type HelpContentWhereInput = {
+    AND?: HelpContentWhereInput | HelpContentWhereInput[]
+    OR?: HelpContentWhereInput[]
+    NOT?: HelpContentWhereInput | HelpContentWhereInput[]
+    id?: StringFilter<"HelpContent"> | string
+    category?: StringFilter<"HelpContent"> | string
+    title?: StringFilter<"HelpContent"> | string
+    content?: StringFilter<"HelpContent"> | string
+    sortOrder?: IntFilter<"HelpContent"> | number
+    active?: BoolFilter<"HelpContent"> | boolean
+    createdAt?: DateTimeFilter<"HelpContent"> | Date | string
+    updatedAt?: DateTimeFilter<"HelpContent"> | Date | string
+  }
+
+  export type HelpContentOrderByWithRelationInput = {
+    id?: SortOrder
+    category?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    sortOrder?: SortOrder
+    active?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelpContentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: HelpContentWhereInput | HelpContentWhereInput[]
+    OR?: HelpContentWhereInput[]
+    NOT?: HelpContentWhereInput | HelpContentWhereInput[]
+    category?: StringFilter<"HelpContent"> | string
+    title?: StringFilter<"HelpContent"> | string
+    content?: StringFilter<"HelpContent"> | string
+    sortOrder?: IntFilter<"HelpContent"> | number
+    active?: BoolFilter<"HelpContent"> | boolean
+    createdAt?: DateTimeFilter<"HelpContent"> | Date | string
+    updatedAt?: DateTimeFilter<"HelpContent"> | Date | string
+  }, "id">
+
+  export type HelpContentOrderByWithAggregationInput = {
+    id?: SortOrder
+    category?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    sortOrder?: SortOrder
+    active?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: HelpContentCountOrderByAggregateInput
+    _avg?: HelpContentAvgOrderByAggregateInput
+    _max?: HelpContentMaxOrderByAggregateInput
+    _min?: HelpContentMinOrderByAggregateInput
+    _sum?: HelpContentSumOrderByAggregateInput
+  }
+
+  export type HelpContentScalarWhereWithAggregatesInput = {
+    AND?: HelpContentScalarWhereWithAggregatesInput | HelpContentScalarWhereWithAggregatesInput[]
+    OR?: HelpContentScalarWhereWithAggregatesInput[]
+    NOT?: HelpContentScalarWhereWithAggregatesInput | HelpContentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"HelpContent"> | string
+    category?: StringWithAggregatesFilter<"HelpContent"> | string
+    title?: StringWithAggregatesFilter<"HelpContent"> | string
+    content?: StringWithAggregatesFilter<"HelpContent"> | string
+    sortOrder?: IntWithAggregatesFilter<"HelpContent"> | number
+    active?: BoolWithAggregatesFilter<"HelpContent"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"HelpContent"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"HelpContent"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -31501,6 +32726,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -31538,6 +32769,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -31575,6 +32812,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31612,6 +32855,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31649,6 +32898,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -31666,6 +32921,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31683,6 +32944,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33876,6 +35143,83 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HelpContentCreateInput = {
+    id?: string
+    category: string
+    title: string
+    content: string
+    sortOrder?: number
+    active?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelpContentUncheckedCreateInput = {
+    id?: string
+    category: string
+    title: string
+    content: string
+    sortOrder?: number
+    active?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelpContentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelpContentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelpContentCreateManyInput = {
+    id?: string
+    category: string
+    title: string
+    content: string
+    sortOrder?: number
+    active?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HelpContentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HelpContentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -34136,6 +35480,12 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    emailVerificationToken?: SortOrder
+    emailVerificationExpires?: SortOrder
+    emailVerified?: SortOrder
+    phoneVerificationToken?: SortOrder
+    phoneVerificationExpires?: SortOrder
+    phoneVerified?: SortOrder
     failedLoginAttempts?: SortOrder
     lockedUntil?: SortOrder
     createdAt?: SortOrder
@@ -34157,6 +35507,12 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    emailVerificationToken?: SortOrder
+    emailVerificationExpires?: SortOrder
+    emailVerified?: SortOrder
+    phoneVerificationToken?: SortOrder
+    phoneVerificationExpires?: SortOrder
+    phoneVerified?: SortOrder
     failedLoginAttempts?: SortOrder
     lockedUntil?: SortOrder
     createdAt?: SortOrder
@@ -34174,6 +35530,12 @@ export namespace Prisma {
     twoFactorSecret?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
+    emailVerificationToken?: SortOrder
+    emailVerificationExpires?: SortOrder
+    emailVerified?: SortOrder
+    phoneVerificationToken?: SortOrder
+    phoneVerificationExpires?: SortOrder
+    phoneVerified?: SortOrder
     failedLoginAttempts?: SortOrder
     lockedUntil?: SortOrder
     createdAt?: SortOrder
@@ -35750,6 +37112,47 @@ export namespace Prisma {
     newDisputes?: SortOrder
     resolvedDisputes?: SortOrder
     fraudEvents?: SortOrder
+  }
+
+  export type HelpContentCountOrderByAggregateInput = {
+    id?: SortOrder
+    category?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    sortOrder?: SortOrder
+    active?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelpContentAvgOrderByAggregateInput = {
+    sortOrder?: SortOrder
+  }
+
+  export type HelpContentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    category?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    sortOrder?: SortOrder
+    active?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelpContentMinOrderByAggregateInput = {
+    id?: SortOrder
+    category?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    sortOrder?: SortOrder
+    active?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HelpContentSumOrderByAggregateInput = {
+    sortOrder?: SortOrder
   }
 
   export type ProfileCreateNestedOneWithoutUserInput = {
@@ -39319,6 +40722,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39355,6 +40764,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39407,6 +40822,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39443,6 +40864,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39479,6 +40906,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39515,6 +40948,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39567,6 +41006,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39603,6 +41048,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39639,6 +41090,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39675,6 +41132,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -39821,6 +41284,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39857,6 +41326,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40390,6 +41865,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40426,6 +41907,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40522,6 +42009,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40558,6 +42051,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40647,6 +42146,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40683,6 +42188,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40724,6 +42235,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40760,6 +42277,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -40927,6 +42450,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40963,6 +42492,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41010,6 +42545,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41046,6 +42587,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41153,6 +42700,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41189,6 +42742,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41230,6 +42789,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41266,6 +42831,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41393,6 +42964,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41429,6 +43006,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41476,6 +43059,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41512,6 +43101,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41597,6 +43192,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41633,6 +43234,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41724,6 +43331,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41760,6 +43373,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41796,6 +43415,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41832,6 +43457,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41884,6 +43515,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41920,6 +43557,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41956,6 +43599,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -41992,6 +43641,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42044,6 +43699,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42080,6 +43741,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42116,6 +43783,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42152,6 +43825,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42204,6 +43883,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42240,6 +43925,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42276,6 +43967,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42312,6 +44009,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42364,6 +44067,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42400,6 +44109,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42436,6 +44151,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42472,6 +44193,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42524,6 +44251,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42560,6 +44293,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42596,6 +44335,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42632,6 +44377,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42684,6 +44435,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42720,6 +44477,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42756,6 +44519,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42792,6 +44561,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42833,6 +44608,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42869,6 +44650,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -42987,6 +44774,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43023,6 +44816,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43070,6 +44869,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43106,6 +44911,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43219,6 +45030,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43255,6 +45072,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43296,6 +45119,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43332,6 +45161,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43435,6 +45270,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43471,6 +45312,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43518,6 +45365,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43554,6 +45407,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43635,6 +45494,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43671,6 +45536,12 @@ export namespace Prisma {
     twoFactorSecret?: string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
+    emailVerificationToken?: string | null
+    emailVerificationExpires?: Date | string | null
+    emailVerified?: boolean
+    phoneVerificationToken?: string | null
+    phoneVerificationExpires?: Date | string | null
+    phoneVerified?: boolean
     failedLoginAttempts?: number
     lockedUntil?: Date | string | null
     createdAt?: Date | string
@@ -43774,6 +45645,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43810,6 +45687,12 @@ export namespace Prisma {
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneVerificationExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45440,6 +47323,10 @@ export namespace Prisma {
      * @deprecated Use DailyReportDefaultArgs instead
      */
     export type DailyReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DailyReportDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use HelpContentDefaultArgs instead
+     */
+    export type HelpContentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = HelpContentDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

@@ -21,7 +21,7 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
     httpService;
     logger = new common_1.Logger(TatumWalletService_1.name);
     apiKey;
-    baseUrl = 'https://api.tatum.io/v3';
+    baseUrl = 'https://api.tatum.io/v4';
     constructor(configService, httpService) {
         this.configService = configService;
         this.httpService = httpService;

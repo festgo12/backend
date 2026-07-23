@@ -77,8 +77,8 @@ export class WalletController {
         const updatedWallet = await this.walletService.updateWalletAddress(wallet.id, address);
 
         // Auto-register Tatum webhook for deposit detection on this address
-        const chain = this.tatumWallet.mapCurrencyToChain(currency);
-        this.tatumWebhook.registerAddressSubscription(address, chain, currency).catch((err) => {
+        const notificationChain = TatumWebhookService.notificationChain(currency);
+        this.tatumWebhook.registerAddressSubscription(address, notificationChain, currency).catch((err) => {
           this.logger.warn(`Failed to register webhook for ${currency} address ${address}: ${err.message}`);
         });
 

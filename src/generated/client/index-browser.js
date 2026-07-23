@@ -133,6 +133,12 @@ exports.Prisma.UserScalarFieldEnum = {
   twoFactorSecret: 'twoFactorSecret',
   resetToken: 'resetToken',
   resetTokenExpires: 'resetTokenExpires',
+  emailVerificationToken: 'emailVerificationToken',
+  emailVerificationExpires: 'emailVerificationExpires',
+  emailVerified: 'emailVerified',
+  phoneVerificationToken: 'phoneVerificationToken',
+  phoneVerificationExpires: 'phoneVerificationExpires',
+  phoneVerified: 'phoneVerified',
   failedLoginAttempts: 'failedLoginAttempts',
   lockedUntil: 'lockedUntil',
   createdAt: 'createdAt',
@@ -450,6 +456,17 @@ exports.Prisma.DailyReportScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.HelpContentScalarFieldEnum = {
+  id: 'id',
+  category: 'category',
+  title: 'title',
+  content: 'content',
+  sortOrder: 'sortOrder',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -598,7 +615,8 @@ exports.Prisma.ModelName = {
   GiftCardOrder: 'GiftCardOrder',
   GiftCardEvidence: 'GiftCardEvidence',
   PlatformFeeConfig: 'PlatformFeeConfig',
-  DailyReport: 'DailyReport'
+  DailyReport: 'DailyReport',
+  HelpContent: 'HelpContent'
 };
 
 /**

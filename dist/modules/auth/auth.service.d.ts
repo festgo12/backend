@@ -25,13 +25,13 @@ export declare class AuthService {
     login(dto: LoginDto, request?: any): Promise<{
         user: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -42,6 +42,12 @@ export declare class AuthService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -69,13 +75,13 @@ export declare class AuthService {
     googleLogin(dto: GoogleLoginDto): Promise<{
         user: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -86,6 +92,12 @@ export declare class AuthService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -98,6 +110,30 @@ export declare class AuthService {
         resetToken: string;
     } | undefined>;
     resetPassword(token: string, newPassword: string): Promise<{
+        success: boolean;
+    }>;
+    sendEmailVerification(userId: string): Promise<{
+        success: boolean;
+        message: string;
+        code?: undefined;
+    } | {
+        success: boolean;
+        code: string;
+        message?: undefined;
+    }>;
+    verifyEmail(userId: string, token: string): Promise<{
+        success: boolean;
+    }>;
+    sendPhoneVerification(userId: string): Promise<{
+        success: boolean;
+        message: string;
+        code?: undefined;
+    } | {
+        success: boolean;
+        code: string;
+        message?: undefined;
+    }>;
+    verifyPhone(userId: string, token: string): Promise<{
         success: boolean;
     }>;
 }

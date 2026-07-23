@@ -5,32 +5,32 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     getMe(userId: string): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            firstName: string | null;
+            lastName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
         preferences: {
+            id: string;
+            updatedAt: Date;
+            userId: string;
             baseCurrency: string;
             emailNotify: boolean;
             pushNotify: boolean;
             theme: string;
-            id: string;
-            updatedAt: Date;
-            userId: string;
         } | null;
         wallets: {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
+            version: number;
         }[];
         id: string;
         email: string | null;
@@ -41,28 +41,34 @@ export declare class UsersController {
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         resetTokenExpires: Date | null;
+        emailVerificationToken: string | null;
+        emailVerificationExpires: Date | null;
+        emailVerified: boolean;
+        phoneVerificationToken: string | null;
+        phoneVerificationExpires: Date | null;
+        phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
     updateProfile(userId: string, dto: UpdateProfileDto): Promise<{
-        firstName: string | null;
-        lastName: string | null;
-        avatarUrl: string | null;
         id: string;
         updatedAt: Date;
         userId: string;
+        firstName: string | null;
+        lastName: string | null;
         kycStatus: string;
+        avatarUrl: string | null;
     }>;
     updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<{
+        id: string;
+        updatedAt: Date;
+        userId: string;
         baseCurrency: string;
         emailNotify: boolean;
         pushNotify: boolean;
         theme: string;
-        id: string;
-        updatedAt: Date;
-        userId: string;
     }>;
     getDevices(userId: string): Promise<{
         id: string;

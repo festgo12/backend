@@ -6,6 +6,8 @@ import { GoogleLoginDto } from './dto/google-login.dto';
 import { VerifyTwoFactorDto } from './dto/verify-2fa.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { VerifyPhoneDto } from './dto/verify-phone.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
@@ -16,13 +18,13 @@ export declare class AuthController {
     login(dto: LoginDto, req: any): Promise<{
         user: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -33,6 +35,12 @@ export declare class AuthController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -49,13 +57,13 @@ export declare class AuthController {
     googleLogin(dto: GoogleLoginDto): Promise<{
         user: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -66,6 +74,12 @@ export declare class AuthController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -85,6 +99,30 @@ export declare class AuthController {
         resetToken: string;
     } | undefined>;
     resetPassword(dto: ResetPasswordDto): Promise<{
+        success: boolean;
+    }>;
+    sendEmailVerification(req: any): Promise<{
+        success: boolean;
+        message: string;
+        code?: undefined;
+    } | {
+        success: boolean;
+        code: string;
+        message?: undefined;
+    }>;
+    verifyEmail(req: any, dto: VerifyEmailDto): Promise<{
+        success: boolean;
+    }>;
+    sendPhoneVerification(req: any): Promise<{
+        success: boolean;
+        message: string;
+        code?: undefined;
+    } | {
+        success: boolean;
+        code: string;
+        message?: undefined;
+    }>;
+    verifyPhone(req: any, dto: VerifyPhoneDto): Promise<{
         success: boolean;
     }>;
 }

@@ -21,7 +21,7 @@ export class TatumWebhookService implements OnApplicationBootstrap {
   private readonly logger = new Logger(TatumWebhookService.name);
   private readonly hmacSecret: string;
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.tatum.io/v3';
+  private readonly baseUrl = 'https://api.tatum.io/v4';
 
   /** In-memory cache of active webhook subscriptions */
   private readonly subscriptions = new Map<string, WebhookSubscription>();
@@ -128,7 +128,7 @@ export class TatumWebhookService implements OnApplicationBootstrap {
         this.httpService.post(
           `${this.baseUrl}/subscription`,
           {
-            type: 'ADDRESS_TRANSACTION',
+            type: 'ADDRESS_EVENT',
             attr: {
               address,
               chain,
@@ -144,7 +144,7 @@ export class TatumWebhookService implements OnApplicationBootstrap {
         address,
         chain,
         currency,
-        type: 'ADDRESS_TRANSACTION',
+        type: 'ADDRESS_EVENT',
         createdAt: new Date(),
       };
 
@@ -179,7 +179,7 @@ export class TatumWebhookService implements OnApplicationBootstrap {
         this.httpService.post(
           `${this.baseUrl}/subscription`,
           {
-            type: 'OUTGOING_BLOCKCHAIN_TRANSACTION',
+            type: 'OUTGOING_NATIVE_TX',
             attr: {
               chain,
               url: webhookUrl,
@@ -194,7 +194,7 @@ export class TatumWebhookService implements OnApplicationBootstrap {
         address: '*',
         chain,
         currency: chain,
-        type: 'OUTGOING_BLOCKCHAIN_TRANSACTION',
+        type: 'OUTGOING_NATIVE_TX',
         createdAt: new Date(),
       };
 
@@ -275,9 +275,26 @@ export class TatumWebhookService implements OnApplicationBootstrap {
    * Called on application bootstrap.
    */
   async ensureOutgoingWebhooks(): Promise<void> {
-    const chains = ['bitcoin', 'ethereum'];
+    const chains = ['BTC', 'ETH'];
     for (const chain of chains) {
       await this.registerOutgoingSubscription(chain);
+    }
+  }
+
+  /**
+   * Maps a currency to the chain identifier used in Tatum v4 notifications.
+   * Notifications require uppercase chain identifiers (BTC, ETH).
+   */
+  static notificationChain(currency: string): string {
+    switch (currency.toUpperCase()) {
+      case 'BTC':
+        return 'BTC';
+      case 'ETH':
+      case 'USDT':
+      case 'USDC':
+        return 'ETH';
+      default:
+        return currency.toUpperCase();
     }
   }
 }

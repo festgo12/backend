@@ -8,7 +8,7 @@ import { Currency } from '@src/generated/client';
 export class TatumWalletService {
   private readonly logger = new Logger(TatumWalletService.name);
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.tatum.io/v3';
+  private readonly baseUrl = 'https://api.tatum.io/v4';
 
   constructor(
     private readonly configService: ConfigService,

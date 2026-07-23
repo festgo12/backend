@@ -61,7 +61,7 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     logger = new common_1.Logger(TatumWebhookService_1.name);
     hmacSecret;
     apiKey;
-    baseUrl = 'https://api.tatum.io/v3';
+    baseUrl = 'https://api.tatum.io/v4';
     subscriptions = new Map();
     constructor(configService, httpService, prisma, walletService, tatumWallet) {
         this.configService = configService;
@@ -127,7 +127,7 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
         try {
             this.logger.log(`Registering Tatum webhook for ${currency} address ${address}`);
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/subscription`, {
-                type: 'ADDRESS_TRANSACTION',
+                type: 'ADDRESS_EVENT',
                 attr: {
                     address,
                     chain,
@@ -139,7 +139,7 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
                 address,
                 chain,
                 currency,
-                type: 'ADDRESS_TRANSACTION',
+                type: 'ADDRESS_EVENT',
                 createdAt: new Date(),
             };
             this.subscriptions.set(subKey, subscription);
@@ -160,7 +160,7 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
         try {
             this.logger.log(`Registering outgoing transaction webhook for ${chain}`);
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/subscription`, {
-                type: 'OUTGOING_BLOCKCHAIN_TRANSACTION',
+                type: 'OUTGOING_NATIVE_TX',
                 attr: {
                     chain,
                     url: webhookUrl,
@@ -171,7 +171,7 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
                 address: '*',
                 chain,
                 currency: chain,
-                type: 'OUTGOING_BLOCKCHAIN_TRANSACTION',
+                type: 'OUTGOING_NATIVE_TX',
                 createdAt: new Date(),
             };
             this.subscriptions.set(subKey, subscription);
@@ -221,9 +221,21 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
         };
     }
     async ensureOutgoingWebhooks() {
-        const chains = ['bitcoin', 'ethereum'];
+        const chains = ['BTC', 'ETH'];
         for (const chain of chains) {
             await this.registerOutgoingSubscription(chain);
+        }
+    }
+    static notificationChain(currency) {
+        switch (currency.toUpperCase()) {
+            case 'BTC':
+                return 'BTC';
+            case 'ETH':
+            case 'USDT':
+            case 'USDC':
+                return 'ETH';
+            default:
+                return currency.toUpperCase();
         }
     }
 };

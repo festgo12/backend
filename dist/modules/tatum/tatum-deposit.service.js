@@ -29,7 +29,7 @@ let TatumDepositService = TatumDepositService_1 = class TatumDepositService {
     riskService;
     logger = new common_1.Logger(TatumDepositService_1.name);
     apiKey;
-    baseUrl = 'https://api.tatum.io/v3';
+    baseUrl = 'https://api.tatum.io/v4';
     constructor(configService, httpService, prisma, walletService, tatumWallet, riskService) {
         this.configService = configService;
         this.httpService = httpService;

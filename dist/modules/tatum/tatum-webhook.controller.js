@@ -26,10 +26,6 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
     walletService;
     prisma;
     logger = new common_1.Logger(TatumWebhookController_1.name);
-    CONFIRMATION_THRESHOLDS = {
-        bitcoin: 3,
-        ethereum: 12,
-    };
     constructor(webhookService, depositService, walletService, prisma) {
         this.webhookService = webhookService;
         this.depositService = depositService;
@@ -43,17 +39,15 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
         }
         this.logger.log(`Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`);
         switch (payload.subscriptionType) {
-            case 'ADDRESS_TRANSACTION':
-            case 'INCOMING_BLOCKCHAIN_TRANSACTION':
+            case 'ADDRESS_EVENT':
+            case 'INCOMING_NATIVE_TX':
+            case 'INCOMING_FUNGIBLE_TX':
                 await this.handleIncomingDeposit(payload);
                 break;
-            case 'CONFIRMATION_COUNT_REACHED':
-                await this.handleConfirmation(payload);
-                break;
-            case 'OUTGOING_BLOCKCHAIN_TRANSACTION':
+            case 'OUTGOING_NATIVE_TX':
                 await this.handleOutgoingSuccess(payload);
                 break;
-            case 'OUTGOING_BLOCKCHAIN_TRANSACTION_FAILED':
+            case 'OUTGOING_FAILED_TX':
                 await this.handleOutgoingFailed(payload);
                 break;
             default:
@@ -108,18 +102,6 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
             reference,
             sourceAddress,
         });
-    }
-    async handleConfirmation(payload) {
-        const { txId, confirmations, chain } = payload;
-        if (!txId) {
-            this.logger.warn('Confirmation webhook missing txId. Skipping.');
-            return;
-        }
-        const threshold = this.CONFIRMATION_THRESHOLDS[chain] || 3;
-        this.logger.log(`Transaction ${txId}: ${confirmations}/${threshold} confirmations (${chain})`);
-        if (confirmations >= threshold) {
-            await this.webhookService.markTransactionAsCompleted(txId);
-        }
     }
     async handleOutgoingSuccess(payload) {
         const { txId } = payload;

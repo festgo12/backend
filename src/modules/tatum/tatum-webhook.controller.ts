@@ -10,11 +10,6 @@ import { WalletService } from '../wallet/wallet.service';
 export class TatumWebhookController {
   private readonly logger = new Logger(TatumWebhookController.name);
 
-  private readonly CONFIRMATION_THRESHOLDS: Record<string, number> = {
-    bitcoin: 3,
-    ethereum: 12,
-  };
-
   constructor(
     private readonly webhookService: TatumWebhookService,
     private readonly depositService: TatumDepositService,
@@ -37,20 +32,17 @@ export class TatumWebhookController {
     this.logger.log(`Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`);
 
     switch (payload.subscriptionType) {
-      case 'ADDRESS_TRANSACTION':
-      case 'INCOMING_BLOCKCHAIN_TRANSACTION':
+      case 'ADDRESS_EVENT':
+      case 'INCOMING_NATIVE_TX':
+      case 'INCOMING_FUNGIBLE_TX':
         await this.handleIncomingDeposit(payload);
         break;
 
-      case 'CONFIRMATION_COUNT_REACHED':
-        await this.handleConfirmation(payload);
-        break;
-
-      case 'OUTGOING_BLOCKCHAIN_TRANSACTION':
+      case 'OUTGOING_NATIVE_TX':
         await this.handleOutgoingSuccess(payload);
         break;
 
-      case 'OUTGOING_BLOCKCHAIN_TRANSACTION_FAILED':
+      case 'OUTGOING_FAILED_TX':
         await this.handleOutgoingFailed(payload);
         break;
 
@@ -127,25 +119,6 @@ export class TatumWebhookController {
       reference,
       sourceAddress,
     });
-  }
-
-  /**
-   * When enough confirmations are reached, mark the deposit as COMPLETED.
-   */
-  private async handleConfirmation(payload: any) {
-    const { txId, confirmations, chain } = payload;
-
-    if (!txId) {
-      this.logger.warn('Confirmation webhook missing txId. Skipping.');
-      return;
-    }
-
-    const threshold = this.CONFIRMATION_THRESHOLDS[chain] || 3;
-    this.logger.log(`Transaction ${txId}: ${confirmations}/${threshold} confirmations (${chain})`);
-
-    if (confirmations >= threshold) {
-      await this.webhookService.markTransactionAsCompleted(txId);
-    }
   }
 
   /**

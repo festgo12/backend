@@ -40,4 +40,5 @@ export declare class TatumWebhookService implements OnApplicationBootstrap {
         subscriptions: WebhookSubscription[];
     };
     ensureOutgoingWebhooks(): Promise<void>;
+    static notificationChain(currency: string): string;
 }

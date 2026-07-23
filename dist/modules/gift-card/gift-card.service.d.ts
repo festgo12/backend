@@ -46,8 +46,8 @@ export declare class GiftCardService {
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        listingId: string;
         totalPaidNgn: Prisma.Decimal;
+        listingId: string;
     }>;
     getMyPurchases(buyerId: string, page?: number, limit?: number): Promise<{
         data: any[];
@@ -80,13 +80,13 @@ export declare class GiftCardService {
         cardPin: string | null;
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -99,6 +99,12 @@ export declare class GiftCardService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -107,13 +113,13 @@ export declare class GiftCardService {
         orders: ({
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -126,6 +132,12 @@ export declare class GiftCardService {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -143,18 +155,18 @@ export declare class GiftCardService {
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            listingId: string;
             totalPaidNgn: Prisma.Decimal;
+            listingId: string;
         })[];
         moderator: ({
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -167,6 +179,12 @@ export declare class GiftCardService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -207,13 +225,13 @@ export declare class GiftCardService {
     moderateListing(listingId: string, dto: ModerateGiftCardListingDto, moderatorId: string): Promise<{
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -226,6 +244,12 @@ export declare class GiftCardService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -253,13 +277,13 @@ export declare class GiftCardService {
         data: ({
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -272,6 +296,12 @@ export declare class GiftCardService {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -279,13 +309,13 @@ export declare class GiftCardService {
             };
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -298,6 +328,12 @@ export declare class GiftCardService {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -333,8 +369,8 @@ export declare class GiftCardService {
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            listingId: string;
             totalPaidNgn: Prisma.Decimal;
+            listingId: string;
         })[];
         meta: {
             total: number;
@@ -364,13 +400,13 @@ export declare class GiftCardService {
         };
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -383,6 +419,12 @@ export declare class GiftCardService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -390,13 +432,13 @@ export declare class GiftCardService {
         };
         buyer: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -409,6 +451,12 @@ export declare class GiftCardService {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -425,8 +473,8 @@ export declare class GiftCardService {
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        listingId: string;
         totalPaidNgn: Prisma.Decimal;
+        listingId: string;
     }>;
     getStats(): Promise<{
         totalListings: number;

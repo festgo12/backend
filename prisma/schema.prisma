@@ -98,6 +98,12 @@ model User {
   twoFactorSecret  String?
   resetToken       String?        @unique
   resetTokenExpires DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  emailVerified            Boolean  @default(false)
+  phoneVerificationToken   String?
+  phoneVerificationExpires DateTime?
+  phoneVerified            Boolean  @default(false)
   failedLoginAttempts Int          @default(0)
   lockedUntil         DateTime?
   createdAt        DateTime       @default(now())
@@ -551,4 +557,17 @@ model DailyReport {
   createdAt         DateTime @default(now())
 
   @@index([date])
+}
+
+model HelpContent {
+  id          String   @id @default(uuid())
+  category    String
+  title       String
+  content     String
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }

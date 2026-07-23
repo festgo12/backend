@@ -380,4 +380,110 @@ export class AuthService {
 
     return { success: true };
   }
+
+  // --- Email Verification ---
+  async sendEmailVerification(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (!user.email) throw new UnauthorizedException('No email address on file');
+    if (user.emailVerified) return { success: true, message: 'Email already verified' };
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerificationToken: hashedCode,
+        emailVerificationExpires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+      },
+    });
+
+    // TODO: Send via EmailService when email delivery is configured
+    // For now, return the code for development/testing
+    return { success: true, code };
+  }
+
+  async verifyEmail(userId: string, token: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (user.emailVerified) return { success: true };
+
+    if (!user.emailVerificationToken || !user.emailVerificationExpires) {
+      throw new UnauthorizedException('No verification pending. Request a new code.');
+    }
+
+    if (user.emailVerificationExpires < new Date()) {
+      throw new UnauthorizedException('Verification code expired. Request a new one.');
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    if (hashedToken !== user.emailVerificationToken) {
+      throw new UnauthorizedException('Invalid verification code');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    return { success: true };
+  }
+
+  // --- Phone Verification ---
+  async sendPhoneVerification(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (!user.phone) throw new UnauthorizedException('No phone number on file');
+    if (user.phoneVerified) return { success: true, message: 'Phone already verified' };
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneVerificationToken: hashedCode,
+        phoneVerificationExpires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+      },
+    });
+
+    // TODO: Send via SMS service when configured
+    // For now, return the code for development/testing
+    return { success: true, code };
+  }
+
+  async verifyPhone(userId: string, token: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (user.phoneVerified) return { success: true };
+
+    if (!user.phoneVerificationToken || !user.phoneVerificationExpires) {
+      throw new UnauthorizedException('No verification pending. Request a new code.');
+    }
+
+    if (user.phoneVerificationExpires < new Date()) {
+      throw new UnauthorizedException('Verification code expired. Request a new one.');
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    if (hashedToken !== user.phoneVerificationToken) {
+      throw new UnauthorizedException('Invalid verification code');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        phoneVerified: true,
+        phoneVerificationToken: null,
+        phoneVerificationExpires: null,
+      },
+    });
+
+    return { success: true };
+  }
 }

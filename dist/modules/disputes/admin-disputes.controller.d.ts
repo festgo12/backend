@@ -10,11 +10,11 @@ export declare class AdminDisputesController {
         disputes: ({
             order: {
                 ad: {
-                    type: import("@src/generated/client").$Enums.AdType;
                     id: string;
                     status: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    type: import("@src/generated/client").$Enums.AdType;
                     sellerId: string;
                     version: number;
                     asset: import("@src/generated/client").$Enums.Currency;
@@ -51,37 +51,37 @@ export declare class AdminDisputesController {
             }[];
             initiator: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
             };
             assignee: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
             } | null;
         } & {
-            description: string | null;
             id: string;
             status: import("@src/generated/client").$Enums.DisputeStatus;
             createdAt: Date;
             updatedAt: Date;
             initiatorId: string;
+            description: string | null;
             orderId: string;
             reason: string;
             resolution: string | null;
@@ -107,11 +107,11 @@ export declare class AdminDisputesController {
     findOne(id: string): Promise<{
         order: {
             ad: {
-                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
+                type: import("@src/generated/client").$Enums.AdType;
                 sellerId: string;
                 version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
@@ -123,23 +123,23 @@ export declare class AdminDisputesController {
             };
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 wallets: {
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                     address: string | null;
+                    version: number;
                 }[];
             } & {
                 id: string;
@@ -152,6 +152,12 @@ export declare class AdminDisputesController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -159,23 +165,23 @@ export declare class AdminDisputesController {
             };
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 wallets: {
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                     address: string | null;
+                    version: number;
                 }[];
             } & {
                 id: string;
@@ -188,6 +194,12 @@ export declare class AdminDisputesController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -211,13 +223,13 @@ export declare class AdminDisputesController {
         evidence: ({
             uploadedBy: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
@@ -234,37 +246,37 @@ export declare class AdminDisputesController {
         })[];
         initiator: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
         assignee: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         } | null;
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -299,24 +311,24 @@ export declare class AdminDisputesController {
         }[];
         initiator: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -350,12 +362,12 @@ export declare class AdminDisputesController {
             uploadedById: string;
         }[];
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -390,24 +402,24 @@ export declare class AdminDisputesController {
         }[];
         initiator: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;

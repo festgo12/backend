@@ -27,7 +27,7 @@ let TatumWithdrawalService = TatumWithdrawalService_1 = class TatumWithdrawalSer
     tatumWallet;
     logger = new common_1.Logger(TatumWithdrawalService_1.name);
     apiKey;
-    baseUrl = 'https://api.tatum.io/v3';
+    baseUrl = 'https://api.tatum.io/v4';
     constructor(configService, httpService, prisma, walletService, tatumWallet) {
         this.configService = configService;
         this.httpService = httpService;

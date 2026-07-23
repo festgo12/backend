@@ -27,6 +27,7 @@ const upload_module_1 = require("./modules/upload/upload.module");
 const security_module_1 = require("./modules/security/security.module");
 const gift_card_module_1 = require("./modules/gift-card/gift-card.module");
 const reporting_module_1 = require("./modules/reporting/reporting.module");
+const help_center_module_1 = require("./modules/help-center/help-center.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             security_module_1.SecurityModule,
             gift_card_module_1.GiftCardModule,
             reporting_module_1.ReportingModule,
+            help_center_module_1.HelpCenterModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

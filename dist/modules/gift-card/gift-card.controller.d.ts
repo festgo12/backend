@@ -40,8 +40,8 @@ export declare class GiftCardController {
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
         askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-        listingId: string;
         totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
+        listingId: string;
     }>;
     getMyPurchases(req: any, page?: number, limit?: number): Promise<{
         data: any[];

@@ -69,8 +69,8 @@ let WalletController = WalletController_1 = class WalletController {
                 const index = Math.abs(this.hashCode(wallet.id)) % 1000000;
                 const address = await this.tatumWallet.generateAddress(currency, xpub, index);
                 const updatedWallet = await this.walletService.updateWalletAddress(wallet.id, address);
-                const chain = this.tatumWallet.mapCurrencyToChain(currency);
-                this.tatumWebhook.registerAddressSubscription(address, chain, currency).catch((err) => {
+                const notificationChain = tatum_webhook_service_1.TatumWebhookService.notificationChain(currency);
+                this.tatumWebhook.registerAddressSubscription(address, notificationChain, currency).catch((err) => {
                     this.logger.warn(`Failed to register webhook for ${currency} address ${address}: ${err.message}`);
                 });
                 return updatedWallet;

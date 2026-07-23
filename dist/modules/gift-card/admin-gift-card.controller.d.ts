@@ -26,13 +26,13 @@ export declare class AdminGiftCardController {
         cardPin: string | null;
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -45,6 +45,12 @@ export declare class AdminGiftCardController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -53,13 +59,13 @@ export declare class AdminGiftCardController {
         orders: ({
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -72,6 +78,12 @@ export declare class AdminGiftCardController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -89,18 +101,18 @@ export declare class AdminGiftCardController {
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
             askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-            listingId: string;
             totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
+            listingId: string;
         })[];
         moderator: ({
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -113,6 +125,12 @@ export declare class AdminGiftCardController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -144,13 +162,13 @@ export declare class AdminGiftCardController {
     moderateListing(req: any, id: string, dto: ModerateGiftCardListingDto): Promise<{
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -163,6 +181,12 @@ export declare class AdminGiftCardController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -190,13 +214,13 @@ export declare class AdminGiftCardController {
         data: ({
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -209,6 +233,12 @@ export declare class AdminGiftCardController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -216,13 +246,13 @@ export declare class AdminGiftCardController {
             };
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -235,6 +265,12 @@ export declare class AdminGiftCardController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -270,8 +306,8 @@ export declare class AdminGiftCardController {
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
             askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-            listingId: string;
             totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
+            listingId: string;
         })[];
         meta: {
             total: number;
@@ -301,13 +337,13 @@ export declare class AdminGiftCardController {
         };
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -320,6 +356,12 @@ export declare class AdminGiftCardController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -327,13 +369,13 @@ export declare class AdminGiftCardController {
         };
         buyer: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -346,6 +388,12 @@ export declare class AdminGiftCardController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -362,7 +410,7 @@ export declare class AdminGiftCardController {
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
         askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-        listingId: string;
         totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
+        listingId: string;
     }>;
 }

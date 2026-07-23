@@ -8,6 +8,8 @@ import { GoogleLoginDto } from './dto/google-login.dto';
 import { VerifyTwoFactorDto } from './dto/verify-2fa.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { VerifyPhoneDto } from './dto/verify-phone.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuditLog } from '../audit/audit.decorator';
 
@@ -60,7 +62,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate 2FA secret and QR code' })
   generate2FA(@Req() req: any) {
-    return this.authService.generate2FASecret(req.user.userId);
+    return this.authService.generate2FASecret(req.user.id);
   }
 
   @Post('2fa/verify')
@@ -69,7 +71,7 @@ export class AuthController {
   @AuditLog('AUTH_2FA_ENABLE', 'AUTH')
   @ApiOperation({ summary: 'Verify and enable 2FA' })
   verify2FA(@Req() req: any, @Body() dto: VerifyTwoFactorDto) {
-    return this.authService.verifyAndEnable2FA(req.user.userId, dto.token);
+    return this.authService.verifyAndEnable2FA(req.user.id, dto.token);
   }
 
   @Post('forgot-password')
@@ -85,5 +87,43 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset password with token' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @Post('verify-email/send')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send email verification code' })
+  sendEmailVerification(@Req() req: any) {
+    return this.authService.sendEmailVerification(req.user.id);
+  }
+
+  @Post('verify-email/verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_EMAIL_VERIFIED', 'AUTH')
+  @ApiOperation({ summary: 'Verify email with code' })
+  verifyEmail(@Req() req: any, @Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(req.user.id, dto.token);
+  }
+
+  @Post('verify-phone/send')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send phone verification code' })
+  sendPhoneVerification(@Req() req: any) {
+    return this.authService.sendPhoneVerification(req.user.id);
+  }
+
+  @Post('verify-phone/verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_PHONE_VERIFIED', 'AUTH')
+  @ApiOperation({ summary: 'Verify phone with code' })
+  verifyPhone(@Req() req: any, @Body() dto: VerifyPhoneDto) {
+    return this.authService.verifyPhone(req.user.id, dto.token);
   }
 }

@@ -12,7 +12,7 @@ import { TatumRiskService } from './tatum-risk.service';
 export class TatumDepositService {
   private readonly logger = new Logger(TatumDepositService.name);
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.tatum.io/v3';
+  private readonly baseUrl = 'https://api.tatum.io/v4';
 
   constructor(
     private readonly configService: ConfigService,

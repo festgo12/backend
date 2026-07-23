@@ -4,12 +4,12 @@ export declare class DisputesController {
     private readonly disputesService;
     constructor(disputesService: DisputesService);
     create(req: any, dto: CreateDisputeDto): Promise<{
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -19,11 +19,11 @@ export declare class DisputesController {
     findAll(req: any): Promise<({
         order: {
             ad: {
-                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
+                type: import("@src/generated/client").$Enums.AdType;
                 sellerId: string;
                 version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
@@ -59,12 +59,12 @@ export declare class DisputesController {
             uploadedById: string;
         }[];
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -74,11 +74,11 @@ export declare class DisputesController {
     findOne(id: string, req: any): Promise<{
         order: {
             ad: {
-                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
+                type: import("@src/generated/client").$Enums.AdType;
                 sellerId: string;
                 version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
@@ -99,6 +99,12 @@ export declare class DisputesController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -115,6 +121,12 @@ export declare class DisputesController {
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 resetTokenExpires: Date | null;
+                emailVerificationToken: string | null;
+                emailVerificationExpires: Date | null;
+                emailVerified: boolean;
+                phoneVerificationToken: string | null;
+                phoneVerificationExpires: Date | null;
+                phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 createdAt: Date;
@@ -138,13 +150,13 @@ export declare class DisputesController {
         evidence: ({
             uploadedBy: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
@@ -161,37 +173,37 @@ export declare class DisputesController {
         })[];
         initiator: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
         assignee: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         } | null;
     } & {
-        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
+        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -201,13 +213,13 @@ export declare class DisputesController {
     uploadEvidence(id: string, req: any, file: Express.Multer.File): Promise<{
         uploadedBy: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -225,13 +237,13 @@ export declare class DisputesController {
     listEvidence(id: string, req: any): Promise<({
         uploadedBy: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;

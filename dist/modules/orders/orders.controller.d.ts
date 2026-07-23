@@ -20,11 +20,11 @@ export declare class OrdersController {
     }>;
     findAll(req: any): Promise<({
         ad: {
-            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.AdType;
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
@@ -51,11 +51,11 @@ export declare class OrdersController {
     })[]>;
     findOne(id: string, req: any): Promise<{
         ad: {
-            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.AdType;
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
@@ -76,6 +76,12 @@ export declare class OrdersController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;
@@ -92,6 +98,12 @@ export declare class OrdersController {
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             createdAt: Date;

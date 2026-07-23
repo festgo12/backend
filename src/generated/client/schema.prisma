@@ -68,40 +68,46 @@ enum DisputeStatus {
 }
 
 model User {
-  id                   String             @id @default(uuid()) @db.Uuid
-  email                String?            @unique
-  phone                String?            @unique
-  passwordHash         String
-  role                 Role               @default(USER)
-  status               UserStatus         @default(ACTIVE)
-  profile              Profile?
-  preferences          UserPreference?
-  wallets              Wallet[]
-  ads                  Ad[]
-  buyOrders            Order[]            @relation("BuyerOrders")
-  sellOrders           Order[]            @relation("SellerOrders")
-  authTokens           AuthToken[]
-  devices              Device[]
-  notifications        Notification[]
-  notificationLogs     NotificationLog[]
-  initiatedDisputes    Dispute[]          @relation("Initiator")
-  assignedDisputes     Dispute[]          @relation("Assignee")
-  evidenceUploads      Evidence[]
-  giftCardListings     GiftCardListing[]
-  moderatedListings    GiftCardListing[]  @relation("ModeratedListings")
-  giftCardBuyerOrders  GiftCardOrder[]    @relation("GiftCardBuyerOrders")
-  giftCardSellerOrders GiftCardOrder[]    @relation("GiftCardSellerOrders")
-  giftCardEvidence     GiftCardEvidence[]
-  securityLogs         SecurityLog[]
-  securityAlerts       SecurityAlert[]
-  twoFactorEnabled     Boolean            @default(false)
-  twoFactorSecret      String?
-  resetToken           String?            @unique
-  resetTokenExpires    DateTime?
-  failedLoginAttempts  Int                @default(0)
-  lockedUntil          DateTime?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id                       String             @id @default(uuid()) @db.Uuid
+  email                    String?            @unique
+  phone                    String?            @unique
+  passwordHash             String
+  role                     Role               @default(USER)
+  status                   UserStatus         @default(ACTIVE)
+  profile                  Profile?
+  preferences              UserPreference?
+  wallets                  Wallet[]
+  ads                      Ad[]
+  buyOrders                Order[]            @relation("BuyerOrders")
+  sellOrders               Order[]            @relation("SellerOrders")
+  authTokens               AuthToken[]
+  devices                  Device[]
+  notifications            Notification[]
+  notificationLogs         NotificationLog[]
+  initiatedDisputes        Dispute[]          @relation("Initiator")
+  assignedDisputes         Dispute[]          @relation("Assignee")
+  evidenceUploads          Evidence[]
+  giftCardListings         GiftCardListing[]
+  moderatedListings        GiftCardListing[]  @relation("ModeratedListings")
+  giftCardBuyerOrders      GiftCardOrder[]    @relation("GiftCardBuyerOrders")
+  giftCardSellerOrders     GiftCardOrder[]    @relation("GiftCardSellerOrders")
+  giftCardEvidence         GiftCardEvidence[]
+  securityLogs             SecurityLog[]
+  securityAlerts           SecurityAlert[]
+  twoFactorEnabled         Boolean            @default(false)
+  twoFactorSecret          String?
+  resetToken               String?            @unique
+  resetTokenExpires        DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  emailVerified            Boolean            @default(false)
+  phoneVerificationToken   String?
+  phoneVerificationExpires DateTime?
+  phoneVerified            Boolean            @default(false)
+  failedLoginAttempts      Int                @default(0)
+  lockedUntil              DateTime?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
 
   @@index([email, phone])
 }
@@ -551,4 +557,17 @@ model DailyReport {
   createdAt         DateTime @default(now())
 
   @@index([date])
+}
+
+model HelpContent {
+  id        String   @id @default(uuid())
+  category  String
+  title     String
+  content   String
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
 }

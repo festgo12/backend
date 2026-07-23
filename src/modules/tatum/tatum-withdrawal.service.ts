@@ -11,7 +11,7 @@ import { TatumWalletService } from './tatum-wallet.service';
 export class TatumWithdrawalService {
   private readonly logger = new Logger(TatumWithdrawalService.name);
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.tatum.io/v3';
+  private readonly baseUrl = 'https://api.tatum.io/v4';
 
   constructor(
     private readonly configService: ConfigService,
