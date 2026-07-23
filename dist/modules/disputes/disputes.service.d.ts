@@ -9,12 +9,12 @@ export declare class DisputesService {
     private eventEmitter;
     constructor(prisma: PrismaService, uploadService: UploadService, eventEmitter: EventEmitter2);
     createDispute(userId: string, dto: CreateDisputeDto): Promise<{
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -24,13 +24,13 @@ export declare class DisputesService {
     getUserDisputes(userId: string): Promise<({
         order: {
             ad: {
+                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                type: import("@src/generated/client").$Enums.AdType;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -43,11 +43,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -64,12 +64,12 @@ export declare class DisputesService {
             uploadedById: string;
         }[];
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -79,13 +79,13 @@ export declare class DisputesService {
     getDispute(disputeId: string, userId: string): Promise<{
         order: {
             ad: {
+                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                type: import("@src/generated/client").$Enums.AdType;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -142,11 +142,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -155,13 +155,13 @@ export declare class DisputesService {
         evidence: ({
             uploadedBy: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
@@ -178,37 +178,37 @@ export declare class DisputesService {
         })[];
         initiator: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
         assignee: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         } | null;
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -218,13 +218,13 @@ export declare class DisputesService {
     addEvidence(disputeId: string, userId: string, file: Express.Multer.File): Promise<{
         uploadedBy: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -242,13 +242,13 @@ export declare class DisputesService {
     listEvidence(disputeId: string, userId: string): Promise<({
         uploadedBy: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
@@ -273,13 +273,13 @@ export declare class DisputesService {
         disputes: ({
             order: {
                 ad: {
+                    type: import("@src/generated/client").$Enums.AdType;
                     id: string;
                     status: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    type: import("@src/generated/client").$Enums.AdType;
-                    sellerId: string;
                     version: number;
+                    sellerId: string;
                     asset: import("@src/generated/client").$Enums.Currency;
                     price: import("@src/generated/client/runtime/library").Decimal;
                     quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -292,11 +292,11 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.OrderStatus;
                 createdAt: Date;
                 updatedAt: Date;
+                version: number;
                 expiresAt: Date;
                 fraudFlagged: boolean;
                 sellerId: string;
                 buyerId: string;
-                version: number;
                 fiatAmount: import("@src/generated/client/runtime/library").Decimal;
                 cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
                 feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -314,37 +314,37 @@ export declare class DisputesService {
             }[];
             initiator: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
             };
             assignee: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
             } | null;
         } & {
+            description: string | null;
             id: string;
             status: import("@src/generated/client").$Enums.DisputeStatus;
             createdAt: Date;
             updatedAt: Date;
             initiatorId: string;
-            description: string | null;
             orderId: string;
             reason: string;
             resolution: string | null;
@@ -361,13 +361,13 @@ export declare class DisputesService {
     getDisputeAdmin(disputeId: string): Promise<{
         order: {
             ad: {
+                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                type: import("@src/generated/client").$Enums.AdType;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -377,13 +377,13 @@ export declare class DisputesService {
             };
             seller: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 wallets: {
                     id: string;
@@ -419,13 +419,13 @@ export declare class DisputesService {
             };
             buyer: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 wallets: {
                     id: string;
@@ -464,11 +464,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -477,13 +477,13 @@ export declare class DisputesService {
         evidence: ({
             uploadedBy: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 email: string | null;
@@ -500,37 +500,37 @@ export declare class DisputesService {
         })[];
         initiator: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
         assignee: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         } | null;
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -543,11 +543,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -565,24 +565,24 @@ export declare class DisputesService {
         }[];
         initiator: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -595,11 +595,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -616,12 +616,12 @@ export declare class DisputesService {
             uploadedById: string;
         }[];
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -634,11 +634,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -656,24 +656,24 @@ export declare class DisputesService {
         }[];
         initiator: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
             email: string | null;
         };
     } & {
+        description: string | null;
         id: string;
         status: import("@src/generated/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        description: string | null;
         orderId: string;
         reason: string;
         resolution: string | null;
@@ -685,11 +685,11 @@ export declare class DisputesService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;

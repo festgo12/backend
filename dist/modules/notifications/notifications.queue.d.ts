@@ -11,13 +11,13 @@ export declare class NotificationsQueue {
     processQueue(): Promise<void>;
     dispatchLog(logId: string): Promise<boolean>;
     resend(logId: string): Promise<{
+        type: string;
+        title: string;
         id: string;
         status: import("@src/generated/client").$Enums.NotificationStatus;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        type: string;
-        title: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         body: string;
         channel: import("@src/generated/client").$Enums.NotificationChannel;

@@ -4,25 +4,25 @@ export declare class HelpCenterService {
     constructor(prisma: PrismaService);
     getPublicContent(): Promise<{
         faq: {
-            id: string;
             title: string;
+            id: string;
             content: string;
             sortOrder: number;
             category: string;
         }[];
         contact: {
-            id: string;
             title: string;
+            id: string;
             content: string;
             sortOrder: number;
             category: string;
         }[];
     }>;
     getAllContent(): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         content: string;
         sortOrder: number;
         category: string;
@@ -35,10 +35,10 @@ export declare class HelpCenterService {
         sortOrder?: number;
         active?: boolean;
     }): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         content: string;
         sortOrder: number;
         category: string;
@@ -51,20 +51,20 @@ export declare class HelpCenterService {
         sortOrder?: number;
         active?: boolean;
     }): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         content: string;
         sortOrder: number;
         category: string;
         active: boolean;
     }>;
     deleteItem(id: string): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
         content: string;
         sortOrder: number;
         category: string;

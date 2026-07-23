@@ -10,25 +10,25 @@ export declare class AdminSecurityController {
     private readonly prisma;
     constructor(fraudRulesService: FraudRulesService, riskEngineService: RiskEngineService, alertEngineService: AlertEngineService, prisma: PrismaService);
     getFraudRules(): Promise<{
+        name: string;
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         severity: string;
         code: string;
-        description: string;
         enabled: boolean;
         threshold: number;
         action: string;
     }[]>;
     updateFraudRule(ruleId: string, dto: UpdateFraudRuleDto): Promise<{
+        name: string;
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         severity: string;
         code: string;
-        description: string;
         enabled: boolean;
         threshold: number;
         action: string;
@@ -64,12 +64,12 @@ export declare class AdminSecurityController {
                 email: string | null;
             };
         } & {
+            type: string;
+            title: string;
             id: string;
             createdAt: Date;
             userId: string;
-            type: string;
             severity: string;
-            title: string;
             message: string;
             metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             isRead: boolean;
@@ -94,12 +94,12 @@ export declare class AdminSecurityController {
         }[];
     }>;
     markAlertAsRead(alertId: string): Promise<{
+        type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
-        type: string;
         severity: string;
-        title: string;
         message: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         isRead: boolean;

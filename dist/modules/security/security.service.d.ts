@@ -64,12 +64,12 @@ export declare class SecurityService {
         limit?: number;
     }): Promise<{
         alerts: {
+            type: string;
+            title: string;
             id: string;
             createdAt: Date;
             userId: string;
-            type: string;
             severity: string;
-            title: string;
             message: string;
             metadata: Prisma.JsonValue | null;
             isRead: boolean;
@@ -82,12 +82,12 @@ export declare class SecurityService {
         };
     }>;
     markAlertAsRead(userId: string, alertId: string): Promise<{
+        type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
-        type: string;
         severity: string;
-        title: string;
         message: string;
         metadata: Prisma.JsonValue | null;
         isRead: boolean;

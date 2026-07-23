@@ -12,11 +12,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -27,11 +27,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -42,11 +42,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -57,11 +57,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -72,11 +72,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -84,13 +84,13 @@ export declare class OrdersService {
     }>;
     getOrder(orderId: string, userId: string): Promise<{
         ad: {
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.AdType;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
@@ -147,11 +147,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;
@@ -159,13 +159,13 @@ export declare class OrdersService {
     }>;
     listUserOrders(userId: string): Promise<({
         ad: {
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.AdType;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
@@ -178,11 +178,11 @@ export declare class OrdersService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: Decimal;
         cryptoAmount: Decimal;
         feeAmount: Decimal;

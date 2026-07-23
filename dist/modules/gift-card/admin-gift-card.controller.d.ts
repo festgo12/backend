@@ -26,13 +26,13 @@ export declare class AdminGiftCardController {
         cardPin: string | null;
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -59,13 +59,13 @@ export declare class AdminGiftCardController {
         orders: ({
             buyer: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -94,25 +94,25 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             sellerId: string;
             buyerId: string;
-            version: number;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
             askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-            totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
             listingId: string;
+            totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
         })[];
         moderator: ({
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -148,8 +148,8 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
@@ -162,13 +162,13 @@ export declare class AdminGiftCardController {
     moderateListing(req: any, id: string, dto: ModerateGiftCardListingDto): Promise<{
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -197,8 +197,8 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         cardCode: string;
         cardPin: string | null;
@@ -214,13 +214,13 @@ export declare class AdminGiftCardController {
         data: ({
             seller: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -246,13 +246,13 @@ export declare class AdminGiftCardController {
             };
             buyer: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -281,8 +281,8 @@ export declare class AdminGiftCardController {
                 status: import("@src/generated/client").$Enums.GiftCardListingStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 brand: import("@src/generated/client").$Enums.GiftCardBrand;
                 cardCode: string;
                 cardPin: string | null;
@@ -299,15 +299,15 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             sellerId: string;
             buyerId: string;
-            version: number;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
             askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-            totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
             listingId: string;
+            totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
         })[];
         meta: {
             total: number;
@@ -324,8 +324,8 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardListingStatus;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
             version: number;
+            sellerId: string;
             brand: import("@src/generated/client").$Enums.GiftCardBrand;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
@@ -337,13 +337,13 @@ export declare class AdminGiftCardController {
         };
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -369,13 +369,13 @@ export declare class AdminGiftCardController {
         };
         buyer: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -403,14 +403,14 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         sellerId: string;
         buyerId: string;
-        version: number;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
         askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-        totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
         listingId: string;
+        totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
     }>;
 }

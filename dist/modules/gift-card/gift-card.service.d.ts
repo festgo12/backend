@@ -39,15 +39,15 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         sellerId: string;
         buyerId: string;
-        version: number;
         feeAmount: Prisma.Decimal;
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        totalPaidNgn: Prisma.Decimal;
         listingId: string;
+        totalPaidNgn: Prisma.Decimal;
     }>;
     getMyPurchases(buyerId: string, page?: number, limit?: number): Promise<{
         data: any[];
@@ -80,13 +80,13 @@ export declare class GiftCardService {
         cardPin: string | null;
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -113,13 +113,13 @@ export declare class GiftCardService {
         orders: ({
             buyer: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -148,25 +148,25 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             sellerId: string;
             buyerId: string;
-            version: number;
             feeAmount: Prisma.Decimal;
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            totalPaidNgn: Prisma.Decimal;
             listingId: string;
+            totalPaidNgn: Prisma.Decimal;
         })[];
         moderator: ({
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -202,8 +202,8 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         denomination: Prisma.Decimal;
         cardCurrency: string;
@@ -225,13 +225,13 @@ export declare class GiftCardService {
     moderateListing(listingId: string, dto: ModerateGiftCardListingDto, moderatorId: string): Promise<{
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -260,8 +260,8 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         cardCode: string;
         cardPin: string | null;
@@ -277,13 +277,13 @@ export declare class GiftCardService {
         data: ({
             seller: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -309,13 +309,13 @@ export declare class GiftCardService {
             };
             buyer: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
@@ -344,8 +344,8 @@ export declare class GiftCardService {
                 status: import("@src/generated/client").$Enums.GiftCardListingStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 brand: import("@src/generated/client").$Enums.GiftCardBrand;
                 cardCode: string;
                 cardPin: string | null;
@@ -362,15 +362,15 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             sellerId: string;
             buyerId: string;
-            version: number;
             feeAmount: Prisma.Decimal;
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            totalPaidNgn: Prisma.Decimal;
             listingId: string;
+            totalPaidNgn: Prisma.Decimal;
         })[];
         meta: {
             total: number;
@@ -387,8 +387,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardListingStatus;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
             version: number;
+            sellerId: string;
             brand: import("@src/generated/client").$Enums.GiftCardBrand;
             denomination: Prisma.Decimal;
             cardCurrency: string;
@@ -400,13 +400,13 @@ export declare class GiftCardService {
         };
         seller: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -432,13 +432,13 @@ export declare class GiftCardService {
         };
         buyer: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
@@ -466,15 +466,15 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         sellerId: string;
         buyerId: string;
-        version: number;
         feeAmount: Prisma.Decimal;
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        totalPaidNgn: Prisma.Decimal;
         listingId: string;
+        totalPaidNgn: Prisma.Decimal;
     }>;
     getStats(): Promise<{
         totalListings: number;

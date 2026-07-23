@@ -36,11 +36,11 @@ export declare class WalletService {
             currency: import("@src/generated/client").$Enums.Currency;
         };
         transaction: {
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
             walletId: string;
             amount: Prisma.Decimal;
@@ -48,9 +48,9 @@ export declare class WalletService {
             fee: Prisma.Decimal;
         } | null;
     } & {
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         transactionId: string | null;
@@ -64,11 +64,11 @@ export declare class WalletService {
             currency: import("@src/generated/client").$Enums.Currency;
         };
         transaction: {
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
             walletId: string;
             amount: Prisma.Decimal;
@@ -76,9 +76,9 @@ export declare class WalletService {
             fee: Prisma.Decimal;
         } | null;
     } & {
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         transactionId: string | null;
@@ -95,11 +95,11 @@ export declare class WalletService {
         status?: string;
         metadata?: any;
     }): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         amount: Prisma.Decimal;
@@ -118,11 +118,11 @@ export declare class WalletService {
         version: number;
     }>;
     findTransactionById(id: string): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         amount: Prisma.Decimal;
@@ -130,11 +130,11 @@ export declare class WalletService {
         fee: Prisma.Decimal;
     } | null>;
     findTransactionByReference(reference: string): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         amount: Prisma.Decimal;
@@ -142,11 +142,11 @@ export declare class WalletService {
         fee: Prisma.Decimal;
     } | null>;
     updateTransactionStatus(transactionId: string, status: string, metadata?: any): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         amount: Prisma.Decimal;

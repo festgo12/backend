@@ -17,13 +17,13 @@ export declare class MarketplaceController {
                     lastLogin: Date;
                 }[];
             };
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.AdType;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -39,13 +39,13 @@ export declare class MarketplaceController {
         };
     }>;
     createAd(req: any, dto: CreateAdDto): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -54,13 +54,13 @@ export declare class MarketplaceController {
         isSponsored: boolean;
     }>;
     listMyAds(req: any): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -69,13 +69,13 @@ export declare class MarketplaceController {
         isSponsored: boolean;
     }[]>;
     updateAd(req: any, id: string, dto: UpdateAdDto): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -84,13 +84,13 @@ export declare class MarketplaceController {
         isSponsored: boolean;
     }>;
     deleteAd(req: any, id: string): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;

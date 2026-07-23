@@ -34,11 +34,11 @@ export declare class WalletController {
             currency: import("@src/generated/client").$Enums.Currency;
         };
         transaction: {
+            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             walletId: string;
             amount: import("@src/generated/client/runtime/library").Decimal;
@@ -46,9 +46,9 @@ export declare class WalletController {
             fee: import("@src/generated/client/runtime/library").Decimal;
         } | null;
     } & {
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         walletId: string;
         transactionId: string | null;

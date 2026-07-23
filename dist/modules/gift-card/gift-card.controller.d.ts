@@ -33,15 +33,15 @@ export declare class GiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         sellerId: string;
         buyerId: string;
-        version: number;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
         askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-        totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
         listingId: string;
+        totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
     }>;
     getMyPurchases(req: any, page?: number, limit?: number): Promise<{
         data: any[];

@@ -5,13 +5,13 @@ export declare class MarketplaceService {
     private prisma;
     constructor(prisma: PrismaService);
     createAd(userId: string, dto: CreateAdDto): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -20,13 +20,13 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     updateAd(userId: string, adId: string, dto: UpdateAdDto): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -35,13 +35,13 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     deleteAd(userId: string, adId: string): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -50,13 +50,13 @@ export declare class MarketplaceService {
         isSponsored: boolean;
     }>;
     listUserAds(userId: string): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        type: import("@src/generated/client").$Enums.AdType;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -84,13 +84,13 @@ export declare class MarketplaceService {
                     lastLogin: Date;
                 }[];
             };
+            type: import("@src/generated/client").$Enums.AdType;
             id: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import("@src/generated/client").$Enums.AdType;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;

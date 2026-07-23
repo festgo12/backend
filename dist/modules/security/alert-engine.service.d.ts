@@ -14,12 +14,12 @@ export declare class AlertEngineService {
     private readonly logger;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
     createAlert(params: CreateAlertParams): Promise<{
+        type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
-        type: string;
         severity: string;
-        title: string;
         message: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         isRead: boolean;

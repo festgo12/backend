@@ -59,12 +59,12 @@ export declare class SecurityController {
     }>;
     getAlerts(req: any, query: QueryAlertsDto): Promise<{
         alerts: {
+            type: string;
+            title: string;
             id: string;
             createdAt: Date;
             userId: string;
-            type: string;
             severity: string;
-            title: string;
             message: string;
             metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             isRead: boolean;
@@ -77,12 +77,12 @@ export declare class SecurityController {
         };
     }>;
     markAlertRead(req: any, alertId: string): Promise<{
+        type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
-        type: string;
         severity: string;
-        title: string;
         message: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         isRead: boolean;

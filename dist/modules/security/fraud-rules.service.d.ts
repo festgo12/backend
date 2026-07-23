@@ -16,13 +16,13 @@ export declare class FraudRulesService {
     onModuleInit(): Promise<void>;
     private seedDefaultRules;
     getAllRules(): Promise<{
+        name: string;
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         severity: string;
         code: string;
-        description: string;
         enabled: boolean;
         threshold: number;
         action: string;
@@ -33,25 +33,25 @@ export declare class FraudRulesService {
         severity?: string;
         action?: string;
     }): Promise<{
+        name: string;
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         severity: string;
         code: string;
-        description: string;
         enabled: boolean;
         threshold: number;
         action: string;
     } | null>;
     getRuleByCode(code: string): Promise<{
+        name: string;
+        description: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         severity: string;
         code: string;
-        description: string;
         enabled: boolean;
         threshold: number;
         action: string;

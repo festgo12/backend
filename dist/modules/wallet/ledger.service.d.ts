@@ -12,9 +12,9 @@ export declare class LedgerService {
         reference: string;
         metadata?: any;
     }): Promise<{
+        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         createdAt: Date;
-        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
         walletId: string;
         transactionId: string | null;
