@@ -33,6 +33,13 @@ let SecurityController = class SecurityController {
         this.riskEngineService = riskEngineService;
         this.alertEngineService = alertEngineService;
     }
+    async heartbeat(req, deviceId) {
+        await this.securityService.updateDeviceActivity(req.user.id, deviceId, {
+            ipAddress: req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || req.ip,
+            userAgent: req.headers?.['user-agent'],
+        });
+        return { success: true };
+    }
     getDevices(req) {
         return this.securityService.getUserDevices(req.user.id);
     }
@@ -74,6 +81,16 @@ let SecurityController = class SecurityController {
     }
 };
 exports.SecurityController = SecurityController;
+__decorate([
+    (0, common_1.Post)('heartbeat'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Update device activity timestamp (keep-online heartbeat)' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)('deviceId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], SecurityController.prototype, "heartbeat", null);
 __decorate([
     (0, common_1.Get)('devices'),
     (0, swagger_1.ApiOperation)({ summary: 'List all devices for the current user' }),

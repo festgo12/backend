@@ -14,6 +14,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
+const path_1 = require("path");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const users_service_1 = require("./users.service");
@@ -28,7 +31,10 @@ let UsersController = class UsersController {
     getMe(userId) {
         return this.usersService.findMe(userId);
     }
-    updateProfile(userId, dto) {
+    updateProfile(userId, dto, file) {
+        if (file) {
+            dto.avatarUrl = `/uploads/avatars/${file.filename}`;
+        }
         return this.usersService.updateProfile(userId, dto);
     }
     updatePreferences(userId, dto) {
@@ -52,12 +58,23 @@ __decorate([
 ], UsersController.prototype, "getMe", null);
 __decorate([
     (0, common_1.Patch)('profile'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('avatar', {
+        storage: (0, multer_1.diskStorage)({
+            destination: (0, path_1.join)(__dirname, '..', '..', '..', 'uploads', 'avatars'),
+            filename: (_req, file, cb) => {
+                const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${(0, path_1.extname)(file.originalname)}`;
+                cb(null, uniqueName);
+            },
+        }),
+        limits: { fileSize: 5 * 1024 * 1024 },
+    })),
     (0, audit_decorator_1.AuditLog)('USER_PROFILE_UPDATE', 'USER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update user profile' }),
     __param(0, (0, get_user_decorator_1.GetUser)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateProfileDto]),
+    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateProfileDto, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateProfile", null);
 __decorate([

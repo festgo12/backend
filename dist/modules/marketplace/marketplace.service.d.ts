@@ -10,8 +10,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -25,8 +25,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -40,8 +40,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -55,8 +55,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -77,11 +77,14 @@ export declare class MarketplaceService {
                 completionRate: number;
                 profile: {
                     firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     kycStatus: string;
                 } | null;
                 id: string;
                 devices: {
                     lastLogin: Date;
+                    lastActivity: Date | null;
                 }[];
             };
             type: import("@src/generated/client").$Enums.AdType;
@@ -89,8 +92,8 @@ export declare class MarketplaceService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;

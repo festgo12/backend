@@ -1,4 +1,7 @@
-import { Controller, Get, Patch, Body, UseGuards, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Delete, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
@@ -20,9 +23,26 @@ export class UsersController {
   }
 
   @Patch('profile')
+  @UseInterceptors(FileInterceptor('avatar', {
+    storage: diskStorage({
+      destination: join(__dirname, '..', '..', '..', 'uploads', 'avatars'),
+      filename: (_req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${extname(file.originalname)}`;
+        cb(null, uniqueName);
+      },
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
   @AuditLog('USER_PROFILE_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user profile' })
-  updateProfile(@GetUser('id') userId: string, @Body() dto: UpdateProfileDto) {
+  updateProfile(
+    @GetUser('id') userId: string,
+    @Body() dto: UpdateProfileDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      dto.avatarUrl = `/uploads/avatars/${file.filename}`;
+    }
     return this.usersService.updateProfile(userId, dto);
   }
 

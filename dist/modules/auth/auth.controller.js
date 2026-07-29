@@ -20,7 +20,11 @@ const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
 const refresh_token_dto_1 = require("./dto/refresh-token.dto");
 const google_login_dto_1 = require("./dto/google-login.dto");
-const verify_2fa_dto_1 = require("./dto/verify-2fa.dto");
+const confirm_enable_2fa_dto_1 = require("./dto/confirm-enable-2fa.dto");
+const two_factor_login_dto_1 = require("./dto/two-factor-login.dto");
+const send_two_factor_otp_dto_1 = require("./dto/send-two-factor-otp.dto");
+const disable_2fa_dto_1 = require("./dto/disable-2fa.dto");
+const change_password_dto_1 = require("./dto/change-password.dto");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
 const verify_email_dto_1 = require("./dto/verify-email.dto");
@@ -47,17 +51,32 @@ let AuthController = class AuthController {
     googleLogin(dto) {
         return this.authService.googleLogin(dto);
     }
-    generate2FA(req) {
-        return this.authService.generate2FASecret(req.user.id);
+    enable2FA(req) {
+        return this.authService.enable2FA(req.user.id);
     }
-    verify2FA(req, dto) {
-        return this.authService.verifyAndEnable2FA(req.user.id, dto.token);
+    confirmEnable2FA(req, dto) {
+        return this.authService.confirmEnable2FA(req.user.id, dto.code);
+    }
+    verify2FALogin(dto, req) {
+        return this.authService.verify2FALogin(dto.twoFactorToken, dto.code, req);
+    }
+    send2faOtp(dto) {
+        return this.authService.send2faOtp(dto.twoFactorToken);
+    }
+    disable2FA(req) {
+        return this.authService.disable2FA(req.user.id);
+    }
+    confirmDisable2FA(req, dto) {
+        return this.authService.confirmDisable2FA(req.user.id, dto.code);
     }
     forgotPassword(dto) {
         return this.authService.forgotPassword(dto.email);
     }
     resetPassword(dto) {
         return this.authService.resetPassword(dto.token, dto.newPassword);
+    }
+    changePassword(req, dto) {
+        return this.authService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
     }
     sendEmailVerification(req) {
         return this.authService.sendEmailVerification(req.user.id);
@@ -125,27 +144,75 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "googleLogin", null);
 __decorate([
-    (0, common_1.Post)('2fa/generate'),
+    (0, common_1.Post)('2fa/enable'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Generate 2FA secret and QR code' }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_ENABLE', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Enable 2FA - sends OTP to email' }),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
-], AuthController.prototype, "generate2FA", null);
+], AuthController.prototype, "enable2FA", null);
 __decorate([
-    (0, common_1.Post)('2fa/verify'),
+    (0, common_1.Post)('2fa/confirm-enable'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, audit_decorator_1.AuditLog)('AUTH_2FA_ENABLE', 'AUTH'),
-    (0, swagger_1.ApiOperation)({ summary: 'Verify and enable 2FA' }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_CONFIRM', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Confirm 2FA enable with OTP code' }),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, verify_2fa_dto_1.VerifyTwoFactorDto]),
+    __metadata("design:paramtypes", [Object, confirm_enable_2fa_dto_1.ConfirmEnableTwoFactorDto]),
     __metadata("design:returntype", void 0)
-], AuthController.prototype, "verify2FA", null);
+], AuthController.prototype, "confirmEnable2FA", null);
+__decorate([
+    (0, common_1.Post)('2fa/login-verify'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_LOGIN', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Verify 2FA during login' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [two_factor_login_dto_1.TwoFactorLoginDto, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "verify2FALogin", null);
+__decorate([
+    (0, common_1.Post)('2fa/send-otp'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Resend 2FA OTP during login' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [send_two_factor_otp_dto_1.SendTwoFactorOtpDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "send2faOtp", null);
+__decorate([
+    (0, common_1.Post)('2fa/disable'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_DISABLE', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Disable 2FA - sends OTP to confirm' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "disable2FA", null);
+__decorate([
+    (0, common_1.Post)('2fa/confirm-disable'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_2FA_DISABLED', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Confirm 2FA disable with OTP code' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, disable_2fa_dto_1.DisableTwoFactorDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "confirmDisable2FA", null);
 __decorate([
     (0, common_1.Post)('forgot-password'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
@@ -165,6 +232,19 @@ __decorate([
     __metadata("design:paramtypes", [reset_password_dto_1.ResetPasswordDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "resetPassword", null);
+__decorate([
+    (0, common_1.Post)('change-password'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, audit_decorator_1.AuditLog)('AUTH_PASSWORD_CHANGE', 'AUTH'),
+    (0, swagger_1.ApiOperation)({ summary: 'Change password while logged in' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, change_password_dto_1.ChangePasswordDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "changePassword", null);
 __decorate([
     (0, common_1.Post)('verify-email/send'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

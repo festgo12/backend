@@ -275,6 +275,49 @@ export class SecurityService {
 
     if (!userAgent) return { browser, osVersion, deviceName };
 
+    // P2NApp custom User-Agent: "P2NApp/1.0 (Android 34; Samsung SM-S918B)"
+    const p2nMatch = userAgent.match(/P2NApp\/[\d.]+\s*\(([^)]+)\)/);
+    if (p2nMatch) {
+      const parts = p2nMatch[1].split(';').map(s => s.trim());
+      const platform = parts[0] || '';
+      const model = parts[1] || '';
+
+      browser = 'P2N Mobile App';
+
+      if (platform.startsWith('Android')) {
+        osVersion = platform;
+        deviceName = model || 'Android Device';
+      } else if (platform.startsWith('iOS')) {
+        osVersion = platform;
+        deviceName = model || 'iPhone';
+      } else if (platform.startsWith('macOS')) {
+        osVersion = platform;
+        deviceName = model || 'Mac';
+      } else if (platform.startsWith('Windows')) {
+        osVersion = platform;
+        deviceName = model || 'PC';
+      } else if (platform.startsWith('Linux')) {
+        osVersion = platform;
+        deviceName = model || 'Linux Device';
+      } else if (platform === 'Web') {
+        osVersion = 'Web';
+        deviceName = 'Web Browser';
+      } else {
+        osVersion = platform;
+        deviceName = model || 'Mobile Device';
+      }
+
+      return { browser, osVersion, deviceName };
+    }
+
+    // Dart/Flutter generic UA (e.g., "Dart/3.3" or "Dart VM/3.3")
+    if (userAgent.startsWith('Dart') || userAgent.includes('Flutter')) {
+      browser = 'P2N Mobile App';
+      osVersion = 'Mobile';
+      deviceName = 'Mobile Device';
+      return { browser, osVersion, deviceName };
+    }
+
     // Browser detection
     if (userAgent.includes('Firefox/')) browser = 'Firefox';
     else if (userAgent.includes('Edg/')) browser = 'Edge';

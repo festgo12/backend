@@ -10,11 +10,14 @@ export declare class MarketplaceController {
                 completionRate: number;
                 profile: {
                     firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     kycStatus: string;
                 } | null;
                 id: string;
                 devices: {
                     lastLogin: Date;
+                    lastActivity: Date | null;
                 }[];
             };
             type: import("@src/generated/client").$Enums.AdType;
@@ -22,8 +25,8 @@ export declare class MarketplaceController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -44,8 +47,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -59,8 +62,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -74,8 +77,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -89,8 +92,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
         price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;

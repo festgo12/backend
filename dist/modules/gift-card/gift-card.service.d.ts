@@ -39,9 +39,9 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
         buyerId: string;
+        version: number;
         feeAmount: Prisma.Decimal;
         denomination: Prisma.Decimal;
         cardCurrency: string;
@@ -98,6 +98,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -131,6 +133,8 @@ export declare class GiftCardService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -148,9 +152,9 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
             buyerId: string;
+            version: number;
             feeAmount: Prisma.Decimal;
             denomination: Prisma.Decimal;
             cardCurrency: string;
@@ -178,6 +182,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -202,8 +208,8 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         denomination: Prisma.Decimal;
         cardCurrency: string;
@@ -243,6 +249,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -260,8 +268,8 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         cardCode: string;
         cardPin: string | null;
@@ -295,6 +303,8 @@ export declare class GiftCardService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -327,6 +337,8 @@ export declare class GiftCardService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -344,8 +356,8 @@ export declare class GiftCardService {
                 status: import("@src/generated/client").$Enums.GiftCardListingStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 brand: import("@src/generated/client").$Enums.GiftCardBrand;
                 cardCode: string;
                 cardPin: string | null;
@@ -362,9 +374,9 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
             buyerId: string;
+            version: number;
             feeAmount: Prisma.Decimal;
             denomination: Prisma.Decimal;
             cardCurrency: string;
@@ -387,8 +399,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardListingStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             brand: import("@src/generated/client").$Enums.GiftCardBrand;
             denomination: Prisma.Decimal;
             cardCurrency: string;
@@ -418,6 +430,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -450,6 +464,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -466,9 +482,9 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
         buyerId: string;
+        version: number;
         feeAmount: Prisma.Decimal;
         denomination: Prisma.Decimal;
         cardCurrency: string;

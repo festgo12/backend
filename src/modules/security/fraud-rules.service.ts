@@ -17,7 +17,7 @@ const DEFAULT_RULES: FraudRuleConfig[] = [
     name: 'Multiple Accounts Same Device',
     description: 'Detects when multiple user accounts are logged into from the same device fingerprint',
     threshold: 2,
-    severity: 'HIGH',
+    severity: 'MEDIUM',
     action: 'ALERT',
   },
   {
@@ -79,7 +79,10 @@ export class FraudRulesService {
     for (const rule of DEFAULT_RULES) {
       await this.prisma.fraudRule.upsert({
         where: { code: rule.code },
-        update: {},
+        update: {
+          severity: rule.severity,
+          threshold: rule.threshold,
+        },
         create: {
           name: rule.name,
           code: rule.code,
@@ -118,6 +121,21 @@ export class FraudRulesService {
   async evaluateMultipleAccountsSameDevice(userId: string, deviceId: string) {
     const rule = await this.getRuleByCode('MULTIPLE_ACCOUNTS_SAME_DEVICE');
     if (!rule || !rule.enabled) return;
+
+    // Skip if this is the user's first login on this device (device just created)
+    const currentDevice = await this.prisma.device.findFirst({
+      where: { userId, deviceId },
+      select: { createdAt: true },
+    });
+    if (!currentDevice) return;
+    const deviceAge = Date.now() - currentDevice.createdAt.getTime();
+    if (deviceAge < 30_000) return; // Created within last 30 seconds = first-time login
+
+    // Skip if there's already an unread alert for this type (no repeat spam)
+    const existingAlert = await this.prisma.securityAlert.findFirst({
+      where: { userId, type: rule.code, isRead: false },
+    });
+    if (existingAlert) return;
 
     const accountsOnDevice = await this.prisma.device.findMany({
       where: { deviceId },

@@ -131,6 +131,8 @@ exports.Prisma.UserScalarFieldEnum = {
   status: 'status',
   twoFactorEnabled: 'twoFactorEnabled',
   twoFactorSecret: 'twoFactorSecret',
+  twoFactorOtpHash: 'twoFactorOtpHash',
+  twoFactorOtpExpires: 'twoFactorOtpExpires',
   resetToken: 'resetToken',
   resetTokenExpires: 'resetTokenExpires',
   emailVerificationToken: 'emailVerificationToken',

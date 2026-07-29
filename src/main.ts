@@ -13,6 +13,9 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
+  // Trust proxy for correct client IP behind load balancers
+  (app.getHttpAdapter().getInstance() as any).set('trust proxy', true);
+
   // Security
   app.use(helmet());
   app.enableCors();

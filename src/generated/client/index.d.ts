@@ -3529,6 +3529,8 @@ export namespace Prisma {
     status: $Enums.UserStatus | null
     twoFactorEnabled: boolean | null
     twoFactorSecret: string | null
+    twoFactorOtpHash: string | null
+    twoFactorOtpExpires: Date | null
     resetToken: string | null
     resetTokenExpires: Date | null
     emailVerificationToken: string | null
@@ -3552,6 +3554,8 @@ export namespace Prisma {
     status: $Enums.UserStatus | null
     twoFactorEnabled: boolean | null
     twoFactorSecret: string | null
+    twoFactorOtpHash: string | null
+    twoFactorOtpExpires: Date | null
     resetToken: string | null
     resetTokenExpires: Date | null
     emailVerificationToken: string | null
@@ -3575,6 +3579,8 @@ export namespace Prisma {
     status: number
     twoFactorEnabled: number
     twoFactorSecret: number
+    twoFactorOtpHash: number
+    twoFactorOtpExpires: number
     resetToken: number
     resetTokenExpires: number
     emailVerificationToken: number
@@ -3608,6 +3614,8 @@ export namespace Prisma {
     status?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
+    twoFactorOtpHash?: true
+    twoFactorOtpExpires?: true
     resetToken?: true
     resetTokenExpires?: true
     emailVerificationToken?: true
@@ -3631,6 +3639,8 @@ export namespace Prisma {
     status?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
+    twoFactorOtpHash?: true
+    twoFactorOtpExpires?: true
     resetToken?: true
     resetTokenExpires?: true
     emailVerificationToken?: true
@@ -3654,6 +3664,8 @@ export namespace Prisma {
     status?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
+    twoFactorOtpHash?: true
+    twoFactorOtpExpires?: true
     resetToken?: true
     resetTokenExpires?: true
     emailVerificationToken?: true
@@ -3764,6 +3776,8 @@ export namespace Prisma {
     status: $Enums.UserStatus
     twoFactorEnabled: boolean
     twoFactorSecret: string | null
+    twoFactorOtpHash: string | null
+    twoFactorOtpExpires: Date | null
     resetToken: string | null
     resetTokenExpires: Date | null
     emailVerificationToken: string | null
@@ -3806,6 +3820,8 @@ export namespace Prisma {
     status?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
+    twoFactorOtpHash?: boolean
+    twoFactorOtpExpires?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
     emailVerificationToken?: boolean
@@ -3850,6 +3866,8 @@ export namespace Prisma {
     status?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
+    twoFactorOtpHash?: boolean
+    twoFactorOtpExpires?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
     emailVerificationToken?: boolean
@@ -3873,6 +3891,8 @@ export namespace Prisma {
     status?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
+    twoFactorOtpHash?: boolean
+    twoFactorOtpExpires?: boolean
     resetToken?: boolean
     resetTokenExpires?: boolean
     emailVerificationToken?: boolean
@@ -3945,6 +3965,8 @@ export namespace Prisma {
       status: $Enums.UserStatus
       twoFactorEnabled: boolean
       twoFactorSecret: string | null
+      twoFactorOtpHash: string | null
+      twoFactorOtpExpires: Date | null
       resetToken: string | null
       resetTokenExpires: Date | null
       emailVerificationToken: string | null
@@ -4378,6 +4400,8 @@ export namespace Prisma {
     readonly status: FieldRef<"User", 'UserStatus'>
     readonly twoFactorEnabled: FieldRef<"User", 'Boolean'>
     readonly twoFactorSecret: FieldRef<"User", 'String'>
+    readonly twoFactorOtpHash: FieldRef<"User", 'String'>
+    readonly twoFactorOtpExpires: FieldRef<"User", 'DateTime'>
     readonly resetToken: FieldRef<"User", 'String'>
     readonly resetTokenExpires: FieldRef<"User", 'DateTime'>
     readonly emailVerificationToken: FieldRef<"User", 'String'>
@@ -29766,6 +29790,8 @@ export namespace Prisma {
     status: 'status',
     twoFactorEnabled: 'twoFactorEnabled',
     twoFactorSecret: 'twoFactorSecret',
+    twoFactorOtpHash: 'twoFactorOtpHash',
+    twoFactorOtpExpires: 'twoFactorOtpExpires',
     resetToken: 'resetToken',
     resetTokenExpires: 'resetTokenExpires',
     emailVerificationToken: 'emailVerificationToken',
@@ -30490,6 +30516,8 @@ export namespace Prisma {
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
     twoFactorEnabled?: BoolFilter<"User"> | boolean
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
+    twoFactorOtpHash?: StringNullableFilter<"User"> | string | null
+    twoFactorOtpExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     resetToken?: StringNullableFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     emailVerificationToken?: StringNullableFilter<"User"> | string | null
@@ -30533,6 +30561,8 @@ export namespace Prisma {
     status?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrderInput | SortOrder
+    twoFactorOtpHash?: SortOrderInput | SortOrder
+    twoFactorOtpExpires?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
     emailVerificationToken?: SortOrderInput | SortOrder
@@ -30580,6 +30610,8 @@ export namespace Prisma {
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
     twoFactorEnabled?: BoolFilter<"User"> | boolean
     twoFactorSecret?: StringNullableFilter<"User"> | string | null
+    twoFactorOtpHash?: StringNullableFilter<"User"> | string | null
+    twoFactorOtpExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     resetTokenExpires?: DateTimeNullableFilter<"User"> | Date | string | null
     emailVerificationToken?: StringNullableFilter<"User"> | string | null
     emailVerificationExpires?: DateTimeNullableFilter<"User"> | Date | string | null
@@ -30622,6 +30654,8 @@ export namespace Prisma {
     status?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrderInput | SortOrder
+    twoFactorOtpHash?: SortOrderInput | SortOrder
+    twoFactorOtpExpires?: SortOrderInput | SortOrder
     resetToken?: SortOrderInput | SortOrder
     resetTokenExpires?: SortOrderInput | SortOrder
     emailVerificationToken?: SortOrderInput | SortOrder
@@ -30653,6 +30687,8 @@ export namespace Prisma {
     status?: EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
     twoFactorEnabled?: BoolWithAggregatesFilter<"User"> | boolean
     twoFactorSecret?: StringNullableWithAggregatesFilter<"User"> | string | null
+    twoFactorOtpHash?: StringNullableWithAggregatesFilter<"User"> | string | null
+    twoFactorOtpExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     resetToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     resetTokenExpires?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     emailVerificationToken?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -32724,6 +32760,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -32767,6 +32805,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -32810,6 +32850,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32853,6 +32895,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32896,6 +32940,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -32919,6 +32965,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32942,6 +32990,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35478,6 +35528,8 @@ export namespace Prisma {
     status?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
+    twoFactorOtpHash?: SortOrder
+    twoFactorOtpExpires?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
     emailVerificationToken?: SortOrder
@@ -35505,6 +35557,8 @@ export namespace Prisma {
     status?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
+    twoFactorOtpHash?: SortOrder
+    twoFactorOtpExpires?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
     emailVerificationToken?: SortOrder
@@ -35528,6 +35582,8 @@ export namespace Prisma {
     status?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
+    twoFactorOtpHash?: SortOrder
+    twoFactorOtpExpires?: SortOrder
     resetToken?: SortOrder
     resetTokenExpires?: SortOrder
     emailVerificationToken?: SortOrder
@@ -40720,6 +40776,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -40762,6 +40820,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -40820,6 +40880,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40862,6 +40924,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40904,6 +40968,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -40946,6 +41012,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -41004,6 +41072,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41046,6 +41116,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41088,6 +41160,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -41130,6 +41204,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -41282,6 +41358,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41324,6 +41402,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41863,6 +41943,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -41905,6 +41987,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42007,6 +42091,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42049,6 +42135,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42144,6 +42232,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42186,6 +42276,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42233,6 +42325,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42275,6 +42369,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42448,6 +42544,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42490,6 +42588,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42543,6 +42643,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42585,6 +42687,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42698,6 +42802,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42740,6 +42846,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42787,6 +42895,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42829,6 +42939,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -42962,6 +43074,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43004,6 +43118,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43057,6 +43173,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43099,6 +43217,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43190,6 +43310,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43232,6 +43354,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43329,6 +43453,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43371,6 +43497,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43413,6 +43541,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43455,6 +43585,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43513,6 +43645,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43555,6 +43689,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43597,6 +43733,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43639,6 +43777,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43697,6 +43837,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43739,6 +43881,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43781,6 +43925,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43823,6 +43969,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -43881,6 +44029,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43923,6 +44073,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43965,6 +44117,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44007,6 +44161,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44065,6 +44221,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44107,6 +44265,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44149,6 +44309,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44191,6 +44353,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44249,6 +44413,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44291,6 +44457,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44333,6 +44501,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44375,6 +44545,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44433,6 +44605,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44475,6 +44649,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44517,6 +44693,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44559,6 +44737,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44606,6 +44786,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44648,6 +44830,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -44772,6 +44956,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44814,6 +45000,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44867,6 +45055,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44909,6 +45099,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45028,6 +45220,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45070,6 +45264,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45117,6 +45313,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45159,6 +45357,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45268,6 +45468,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45310,6 +45512,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45363,6 +45567,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45405,6 +45611,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45492,6 +45700,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45534,6 +45744,8 @@ export namespace Prisma {
     status?: $Enums.UserStatus
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
+    twoFactorOtpHash?: string | null
+    twoFactorOtpExpires?: Date | string | null
     resetToken?: string | null
     resetTokenExpires?: Date | string | null
     emailVerificationToken?: string | null
@@ -45643,6 +45855,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45685,6 +45899,8 @@ export namespace Prisma {
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpHash?: NullableStringFieldUpdateOperationsInput | string | null
+    twoFactorOtpExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpires?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null

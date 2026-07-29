@@ -96,6 +96,8 @@ model User {
   securityAlerts           SecurityAlert[]
   twoFactorEnabled         Boolean            @default(false)
   twoFactorSecret          String?
+  twoFactorOtpHash         String?
+  twoFactorOtpExpires      DateTime?
   resetToken               String?            @unique
   resetTokenExpires        DateTime?
   emailVerificationToken   String?

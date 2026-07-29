@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { SecurityService } from '../security/security.service';
 import { FraudRulesService } from '../security/fraud-rules.service';
+import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -17,7 +18,8 @@ export declare class AuthService {
     private eventEmitter;
     private securityService;
     private fraudRulesService;
-    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService);
+    private emailService;
+    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService, emailService: EmailService);
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         refreshToken: string;
@@ -41,6 +43,69 @@ export declare class AuthService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
+            resetTokenExpires: Date | null;
+            emailVerificationToken: string | null;
+            emailVerificationExpires: Date | null;
+            emailVerified: boolean;
+            phoneVerificationToken: string | null;
+            phoneVerificationExpires: Date | null;
+            phoneVerified: boolean;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        accessToken: string;
+        refreshToken: string;
+    } | {
+        requiresTwoFactor: boolean;
+        twoFactorToken: string;
+    }>;
+    generateTokens(userId: string, role: Role, userAgent?: string, ipAddress?: string): Promise<{
+        accessToken: string;
+        refreshToken: string;
+    }>;
+    refresh(refreshToken: string, request?: any): Promise<{
+        accessToken: string;
+        refreshToken: string;
+    }>;
+    logout(refreshToken: string): Promise<void>;
+    generateAndSend2faOtp(user: {
+        id: string;
+        email?: string | null;
+    }): Promise<void>;
+    verify2faOtp(userId: string, code: string): Promise<boolean>;
+    clear2faOtp(userId: string): Promise<void>;
+    enable2FA(userId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    confirmEnable2FA(userId: string, code: string): Promise<{
+        success: boolean;
+    }>;
+    verify2FALogin(twoFactorToken: string, code: string, request?: any): Promise<{
+        user: {
+            profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
+                id: string;
+                updatedAt: Date;
+                userId: string;
+                kycStatus: string;
+            } | null;
+            id: string;
+            email: string | null;
+            phone: string | null;
+            resetToken: string | null;
+            role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            twoFactorEnabled: boolean;
+            twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -56,20 +121,15 @@ export declare class AuthService {
         accessToken: string;
         refreshToken: string;
     }>;
-    generateTokens(userId: string, role: Role, userAgent?: string, ipAddress?: string): Promise<{
-        accessToken: string;
-        refreshToken: string;
+    send2faOtp(twoFactorToken: string): Promise<{
+        success: boolean;
+        message: string;
     }>;
-    refresh(refreshToken: string, request?: any): Promise<{
-        accessToken: string;
-        refreshToken: string;
+    disable2FA(userId: string): Promise<{
+        success: boolean;
+        message: string;
     }>;
-    logout(refreshToken: string): Promise<void>;
-    generate2FASecret(userId: string): Promise<{
-        secret: string;
-        qrCodeDataURL: string;
-    }>;
-    verifyAndEnable2FA(userId: string, token: string): Promise<{
+    confirmDisable2FA(userId: string, code: string): Promise<{
         success: boolean;
     }>;
     googleLogin(dto: GoogleLoginDto): Promise<{
@@ -91,6 +151,8 @@ export declare class AuthService {
             status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
+            twoFactorOtpHash: string | null;
+            twoFactorOtpExpires: Date | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -110,6 +172,9 @@ export declare class AuthService {
         resetToken: string;
     } | undefined>;
     resetPassword(token: string, newPassword: string): Promise<{
+        success: boolean;
+    }>;
+    changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{
         success: boolean;
     }>;
     sendEmailVerification(userId: string): Promise<{

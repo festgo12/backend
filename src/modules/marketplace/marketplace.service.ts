@@ -163,13 +163,15 @@ export class MarketplaceService {
               profile: {
                 select: {
                   firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
                   kycStatus: true,
                 },
               },
               devices: {
-                select: { lastLogin: true },
+                select: { lastActivity: true, lastLogin: true },
                 take: 1,
-                orderBy: { lastLogin: 'desc' },
+                orderBy: { lastActivity: 'desc' },
               },
             },
           },

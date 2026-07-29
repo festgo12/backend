@@ -25,6 +25,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
+        twoFactorOtpHash: string | null;
+        twoFactorOtpExpires: Date | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;

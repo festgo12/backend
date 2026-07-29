@@ -92,29 +92,37 @@ let PaystackController = PaystackController_1 = class PaystackController {
         }
     }
     async initiateTransfer(user, dto) {
-        const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
-        if (wallet.balance.toNumber() < dto.amount) {
-            throw new common_1.BadRequestException('Insufficient balance');
+        try {
+            const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
+            if (wallet.balance.toNumber() < dto.amount) {
+                throw new common_1.BadRequestException('Insufficient balance');
+            }
+            const recipientResult = await this.paystackService.createTransferRecipient(dto.accountName, dto.accountNumber, dto.bankCode);
+            const recipientCode = recipientResult.data.recipient_code;
+            const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            const transferResult = await this.paystackService.initiateTransfer(dto.amount, recipientCode, `P2N Withdrawal for ${user.email}`, reference);
+            await this.walletService.createTransaction({
+                walletId: wallet.id,
+                type: client_1.LedgerType.WITHDRAWAL,
+                amount: -dto.amount,
+                reference,
+                status: 'PROCESSING',
+                metadata: {
+                    paystack_transfer_code: transferResult.data.transfer_code,
+                    paystack_recipient_code: recipientCode,
+                    account_number: dto.accountNumber,
+                    bank_code: dto.bankCode,
+                    account_name: dto.accountName,
+                },
+            });
+            return transferResult;
         }
-        const recipientResult = await this.paystackService.createTransferRecipient(dto.accountName, dto.accountNumber, dto.bankCode);
-        const recipientCode = recipientResult.data.recipient_code;
-        const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const transferResult = await this.paystackService.initiateTransfer(dto.amount, recipientCode, `P2N Withdrawal for ${user.email}`, reference);
-        await this.walletService.createTransaction({
-            walletId: wallet.id,
-            type: client_1.LedgerType.WITHDRAWAL,
-            amount: -dto.amount,
-            reference,
-            status: 'PROCESSING',
-            metadata: {
-                paystack_transfer_code: transferResult.data.transfer_code,
-                paystack_recipient_code: recipientCode,
-                account_number: dto.accountNumber,
-                bank_code: dto.bankCode,
-                account_name: dto.accountName,
-            },
-        });
-        return transferResult;
+        catch (error) {
+            this.logger.error(`Withdrawal failed for ${user.email}: ${error.message}`);
+            if (error instanceof common_1.BadRequestException)
+                throw error;
+            throw new common_1.BadRequestException(error.message || 'Failed to process withdrawal');
+        }
     }
     async initiateRefund(user, dto) {
         const transaction = await this.walletService.findTransactionById(dto.transactionId);

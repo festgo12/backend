@@ -144,8 +144,9 @@ let PaystackService = PaystackService_1 = class PaystackService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Paystack createTransferRecipient error: ${error.message}`, error.stack);
-            throw error;
+            const errorMessage = error.response?.data?.message || error.message;
+            this.logger.error(`Paystack createTransferRecipient error: ${errorMessage}`, error.stack);
+            throw new common_1.BadRequestException(`Transfer recipient creation failed: ${errorMessage}`);
         }
     }
     async initiateTransfer(amount, recipient, reason, reference) {
@@ -165,8 +166,9 @@ let PaystackService = PaystackService_1 = class PaystackService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Paystack initiateTransfer error: ${error.message}`, error.stack);
-            throw error;
+            const errorMessage = error.response?.data?.message || error.message;
+            this.logger.error(`Paystack initiateTransfer error: ${errorMessage}`, error.stack);
+            throw new common_1.BadRequestException(`Transfer failed: ${errorMessage}`);
         }
     }
     async initiateRefund(transactionId, amount) {

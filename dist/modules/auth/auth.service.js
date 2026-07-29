@@ -51,11 +51,10 @@ const users_service_1 = require("../users/users.service");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const security_service_1 = require("../security/security.service");
 const fraud_rules_service_1 = require("../security/fraud-rules.service");
+const email_service_1 = require("../notifications/email.service");
 const bcrypt = __importStar(require("bcrypt"));
 const crypto = __importStar(require("crypto"));
 const client_1 = require("../../generated/client/index.js");
-const otplib_1 = require("otplib");
-const toDataURL = __importStar(require("qrcode"));
 const google_auth_library_1 = require("google-auth-library");
 let AuthService = class AuthService {
     usersService;
@@ -65,7 +64,8 @@ let AuthService = class AuthService {
     eventEmitter;
     securityService;
     fraudRulesService;
-    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService) {
+    emailService;
+    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService, emailService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
@@ -73,6 +73,7 @@ let AuthService = class AuthService {
         this.eventEmitter = eventEmitter;
         this.securityService = securityService;
         this.fraudRulesService = fraudRulesService;
+        this.emailService = emailService;
     }
     async register(dto) {
         if (dto.email) {
@@ -128,7 +129,7 @@ let AuthService = class AuthService {
                 where: { id: user.id },
                 data: updateData,
             });
-            const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+            const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
             await this.fraudRulesService.evaluateFailedLoginBurst(user.email || '', ipAddress).catch(() => { });
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
@@ -138,7 +139,7 @@ let AuthService = class AuthService {
                 data: { failedLoginAttempts: 0, lockedUntil: null },
             });
         }
-        const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
         const userAgent = request?.headers?.['user-agent'] || 'unknown';
         const parsedUA = this.securityService.parseUserAgent(userAgent);
         const location = await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown');
@@ -172,6 +173,11 @@ let AuthService = class AuthService {
         this.fraudRulesService.evaluateRapidWithdrawals(user.id).catch(() => { });
         this.fraudRulesService.evaluateUnusualVolume(user.id).catch(() => { });
         const { passwordHash, ...userWithoutPassword } = user;
+        if (user.twoFactorEnabled) {
+            const twoFactorToken = await this.jwtService.signAsync({ sub: user.id, purpose: '2fa' }, { secret: this.configService.get('JWT_SECRET'), expiresIn: '10m' });
+            await this.generateAndSend2faOtp(user);
+            return { requiresTwoFactor: true, twoFactorToken };
+        }
         const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
         const userData = { ...token, user: userWithoutPassword };
         return userData;
@@ -208,7 +214,7 @@ let AuthService = class AuthService {
             if (!tokenInDb || tokenInDb.expiresAt < new Date()) {
                 throw new common_1.UnauthorizedException('Invalid or expired refresh token');
             }
-            const ipAddress = request?.ip || request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim();
+            const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip;
             const userAgent = request?.headers?.['user-agent'];
             await this.prisma.authToken.delete({ where: { id: tokenInDb.id } });
             return this.generateTokens(payload.sub, payload.role, userAgent, ipAddress);
@@ -220,33 +226,137 @@ let AuthService = class AuthService {
     async logout(refreshToken) {
         await this.prisma.authToken.deleteMany({ where: { token: refreshToken } });
     }
-    async generate2FASecret(userId) {
-        const user = await this.usersService.findOneById(userId);
-        if (!user)
-            throw new common_1.UnauthorizedException();
-        const secret = (0, otplib_1.generateSecret)();
-        const otpauthUrl = (0, otplib_1.generateURI)({
-            label: user.email || userId,
-            issuer: 'P2N Marketplace',
-            secret,
-        });
+    async generateAndSend2faOtp(user) {
+        if (!user.email)
+            throw new common_1.BadRequestException('No email address on file for 2FA');
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
         await this.prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorSecret: secret },
+            where: { id: user.id },
+            data: {
+                twoFactorOtpHash: hashedCode,
+                twoFactorOtpExpires: new Date(Date.now() + 10 * 60 * 1000),
+            },
         });
-        const qrCodeDataURL = await toDataURL.toDataURL(otpauthUrl);
-        return { secret, qrCodeDataURL };
+        const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #E89E2D;">P2N Marketplace - Login Verification</h2>
+        <p>Your 6-digit verification code is:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px; margin: 20px 0;">${code}</div>
+        <p style="color: #666;">This code expires in 10 minutes. If you didn't request this, please ignore this email.</p>
+      </div>
+    `;
+        await this.emailService.sendEmail(user.email, 'Your P2N Login Code', html);
     }
-    async verifyAndEnable2FA(userId, token) {
+    async verify2faOtp(userId, code) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user || !user.twoFactorSecret)
-            throw new common_1.UnauthorizedException('2FA not initialized');
-        const isValid = (0, otplib_1.verify)({ secret: user.twoFactorSecret, token });
-        if (!isValid)
-            throw new common_1.UnauthorizedException('Invalid 2FA token');
+        if (!user || !user.twoFactorOtpHash || !user.twoFactorOtpExpires) {
+            throw new common_1.UnauthorizedException('No verification pending');
+        }
+        if (user.twoFactorOtpExpires < new Date()) {
+            throw new common_1.UnauthorizedException('Verification code expired. Request a new one.');
+        }
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        return hashedCode === user.twoFactorOtpHash;
+    }
+    async clear2faOtp(userId) {
         await this.prisma.user.update({
             where: { id: userId },
-            data: { twoFactorEnabled: true },
+            data: { twoFactorOtpHash: null, twoFactorOtpExpires: null },
+        });
+    }
+    async enable2FA(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.email)
+            throw new common_1.BadRequestException('No email address on file');
+        if (user.twoFactorEnabled)
+            throw new common_1.BadRequestException('2FA is already enabled');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP sent to your email' };
+    }
+    async confirmEnable2FA(userId, code) {
+        const isValid = await this.verify2faOtp(userId, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: true,
+                twoFactorOtpHash: null,
+                twoFactorOtpExpires: null,
+                twoFactorSecret: null,
+            },
+        });
+        return { success: true };
+    }
+    async verify2FALogin(twoFactorToken, code, request) {
+        let payload;
+        try {
+            payload = await this.jwtService.verifyAsync(twoFactorToken, {
+                secret: this.configService.get('JWT_SECRET'),
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid or expired 2FA token');
+        }
+        if (payload.purpose !== '2fa') {
+            throw new common_1.UnauthorizedException('Invalid 2FA token');
+        }
+        const isValid = await this.verify2faOtp(payload.sub, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.clear2faOtp(payload.sub);
+        const user = await this.usersService.findOneById(payload.sub);
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const { passwordHash, ...userWithoutPassword } = user;
+        const tokens = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
+        return { ...tokens, user: userWithoutPassword };
+    }
+    async send2faOtp(twoFactorToken) {
+        let payload;
+        try {
+            payload = await this.jwtService.verifyAsync(twoFactorToken, {
+                secret: this.configService.get('JWT_SECRET'),
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid or expired 2FA token');
+        }
+        if (payload.purpose !== '2fa') {
+            throw new common_1.UnauthorizedException('Invalid 2FA token');
+        }
+        const user = await this.usersService.findOneById(payload.sub);
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP resent to your email' };
+    }
+    async disable2FA(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.twoFactorEnabled)
+            throw new common_1.BadRequestException('2FA is not enabled');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP sent to your email to confirm disabling 2FA' };
+    }
+    async confirmDisable2FA(userId, code) {
+        const isValid = await this.verify2faOtp(userId, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: false,
+                twoFactorOtpHash: null,
+                twoFactorOtpExpires: null,
+                twoFactorSecret: null,
+            },
         });
         return { success: true };
     }
@@ -341,6 +451,20 @@ let AuthService = class AuthService {
                 resetToken: null,
                 resetTokenExpires: null,
             },
+        });
+        return { success: true };
+    }
+    async changePassword(userId, currentPassword, newPassword) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!isCurrentValid)
+            throw new common_1.UnauthorizedException('Current password is incorrect');
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash: hashedPassword },
         });
         return { success: true };
     }
@@ -444,6 +568,7 @@ exports.AuthService = AuthService = __decorate([
         prisma_service_1.PrismaService,
         event_emitter_1.EventEmitter2,
         security_service_1.SecurityService,
-        fraud_rules_service_1.FraudRulesService])
+        fraud_rules_service_1.FraudRulesService,
+        email_service_1.EmailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

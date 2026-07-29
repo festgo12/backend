@@ -29,8 +29,8 @@ export declare class DisputesService {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -43,11 +43,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -84,8 +84,8 @@ export declare class DisputesService {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -103,6 +103,8 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -125,6 +127,8 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -142,11 +146,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -278,8 +282,8 @@ export declare class DisputesService {
                     status: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    version: number;
                     sellerId: string;
+                    version: number;
                     asset: import("@src/generated/client").$Enums.Currency;
                     price: import("@src/generated/client/runtime/library").Decimal;
                     quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -292,11 +296,11 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.OrderStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 expiresAt: Date;
                 fraudFlagged: boolean;
                 sellerId: string;
                 buyerId: string;
+                version: number;
                 fiatAmount: import("@src/generated/client/runtime/library").Decimal;
                 cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
                 feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -366,8 +370,8 @@ export declare class DisputesService {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -389,11 +393,11 @@ export declare class DisputesService {
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                     address: string | null;
-                    version: number;
                 }[];
             } & {
                 id: string;
@@ -405,6 +409,8 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -431,11 +437,11 @@ export declare class DisputesService {
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                     address: string | null;
-                    version: number;
                 }[];
             } & {
                 id: string;
@@ -447,6 +453,8 @@ export declare class DisputesService {
                 status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
+                twoFactorOtpHash: string | null;
+                twoFactorOtpExpires: Date | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -464,11 +472,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -543,11 +551,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -595,11 +603,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -634,11 +642,11 @@ export declare class DisputesService {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -685,11 +693,11 @@ export declare class DisputesService {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
+        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;

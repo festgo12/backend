@@ -5,7 +5,11 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
-import { VerifyTwoFactorDto } from './dto/verify-2fa.dto';
+import { ConfirmEnableTwoFactorDto } from './dto/confirm-enable-2fa.dto';
+import { TwoFactorLoginDto } from './dto/two-factor-login.dto';
+import { SendTwoFactorOtpDto } from './dto/send-two-factor-otp.dto';
+import { DisableTwoFactorDto } from './dto/disable-2fa.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -57,22 +61,64 @@ export class AuthController {
     return this.authService.googleLogin(dto);
   }
 
-  @Post('2fa/generate')
+  // --- 2FA (Email OTP) ---
+
+  @Post('2fa/enable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Generate 2FA secret and QR code' })
-  generate2FA(@Req() req: any) {
-    return this.authService.generate2FASecret(req.user.id);
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_2FA_ENABLE', 'AUTH')
+  @ApiOperation({ summary: 'Enable 2FA - sends OTP to email' })
+  enable2FA(@Req() req: any) {
+    return this.authService.enable2FA(req.user.id);
   }
 
-  @Post('2fa/verify')
+  @Post('2fa/confirm-enable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @AuditLog('AUTH_2FA_ENABLE', 'AUTH')
-  @ApiOperation({ summary: 'Verify and enable 2FA' })
-  verify2FA(@Req() req: any, @Body() dto: VerifyTwoFactorDto) {
-    return this.authService.verifyAndEnable2FA(req.user.id, dto.token);
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_2FA_CONFIRM', 'AUTH')
+  @ApiOperation({ summary: 'Confirm 2FA enable with OTP code' })
+  confirmEnable2FA(@Req() req: any, @Body() dto: ConfirmEnableTwoFactorDto) {
+    return this.authService.confirmEnable2FA(req.user.id, dto.code);
   }
+
+  @Post('2fa/login-verify')
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_2FA_LOGIN', 'AUTH')
+  @ApiOperation({ summary: 'Verify 2FA during login' })
+  verify2FALogin(@Body() dto: TwoFactorLoginDto, @Req() req: any) {
+    return this.authService.verify2FALogin(dto.twoFactorToken, dto.code, req);
+  }
+
+  @Post('2fa/send-otp')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend 2FA OTP during login' })
+  send2faOtp(@Body() dto: SendTwoFactorOtpDto) {
+    return this.authService.send2faOtp(dto.twoFactorToken);
+  }
+
+  @Post('2fa/disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_2FA_DISABLE', 'AUTH')
+  @ApiOperation({ summary: 'Disable 2FA - sends OTP to confirm' })
+  disable2FA(@Req() req: any) {
+    return this.authService.disable2FA(req.user.id);
+  }
+
+  @Post('2fa/confirm-disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_2FA_DISABLED', 'AUTH')
+  @ApiOperation({ summary: 'Confirm 2FA disable with OTP code' })
+  confirmDisable2FA(@Req() req: any, @Body() dto: DisableTwoFactorDto) {
+    return this.authService.confirmDisable2FA(req.user.id, dto.code);
+  }
+
+  // --- Password ---
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
@@ -88,6 +134,18 @@ export class AuthController {
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.token, dto.newPassword);
   }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @AuditLog('AUTH_PASSWORD_CHANGE', 'AUTH')
+  @ApiOperation({ summary: 'Change password while logged in' })
+  changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
+  }
+
+  // --- Verification ---
 
   @Post('verify-email/send')
   @UseGuards(JwtAuthGuard)

@@ -134,8 +134,9 @@ export class PaystackService {
       );
       return response.data;
     } catch (error) {
-      this.logger.error(`Paystack createTransferRecipient error: ${error.message}`, error.stack);
-      throw error;
+      const errorMessage = error.response?.data?.message || error.message;
+      this.logger.error(`Paystack createTransferRecipient error: ${errorMessage}`, error.stack);
+      throw new BadRequestException(`Transfer recipient creation failed: ${errorMessage}`);
     }
   }
 
@@ -164,8 +165,9 @@ export class PaystackService {
       );
       return response.data;
     } catch (error) {
-      this.logger.error(`Paystack initiateTransfer error: ${error.message}`, error.stack);
-      throw error;
+      const errorMessage = error.response?.data?.message || error.message;
+      this.logger.error(`Paystack initiateTransfer error: ${errorMessage}`, error.stack);
+      throw new BadRequestException(`Transfer failed: ${errorMessage}`);
     }
   }
 

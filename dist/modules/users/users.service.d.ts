@@ -26,11 +26,11 @@ export declare class UsersService {
             id: string;
             updatedAt: Date;
             userId: string;
+            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
-            version: number;
         }[];
         id: string;
         email: string | null;
@@ -40,6 +40,8 @@ export declare class UsersService {
         status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
+        twoFactorOtpHash: string | null;
+        twoFactorOtpExpires: Date | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -107,6 +109,8 @@ export declare class UsersService {
         status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
+        twoFactorOtpHash: string | null;
+        twoFactorOtpExpires: Date | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -139,6 +143,8 @@ export declare class UsersService {
         status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
+        twoFactorOtpHash: string | null;
+        twoFactorOtpExpires: Date | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -171,6 +177,8 @@ export declare class UsersService {
         status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
+        twoFactorOtpHash: string | null;
+        twoFactorOtpExpires: Date | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;

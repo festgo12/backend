@@ -20,7 +20,7 @@ const DEFAULT_RULES = [
         name: 'Multiple Accounts Same Device',
         description: 'Detects when multiple user accounts are logged into from the same device fingerprint',
         threshold: 2,
-        severity: 'HIGH',
+        severity: 'MEDIUM',
         action: 'ALERT',
     },
     {
@@ -79,7 +79,10 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
         for (const rule of DEFAULT_RULES) {
             await this.prisma.fraudRule.upsert({
                 where: { code: rule.code },
-                update: {},
+                update: {
+                    severity: rule.severity,
+                    threshold: rule.threshold,
+                },
                 create: {
                     name: rule.name,
                     code: rule.code,
@@ -112,6 +115,20 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
     async evaluateMultipleAccountsSameDevice(userId, deviceId) {
         const rule = await this.getRuleByCode('MULTIPLE_ACCOUNTS_SAME_DEVICE');
         if (!rule || !rule.enabled)
+            return;
+        const currentDevice = await this.prisma.device.findFirst({
+            where: { userId, deviceId },
+            select: { createdAt: true },
+        });
+        if (!currentDevice)
+            return;
+        const deviceAge = Date.now() - currentDevice.createdAt.getTime();
+        if (deviceAge < 30_000)
+            return;
+        const existingAlert = await this.prisma.securityAlert.findFirst({
+            where: { userId, type: rule.code, isRead: false },
+        });
+        if (existingAlert)
             return;
         const accountsOnDevice = await this.prisma.device.findMany({
             where: { deviceId },

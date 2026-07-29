@@ -9,6 +9,9 @@ export declare class SecurityController {
     private readonly riskEngineService;
     private readonly alertEngineService;
     constructor(securityService: SecurityService, fraudRulesService: FraudRulesService, riskEngineService: RiskEngineService, alertEngineService: AlertEngineService);
+    heartbeat(req: any, deviceId: string): Promise<{
+        success: boolean;
+    }>;
     getDevices(req: any): Promise<{
         id: string;
         createdAt: Date;

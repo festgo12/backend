@@ -3,11 +3,14 @@ import {
   Get,
   Delete,
   Patch,
+  Post,
   Param,
   Query,
   UseGuards,
   Request,
   Body,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,6 +32,19 @@ export class SecurityController {
     private readonly riskEngineService: RiskEngineService,
     private readonly alertEngineService: AlertEngineService,
   ) {}
+
+  // --- Heartbeat ---
+
+  @Post('heartbeat')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update device activity timestamp (keep-online heartbeat)' })
+  async heartbeat(@Request() req, @Body('deviceId') deviceId: string) {
+    await this.securityService.updateDeviceActivity(req.user.id, deviceId, {
+      ipAddress: req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
+    return { success: true };
+  }
 
   // --- Devices ---
 

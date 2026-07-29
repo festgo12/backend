@@ -105,42 +105,48 @@ export class PaystackController {
   @AuditLog('WALLET_WITHDRAWAL', 'WALLET')
   @ApiOperation({ summary: 'Initiate a withdrawal (transfer)' })
   async initiateTransfer(@GetUser() user: User, @Body() dto: InitiateTransferDto) {
-    const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
-    if (wallet.balance.toNumber() < dto.amount) {
-      throw new BadRequestException('Insufficient balance');
+    try {
+      const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
+      if (wallet.balance.toNumber() < dto.amount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      const recipientResult = await this.paystackService.createTransferRecipient(
+        dto.accountName,
+        dto.accountNumber,
+        dto.bankCode,
+      );
+      const recipientCode = recipientResult.data.recipient_code;
+
+      const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const transferResult = await this.paystackService.initiateTransfer(
+        dto.amount,
+        recipientCode,
+        `P2N Withdrawal for ${user.email}`,
+        reference,
+      );
+
+      await this.walletService.createTransaction({
+        walletId: wallet.id,
+        type: LedgerType.WITHDRAWAL,
+        amount: -dto.amount,
+        reference,
+        status: 'PROCESSING',
+        metadata: {
+          paystack_transfer_code: transferResult.data.transfer_code,
+          paystack_recipient_code: recipientCode,
+          account_number: dto.accountNumber,
+          bank_code: dto.bankCode,
+          account_name: dto.accountName,
+        },
+      });
+
+      return transferResult;
+    } catch (error) {
+      this.logger.error(`Withdrawal failed for ${user.email}: ${error.message}`);
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(error.message || 'Failed to process withdrawal');
     }
-
-    const recipientResult = await this.paystackService.createTransferRecipient(
-      dto.accountName,
-      dto.accountNumber,
-      dto.bankCode,
-    );
-    const recipientCode = recipientResult.data.recipient_code;
-
-    const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const transferResult = await this.paystackService.initiateTransfer(
-      dto.amount,
-      recipientCode,
-      `P2N Withdrawal for ${user.email}`,
-      reference,
-    );
-
-    await this.walletService.createTransaction({
-      walletId: wallet.id,
-      type: LedgerType.WITHDRAWAL,
-      amount: -dto.amount,
-      reference,
-      status: 'PROCESSING',
-      metadata: {
-        paystack_transfer_code: transferResult.data.transfer_code,
-        paystack_recipient_code: recipientCode,
-        account_number: dto.accountNumber,
-        bank_code: dto.bankCode,
-        account_name: dto.accountName,
-      },
-    });
-
-    return transferResult;
   }
 
   @ApiBearerAuth()

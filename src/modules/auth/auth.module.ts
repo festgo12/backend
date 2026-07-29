@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { SecurityModule } from '../security/security.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { SecurityModule } from '../security/security.module';
     PassportModule,
     JwtModule.register({}),
     SecurityModule,
+    NotificationsModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
