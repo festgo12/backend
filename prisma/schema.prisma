@@ -39,6 +39,7 @@ enum LedgerType {
   FEE
   GIFT_CARD_PURCHASE
   GIFT_CARD_SALE
+  RECONCILIATION_ADJUSTMENT
 }
 
 enum OrderStatus {
@@ -108,6 +109,7 @@ model User {
   phoneVerified            Boolean  @default(false)
   failedLoginAttempts Int          @default(0)
   lockedUntil         DateTime?
+  isSystem            Boolean      @default(false)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -534,6 +536,29 @@ model PlatformFeeConfig {
   updatedAt DateTime @updatedAt
 
   @@index([key])
+}
+
+model PlatformSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model Reconciliation {
+  id              String    @id @default(uuid()) @db.Uuid
+  currency        Currency
+  internalBalance Decimal   @db.Decimal(20, 8)
+  onChainBalance  Decimal   @db.Decimal(20, 8)
+  difference      Decimal   @db.Decimal(20, 8)
+  status          String    @default("IN_BALANCE")
+  reference       String?   @unique
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+
+  @@index([currency, createdAt])
 }
 
 model DailyReport {

@@ -16,6 +16,7 @@ const tatum_withdrawal_service_1 = require("../tatum/tatum-withdrawal.service");
 const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
 const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
+const tatum_platform_service_1 = require("../tatum/tatum-platform.service");
 let AdminService = class AdminService {
     prisma;
     tatumWithdrawal;
@@ -31,16 +32,19 @@ let AdminService = class AdminService {
     }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                OR: [
-                    { email: { contains: search, mode: 'insensitive' } },
-                    { phone: { contains: search, mode: 'insensitive' } },
-                    { profile: { firstName: { contains: search, mode: 'insensitive' } } },
-                    { profile: { lastName: { contains: search, mode: 'insensitive' } } },
-                ],
-            }
-            : {};
+        const where = {
+            isSystem: false,
+            ...(search
+                ? {
+                    OR: [
+                        { email: { contains: search, mode: 'insensitive' } },
+                        { phone: { contains: search, mode: 'insensitive' } },
+                        { profile: { firstName: { contains: search, mode: 'insensitive' } } },
+                        { profile: { lastName: { contains: search, mode: 'insensitive' } } },
+                    ],
+                }
+                : {}),
+        };
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
                 where,
@@ -116,6 +120,47 @@ let AdminService = class AdminService {
         if (!wallet)
             throw new common_1.NotFoundException('Wallet not found');
         return wallet;
+    }
+    async getFeeWallets() {
+        const platformUser = await this.prisma.user.findUnique({
+            where: { email: tatum_platform_service_1.PLATFORM_EMAIL },
+        });
+        if (!platformUser) {
+            return { wallets: [], total: 0 };
+        }
+        const wallets = await this.prisma.wallet.findMany({
+            where: { userId: platformUser.id },
+            include: {
+                _count: { select: { ledgerEntries: true } },
+            },
+            orderBy: { currency: 'asc' },
+        });
+        return {
+            wallets: wallets.map((w) => ({
+                id: w.id,
+                currency: w.currency,
+                address: w.address,
+                balance: w.balance.toNumber(),
+                reservedBalance: w.reservedBalance.toNumber(),
+                available: w.balance.minus(w.reservedBalance).toNumber(),
+                ledgerEntryCount: w._count.ledgerEntries,
+                updatedAt: w.updatedAt,
+            })),
+            total: wallets.length,
+        };
+    }
+    async sweepFeeWallet(currency, address, amount) {
+        if (!address || typeof address !== 'string') {
+            throw new common_1.BadRequestException('Treasury destination address is required');
+        }
+        if (currency === 'NGN') {
+            throw new common_1.BadRequestException('NGN fee revenue is held in the ledger, not on-chain');
+        }
+        return this.tatumWithdrawal.sweepFeeWallet({
+            currency,
+            destinationAddress: address,
+            amount,
+        });
     }
     async getAllTransactions(page, limit) {
         const skip = (page - 1) * limit;

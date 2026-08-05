@@ -109,6 +109,7 @@ export declare class DisputesController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -133,6 +134,7 @@ export declare class DisputesController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };

@@ -66,7 +66,7 @@ let WalletController = WalletController_1 = class WalletController {
         if (currency !== client_1.Currency.NGN && !wallet.address) {
             try {
                 const xpub = await this.tatumWallet.getOrGenerateXpub(currency);
-                const index = Math.abs(this.hashCode(wallet.id)) % 1000000;
+                const index = this.tatumWallet.getAddressIndex(wallet.id);
                 const address = await this.tatumWallet.generateAddress(currency, xpub, index);
                 const updatedWallet = await this.walletService.updateWalletAddress(wallet.id, address);
                 const notificationChain = tatum_webhook_service_1.TatumWebhookService.notificationChain(currency);
@@ -129,13 +129,6 @@ let WalletController = WalletController_1 = class WalletController {
             status: result.status,
             message: 'Withdrawal submitted and awaiting blockchain confirmation',
         };
-    }
-    hashCode(s) {
-        let h = 0;
-        for (let i = 0; i < s.length; i++) {
-            h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-        }
-        return h;
     }
 };
 exports.WalletController = WalletController;

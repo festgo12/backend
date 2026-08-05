@@ -1,9 +1,28 @@
-import { Controller, Post, Get, Body, Headers, HttpCode, HttpStatus, Logger, UnauthorizedException, Param, Query, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  UnauthorizedException,
+  Param,
+  Query,
+  NotFoundException,
+  Req,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { TatumWebhookService } from './tatum-webhook.service';
 import { TatumDepositService } from './tatum-deposit.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
+
+interface WebhookRequest extends Request {
+  rawBody?: Buffer;
+}
 
 @ApiTags('Tatum Webhooks')
 @Controller('tatum/webhooks')
@@ -21,21 +40,31 @@ export class TatumWebhookController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Handle incoming Tatum webhooks' })
   async handleWebhook(
+    @Req() req: WebhookRequest,
     @Body() payload: any,
     @Headers('x-tatum-signature') signature: string,
   ) {
-    if (!this.webhookService.verifySignature(payload, signature)) {
+    if (!this.webhookService.verifySignature(req.rawBody, signature)) {
       this.logger.error('Invalid Tatum webhook signature received.');
       throw new UnauthorizedException('Invalid signature');
     }
 
-    this.logger.log(`Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`);
+    this.logger.log(
+      `Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`,
+    );
 
     switch (payload.subscriptionType) {
       case 'ADDRESS_EVENT':
+        await this.handleIncomingDeposit(payload);
+        break;
+
       case 'INCOMING_NATIVE_TX':
       case 'INCOMING_FUNGIBLE_TX':
         await this.handleIncomingDeposit(payload);
+        // These are confirmed-transaction events; credit the wallet immediately.
+        if (payload.txId) {
+          await this.depositService.confirmDeposit(payload.txId);
+        }
         break;
 
       case 'OUTGOING_NATIVE_TX':
@@ -53,7 +82,6 @@ export class TatumWebhookController {
     return { received: true };
   }
 
-
   @Get('testnet/:currency/:amount')
   @ApiOperation({ summary: 'Simulate a Tatum testnet deposit for testing' })
   async simulateTestnetDeposit(
@@ -61,7 +89,9 @@ export class TatumWebhookController {
     @Param('amount') amount: string,
     @Query('address') address?: string,
   ) {
-    this.logger.log(`Simulating testnet deposit: ${amount} ${currency} (Address: ${address || 'any'})`);
+    this.logger.log(
+      `Simulating testnet deposit: ${amount} ${currency} (Address: ${address || 'any'})`,
+    );
 
     let wallet;
     if (address) {
@@ -76,7 +106,9 @@ export class TatumWebhookController {
     }
 
     if (!wallet || !wallet.address) {
-      throw new NotFoundException(`No wallet with address found for ${currency}`);
+      throw new NotFoundException(
+        `No wallet with address found for ${currency}`,
+      );
     }
 
     const txId = `sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -104,10 +136,19 @@ export class TatumWebhookController {
    * Creates a PENDING transaction; completion waits for sufficient confirmations.
    */
   private async handleIncomingDeposit(payload: any) {
-    const { address, amount, asset, txId, reference, from: sourceAddress } = payload;
+    const {
+      address,
+      amount,
+      asset,
+      txId,
+      reference,
+      from: sourceAddress,
+    } = payload;
 
     if (!address || !txId) {
-      this.logger.warn('Incoming deposit webhook missing address or txId. Skipping.');
+      this.logger.warn(
+        'Incoming deposit webhook missing address or txId. Skipping.',
+      );
       return;
     }
 
@@ -148,7 +189,10 @@ export class TatumWebhookController {
       return;
     }
 
-    await this.walletService.updateTransactionStatus(transaction.id, 'COMPLETED');
+    await this.walletService.updateTransactionStatus(
+      transaction.id,
+      'COMPLETED',
+    );
     this.logger.log(`Withdrawal ${txId} marked as COMPLETED`);
   }
 
@@ -163,7 +207,9 @@ export class TatumWebhookController {
       return;
     }
 
-    this.logger.error(`Outgoing transaction failed: ${txId} - ${error || 'unknown error'}`);
+    this.logger.error(
+      `Outgoing transaction failed: ${txId} - ${error || 'unknown error'}`,
+    );
 
     const transaction = await this.prisma.walletTransaction.findUnique({
       where: { reference: txId },

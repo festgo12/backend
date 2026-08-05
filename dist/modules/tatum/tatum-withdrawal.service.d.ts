@@ -4,16 +4,18 @@ import { Currency } from '@src/generated/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TatumWalletService } from './tatum-wallet.service';
+import { TatumPlatformService } from './tatum-platform.service';
 export declare class TatumWithdrawalService {
     private readonly configService;
     private readonly httpService;
     private readonly prisma;
     private readonly walletService;
     private readonly tatumWallet;
+    private readonly platformService;
     private readonly logger;
     private readonly apiKey;
     private readonly baseUrl;
-    constructor(configService: ConfigService, httpService: HttpService, prisma: PrismaService, walletService: WalletService, tatumWallet: TatumWalletService);
+    constructor(configService: ConfigService, httpService: HttpService, prisma: PrismaService, walletService: WalletService, tatumWallet: TatumWalletService, platformService: TatumPlatformService);
     private get headers();
     processWithdrawal(params: {
         walletId: string;
@@ -25,6 +27,14 @@ export declare class TatumWithdrawalService {
         status: string;
     }>;
     retryWithdrawal(transactionId: string): Promise<{
+        txId: string;
+        status: string;
+    }>;
+    sweepFeeWallet(params: {
+        currency: Currency;
+        destinationAddress: string;
+        amount?: number;
+    }): Promise<{
         txId: string;
         status: string;
     }>;

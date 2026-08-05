@@ -79,7 +79,8 @@ let TatumRiskService = TatumRiskService_1 = class TatumRiskService {
         try {
             const suspiciousAddressRule = await this.fraudRules.getRuleByCode('SUSPICIOUS_WALLET_ADDRESS');
             if (suspiciousAddressRule) {
-                config.addressBlockThreshold = suspiciousAddressRule.threshold === 1 ? 70 : 50;
+                config.addressBlockThreshold =
+                    suspiciousAddressRule.threshold === 1 ? 70 : 50;
             }
             const rapidWithdrawalRule = await this.fraudRules.getRuleByCode('RAPID_WITHDRAWALS');
             if (rapidWithdrawalRule) {
@@ -96,13 +97,21 @@ let TatumRiskService = TatumRiskService_1 = class TatumRiskService {
         this.logger.log(`Screening address: ${address} on ${chain} (context: ${context})`);
         try {
             if (!this.isValidAddressFormat(address, chain)) {
-                return { isSafe: false, riskScore: 100, reasons: ['Invalid address format'] };
+                return {
+                    isSafe: false,
+                    riskScore: 100,
+                    reasons: ['Invalid address format'],
+                };
             }
             if (this.isSanctioned(address, chain)) {
                 this.logger.warn(`SANCTIONED ADDRESS detected: ${address} on ${chain}`);
-                return { isSafe: false, riskScore: 100, reasons: ['Address is on OFAC sanctions list'] };
+                return {
+                    isSafe: false,
+                    riskScore: 100,
+                    reasons: ['Address is on OFAC sanctions list'],
+                };
             }
-            const isExchange = this.KNOWN_EXCHANGE_PATTERNS[chain]?.some(p => p.test(address));
+            const isExchange = this.KNOWN_EXCHANGE_PATTERNS[chain]?.some((p) => p.test(address));
             if (isExchange) {
                 riskScore += 20;
                 reasons.push('Address belongs to a known exchange');
@@ -144,7 +153,9 @@ let TatumRiskService = TatumRiskService_1 = class TatumRiskService {
             const isSafe = riskScore < threshold;
             if (!isSafe) {
                 this.logger.warn(`Address ${address} blocked: score=${riskScore}, reasons=${reasons.join('; ')}`);
-                const wallet = await this.prisma.wallet.findFirst({ where: { address } });
+                const wallet = await this.prisma.wallet.findFirst({
+                    where: { address },
+                });
                 if (wallet) {
                     await this.alertEngine.createAlert({
                         userId: wallet.userId,
@@ -160,7 +171,11 @@ let TatumRiskService = TatumRiskService_1 = class TatumRiskService {
         }
         catch (error) {
             this.logger.error(`Risk screening failed for ${address}: ${error.message}`);
-            return { isSafe: false, riskScore: 100, reasons: ['Screening service error'] };
+            return {
+                isSafe: false,
+                riskScore: 100,
+                reasons: ['Screening service error'],
+            };
         }
     }
     async screenTransaction(params) {
@@ -198,7 +213,8 @@ let TatumRiskService = TatumRiskService_1 = class TatumRiskService {
                 _sum: { amount: true },
             });
             const dailyTotal = (dailyAgg._sum.amount?.toNumber() || 0) + params.amount;
-            const dailyThreshold = (this.AMOUNT_THRESHOLDS[params.currency] || 1000) * config.dailyCumulativeMultiplier;
+            const dailyThreshold = (this.AMOUNT_THRESHOLDS[params.currency] || 1000) *
+                config.dailyCumulativeMultiplier;
             if (dailyTotal > dailyThreshold) {
                 reasons.push(`24h cumulative withdrawal ${dailyTotal} exceeds limit ${dailyThreshold}`);
             }

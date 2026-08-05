@@ -16,6 +16,9 @@ const tatum_risk_service_1 = require("./tatum-risk.service");
 const tatum_webhook_service_1 = require("./tatum-webhook.service");
 const tatum_webhook_controller_1 = require("./tatum-webhook.controller");
 const tatum_exchange_rate_service_1 = require("./tatum-exchange-rate.service");
+const tatum_transfer_service_1 = require("./tatum-transfer.service");
+const tatum_platform_service_1 = require("./tatum-platform.service");
+const tatum_reconciliation_service_1 = require("./tatum-reconciliation.service");
 const wallet_module_1 = require("../wallet/wallet.module");
 const security_module_1 = require("../security/security.module");
 let TatumModule = class TatumModule {
@@ -33,6 +36,9 @@ exports.TatumModule = TatumModule = __decorate([
             tatum_risk_service_1.TatumRiskService,
             tatum_webhook_service_1.TatumWebhookService,
             tatum_exchange_rate_service_1.TatumExchangeRateService,
+            tatum_transfer_service_1.TatumTransferService,
+            tatum_platform_service_1.TatumPlatformService,
+            tatum_reconciliation_service_1.TatumReconciliationService,
         ],
         exports: [
             tatum_wallet_service_1.TatumWalletService,
@@ -41,6 +47,9 @@ exports.TatumModule = TatumModule = __decorate([
             tatum_risk_service_1.TatumRiskService,
             tatum_webhook_service_1.TatumWebhookService,
             tatum_exchange_rate_service_1.TatumExchangeRateService,
+            tatum_transfer_service_1.TatumTransferService,
+            tatum_platform_service_1.TatumPlatformService,
+            tatum_reconciliation_service_1.TatumReconciliationService,
         ],
     })
 ], TatumModule);

@@ -49,6 +49,7 @@ export declare class AuthController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -93,6 +94,7 @@ export declare class AuthController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -136,6 +138,7 @@ export declare class AuthController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -51,6 +51,7 @@ export declare class UsersController {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;

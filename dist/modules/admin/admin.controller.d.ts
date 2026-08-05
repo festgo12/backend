@@ -2,13 +2,15 @@ import { AdminService } from './admin.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
 import { TatumDepositService } from '../tatum/tatum-deposit.service';
 import { TatumWebhookService } from '../tatum/tatum-webhook.service';
-import { UserStatus } from '@src/generated/client';
+import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { UserStatus, Currency } from '@src/generated/client';
 export declare class AdminController {
     private readonly adminService;
     private readonly exchangeRateService;
     private readonly depositService;
     private readonly webhookService;
-    constructor(adminService: AdminService, exchangeRateService: TatumExchangeRateService, depositService: TatumDepositService, webhookService: TatumWebhookService);
+    private readonly platformService;
+    constructor(adminService: AdminService, exchangeRateService: TatumExchangeRateService, depositService: TatumDepositService, webhookService: TatumWebhookService, platformService: TatumPlatformService);
     getUsers(page?: string, limit?: string, search?: string): Promise<{
         users: ({
             profile: {
@@ -51,6 +53,7 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         })[];
@@ -92,6 +95,7 @@ export declare class AdminController {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -166,6 +170,7 @@ export declare class AdminController {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -202,6 +207,7 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -254,6 +260,7 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -333,6 +340,7 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -413,6 +421,7 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -447,6 +456,7 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -552,6 +562,7 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -596,6 +607,7 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -663,6 +675,7 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -729,6 +742,7 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -770,6 +784,32 @@ export declare class AdminController {
         synced: number;
         discrepancies: number;
     }>;
+    getFeeWallets(): Promise<{
+        wallets: {
+            id: string;
+            currency: import("@src/generated/client").$Enums.Currency;
+            address: string | null;
+            balance: number;
+            reservedBalance: number;
+            available: number;
+            ledgerEntryCount: number;
+            updatedAt: Date;
+        }[];
+        total: number;
+    }>;
+    initFeeWallets(): Promise<{
+        success: boolean;
+        userId: string;
+        wallets: {
+            currency: Currency;
+            id: string;
+            address: string | null;
+        }[];
+    }>;
+    sweepFeeWallet(currency: Currency, address: string, amount?: number): Promise<{
+        txId: string;
+        status: string;
+    }>;
     getPaymentStats(): Promise<{
         totalDeposits: number | import("@src/generated/client/runtime/library").Decimal;
         totalWithdrawals: number | import("@src/generated/client/runtime/library").Decimal;
@@ -808,6 +848,7 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -873,6 +914,7 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };

@@ -1,5 +1,5 @@
 import { PrismaService } from '../../core/database/prisma.service';
-import { UserStatus } from '@src/generated/client';
+import { UserStatus, Currency } from '@src/generated/client';
 import { Prisma } from '@src/generated/client';
 import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
@@ -54,6 +54,7 @@ export declare class AdminService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         })[];
@@ -95,6 +96,7 @@ export declare class AdminService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -169,6 +171,7 @@ export declare class AdminService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -205,6 +208,7 @@ export declare class AdminService {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -257,6 +261,7 @@ export declare class AdminService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -302,6 +307,23 @@ export declare class AdminService {
         reservedBalance: Prisma.Decimal;
         address: string | null;
     }>;
+    getFeeWallets(): Promise<{
+        wallets: {
+            id: string;
+            currency: import("@src/generated/client").$Enums.Currency;
+            address: string | null;
+            balance: number;
+            reservedBalance: number;
+            available: number;
+            ledgerEntryCount: number;
+            updatedAt: Date;
+        }[];
+        total: number;
+    }>;
+    sweepFeeWallet(currency: Currency, address: string, amount?: number): Promise<{
+        txId: string;
+        status: string;
+    }>;
     getAllTransactions(page: number, limit: number): Promise<{
         transactions: ({
             wallet: {
@@ -336,6 +358,7 @@ export declare class AdminService {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -416,6 +439,7 @@ export declare class AdminService {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -450,6 +474,7 @@ export declare class AdminService {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -555,6 +580,7 @@ export declare class AdminService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -599,6 +625,7 @@ export declare class AdminService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -651,6 +678,7 @@ export declare class AdminService {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -717,6 +745,7 @@ export declare class AdminService {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -812,6 +841,7 @@ export declare class AdminService {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
+                    isSystem: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -877,6 +907,7 @@ export declare class AdminService {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };

@@ -22,6 +22,7 @@ const admin_service_1 = require("./admin.service");
 const tatum_exchange_rate_service_1 = require("../tatum/tatum-exchange-rate.service");
 const tatum_deposit_service_1 = require("../tatum/tatum-deposit.service");
 const tatum_webhook_service_1 = require("../tatum/tatum-webhook.service");
+const tatum_platform_service_1 = require("../tatum/tatum-platform.service");
 const client_1 = require("../../generated/client/index.js");
 const audit_decorator_1 = require("../audit/audit.decorator");
 let AdminController = class AdminController {
@@ -29,11 +30,13 @@ let AdminController = class AdminController {
     exchangeRateService;
     depositService;
     webhookService;
-    constructor(adminService, exchangeRateService, depositService, webhookService) {
+    platformService;
+    constructor(adminService, exchangeRateService, depositService, webhookService, platformService) {
         this.adminService = adminService;
         this.exchangeRateService = exchangeRateService;
         this.depositService = depositService;
         this.webhookService = webhookService;
+        this.platformService = platformService;
     }
     getUsers(page = '1', limit = '10', search) {
         return this.adminService.getUsers(parseInt(page), parseInt(limit), search);
@@ -73,6 +76,20 @@ let AdminController = class AdminController {
     }
     async syncAllBalances() {
         return this.depositService.syncAllWallets();
+    }
+    getFeeWallets() {
+        return this.adminService.getFeeWallets();
+    }
+    async initFeeWallets() {
+        const result = await this.platformService.ensurePlatformWallets();
+        return {
+            success: true,
+            userId: result.userId,
+            wallets: result.wallets,
+        };
+    }
+    sweepFeeWallet(currency, address, amount) {
+        return this.adminService.sweepFeeWallet(currency, address, amount);
     }
     getPaymentStats() {
         return this.adminService.getPaymentStats();
@@ -240,6 +257,32 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "syncAllBalances", null);
 __decorate([
+    (0, common_1.Get)('fee-wallets'),
+    (0, swagger_1.ApiOperation)({ summary: 'List platform fee wallets with ledger balances' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getFeeWallets", null);
+__decorate([
+    (0, common_1.Post)('fee-wallets/init'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_FEE_WALLET_INIT', 'WALLET'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create/assign the platform fee wallets for all crypto currencies' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "initFeeWallets", null);
+__decorate([
+    (0, common_1.Post)('fee-wallets/:currency/sweep'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_FEE_SWEEP', 'WALLET'),
+    (0, swagger_1.ApiOperation)({ summary: 'Sweep platform fee wallet balance to a treasury address' }),
+    __param(0, (0, common_1.Param)('currency')),
+    __param(1, (0, common_1.Body)('address')),
+    __param(2, (0, common_1.Body)('amount')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Number]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "sweepFeeWallet", null);
+__decorate([
     (0, common_1.Get)('payments/stats'),
     (0, swagger_1.ApiOperation)({ summary: 'Get NGN payment statistics' }),
     __metadata("design:type", Function),
@@ -366,6 +409,7 @@ exports.AdminController = AdminController = __decorate([
     __metadata("design:paramtypes", [admin_service_1.AdminService,
         tatum_exchange_rate_service_1.TatumExchangeRateService,
         tatum_deposit_service_1.TatumDepositService,
-        tatum_webhook_service_1.TatumWebhookService])
+        tatum_webhook_service_1.TatumWebhookService,
+        tatum_platform_service_1.TatumPlatformService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

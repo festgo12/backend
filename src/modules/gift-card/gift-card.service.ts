@@ -150,7 +150,7 @@ export class GiftCardService {
       // 1. Lock and fetch listing
       const listing = await tx.$queryRaw<
         Array<{ id: string; sellerId: string; status: string; askingPriceNgn: string; cardCurrency: string; denomination: string; version: number }>
-      >`SELECT id, sellerId, status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
+      >`SELECT id, "sellerId", status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
          FROM "GiftCardListing"
          WHERE id = ${dto.listingId}
          FOR UPDATE`;

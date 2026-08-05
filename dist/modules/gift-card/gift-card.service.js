@@ -128,7 +128,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
     }
     async purchaseListing(buyerId, dto) {
         return this.prisma.$transaction(async (tx) => {
-            const listing = await tx.$queryRaw `SELECT id, sellerId, status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
+            const listing = await tx.$queryRaw `SELECT id, "sellerId", status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
          FROM "GiftCardListing"
          WHERE id = ${dto.listingId}
          FOR UPDATE`;

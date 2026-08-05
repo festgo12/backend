@@ -143,6 +143,7 @@ exports.Prisma.UserScalarFieldEnum = {
   phoneVerified: 'phoneVerified',
   failedLoginAttempts: 'failedLoginAttempts',
   lockedUntil: 'lockedUntil',
+  isSystem: 'isSystem',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -435,6 +436,25 @@ exports.Prisma.PlatformFeeConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PlatformSettingScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ReconciliationScalarFieldEnum = {
+  id: 'id',
+  currency: 'currency',
+  internalBalance: 'internalBalance',
+  onChainBalance: 'onChainBalance',
+  difference: 'difference',
+  status: 'status',
+  reference: 'reference',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.DailyReportScalarFieldEnum = {
   id: 'id',
   date: 'date',
@@ -523,7 +543,8 @@ exports.LedgerType = exports.$Enums.LedgerType = {
   TRADE_REFUND: 'TRADE_REFUND',
   FEE: 'FEE',
   GIFT_CARD_PURCHASE: 'GIFT_CARD_PURCHASE',
-  GIFT_CARD_SALE: 'GIFT_CARD_SALE'
+  GIFT_CARD_SALE: 'GIFT_CARD_SALE',
+  RECONCILIATION_ADJUSTMENT: 'RECONCILIATION_ADJUSTMENT'
 };
 
 exports.AdType = exports.$Enums.AdType = {
@@ -617,6 +638,8 @@ exports.Prisma.ModelName = {
   GiftCardOrder: 'GiftCardOrder',
   GiftCardEvidence: 'GiftCardEvidence',
   PlatformFeeConfig: 'PlatformFeeConfig',
+  PlatformSetting: 'PlatformSetting',
+  Reconciliation: 'Reconciliation',
   DailyReport: 'DailyReport',
   HelpContent: 'HelpContent'
 };

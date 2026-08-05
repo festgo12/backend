@@ -51,6 +51,8 @@ const rxjs_1 = require("rxjs");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const tatum_wallet_service_1 = require("./tatum-wallet.service");
+const tatum_platform_service_1 = require("./tatum-platform.service");
+const client_1 = require("../../generated/client/index.js");
 const crypto = __importStar(require("crypto"));
 let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     configService;
@@ -69,7 +71,8 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
         this.prisma = prisma;
         this.walletService = walletService;
         this.tatumWallet = tatumWallet;
-        this.hmacSecret = this.configService.get('TATUM_WEBHOOK_SECRET') || '';
+        this.hmacSecret =
+            this.configService.get('TATUM_WEBHOOK_SECRET') || '';
         this.apiKey = this.configService.get('TATUM_API_KEY') || '';
     }
     async onApplicationBootstrap() {
@@ -83,15 +86,15 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     get headers() {
         return { 'x-api-key': this.apiKey };
     }
-    verifySignature(payload, signature) {
-        if (!this.hmacSecret || !signature) {
-            if (this.configService.get('NODE_ENV') !== 'production')
+    verifySignature(rawBody, signature) {
+        const isProduction = this.configService.get('NODE_ENV') === 'production';
+        if (!this.hmacSecret || !signature || !rawBody) {
+            if (!isProduction)
                 return true;
             return false;
         }
         const hmac = crypto.createHmac('sha256', this.hmacSecret);
-        const body = JSON.stringify(payload);
-        const digest = hmac.update(body).digest('hex');
+        const digest = hmac.update(rawBody).digest('hex');
         return digest === signature;
     }
     async markTransactionAsCompleted(txId) {
@@ -113,9 +116,9 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     getWebhookUrl() {
         const configured = this.configService.get('TATUM_WEBHOOK_URL');
         if (configured)
-            return configured;
+            return configured.replace(/\/+$/, '');
         const appUrl = this.configService.get('APP_URL', 'http://localhost:3000');
-        return `${appUrl}/tatum/webhooks/incoming`;
+        return `${appUrl.replace(/\/+$/, '')}/tatum/webhooks/incoming`;
     }
     async registerAddressSubscription(address, chain, currency) {
         const webhookUrl = this.getWebhookUrl();
@@ -151,35 +154,37 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
             return null;
         }
     }
-    async registerOutgoingSubscription(chain) {
+    async registerOutgoingSubscription(chain, address) {
         const webhookUrl = this.getWebhookUrl();
-        const subKey = `outgoing:${chain}`;
+        const subKey = `outgoing:${chain}:${address}`;
         if (this.subscriptions.has(subKey)) {
             return this.subscriptions.get(subKey);
         }
         try {
-            this.logger.log(`Registering outgoing transaction webhook for ${chain}`);
+            this.logger.log(`Registering outgoing transaction webhook for ${chain} address ${address}`);
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.baseUrl}/subscription`, {
                 type: 'OUTGOING_NATIVE_TX',
                 attr: {
                     chain,
+                    address,
                     url: webhookUrl,
                 },
             }, { headers: this.headers }));
             const subscription = {
                 id: response.data?.id || `sub-out-${Date.now()}`,
-                address: '*',
+                address,
                 chain,
                 currency: chain,
                 type: 'OUTGOING_NATIVE_TX',
                 createdAt: new Date(),
             };
             this.subscriptions.set(subKey, subscription);
-            this.logger.log(`Outgoing webhook registered: ${subscription.id} for ${chain}`);
+            this.logger.log(`Outgoing webhook registered: ${subscription.id} for ${chain} address ${address}`);
             return subscription;
         }
         catch (error) {
-            this.logger.error(`Failed to register outgoing webhook for ${chain}: ${error.response?.data?.message || error.message}`);
+            const apiError = error;
+            this.logger.error(`Failed to register outgoing webhook for ${chain} address ${address}: ${apiError.response?.data?.message || apiError.message || String(error)}`);
             return null;
         }
     }
@@ -223,8 +228,33 @@ let TatumWebhookService = TatumWebhookService_1 = class TatumWebhookService {
     async ensureOutgoingWebhooks() {
         const chains = ['BTC', 'ETH'];
         for (const chain of chains) {
-            await this.registerOutgoingSubscription(chain);
+            const address = await this.getPlatformFeeWalletAddress(chain);
+            if (!address) {
+                this.logger.warn(`Skipping outgoing webhook registration for ${chain}: no platform fee wallet address yet`);
+                continue;
+            }
+            await this.registerOutgoingSubscription(chain, address);
         }
+    }
+    async getPlatformFeeWalletAddress(chain) {
+        const currencyMap = {
+            BTC: client_1.Currency.BTC,
+            ETH: client_1.Currency.ETH,
+        };
+        const currency = currencyMap[chain];
+        if (!currency)
+            return null;
+        const platformUser = await this.prisma.user.findUnique({
+            where: { email: tatum_platform_service_1.PLATFORM_EMAIL },
+        });
+        if (!platformUser)
+            return null;
+        const wallet = await this.prisma.wallet.findUnique({
+            where: {
+                userId_currency: { userId: platformUser.id, currency },
+            },
+        });
+        return wallet?.address || null;
     }
     static notificationChain(currency) {
         switch (currency.toUpperCase()) {

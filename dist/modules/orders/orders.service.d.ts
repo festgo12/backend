@@ -2,11 +2,19 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { CreateOrderDto } from './dto/order.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
+import { TatumTransferService } from '../tatum/tatum-transfer.service';
+import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { TatumWalletService } from '../tatum/tatum-wallet.service';
 export declare class OrdersService {
     private prisma;
     private eventEmitter;
-    constructor(prisma: PrismaService, eventEmitter: EventEmitter2);
+    private tatumTransfer;
+    private platformService;
+    private tatumWallet;
+    private readonly logger;
+    constructor(prisma: PrismaService, eventEmitter: EventEmitter2, tatumTransfer: TatumTransferService, platformService: TatumPlatformService, tatumWallet: TatumWalletService);
     private getFeePercent;
+    private resolveRoles;
     createOrder(buyerId: string, dto: CreateOrderDto): Promise<{
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
@@ -37,6 +45,7 @@ export declare class OrdersService {
         feeAmount: Decimal;
         adId: string;
     }>;
+    private settleOrderOnChain;
     declineOrder(orderId: string, initiatorId: string): Promise<{
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
@@ -119,6 +128,7 @@ export declare class OrdersService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -143,6 +153,7 @@ export declare class OrdersService {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };

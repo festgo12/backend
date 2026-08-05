@@ -1,20 +1,44 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateOrderDto } from './dto/order.dto';
-import { OrderStatus, Currency, LedgerType } from '@src/generated/client';
+import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
+import { TatumTransferService } from '../tatum/tatum-transfer.service';
+import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { TatumWalletService } from '../tatum/tatum-wallet.service';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    private tatumTransfer: TatumTransferService,
+    private platformService: TatumPlatformService,
+    private tatumWallet: TatumWalletService,
   ) {}
 
   private async getFeePercent(key: string): Promise<number> {
     const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
     return config ? Number(config.value) : 0.5;
+  }
+
+  /**
+   * Resolves trade roles from the ad direction. The crypto buyer always pays NGN:
+   *   SELL ad: ad owner sells crypto, responder buys crypto with NGN
+   *   BUY  ad: ad owner buys crypto with NGN, responder sells crypto
+   */
+  private resolveRoles(adType: AdType, buyerId: string, sellerId: string) {
+    const isSellAd = adType === AdType.SELL;
+    return {
+      isSellAd,
+      cryptoSellerId: isSellAd ? sellerId : buyerId,
+      cryptoBuyerId: isSellAd ? buyerId : sellerId,
+      fiatPayerId: isSellAd ? buyerId : sellerId,
+      fiatReceiverId: isSellAd ? sellerId : buyerId,
+    };
   }
 
   async createOrder(buyerId: string, dto: CreateOrderDto) {
@@ -32,6 +56,12 @@ export class OrdersService {
       if (ad.sellerId === buyerId) {
         throw new BadRequestException('You cannot trade with your own advertisement');
       }
+
+      const isSellAd = ad.type === AdType.SELL;
+      // The crypto buyer always pays NGN. For a SELL ad that is the responder
+      // (buyerId); for a BUY ad the ad owner buys the crypto.
+      const fiatPayerId = isSellAd ? buyerId : ad.sellerId;
+      const cryptoSellerId = isSellAd ? ad.sellerId : buyerId;
 
       // 2. Calculate Amounts
       let fiatAmount: Decimal;
@@ -64,7 +94,7 @@ export class OrdersService {
 
       // 4. Validate Balances (Instant Insufficient Balance error)
       const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: buyerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
       });
 
       if (!buyerFiatWallet || new Decimal(buyerFiatWallet.balance.toString()).lessThan(fiatAmount)) {
@@ -72,7 +102,7 @@ export class OrdersService {
       }
 
       const sellerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: ad.sellerId, currency: ad.asset } },
+        where: { userId_currency: { userId: cryptoSellerId, currency: ad.asset } },
       });
 
       if (!sellerCryptoWallet || new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
@@ -125,26 +155,37 @@ export class OrdersService {
   }
 
   async approveOrder(orderId: string, sellerId: string) {
-    return this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
-        include: { ad: true },
-      });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { ad: true },
+    });
 
-      if (!order) throw new NotFoundException('Order not found');
-      if (order.sellerId !== sellerId) throw new BadRequestException('Unauthorized');
-      if (order.status !== OrderStatus.PENDING_SELLER) {
-        throw new BadRequestException(`Cannot approve order in ${order.status} state`);
-      }
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.sellerId !== sellerId) throw new BadRequestException('Unauthorized');
+    if (order.status !== OrderStatus.PENDING_SELLER) {
+      throw new BadRequestException(`Cannot approve order in ${order.status} state`);
+    }
 
-      const cryptoAmount = new Decimal(order.cryptoAmount.toString());
-      const fiatAmount = new Decimal(order.fiatAmount.toString());
+    const isSellAd = order.ad.type === AdType.SELL;
+    const cryptoAmount = new Decimal(order.cryptoAmount.toString());
+    const fiatAmount = new Decimal(order.fiatAmount.toString());
 
-      const buyFeePercent = await this.getFeePercent('trade_buy_fee_percent');
-      const sellFeePercent = await this.getFeePercent('trade_sell_fee_percent');
-      const buyerFee = cryptoAmount.times(buyFeePercent / 100).toDecimalPlaces(8);
-      const sellerFee = fiatAmount.times(sellFeePercent / 100).toDecimalPlaces(2);
+    const buyFeePercent = await this.getFeePercent('trade_buy_fee_percent');
+    const sellFeePercent = await this.getFeePercent('trade_sell_fee_percent');
+    const buyerFee = cryptoAmount.times(buyFeePercent / 100).toDecimalPlaces(8);
+    const sellerFee = fiatAmount.times(sellFeePercent / 100).toDecimalPlaces(2);
 
+    // Direction-aware role resolution. The crypto buyer always pays NGN:
+    //   SELL ad: ad owner sells crypto, responder buys crypto with NGN
+    //   BUY  ad: ad owner buys crypto with NGN, responder sells crypto
+    const cryptoSellerId = isSellAd ? order.sellerId : order.buyerId;
+    const cryptoBuyerId = isSellAd ? order.buyerId : order.sellerId;
+    const fiatPayerId = cryptoBuyerId;
+    const fiatReceiverId = cryptoSellerId;
+
+    const feeWallet = await this.platformService.getPlatformFeeWallet(order.ad.asset);
+
+    const settlement = await this.prisma.$transaction(async (tx) => {
       // --- STAGE 1: Transition status to APPROVED (Locks crypto logic) ---
       const approvedOrder = await tx.order.update({
         where: { id: order.id },
@@ -154,11 +195,11 @@ export class OrdersService {
         },
       });
 
-      // --- STAGE 2: Lock crypto from Seller (Optimistic Lock) ---
+      // --- STAGE 2: Lock crypto from the crypto seller (Optimistic Lock) ---
       const sellerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: sellerId, currency: order.ad.asset } },
+        where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
       });
-      if (!sellerCryptoWallet) throw new InternalServerErrorException('Seller crypto wallet not found');
+      if (!sellerCryptoWallet) throw new InternalServerErrorException('Crypto seller wallet not found');
       if (new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
         throw new BadRequestException('Seller has insufficient crypto balance to lock');
       }
@@ -184,9 +225,9 @@ export class OrdersService {
       if (transferCryptoResult.count === 0) throw new InternalServerErrorException('Conflict transferring seller crypto');
 
       const buyerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: order.ad.asset } },
+        where: { userId_currency: { userId: cryptoBuyerId, currency: order.ad.asset } },
       });
-      if (!buyerCryptoWallet) throw new InternalServerErrorException('Buyer crypto wallet not found');
+      if (!buyerCryptoWallet) throw new InternalServerErrorException('Crypto buyer wallet not found');
 
       const creditBuyerCryptoResult = await tx.wallet.updateMany({
         where: { id: buyerCryptoWallet.id, version: buyerCryptoWallet.version },
@@ -197,11 +238,11 @@ export class OrdersService {
       });
       if (creditBuyerCryptoResult.count === 0) throw new InternalServerErrorException('Conflict crediting buyer crypto');
 
-      // --- STAGE 4: Credit seller NGN (Debit buyer reserved NGN, Credit seller NGN) ---
+      // --- STAGE 4: Credit fiat receiver (Debit fiat payer reserved NGN) ---
       const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
       });
-      if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
+      if (!buyerFiatWallet) throw new InternalServerErrorException('Fiat payer wallet not found');
 
       const releaseReservedFiatResult = await tx.wallet.updateMany({
         where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
@@ -210,12 +251,12 @@ export class OrdersService {
           version: { increment: 1 },
         },
       });
-      if (releaseReservedFiatResult.count === 0) throw new InternalServerErrorException('Conflict releasing buyer reserved fiat');
+      if (releaseReservedFiatResult.count === 0) throw new InternalServerErrorException('Conflict releasing fiat reserve');
 
       const sellerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: sellerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatReceiverId, currency: Currency.NGN } },
       });
-      if (!sellerFiatWallet) throw new InternalServerErrorException('Seller fiat wallet not found');
+      if (!sellerFiatWallet) throw new InternalServerErrorException('Fiat receiver wallet not found');
 
       const creditSellerFiatResult = await tx.wallet.updateMany({
         where: { id: sellerFiatWallet.id, version: sellerFiatWallet.version },
@@ -224,12 +265,12 @@ export class OrdersService {
           version: { increment: 1 },
         },
       });
-      if (creditSellerFiatResult.count === 0) throw new InternalServerErrorException('Conflict crediting seller fiat');
+      if (creditSellerFiatResult.count === 0) throw new InternalServerErrorException('Conflict crediting fiat receiver');
 
       // --- STAGE 5: Update Ad Quantity (Optimistic Lock) ---
       const ad = await tx.ad.findUnique({ where: { id: order.adId } });
       if (!ad) throw new InternalServerErrorException('Ad not found during settlement');
-      
+
       const newAdQuantity = new Decimal(ad.quantity.toString()).minus(cryptoAmount);
       const updateAdResult = await tx.ad.updateMany({
         where: { id: ad.id, version: ad.version },
@@ -242,58 +283,73 @@ export class OrdersService {
       if (updateAdResult.count === 0) throw new InternalServerErrorException('Conflict updating ad quantity');
 
       // --- STAGE 6: Generate Audit Logs (LedgerEntries) ---
-      await tx.ledgerEntry.createMany({
-        data: [
-          {
-            walletId: buyerFiatWallet.id,
+      const ledgerData: any[] = [
+        {
+          walletId: buyerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount.negated(),
+          type: LedgerType.TRADE_SETTLEMENT,
+          reference: `SETTLE-NGN-PAYER-${order.id}`,
+          balanceAfter: new Decimal(buyerFiatWallet.balance.toString()),
+        },
+        {
+          walletId: sellerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount.minus(sellerFee),
+          type: LedgerType.TRADE_SETTLEMENT,
+          reference: `SETTLE-NGN-RECEIVER-${order.id}`,
+          balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
+        },
+        {
+          walletId: sellerFiatWallet.id,
+          orderId: order.id,
+          amount: sellerFee.negated(),
+          type: LedgerType.FEE,
+          reference: `FEE-NGN-RECEIVER-${order.id}`,
+          balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
+        },
+        {
+          walletId: buyerCryptoWallet.id,
+          orderId: order.id,
+          amount: cryptoAmount.minus(buyerFee),
+          type: LedgerType.TRADE_SETTLEMENT,
+          reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
+          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+        },
+        {
+          walletId: buyerCryptoWallet.id,
+          orderId: order.id,
+          amount: buyerFee.negated(),
+          type: LedgerType.FEE,
+          reference: `FEE-CRYPTO-BUYER-${order.id}`,
+          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+        },
+        {
+          walletId: sellerCryptoWallet.id,
+          orderId: order.id,
+          amount: cryptoAmount.negated(),
+          type: LedgerType.TRADE_SETTLEMENT,
+          reference: `SETTLE-CRYPTO-SELLER-${order.id}`,
+          balanceAfter: new Decimal(sellerCryptoWallet.balance.toString()).minus(cryptoAmount),
+        },
+      ];
+
+      // Platform fee wallet is the ledger home for the on-chain buyer fee leg.
+      if (feeWallet) {
+        const feeWalletRow = await tx.wallet.findUnique({ where: { id: feeWallet.id } });
+        if (feeWalletRow) {
+          ledgerData.push({
+            walletId: feeWallet.id,
             orderId: order.id,
-            amount: fiatAmount.negated(),
-            type: LedgerType.TRADE_SETTLEMENT,
-            reference: `SETTLE-NGN-BUYER-${order.id}`,
-            balanceAfter: new Decimal(buyerFiatWallet.balance.toString()),
-          },
-          {
-            walletId: sellerFiatWallet.id,
-            orderId: order.id,
-            amount: fiatAmount.minus(sellerFee),
-            type: LedgerType.TRADE_SETTLEMENT,
-            reference: `SETTLE-NGN-SELLER-${order.id}`,
-            balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
-          },
-          {
-            walletId: sellerFiatWallet.id,
-            orderId: order.id,
-            amount: sellerFee.negated(),
+            amount: buyerFee,
             type: LedgerType.FEE,
-            reference: `FEE-NGN-SELLER-${order.id}`,
-            balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
-          },
-          {
-            walletId: buyerCryptoWallet.id,
-            orderId: order.id,
-            amount: cryptoAmount.minus(buyerFee),
-            type: LedgerType.TRADE_SETTLEMENT,
-            reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
-            balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
-          },
-          {
-            walletId: buyerCryptoWallet.id,
-            orderId: order.id,
-            amount: buyerFee.negated(),
-            type: LedgerType.FEE,
-            reference: `FEE-CRYPTO-BUYER-${order.id}`,
-            balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
-          },
-          {
-            walletId: sellerCryptoWallet.id,
-            orderId: order.id,
-            amount: cryptoAmount.negated(),
-            type: LedgerType.TRADE_SETTLEMENT,
-            reference: `SETTLE-CRYPTO-SELLER-${order.id}`,
-            balanceAfter: new Decimal(sellerCryptoWallet.balance.toString()).minus(cryptoAmount),
-          },
-        ],
-      });
+            reference: `FEE-CRYPTO-PLATFORM-${order.id}`,
+            balanceAfter: new Decimal(feeWalletRow.balance.toString()).plus(buyerFee),
+          });
+        }
+      }
+
+      await tx.ledgerEntry.createMany({ data: ledgerData });
 
       // --- STAGE 7: Complete Order ---
       const finalOrder = await tx.order.update({
@@ -308,14 +364,113 @@ export class OrdersService {
       // 8. Emit Event
       this.eventEmitter.emit('order.completed', finalOrder);
 
-      return finalOrder;
+      return { finalOrder, sellerCryptoWallet, buyerCryptoWallet };
     });
+
+    // --- STAGE 8: On-chain settlement legs (post-commit, best-effort) ---
+    await this.settleOrderOnChain({
+      order,
+      asset: order.ad.asset,
+      cryptoAmount,
+      buyerFee,
+      sellerCryptoWallet: settlement.sellerCryptoWallet,
+      buyerCryptoWallet: settlement.buyerCryptoWallet,
+    });
+
+    return settlement.finalOrder;
+  }
+
+  /**
+   * Broadcasts the crypto movement for a settled trade:
+   *   seller -> buyer  : cryptoAmount - buyerFee
+   *   seller -> fees   : buyerFee (platform fee wallet)
+   * The internal ledger was already finalised inside the settlement transaction;
+   * these on-chain transfers are recorded for tracking and reconciled later.
+   */
+  private async settleOrderOnChain(params: {
+    order: any;
+    asset: Currency;
+    cryptoAmount: Decimal;
+    buyerFee: Decimal;
+    sellerCryptoWallet: any;
+    buyerCryptoWallet: any;
+  }) {
+    const { order, asset, cryptoAmount, buyerFee, sellerCryptoWallet, buyerCryptoWallet } = params;
+
+    const sellerAddress = sellerCryptoWallet?.address;
+    const buyerAddress = buyerCryptoWallet?.address;
+
+    if (!sellerAddress || !buyerAddress) {
+      this.logger.error(
+        `On-chain settlement skipped for order ${order.id}: missing addresses ` +
+          `(seller=${sellerAddress || 'NONE'}, buyer=${buyerAddress || 'NONE'})`,
+      );
+      return;
+    }
+
+    const sellerIndex = this.tatumWallet.getAddressIndex(sellerCryptoWallet.id);
+
+    let feeWallet: { id: string; address: string | null } | null = null;
+    try {
+      feeWallet = await this.platformService.getPlatformFeeWallet(asset);
+    } catch (error: any) {
+      this.logger.error(`On-chain settlement skipped for order ${order.id}: fee wallet unavailable (${error.message})`);
+      return;
+    }
+    const feeAddress = feeWallet?.address ?? null;
+
+    const legs: { to: string; amount: string; type: 'trade' | 'fee' }[] = [];
+
+    const buyerLegAmount = cryptoAmount.minus(buyerFee);
+    if (buyerLegAmount.greaterThan(0)) {
+      legs.push({ to: buyerAddress, amount: buyerLegAmount.toFixed(8), type: 'trade' });
+    }
+    if (buyerFee.greaterThan(0) && feeAddress) {
+      legs.push({ to: feeAddress, amount: buyerFee.toFixed(8), type: 'fee' });
+    }
+
+    for (const leg of legs) {
+      try {
+        const txId = await this.tatumTransfer.transfer({
+          asset,
+          fromAddress: sellerAddress,
+          fromIndex: sellerIndex,
+          to: leg.to,
+          amount: leg.amount,
+        });
+
+        await this.tatumTransfer.recordOnChainTransaction({
+          walletId: sellerCryptoWallet.id,
+          orderId: order.id,
+          asset,
+          txId,
+          fromAddress: sellerAddress,
+          to: leg.to,
+          amount: leg.amount,
+          type: leg.type,
+        });
+      } catch (error: any) {
+        this.logger.error(`On-chain leg failed for order ${order.id} (${leg.type}): ${error.message}`);
+        await this.tatumTransfer.recordOnChainTransaction({
+          walletId: sellerCryptoWallet.id,
+          orderId: order.id,
+          asset,
+          txId: `failed-${order.id}-${leg.type}-${Date.now()}`,
+          fromAddress: sellerAddress,
+          to: leg.to,
+          amount: leg.amount,
+          type: leg.type,
+          status: 'FAILED',
+        });
+      }
+    }
   }
 
   async declineOrder(orderId: string, initiatorId: string) {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
+        include: { ad: true },
       });
 
       if (!order) throw new NotFoundException('Order not found');
@@ -324,10 +479,11 @@ export class OrdersService {
       }
 
       const fiatAmount = new Decimal(order.fiatAmount.toString());
+      const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
-      // Refund Buyer Reserved Fiat (Optimistic Lock)
+      // Refund the fiat payer's reserved NGN (Optimistic Lock)
       const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
 
@@ -359,6 +515,7 @@ export class OrdersService {
     return this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
+        include: { ad: true },
       });
 
       if (!order) throw new NotFoundException('Order not found');
@@ -367,10 +524,11 @@ export class OrdersService {
       }
 
       const fiatAmount = new Decimal(order.fiatAmount.toString());
+      const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
-      // Refund Buyer Reserved Fiat (Optimistic Lock)
+      // Refund the fiat payer's reserved NGN (Optimistic Lock)
       const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
 
@@ -420,12 +578,13 @@ export class OrdersService {
       }
 
       const fiatAmount = new Decimal(order.fiatAmount.toString());
+      const { fiatPayerId, cryptoSellerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
-      // 1. Refund Buyer Reserved NGN
+      // 1. Refund the fiat payer's reserved NGN
       const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: Currency.NGN } },
+        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
       });
-      if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
+      if (!buyerFiatWallet) throw new InternalServerErrorException('Fiat payer wallet not found');
 
       const refundFiatResult = await tx.wallet.updateMany({
         where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
@@ -435,15 +594,15 @@ export class OrdersService {
           version: { increment: 1 },
         },
       });
-      if (refundFiatResult.count === 0) throw new InternalServerErrorException('Conflict refunding buyer fiat');
+      if (refundFiatResult.count === 0) throw new InternalServerErrorException('Conflict refunding fiat payer');
 
-      // 2. Refund Seller Crypto if it was locked.
+      // 2. Refund crypto seller's locked crypto if it was locked.
       if (order.status === OrderStatus.APPROVED) {
         const cryptoAmount = new Decimal(order.cryptoAmount.toString());
         const sellerCryptoWallet = await tx.wallet.findUnique({
-          where: { userId_currency: { userId: order.sellerId, currency: order.ad.asset } },
+          where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
         });
-        if (!sellerCryptoWallet) throw new InternalServerErrorException('Seller crypto wallet not found');
+        if (!sellerCryptoWallet) throw new InternalServerErrorException('Crypto seller wallet not found');
 
         const refundCryptoResult = await tx.wallet.updateMany({
           where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },

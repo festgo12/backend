@@ -100,12 +100,16 @@ export class TatumRiskService {
     const config = { ...DEFAULT_RISK_CONFIG };
 
     try {
-      const suspiciousAddressRule = await this.fraudRules.getRuleByCode('SUSPICIOUS_WALLET_ADDRESS');
+      const suspiciousAddressRule = await this.fraudRules.getRuleByCode(
+        'SUSPICIOUS_WALLET_ADDRESS',
+      );
       if (suspiciousAddressRule) {
-        config.addressBlockThreshold = suspiciousAddressRule.threshold === 1 ? 70 : 50;
+        config.addressBlockThreshold =
+          suspiciousAddressRule.threshold === 1 ? 70 : 50;
       }
 
-      const rapidWithdrawalRule = await this.fraudRules.getRuleByCode('RAPID_WITHDRAWALS');
+      const rapidWithdrawalRule =
+        await this.fraudRules.getRuleByCode('RAPID_WITHDRAWALS');
       if (rapidWithdrawalRule) {
         config.withdrawalVelocityLimit = rapidWithdrawalRule.threshold || 3;
       }
@@ -128,22 +132,34 @@ export class TatumRiskService {
     const reasons: string[] = [];
     let riskScore = 0;
 
-    this.logger.log(`Screening address: ${address} on ${chain} (context: ${context})`);
+    this.logger.log(
+      `Screening address: ${address} on ${chain} (context: ${context})`,
+    );
 
     try {
       // 1. Format validation
       if (!this.isValidAddressFormat(address, chain)) {
-        return { isSafe: false, riskScore: 100, reasons: ['Invalid address format'] };
+        return {
+          isSafe: false,
+          riskScore: 100,
+          reasons: ['Invalid address format'],
+        };
       }
 
       // 2. Sanctioned address check (OFAC / known bad actors)
       if (this.isSanctioned(address, chain)) {
         this.logger.warn(`SANCTIONED ADDRESS detected: ${address} on ${chain}`);
-        return { isSafe: false, riskScore: 100, reasons: ['Address is on OFAC sanctions list'] };
+        return {
+          isSafe: false,
+          riskScore: 100,
+          reasons: ['Address is on OFAC sanctions list'],
+        };
       }
 
       // 3. Known exchange hot wallet check (flag, don't block)
-      const isExchange = this.KNOWN_EXCHANGE_PATTERNS[chain]?.some(p => p.test(address));
+      const isExchange = this.KNOWN_EXCHANGE_PATTERNS[chain]?.some((p) =>
+        p.test(address),
+      );
       if (isExchange) {
         riskScore += 20;
         reasons.push('Address belongs to a known exchange');
@@ -169,7 +185,9 @@ export class TatumRiskService {
       });
       if (recentFailures > 3) {
         riskScore += 25;
-        reasons.push(`${recentFailures} failed transactions to this address in 7 days`);
+        reasons.push(
+          `${recentFailures} failed transactions to this address in 7 days`,
+        );
       }
 
       // 6. Check if address has been involved in a flagged order
@@ -186,17 +204,22 @@ export class TatumRiskService {
       }
 
       const config = await this.getRiskConfig();
-      const threshold = context === 'withdrawal'
-        ? config.addressBlockThreshold
-        : config.addressBlockThreshold + 10; // More lenient for deposits
+      const threshold =
+        context === 'withdrawal'
+          ? config.addressBlockThreshold
+          : config.addressBlockThreshold + 10; // More lenient for deposits
 
       const isSafe = riskScore < threshold;
 
       if (!isSafe) {
-        this.logger.warn(`Address ${address} blocked: score=${riskScore}, reasons=${reasons.join('; ')}`);
+        this.logger.warn(
+          `Address ${address} blocked: score=${riskScore}, reasons=${reasons.join('; ')}`,
+        );
 
         // Create alert if we have a user context from the wallet lookup
-        const wallet = await this.prisma.wallet.findFirst({ where: { address } });
+        const wallet = await this.prisma.wallet.findFirst({
+          where: { address },
+        });
         if (wallet) {
           await this.alertEngine.createAlert({
             userId: wallet.userId,
@@ -211,8 +234,14 @@ export class TatumRiskService {
 
       return { isSafe, riskScore, reasons };
     } catch (error: any) {
-      this.logger.error(`Risk screening failed for ${address}: ${error.message}`);
-      return { isSafe: false, riskScore: 100, reasons: ['Screening service error'] };
+      this.logger.error(
+        `Risk screening failed for ${address}: ${error.message}`,
+      );
+      return {
+        isSafe: false,
+        riskScore: 100,
+        reasons: ['Screening service error'],
+      };
     }
   }
 
@@ -230,17 +259,23 @@ export class TatumRiskService {
 
     try {
       // 1. Check user's overall risk score from the risk engine
-      const userRisk = await this.riskEngine.calculateUserRiskScore(params.userId);
+      const userRisk = await this.riskEngine.calculateUserRiskScore(
+        params.userId,
+      );
       const config = await this.getRiskConfig();
 
       if (userRisk.score < config.userRiskBlockLevel) {
-        reasons.push(`User risk level too low: ${userRisk.level} (score: ${userRisk.score})`);
+        reasons.push(
+          `User risk level too low: ${userRisk.level} (score: ${userRisk.score})`,
+        );
       }
 
       // 2. Check amount against thresholds
       const threshold = this.AMOUNT_THRESHOLDS[params.currency];
       if (threshold && params.amount > threshold) {
-        reasons.push(`Amount ${params.amount} ${params.currency} exceeds threshold ${threshold}`);
+        reasons.push(
+          `Amount ${params.amount} ${params.currency} exceeds threshold ${threshold}`,
+        );
       }
 
       // 3. Check withdrawal velocity using FraudRulesService
@@ -255,7 +290,9 @@ export class TatumRiskService {
         },
       });
       if (recentWithdrawals >= config.withdrawalVelocityLimit) {
-        reasons.push(`${recentWithdrawals} withdrawals in the last hour (limit: ${config.withdrawalVelocityLimit})`);
+        reasons.push(
+          `${recentWithdrawals} withdrawals in the last hour (limit: ${config.withdrawalVelocityLimit})`,
+        );
       }
 
       // 4. Check 24h cumulative withdrawal amount
@@ -269,10 +306,15 @@ export class TatumRiskService {
         },
         _sum: { amount: true },
       });
-      const dailyTotal = (dailyAgg._sum.amount?.toNumber() || 0) + params.amount;
-      const dailyThreshold = (this.AMOUNT_THRESHOLDS[params.currency] || 1000) * config.dailyCumulativeMultiplier;
+      const dailyTotal =
+        (dailyAgg._sum.amount?.toNumber() || 0) + params.amount;
+      const dailyThreshold =
+        (this.AMOUNT_THRESHOLDS[params.currency] || 1000) *
+        config.dailyCumulativeMultiplier;
       if (dailyTotal > dailyThreshold) {
-        reasons.push(`24h cumulative withdrawal ${dailyTotal} exceeds limit ${dailyThreshold}`);
+        reasons.push(
+          `24h cumulative withdrawal ${dailyTotal} exceeds limit ${dailyThreshold}`,
+        );
       }
 
       // 5. Check if user account is frozen/suspended
@@ -299,7 +341,9 @@ export class TatumRiskService {
       const approved = reasons.length === 0;
 
       if (!approved) {
-        this.logger.warn(`Transaction blocked for user ${params.userId}: ${reasons.join('; ')}`);
+        this.logger.warn(
+          `Transaction blocked for user ${params.userId}: ${reasons.join('; ')}`,
+        );
       }
 
       return { approved, reasons };
@@ -336,10 +380,16 @@ export class TatumRiskService {
 
     // Screen the source address
     const chain = params.currency === 'BTC' ? 'bitcoin' : 'ethereum';
-    const addressResult = await this.screenAddress(params.sourceAddress, chain, 'deposit');
+    const addressResult = await this.screenAddress(
+      params.sourceAddress,
+      chain,
+      'deposit',
+    );
 
     // Also check user risk
-    const userRisk = await this.riskEngine.calculateUserRiskScore(wallet.userId);
+    const userRisk = await this.riskEngine.calculateUserRiskScore(
+      wallet.userId,
+    );
 
     const reasons = [
       ...addressResult.reasons,
@@ -348,7 +398,8 @@ export class TatumRiskService {
         : []),
     ];
 
-    const safe = addressResult.isSafe && userRisk.score >= config.userRiskBlockLevel;
+    const safe =
+      addressResult.isSafe && userRisk.score >= config.userRiskBlockLevel;
 
     if (!safe) {
       // Flag but don't block — create alert for manual review
@@ -393,7 +444,9 @@ export class TatumRiskService {
 
     switch (chain) {
       case 'bitcoin':
-        return /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(address);
+        return /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(
+          address,
+        );
       case 'ethereum':
         return /^0x[0-9a-fA-F]{40}$/.test(address);
       default:

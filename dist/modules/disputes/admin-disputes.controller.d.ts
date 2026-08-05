@@ -162,6 +162,7 @@ export declare class AdminDisputesController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -206,6 +207,7 @@ export declare class AdminDisputesController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };

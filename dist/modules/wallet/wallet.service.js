@@ -186,7 +186,7 @@ let WalletService = class WalletService {
                 const existingEntry = await tx.ledgerEntry.findFirst({
                     where: { transactionId: transaction.id },
                 });
-                if (!existingEntry) {
+                if (!existingEntry && !updatedMetadata.ledgerSettled) {
                     await this.ledger.createEntry(tx, {
                         walletId: transaction.walletId,
                         transactionId: transaction.id,

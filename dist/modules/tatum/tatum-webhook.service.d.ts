@@ -26,11 +26,11 @@ export declare class TatumWebhookService implements OnApplicationBootstrap {
     constructor(configService: ConfigService, httpService: HttpService, prisma: PrismaService, walletService: WalletService, tatumWallet: TatumWalletService);
     onApplicationBootstrap(): Promise<void>;
     private get headers();
-    verifySignature(payload: any, signature: string): boolean;
+    verifySignature(rawBody: Buffer | string | undefined, signature: string): boolean;
     markTransactionAsCompleted(txId: string): Promise<void>;
     private getWebhookUrl;
     registerAddressSubscription(address: string, chain: string, currency: string): Promise<WebhookSubscription | null>;
-    registerOutgoingSubscription(chain: string): Promise<WebhookSubscription | null>;
+    registerOutgoingSubscription(chain: string, address: string): Promise<WebhookSubscription | null>;
     cancelSubscription(subscriptionId: string): Promise<boolean>;
     getActiveSubscriptions(): WebhookSubscription[];
     getSubscriptionSummary(): {
@@ -40,5 +40,6 @@ export declare class TatumWebhookService implements OnApplicationBootstrap {
         subscriptions: WebhookSubscription[];
     };
     ensureOutgoingWebhooks(): Promise<void>;
+    private getPlatformFeeWalletAddress;
     static notificationChain(currency: string): string;
 }

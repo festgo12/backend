@@ -82,15 +82,21 @@ export class TatumExchangeRateService implements OnApplicationBootstrap {
           rates[currency] = price;
         } else {
           rates[currency] = this.FALLBACK_RATES[currency as Currency] || 0;
-          this.logger.warn(`Using fallback rate for ${currency}: ${rates[currency]}`);
+          this.logger.warn(
+            `Using fallback rate for ${currency}: ${rates[currency]}`,
+          );
         }
       }
 
       this.cache = { rates, lastUpdated: new Date() };
-      this.logger.log(`Exchange rates updated: BTC=${rates.BTC}, ETH=${rates.ETH}, USDT=${rates.USDT}, USDC=${rates.USDC}`);
+      this.logger.log(
+        `Exchange rates updated: BTC=${rates.BTC}, ETH=${rates.ETH}, USDT=${rates.USDT}, USDC=${rates.USDC}`,
+      );
       return rates;
     } catch (error: any) {
-      this.logger.error(`Failed to fetch exchange rates from CoinGecko: ${error.message}`);
+      this.logger.error(
+        `Failed to fetch exchange rates from CoinGecko: ${error.message}`,
+      );
       // Use fallback rates
       const fallback: Record<string, number> = {};
       for (const [currency, rate] of Object.entries(this.FALLBACK_RATES)) {

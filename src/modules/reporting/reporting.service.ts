@@ -107,7 +107,7 @@ export class ReportingService {
     });
 
     const totalUsers = await this.prisma.user.count({
-      where: { createdAt: { lte: dayEnd } },
+      where: { createdAt: { lte: dayEnd }, isSystem: false },
     });
 
     await this.prisma.dailyReport.upsert({
@@ -267,7 +267,7 @@ export class ReportingService {
         _sum: { totalPaidNgn: true },
         _count: { id: true },
       }),
-      this.prisma.user.count({ where: { createdAt: { lte: dayEnd } } }),
+      this.prisma.user.count({ where: { createdAt: { lte: dayEnd }, isSystem: false } }),
       this.prisma.dispute.count({
         where: { status: 'OPEN', createdAt: { gte: dayStart, lte: dayEnd } },
       }),

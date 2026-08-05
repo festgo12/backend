@@ -79,5 +79,4 @@ export declare class WalletController {
         status: string;
         message: string;
     }>;
-    private hashCode;
 }

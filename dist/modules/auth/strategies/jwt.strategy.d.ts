@@ -36,6 +36,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;

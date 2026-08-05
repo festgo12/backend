@@ -1,7 +1,11 @@
+import type { Request } from 'express';
 import { TatumWebhookService } from './tatum-webhook.service';
 import { TatumDepositService } from './tatum-deposit.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
+interface WebhookRequest extends Request {
+    rawBody?: Buffer;
+}
 export declare class TatumWebhookController {
     private readonly webhookService;
     private readonly depositService;
@@ -9,7 +13,7 @@ export declare class TatumWebhookController {
     private readonly prisma;
     private readonly logger;
     constructor(webhookService: TatumWebhookService, depositService: TatumDepositService, walletService: WalletService, prisma: PrismaService);
-    handleWebhook(payload: any, signature: string): Promise<{
+    handleWebhook(req: WebhookRequest, payload: any, signature: string): Promise<{
         received: boolean;
     }>;
     simulateTestnetDeposit(currency: string, amount: string, address?: string): Promise<{
@@ -23,3 +27,4 @@ export declare class TatumWebhookController {
     private handleOutgoingSuccess;
     private handleOutgoingFailed;
 }
+export {};

@@ -55,6 +55,7 @@ export declare class AdminGiftCardController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -90,6 +91,7 @@ export declare class AdminGiftCardController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -139,6 +141,7 @@ export declare class AdminGiftCardController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         }) | null;
@@ -197,6 +200,7 @@ export declare class AdminGiftCardController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -251,6 +255,7 @@ export declare class AdminGiftCardController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -285,6 +290,7 @@ export declare class AdminGiftCardController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
+                isSystem: boolean;
                 createdAt: Date;
                 updatedAt: Date;
             };
@@ -378,6 +384,7 @@ export declare class AdminGiftCardController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -412,6 +419,7 @@ export declare class AdminGiftCardController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
+            isSystem: boolean;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -51,6 +51,7 @@ export declare class UsersService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -120,6 +121,7 @@ export declare class UsersService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -154,6 +156,7 @@ export declare class UsersService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;
@@ -188,6 +191,7 @@ export declare class UsersService {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
+        isSystem: boolean;
         createdAt: Date;
         updatedAt: Date;
     }) | null>;

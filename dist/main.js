@@ -46,23 +46,49 @@ const helmet_1 = __importDefault(require("helmet"));
 const path_1 = require("path");
 const express = __importStar(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+function rawBodyForWebhook(req, res, next) {
+    express.raw({
+        type: 'application/json',
+        verify: (rawReq, _res, buf) => {
+            rawReq.rawBody = buf;
+        },
+    })(req, res, (err) => {
+        if (err)
+            return next(err);
+        if (Buffer.isBuffer(req.body) && req.body.length) {
+            try {
+                req.body = JSON.parse(req.body.toString('utf8'));
+            }
+            catch {
+                return next(new common_1.BadRequestException('Invalid JSON body'));
+            }
+        }
+        next();
+    });
+}
 async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.getHttpAdapter().getInstance().set('trust proxy', true);
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
     app.use((0, helmet_1.default)());
     app.enableCors();
     app.use('/auth', (0, express_rate_limit_1.default)({
         windowMs: 15 * 60 * 1000,
         max: 20,
-        message: { statusCode: 429, message: 'Too many authentication attempts. Please try again later.' },
+        message: {
+            statusCode: 429,
+            message: 'Too many authentication attempts. Please try again later.',
+        },
         standardHeaders: true,
         legacyHeaders: false,
     }));
     app.use('/security', (0, express_rate_limit_1.default)({
         windowMs: 60 * 1000,
         max: 30,
-        message: { statusCode: 429, message: 'Too many requests. Please try again later.' },
+        message: {
+            statusCode: 429,
+            message: 'Too many requests. Please try again later.',
+        },
         standardHeaders: true,
         legacyHeaders: false,
     }));
@@ -72,7 +98,8 @@ async function bootstrap() {
         standardHeaders: true,
         legacyHeaders: false,
     }));
-    app.use('/paystack/webhook', express.raw({ type: 'application/json' }));
+    app.use('/paystack/webhook', rawBodyForWebhook);
+    app.use('/tatum/webhooks', rawBodyForWebhook);
     app.use('/uploads', express.static((0, path_1.join)(__dirname, '..', 'uploads')));
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

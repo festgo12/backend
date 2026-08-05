@@ -6,6 +6,7 @@ import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
+import { PLATFORM_EMAIL } from '../tatum/tatum-platform.service';
 
 @Injectable()
 export class AdminService {
@@ -20,16 +21,19 @@ export class AdminService {
   async getUsers(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
 
-    const where: any = search
-      ? {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search, mode: 'insensitive' } },
-            { profile: { firstName: { contains: search, mode: 'insensitive' } } },
-            { profile: { lastName: { contains: search, mode: 'insensitive' } } },
-          ],
-        }
-      : {};
+    const where: any = {
+      isSystem: false,
+      ...(search
+        ? {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } },
+              { profile: { firstName: { contains: search, mode: 'insensitive' } } },
+              { profile: { lastName: { contains: search, mode: 'insensitive' } } },
+            ],
+          }
+        : {}),
+    };
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -114,6 +118,61 @@ export class AdminService {
     if (!wallet) throw new NotFoundException('Wallet not found');
     return wallet;
   }
+
+  /**
+   * Returns the internal platform fee wallets (ledger balances per currency).
+   * These are the ledger homes for platform fee revenue.
+   */
+  async getFeeWallets() {
+    const platformUser = await this.prisma.user.findUnique({
+      where: { email: PLATFORM_EMAIL },
+    });
+
+    if (!platformUser) {
+      return { wallets: [], total: 0 };
+    }
+
+    const wallets = await this.prisma.wallet.findMany({
+      where: { userId: platformUser.id },
+      include: {
+        _count: { select: { ledgerEntries: true } },
+      },
+      orderBy: { currency: 'asc' },
+    });
+
+    return {
+      wallets: wallets.map((w) => ({
+        id: w.id,
+        currency: w.currency,
+        address: w.address,
+        balance: w.balance.toNumber(),
+        reservedBalance: w.reservedBalance.toNumber(),
+        available: w.balance.minus(w.reservedBalance).toNumber(),
+        ledgerEntryCount: w._count.ledgerEntries,
+        updatedAt: w.updatedAt,
+      })),
+      total: wallets.length,
+    };
+  }
+
+  /**
+   * Sweeps a platform fee wallet's on-chain balance to a treasury address.
+   */
+  async sweepFeeWallet(currency: Currency, address: string, amount?: number) {
+    if (!address || typeof address !== 'string') {
+      throw new BadRequestException('Treasury destination address is required');
+    }
+    if (currency === 'NGN' as Currency) {
+      throw new BadRequestException('NGN fee revenue is held in the ledger, not on-chain');
+    }
+
+    return this.tatumWithdrawal.sweepFeeWallet({
+      currency,
+      destinationAddress: address,
+      amount,
+    });
+  }
+
 
   async getAllTransactions(page: number, limit: number) {
     const skip = (page - 1) * limit;

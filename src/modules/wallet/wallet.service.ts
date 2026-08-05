@@ -235,12 +235,14 @@ export class WalletService {
       });
 
       if (status === 'COMPLETED') {
-        // Create LedgerEntry if it doesn't already exist for this transaction
+        // Create LedgerEntry if it doesn't already exist for this transaction.
+        // Rows flagged ledgerSettled (on-chain tracking for trades) never create
+        // ledger entries - the internal ledger already reflects the settlement.
         const existingEntry = await tx.ledgerEntry.findFirst({
           where: { transactionId: transaction.id },
         });
 
-        if (!existingEntry) {
+        if (!existingEntry && !updatedMetadata.ledgerSettled) {
           await this.ledger.createEntry(tx, {
             walletId: transaction.walletId,
             transactionId: transaction.id,

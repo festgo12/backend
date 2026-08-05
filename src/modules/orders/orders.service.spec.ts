@@ -2,14 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { OrderStatus, Currency, LedgerType } from '@src/generated/client';
+import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client';
 import { NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Decimal } from '@src/generated/client/runtime/library';
+import { TatumTransferService } from '../tatum/tatum-transfer.service';
+import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { TatumWalletService } from '../tatum/tatum-wallet.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
   let prisma: PrismaService;
   let eventEmitter: EventEmitter2;
+  let tatumTransfer: TatumTransferService;
+  let tatumWalletService: TatumWalletService;
 
   const mockTransactionClient = {
     ad: {
@@ -36,10 +41,32 @@ describe('OrdersService', () => {
       findUnique: jest.fn(),
       findMany: jest.fn(),
     },
+    platformFeeConfig: {
+      findUnique: jest.fn(),
+    },
   };
 
   const mockEventEmitter2 = {
     emit: jest.fn(),
+  };
+
+  const mockTatumTransfer = {
+    transfer: jest.fn(),
+    recordOnChainTransaction: jest.fn(),
+  };
+
+  const mockPlatformService = {
+    getPlatformFeeWallet: jest.fn(),
+    getPlatformUserId: jest.fn(),
+    ensurePlatformWallets: jest.fn(),
+  };
+
+  const mockTatumWallet = {
+    getAddressIndex: jest.fn(),
+    getOrGenerateXpub: jest.fn(),
+    generateAddress: jest.fn(),
+    generatePrivateKey: jest.fn(),
+    mapCurrencyToChain: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -48,14 +75,26 @@ describe('OrdersService', () => {
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: mockEventEmitter2 },
+        { provide: TatumTransferService, useValue: mockTatumTransfer },
+        { provide: TatumPlatformService, useValue: mockPlatformService },
+        { provide: TatumWalletService, useValue: mockTatumWallet },
       ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
     prisma = module.get<PrismaService>(PrismaService);
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
+    tatumTransfer = module.get<TatumTransferService>(TatumTransferService);
+    tatumWalletService = module.get<TatumWalletService>(TatumWalletService);
 
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+
+    // Re-establish shared implementations (resetAllMocks clears them).
+    mockPrismaService.$transaction.mockImplementation((cb) => cb(mockTransactionClient));
+    mockPrismaService.platformFeeConfig.findUnique.mockResolvedValue({ value: new Decimal('0.5') });
+    mockTatumWallet.getAddressIndex.mockReturnValue(12345);
+    mockTatumTransfer.transfer.mockResolvedValue('onchain-txid');
+    mockTatumTransfer.recordOnChainTransaction.mockResolvedValue({ id: 'wt-uuid' });
   });
 
   describe('createOrder', () => {
@@ -64,16 +103,17 @@ describe('OrdersService', () => {
     const adId = 'ad-uuid';
     const dto = { adId, fiatAmount: 10000 };
 
-    const mockAd = {
+    const mockAd = (type: AdType = AdType.SELL) => ({
       id: adId,
       sellerId,
+      type,
       price: new Decimal('1000'),
       quantity: new Decimal('50'),
       minLimit: new Decimal('5000'),
       maxLimit: new Decimal('20000'),
       asset: Currency.USDT,
       status: 'ACTIVE',
-    };
+    });
 
     const mockBuyerWallet = {
       id: 'buyer-wallet-uuid',
@@ -100,38 +140,38 @@ describe('OrdersService', () => {
     });
 
     it('should throw BadRequestException if buyer is the seller', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue({ ...mockAd, sellerId: buyerId });
+      mockTransactionClient.ad.findUnique.mockResolvedValue({ ...mockAd(), sellerId: buyerId });
 
       await expect(service.createOrder(buyerId, dto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if fiatAmount is below limit', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
       const lowDto = { adId, fiatAmount: 1000 };
 
       await expect(service.createOrder(buyerId, lowDto)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if buyer has insufficient fiat balance', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+    it('should throw BadRequestException if fiat payer has insufficient balance', async () => {
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
       mockTransactionClient.wallet.findUnique
-        .mockResolvedValueOnce({ ...mockBuyerWallet, balance: new Decimal('1000') }) // buyer NGN
-        .mockResolvedValueOnce(mockSellerWallet); // seller USDT
+        .mockResolvedValueOnce({ ...mockBuyerWallet, balance: new Decimal('1000') }) // fiat payer NGN
+        .mockResolvedValueOnce(mockSellerWallet); // cryptoSeller USDT
 
       await expect(service.createOrder(buyerId, dto)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if seller has insufficient crypto balance', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+    it('should throw BadRequestException if cryptoSeller has insufficient crypto balance', async () => {
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
       mockTransactionClient.wallet.findUnique
         .mockResolvedValueOnce(mockBuyerWallet)
-        .mockResolvedValueOnce({ ...mockSellerWallet, balance: new Decimal('5') }); // seller USDT
+        .mockResolvedValueOnce({ ...mockSellerWallet, balance: new Decimal('5') });
 
       await expect(service.createOrder(buyerId, dto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw InternalServerErrorException if optimistic lock fails during reserving fiat', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
       mockTransactionClient.wallet.findUnique
         .mockResolvedValueOnce(mockBuyerWallet)
         .mockResolvedValueOnce(mockSellerWallet);
@@ -140,13 +180,13 @@ describe('OrdersService', () => {
       await expect(service.createOrder(buyerId, dto)).rejects.toThrow(InternalServerErrorException);
     });
 
-    it('should successfully create order and reserve fiat', async () => {
-      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+    it('should successfully create SELL order and reserve fiat from responder (buyer)', async () => {
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd(AdType.SELL));
       mockTransactionClient.wallet.findUnique
         .mockResolvedValueOnce(mockBuyerWallet)
         .mockResolvedValueOnce(mockSellerWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
-      
+
       const mockCreatedOrder = {
         id: 'order-uuid',
         adId,
@@ -166,6 +206,7 @@ describe('OrdersService', () => {
 
       const result = await service.createOrder(buyerId, dto);
 
+      // Fiat reserved from the responder (buyer) for a SELL ad
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
         where: { id: mockBuyerWallet.id, version: mockBuyerWallet.version },
         data: {
@@ -174,17 +215,63 @@ describe('OrdersService', () => {
           version: { increment: 1 },
         },
       });
+      expect(eventEmitter.emit).toHaveBeenCalledWith('order.created', expect.any(Object));
+      expect(result.status).toBe(OrderStatus.PENDING_SELLER);
+    });
 
-      expect(mockTransactionClient.order.create).toHaveBeenCalled();
-      expect(mockTransactionClient.order.update).toHaveBeenCalledWith({
-        where: { id: mockCreatedOrder.id },
+    it('should successfully create BUY order and reserve fiat from the ad owner (seller)', async () => {
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd(AdType.BUY));
+
+      // For a BUY ad: fiat payer is ad owner (sellerId), cryptoSeller is responder (buyerId)
+      const sellerNgnWallet = {
+        id: 'seller-ngn-wallet-uuid',
+        userId: sellerId,
+        currency: Currency.NGN,
+        balance: new Decimal('15000'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      };
+      const responderCryptoWallet = {
+        id: 'responder-crypto-wallet-uuid',
+        userId: buyerId,
+        currency: Currency.USDT,
+        balance: new Decimal('50'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      };
+      mockTransactionClient.wallet.findUnique
+        .mockResolvedValueOnce(sellerNgnWallet) // fiat payer = ad owner
+        .mockResolvedValueOnce(responderCryptoWallet); // cryptoSeller = responder
+
+      mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
+
+      const mockCreatedOrder = {
+        id: 'order-uuid',
+        adId,
+        buyerId,
+        sellerId,
+        status: OrderStatus.CREATED,
+        fiatAmount: new Decimal('10000'),
+        cryptoAmount: new Decimal('10'),
+        feeAmount: new Decimal('0'),
+      };
+      mockTransactionClient.order.create.mockResolvedValue(mockCreatedOrder);
+      mockTransactionClient.order.update.mockResolvedValue({
+        ...mockCreatedOrder,
+        status: OrderStatus.PENDING_SELLER,
+      });
+
+      const result = await service.createOrder(buyerId, dto);
+
+      // Fiat reserved from the AD OWNER (sellerId) for a BUY ad
+      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
+        where: { id: sellerNgnWallet.id, version: sellerNgnWallet.version },
         data: {
-          status: OrderStatus.PENDING_SELLER,
+          balance: { decrement: new Decimal('10000') },
+          reservedBalance: { increment: new Decimal('10000') },
           version: { increment: 1 },
         },
       });
-
-      expect(eventEmitter.emit).toHaveBeenCalledWith('order.created', expect.any(Object));
       expect(result.status).toBe(OrderStatus.PENDING_SELLER);
     });
   });
@@ -194,7 +281,7 @@ describe('OrdersService', () => {
     const sellerId = 'seller-uuid';
     const buyerId = 'buyer-uuid';
 
-    const mockOrder = {
+    const mockOrder = (type: AdType = AdType.SELL) => ({
       id: orderId,
       adId: 'ad-uuid',
       buyerId,
@@ -204,8 +291,9 @@ describe('OrdersService', () => {
       cryptoAmount: new Decimal('10'),
       ad: {
         asset: Currency.USDT,
+        type,
       },
-    };
+    });
 
     const mockAd = {
       id: 'ad-uuid',
@@ -215,6 +303,7 @@ describe('OrdersService', () => {
 
     const mockSellerCryptoWallet = {
       id: 'seller-crypto-wallet-uuid',
+      address: '0xSeller',
       balance: new Decimal('50'),
       reservedBalance: new Decimal('0'),
       version: 1,
@@ -222,6 +311,7 @@ describe('OrdersService', () => {
 
     const mockBuyerCryptoWallet = {
       id: 'buyer-crypto-wallet-uuid',
+      address: '0xBuyer',
       balance: new Decimal('0'),
       reservedBalance: new Decimal('0'),
       version: 1,
@@ -241,53 +331,64 @@ describe('OrdersService', () => {
       version: 1,
     };
 
+    const mockFeeWallet = {
+      id: 'platform-fee-wallet-uuid',
+      address: '0xFee',
+      balance: new Decimal('0'),
+      reservedBalance: new Decimal('0'),
+      version: 1,
+    };
+
     it('should throw NotFoundException if order is not found', async () => {
-      mockTransactionClient.order.findUnique.mockResolvedValue(null);
+      mockPrismaService.order.findUnique.mockResolvedValue(null);
 
       await expect(service.approveOrder(orderId, sellerId)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException if unauthorized user tries to approve', async () => {
-      mockTransactionClient.order.findUnique.mockResolvedValue(mockOrder);
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder());
 
       await expect(service.approveOrder(orderId, 'wrong-seller-uuid')).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if order status is not PENDING_SELLER', async () => {
-      mockTransactionClient.order.findUnique.mockResolvedValue({
-        ...mockOrder,
+      mockPrismaService.order.findUnique.mockResolvedValue({
+        ...mockOrder(),
         status: OrderStatus.COMPLETED,
       });
 
       await expect(service.approveOrder(orderId, sellerId)).rejects.toThrow(BadRequestException);
     });
 
-    it('should successfully complete the happy path', async () => {
-      mockTransactionClient.order.findUnique.mockResolvedValue(mockOrder);
+    it('should settle a SELL order (SELL ad: responder buys crypto)', async () => {
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder(AdType.SELL));
+      mockPlatformService.getPlatformFeeWallet.mockResolvedValue(mockFeeWallet);
+
       mockTransactionClient.order.update.mockResolvedValueOnce({
-        ...mockOrder,
+        ...mockOrder(AdType.SELL),
         status: OrderStatus.APPROVED,
         version: 1,
       });
 
-      // Wallet returns in order:
-      // 1. Seller crypto wallet (lock crypto)
-      // 2. Buyer crypto wallet (credit crypto)
-      // 3. Buyer NGN wallet (debit reserved NGN)
-      // 4. Seller NGN wallet (credit seller NGN)
-      // 5. Ad retrieve (update quantity)
+      // Wallet finds inside the transaction:
+      // 1. cryptoSeller crypto (ad owner)
+      // 2. crypto buyer crypto (responder)
+      // 3. fiat payer NGN (responder)
+      // 4. fiat receiver NGN (ad owner)
+      // 5. platform fee wallet (ledger home for buyer fee)
       mockTransactionClient.wallet.findUnique
-        .mockResolvedValueOnce(mockSellerCryptoWallet) // Stage 2
-        .mockResolvedValueOnce(mockBuyerCryptoWallet) // Stage 3
-        .mockResolvedValueOnce(mockBuyerFiatWallet) // Stage 4 - Buyer NGN
-        .mockResolvedValueOnce(mockSellerFiatWallet); // Stage 4 - Seller NGN
+        .mockResolvedValueOnce(mockSellerCryptoWallet)
+        .mockResolvedValueOnce(mockBuyerCryptoWallet)
+        .mockResolvedValueOnce(mockBuyerFiatWallet)
+        .mockResolvedValueOnce(mockSellerFiatWallet)
+        .mockResolvedValueOnce(mockFeeWallet);
 
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
       mockTransactionClient.ad.updateMany.mockResolvedValue({ count: 1 });
 
       const mockCompletedOrder = {
-        ...mockOrder,
+        ...mockOrder(AdType.SELL),
         status: OrderStatus.COMPLETED,
         feeAmount: new Decimal('50.05'), // 0.05 USDT + 50 NGN
       };
@@ -295,8 +396,7 @@ describe('OrdersService', () => {
 
       const result = await service.approveOrder(orderId, sellerId);
 
-      // Verify locks were invoked:
-      // Locking crypto
+      // Crypto locked from the ad owner (cryptoSeller)
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
         where: { id: mockSellerCryptoWallet.id, version: mockSellerCryptoWallet.version },
         data: {
@@ -306,54 +406,217 @@ describe('OrdersService', () => {
         },
       });
 
-      // Releasing crypto from escrow & crediting buyer
-      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
-        where: { id: mockSellerCryptoWallet.id, version: mockSellerCryptoWallet.version + 1 },
-        data: {
-          reservedBalance: { decrement: new Decimal('10') },
-          version: { increment: 1 },
-        },
-      });
-
+      // Crypto credited to responder (crypto buyer): 10 - 0.5% (0.05)
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
         where: { id: mockBuyerCryptoWallet.id, version: mockBuyerCryptoWallet.version },
         data: {
-          balance: { increment: new Decimal('9.95') }, // 10 USDT - 0.5% (0.05 USDT)
+          balance: { increment: new Decimal('9.95') },
           version: { increment: 1 },
         },
       });
 
-      // Transferring NGN
+      // NGN credited to ad owner (fiat receiver): 10000 - 50
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
-        where: { id: mockBuyerFiatWallet.id, version: mockBuyerFiatWallet.version },
+        where: { id: mockSellerFiatWallet.id, version: mockSellerFiatWallet.version },
+        data: {
+          balance: { increment: new Decimal('9950') },
+          version: { increment: 1 },
+        },
+      });
+
+      // Platform fee wallet credited with buyer fee in the ledger
+      const ledgerData = mockTransactionClient.ledgerEntry.createMany.mock.calls[0][0].data;
+      expect(ledgerData).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            walletId: mockFeeWallet.id,
+            amount: new Decimal('0.05'),
+            type: LedgerType.FEE,
+          }),
+        ]),
+      );
+
+      // On-chain legs broadcast post-commit (buyer + fee)
+      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(2);
+      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          asset: Currency.USDT,
+          fromAddress: '0xSeller',
+          to: '0xBuyer',
+          amount: '9.95000000',
+        }),
+      );
+      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          asset: Currency.USDT,
+          fromAddress: '0xSeller',
+          to: '0xFee',
+          amount: '0.05000000',
+        }),
+      );
+      expect(tatumTransfer.recordOnChainTransaction).toHaveBeenCalledTimes(2);
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith('order.completed', mockCompletedOrder);
+      expect(result.status).toBe(OrderStatus.COMPLETED);
+    });
+
+    it('should settle a BUY order (BUY ad: ad owner buys crypto from responder)', async () => {
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder(AdType.BUY));
+      mockPlatformService.getPlatformFeeWallet.mockResolvedValue(mockFeeWallet);
+
+      const responderCryptoWallet = {
+        id: 'responder-crypto-wallet-uuid',
+        address: '0xResponder',
+        balance: new Decimal('50'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      };
+      const adOwnerCryptoWallet = {
+        id: 'adowner-crypto-wallet-uuid',
+        address: '0xAdOwner',
+        balance: new Decimal('0'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      };
+      const adOwnerNgnWallet = {
+        id: 'adowner-ngn-wallet-uuid',
+        balance: new Decimal('5000'),
+        reservedBalance: new Decimal('10000'),
+        version: 1,
+      };
+      const responderNgnWallet = {
+        id: 'responder-ngn-wallet-uuid',
+        balance: new Decimal('0'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      };
+
+      mockTransactionClient.order.update.mockResolvedValueOnce({
+        ...mockOrder(AdType.BUY),
+        status: OrderStatus.APPROVED,
+        version: 1,
+      });
+
+      // Wallet finds:
+      // 1. cryptoSeller = responder crypto
+      // 2. crypto buyer = ad owner crypto
+      // 3. fiat payer = ad owner NGN
+      // 4. fiat receiver = responder NGN
+      // 5. platform fee wallet
+      mockTransactionClient.wallet.findUnique
+        .mockResolvedValueOnce(responderCryptoWallet)
+        .mockResolvedValueOnce(adOwnerCryptoWallet)
+        .mockResolvedValueOnce(adOwnerNgnWallet)
+        .mockResolvedValueOnce(responderNgnWallet)
+        .mockResolvedValueOnce(mockFeeWallet);
+
+      mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+      mockTransactionClient.ad.updateMany.mockResolvedValue({ count: 1 });
+
+      const mockCompletedOrder = {
+        ...mockOrder(AdType.BUY),
+        status: OrderStatus.COMPLETED,
+        feeAmount: new Decimal('50.05'),
+      };
+      mockTransactionClient.order.update.mockResolvedValueOnce(mockCompletedOrder);
+
+      const result = await service.approveOrder(orderId, sellerId);
+
+      // Crypto locked from the RESPONDER (cryptoSeller for a BUY ad)
+      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
+        where: { id: responderCryptoWallet.id, version: responderCryptoWallet.version },
+        data: {
+          balance: { decrement: new Decimal('10') },
+          reservedBalance: { increment: new Decimal('10') },
+          version: { increment: 1 },
+        },
+      });
+
+      // Crypto credited to the AD OWNER (crypto buyer): 9.95
+      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
+        where: { id: adOwnerCryptoWallet.id, version: adOwnerCryptoWallet.version },
+        data: {
+          balance: { increment: new Decimal('9.95') },
+          version: { increment: 1 },
+        },
+      });
+
+      // Ad owner's reserved NGN released
+      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
+        where: { id: adOwnerNgnWallet.id, version: adOwnerNgnWallet.version },
         data: {
           reservedBalance: { decrement: new Decimal('10000') },
           version: { increment: 1 },
         },
       });
 
+      // Responder receives NGN: 10000 - 50
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
-        where: { id: mockSellerFiatWallet.id, version: mockSellerFiatWallet.version },
+        where: { id: responderNgnWallet.id, version: responderNgnWallet.version },
         data: {
-          balance: { increment: new Decimal('9950') }, // 10000 - 50
+          balance: { increment: new Decimal('9950') },
           version: { increment: 1 },
         },
       });
 
-      // General audit entries:
-      expect(mockTransactionClient.ledgerEntry.createMany).toHaveBeenCalled();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('order.completed', mockCompletedOrder);
+      // On-chain legs from the responder's address
+      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fromAddress: '0xResponder',
+          to: '0xAdOwner',
+        }),
+      );
+      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(2);
+      expect(result.status).toBe(OrderStatus.COMPLETED);
+    });
+
+    it('should skip the fee leg when the fee wallet has no on-chain address', async () => {
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder(AdType.SELL));
+      mockPlatformService.getPlatformFeeWallet.mockResolvedValue({ id: 'platform-fee-wallet-uuid', address: null });
+
+      mockTransactionClient.order.update.mockResolvedValueOnce({
+        ...mockOrder(AdType.SELL),
+        status: OrderStatus.APPROVED,
+        version: 1,
+      });
+
+      mockTransactionClient.wallet.findUnique
+        .mockResolvedValueOnce(mockSellerCryptoWallet)
+        .mockResolvedValueOnce(mockBuyerCryptoWallet)
+        .mockResolvedValueOnce(mockBuyerFiatWallet)
+        .mockResolvedValueOnce(mockSellerFiatWallet)
+        .mockResolvedValueOnce({ id: 'platform-fee-wallet-uuid', address: null, balance: new Decimal('0'), reservedBalance: new Decimal('0'), version: 1 });
+
+      mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
+      mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
+      mockTransactionClient.ad.updateMany.mockResolvedValue({ count: 1 });
+      mockTransactionClient.order.update.mockResolvedValueOnce({
+        ...mockOrder(AdType.SELL),
+        status: OrderStatus.COMPLETED,
+        feeAmount: new Decimal('50.05'),
+      });
+
+      const result = await service.approveOrder(orderId, sellerId);
+
+      // Only the buyer trade leg is broadcast; the fee leg needs an address
+      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(1);
+      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
+        expect.objectContaining({ to: '0xBuyer', amount: '9.95000000' }),
+      );
       expect(result.status).toBe(OrderStatus.COMPLETED);
     });
   });
 
   describe('declineOrder', () => {
-    it('should successfully refund buyer reserved NGN and decline order', async () => {
+    it('should successfully refund the fiat payer reserved NGN and decline a SELL order', async () => {
       const order = {
         id: 'order-uuid',
         buyerId: 'buyer-uuid',
+        sellerId: 'seller-uuid',
         fiatAmount: new Decimal('1000'),
         status: OrderStatus.PENDING_SELLER,
+        ad: { type: AdType.SELL },
       };
 
       const buyerFiatWallet = {
@@ -371,6 +634,7 @@ describe('OrdersService', () => {
 
       const result = await service.declineOrder('order-uuid', 'seller-uuid');
 
+      // SELL ad: fiat payer is the responder (buyerId)
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
         where: { id: buyerFiatWallet.id, version: buyerFiatWallet.version },
         data: {
@@ -383,15 +647,56 @@ describe('OrdersService', () => {
       expect(eventEmitter.emit).toHaveBeenCalledWith('order.declined', expect.any(Object));
       expect(result.status).toBe(OrderStatus.DECLINED);
     });
-  });
 
-  describe('expireOrder', () => {
-    it('should successfully refund buyer reserved NGN and expire order', async () => {
+    it('should refund the AD OWNER (fiat payer) when declining a BUY order', async () => {
       const order = {
         id: 'order-uuid',
         buyerId: 'buyer-uuid',
+        sellerId: 'seller-uuid',
         fiatAmount: new Decimal('1000'),
         status: OrderStatus.PENDING_SELLER,
+        ad: { type: AdType.BUY },
+      };
+
+      const adOwnerNgnWallet = {
+        id: 'adowner-ngn-wallet-uuid',
+        version: 1,
+      };
+
+      mockTransactionClient.order.findUnique.mockResolvedValue(order);
+      mockTransactionClient.wallet.findUnique.mockResolvedValue(adOwnerNgnWallet);
+      mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
+      mockTransactionClient.order.update.mockResolvedValue({
+        ...order,
+        status: OrderStatus.DECLINED,
+      });
+
+      await service.declineOrder('order-uuid', 'seller-uuid');
+
+      // BUY ad: fiat payer is the ad owner (sellerId)
+      expect(mockTransactionClient.wallet.findUnique).toHaveBeenCalledWith({
+        where: { userId_currency: { userId: 'seller-uuid', currency: Currency.NGN } },
+      });
+      expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
+        where: { id: adOwnerNgnWallet.id, version: adOwnerNgnWallet.version },
+        data: {
+          balance: { increment: new Decimal('1000') },
+          reservedBalance: { decrement: new Decimal('1000') },
+          version: { increment: 1 },
+        },
+      });
+    });
+  });
+
+  describe('expireOrder', () => {
+    it('should successfully refund the fiat payer reserved NGN and expire order', async () => {
+      const order = {
+        id: 'order-uuid',
+        buyerId: 'buyer-uuid',
+        sellerId: 'seller-uuid',
+        fiatAmount: new Decimal('1000'),
+        status: OrderStatus.PENDING_SELLER,
+        ad: { type: AdType.SELL },
       };
 
       const buyerFiatWallet = {
@@ -435,7 +740,7 @@ describe('OrdersService', () => {
       cryptoAmount: new Decimal('10'),
       status: OrderStatus.PENDING_SELLER,
       fraudFlagged: false,
-      ad: { asset: Currency.USDT },
+      ad: { asset: Currency.USDT, type: AdType.SELL },
     };
 
     const orderApproved = {
@@ -446,7 +751,7 @@ describe('OrdersService', () => {
     const buyerFiatWallet = { id: 'buyer-fiat-wallet-uuid', version: 1 };
     const sellerCryptoWallet = { id: 'seller-crypto-wallet-uuid', version: 1 };
 
-    it('should refund buyer and cancel order when state is PENDING_SELLER', async () => {
+    it('should refund the fiat payer and cancel order when state is PENDING_SELLER', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderPending);
       mockTransactionClient.wallet.findUnique.mockResolvedValueOnce(buyerFiatWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
@@ -472,7 +777,7 @@ describe('OrdersService', () => {
       expect(eventEmitter.emit).toHaveBeenCalledWith('order.fraud_flagged', expect.any(Object));
     });
 
-    it('should refund buyer and refund seller locked crypto when state is APPROVED', async () => {
+    it('should refund fiat payer and refund cryptoSeller locked crypto when state is APPROVED', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderApproved);
       mockTransactionClient.wallet.findUnique
         .mockResolvedValueOnce(buyerFiatWallet)

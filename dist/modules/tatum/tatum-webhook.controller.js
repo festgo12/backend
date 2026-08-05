@@ -32,17 +32,22 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
         this.walletService = walletService;
         this.prisma = prisma;
     }
-    async handleWebhook(payload, signature) {
-        if (!this.webhookService.verifySignature(payload, signature)) {
+    async handleWebhook(req, payload, signature) {
+        if (!this.webhookService.verifySignature(req.rawBody, signature)) {
             this.logger.error('Invalid Tatum webhook signature received.');
             throw new common_1.UnauthorizedException('Invalid signature');
         }
         this.logger.log(`Received Tatum webhook: ${payload.subscriptionType} | chain: ${payload.chain || 'unknown'}`);
         switch (payload.subscriptionType) {
             case 'ADDRESS_EVENT':
+                await this.handleIncomingDeposit(payload);
+                break;
             case 'INCOMING_NATIVE_TX':
             case 'INCOMING_FUNGIBLE_TX':
                 await this.handleIncomingDeposit(payload);
+                if (payload.txId) {
+                    await this.depositService.confirmDeposit(payload.txId);
+                }
                 break;
             case 'OUTGOING_NATIVE_TX':
                 await this.handleOutgoingSuccess(payload);
@@ -89,7 +94,7 @@ let TatumWebhookController = TatumWebhookController_1 = class TatumWebhookContro
         };
     }
     async handleIncomingDeposit(payload) {
-        const { address, amount, asset, txId, reference, from: sourceAddress } = payload;
+        const { address, amount, asset, txId, reference, from: sourceAddress, } = payload;
         if (!address || !txId) {
             this.logger.warn('Incoming deposit webhook missing address or txId. Skipping.');
             return;
@@ -149,10 +154,11 @@ __decorate([
     (0, common_1.Post)('incoming'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: 'Handle incoming Tatum webhooks' }),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Headers)('x-tatum-signature')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Headers)('x-tatum-signature')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Object, String]),
     __metadata("design:returntype", Promise)
 ], TatumWebhookController.prototype, "handleWebhook", null);
 __decorate([

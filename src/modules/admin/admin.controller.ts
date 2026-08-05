@@ -7,7 +7,8 @@ import { AdminService } from './admin.service';
 import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
 import { TatumDepositService } from '../tatum/tatum-deposit.service';
 import { TatumWebhookService } from '../tatum/tatum-webhook.service';
-import { UserStatus, Role } from '@src/generated/client';
+import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { UserStatus, Role, Currency } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
 
 @ApiTags('Admin')
@@ -21,6 +22,7 @@ export class AdminController {
     private readonly exchangeRateService: TatumExchangeRateService,
     private readonly depositService: TatumDepositService,
     private readonly webhookService: TatumWebhookService,
+    private readonly platformService: TatumPlatformService,
   ) {}
 
   @Get('users')
@@ -123,6 +125,37 @@ export class AdminController {
   @ApiOperation({ summary: 'Trigger balance sync for all crypto wallets' })
   async syncAllBalances() {
     return this.depositService.syncAllWallets();
+  }
+
+  // ─── Platform Fee Wallets ─────────────────────────────────────────────────
+
+  @Get('fee-wallets')
+  @ApiOperation({ summary: 'List platform fee wallets with ledger balances' })
+  getFeeWallets() {
+    return this.adminService.getFeeWallets();
+  }
+
+  @Post('fee-wallets/init')
+  @AuditLog('ADMIN_FEE_WALLET_INIT', 'WALLET')
+  @ApiOperation({ summary: 'Create/assign the platform fee wallets for all crypto currencies' })
+  async initFeeWallets() {
+    const result = await this.platformService.ensurePlatformWallets();
+    return {
+      success: true,
+      userId: result.userId,
+      wallets: result.wallets,
+    };
+  }
+
+  @Post('fee-wallets/:currency/sweep')
+  @AuditLog('ADMIN_FEE_SWEEP', 'WALLET')
+  @ApiOperation({ summary: 'Sweep platform fee wallet balance to a treasury address' })
+  sweepFeeWallet(
+    @Param('currency') currency: Currency,
+    @Body('address') address: string,
+    @Body('amount') amount?: number,
+  ) {
+    return this.adminService.sweepFeeWallet(currency, address, amount);
   }
 
   @Get('payments/stats')

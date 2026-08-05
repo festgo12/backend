@@ -16,15 +16,18 @@ const config_1 = require("@nestjs/config");
 const axios_1 = require("@nestjs/axios");
 const rxjs_1 = require("rxjs");
 const client_1 = require("../../generated/client/index.js");
+const prisma_service_1 = require("../../core/database/prisma.service");
 let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
     configService;
     httpService;
+    prisma;
     logger = new common_1.Logger(TatumWalletService_1.name);
     apiKey;
-    baseUrl = 'https://api.tatum.io/v4';
-    constructor(configService, httpService) {
+    baseUrl = 'https://api.tatum.io/v3';
+    constructor(configService, httpService, prisma) {
         this.configService = configService;
         this.httpService = httpService;
+        this.prisma = prisma;
         this.apiKey = this.configService.get('TATUM_API_KEY') || '';
     }
     get headers() {
@@ -36,14 +39,35 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
         if (configuredXpub) {
             return configuredXpub;
         }
-        this.logger.log(`No explicit XPub found for ${asset} in environment. Generating a new key pair via Tatum...`);
+        const cacheKey = `xpub:${asset}`;
+        const cached = await this.prisma.platformSetting.findUnique({
+            where: { key: cacheKey },
+        });
+        if (cached) {
+            return cached.value;
+        }
+        this.logger.log(`No explicit XPub found for ${asset} in environment. Generating and caching a stable key pair via Tatum...`);
         const dynamicWallet = await this.generateWallet(asset);
+        await this.prisma.platformSetting.upsert({
+            where: { key: cacheKey },
+            update: { value: dynamicWallet.xpub },
+            create: { key: cacheKey, value: dynamicWallet.xpub },
+        });
         return dynamicWallet.xpub;
+    }
+    getAddressIndex(walletId) {
+        let h = 0;
+        for (let i = 0; i < walletId.length; i++) {
+            h = (Math.imul(31, h) + walletId.charCodeAt(i)) | 0;
+        }
+        return Math.abs(h) % 1000000;
     }
     async generateWallet(asset) {
         const chain = this.mapCurrencyToChain(asset);
         try {
-            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.get(`${this.baseUrl}/${chain}/wallet`, { headers: this.headers }).pipe((0, rxjs_1.retry)({
+            const response = await (0, rxjs_1.lastValueFrom)(this.httpService
+                .get(`${this.baseUrl}/${chain}/wallet`, { headers: this.headers })
+                .pipe((0, rxjs_1.retry)({
                 count: 3,
                 delay: (error, retryCount) => (0, rxjs_1.timer)(retryCount * 1000),
             })));
@@ -95,11 +119,20 @@ let TatumWalletService = TatumWalletService_1 = class TatumWalletService {
                 throw new common_1.BadRequestException(`Unsupported crypto wallet network type: ${currency}`);
         }
     }
+    mapCurrencyToV4Chain(currency) {
+        const network = (this.configService.get('TATUM_NETWORK', 'mainnet') || 'mainnet').toLowerCase();
+        const base = this.mapCurrencyToChain(currency);
+        if (network === 'testnet') {
+            return base === 'ethereum' ? 'ethereum-sepolia' : `${base}-testnet`;
+        }
+        return `${base}-mainnet`;
+    }
 };
 exports.TatumWalletService = TatumWalletService;
 exports.TatumWalletService = TatumWalletService = TatumWalletService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,
-        axios_1.HttpService])
+        axios_1.HttpService,
+        prisma_service_1.PrismaService])
 ], TatumWalletService);
 //# sourceMappingURL=tatum-wallet.service.js.map
