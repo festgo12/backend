@@ -98,7 +98,7 @@ export class TransactionsService {
         let details: any = {};
         if (l.transaction) {
           details = {
-            paymentMethod: l.wallet.currency === 'NGN' ? 'Paystack' : 'Tatum',
+            paymentMethod: l.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
             blockchainTxHash: l.transaction.metadata ? (l.transaction.metadata as any).blockchainTxHash : null,
           };
         } else if (l.order) {
@@ -154,7 +154,7 @@ export class TransactionsService {
         createdAt: t.createdAt,
         updatedAt: t.updatedAt,
         details: {
-          paymentMethod: t.wallet.currency === 'NGN' ? 'Paystack' : 'Tatum',
+          paymentMethod: t.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
           blockchainTxHash: t.metadata ? (t.metadata as any).blockchainTxHash : null,
         },
       }));
@@ -204,7 +204,7 @@ export class TransactionsService {
               : ledger.order.buyer.profile?.firstName || ledger.order.buyer.email,
           }
         : {
-            paymentMethod: ledger.wallet.currency === 'NGN' ? 'Paystack' : 'Tatum',
+            paymentMethod: ledger.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
             blockchainTxHash: ledger.transaction?.metadata ? (ledger.transaction.metadata as any).blockchainTxHash : null,
           };
 
@@ -253,7 +253,7 @@ export class TransactionsService {
       createdAt: tx.createdAt,
       updatedAt: tx.updatedAt,
       details: {
-        paymentMethod: tx.wallet.currency === 'NGN' ? 'Paystack' : 'Tatum',
+        paymentMethod: tx.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
         blockchainTxHash: tx.metadata ? (tx.metadata as any).blockchainTxHash : null,
         metadata: tx.metadata,
       },

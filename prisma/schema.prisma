@@ -146,14 +146,18 @@ model Wallet {
   balance         Decimal             @default(0) @db.Decimal(20, 8)
   reservedBalance Decimal             @default(0) @db.Decimal(20, 8)
   address         String?             @unique
+  derivationIndex Int?
+  chain           String?
   ledgerEntries   LedgerEntry[]
   transactions    WalletTransaction[]
   snapshots       BalanceSnapshot[]
+  withdrawalJobs  WithdrawalJob[]
   updatedAt       DateTime            @updatedAt
   version         Int                 @default(0)
 
   @@unique([userId, currency])
   @@index([userId])
+  @@index([chain])
 }
 
 model LedgerEntry {
@@ -559,6 +563,39 @@ model Reconciliation {
   createdAt       DateTime  @default(now())
 
   @@index([currency, createdAt])
+}
+
+/// Per-chain block cursor used by the deposit listeners to resume from the
+/// last processed block and to run catch-up scans after downtime.
+model ChainCursor {
+  id           String   @id @default(uuid()) @db.Uuid
+  chain        String   @unique // EVM | BTC
+  lastBlock    Int      @default(0)
+  lastBlockHash String? // used to detect re-orgs on EVM
+  updatedAt    DateTime @updatedAt
+
+  @@index([chain])
+}
+
+/// Database-backed withdrawal tracking queue (mirrors the notifications
+/// queue pattern). A row is created when a withdrawal is broadcast and polled
+/// by a cron worker until CONFIRMED or FAILED.
+model WithdrawalJob {
+  id          String   @id @default(uuid()) @db.Uuid
+  txHash      String   @unique
+  walletId    String   @db.Uuid
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  currency    Currency
+  amount      Decimal  @db.Decimal(20, 8)
+  destination String
+  status      String   @default("PENDING") // PENDING | CONFIRMED | FAILED | REFUNDED
+  attempts    Int      @default(0)
+  nextPollAt  DateTime @default(now())
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, nextPollAt])
 }
 
 model DailyReport {

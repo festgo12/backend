@@ -1,0 +1,32 @@
+import { OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+export declare const STABLECOIN_CONTRACTS_MAINNET: Record<string, string>;
+export declare const STABLECOIN_CONTRACTS_TESTNET: Record<string, string>;
+export type CryptoProvider = 'alchemy';
+export type ChainKind = 'EVM' | 'BTC';
+export declare class CryptoConfigService implements OnModuleInit {
+    private readonly configService;
+    private readonly logger;
+    constructor(configService: ConfigService);
+    onModuleInit(): void;
+    get provider(): CryptoProvider;
+    get isAlchemy(): boolean;
+    get network(): string;
+    get isTestnet(): boolean;
+    get evmMasterMnemonic(): string | null;
+    get btcMasterMnemonic(): string | null;
+    get evmMasterXpub(): string | null;
+    get btcMasterXpub(): string | null;
+    get evmDerivationPath(): string;
+    get btcDerivationPath(): string;
+    get evmAccountIndex(): number;
+    get btcAccountIndex(): number;
+    get alchemyEthWsUrl(): string | null;
+    get alchemyEthHttpUrl(): string | null;
+    get alchemyBtcHttpUrl(): string | null;
+    get mempoolApiUrl(): string;
+    get evmConfirmations(): number;
+    get btcConfirmations(): number;
+    get depositSweepThreshold(): number;
+    getStablecoinContract(currency: string): string | null;
+}

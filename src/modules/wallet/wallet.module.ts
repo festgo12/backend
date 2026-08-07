@@ -4,11 +4,10 @@ import { LedgerService } from './ledger.service';
 import { WalletController } from './wallet.controller';
 import { WalletEventsHandler } from './wallet_events.handler';
 import { PaystackModule } from '../paystack/paystack.module';
+import { SecurityModule } from '../security/security.module';
 
 @Module({
-  imports: [
-    forwardRef(() => PaystackModule),
-  ],
+  imports: [forwardRef(() => PaystackModule), SecurityModule],
   controllers: [WalletController],
   providers: [WalletService, LedgerService, WalletEventsHandler],
   exports: [WalletService, LedgerService],

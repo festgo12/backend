@@ -5,16 +5,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client';
 import { NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Decimal } from '@src/generated/client/runtime/library';
-import { TatumTransferService } from '../tatum/tatum-transfer.service';
-import { TatumPlatformService } from '../tatum/tatum-platform.service';
-import { TatumWalletService } from '../tatum/tatum-wallet.service';
+import { PlatformService } from '../crypto/platform.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
   let prisma: PrismaService;
   let eventEmitter: EventEmitter2;
-  let tatumTransfer: TatumTransferService;
-  let tatumWalletService: TatumWalletService;
 
   const mockTransactionClient = {
     ad: {
@@ -50,23 +46,10 @@ describe('OrdersService', () => {
     emit: jest.fn(),
   };
 
-  const mockTatumTransfer = {
-    transfer: jest.fn(),
-    recordOnChainTransaction: jest.fn(),
-  };
-
   const mockPlatformService = {
     getPlatformFeeWallet: jest.fn(),
     getPlatformUserId: jest.fn(),
     ensurePlatformWallets: jest.fn(),
-  };
-
-  const mockTatumWallet = {
-    getAddressIndex: jest.fn(),
-    getOrGenerateXpub: jest.fn(),
-    generateAddress: jest.fn(),
-    generatePrivateKey: jest.fn(),
-    mapCurrencyToChain: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -75,26 +58,19 @@ describe('OrdersService', () => {
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: mockEventEmitter2 },
-        { provide: TatumTransferService, useValue: mockTatumTransfer },
-        { provide: TatumPlatformService, useValue: mockPlatformService },
-        { provide: TatumWalletService, useValue: mockTatumWallet },
+        { provide: PlatformService, useValue: mockPlatformService },
       ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
     prisma = module.get<PrismaService>(PrismaService);
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
-    tatumTransfer = module.get<TatumTransferService>(TatumTransferService);
-    tatumWalletService = module.get<TatumWalletService>(TatumWalletService);
 
     jest.resetAllMocks();
 
     // Re-establish shared implementations (resetAllMocks clears them).
     mockPrismaService.$transaction.mockImplementation((cb) => cb(mockTransactionClient));
     mockPrismaService.platformFeeConfig.findUnique.mockResolvedValue({ value: new Decimal('0.5') });
-    mockTatumWallet.getAddressIndex.mockReturnValue(12345);
-    mockTatumTransfer.transfer.mockResolvedValue('onchain-txid');
-    mockTatumTransfer.recordOnChainTransaction.mockResolvedValue({ id: 'wt-uuid' });
   });
 
   describe('createOrder', () => {
@@ -436,26 +412,6 @@ describe('OrdersService', () => {
         ]),
       );
 
-      // On-chain legs broadcast post-commit (buyer + fee)
-      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(2);
-      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          asset: Currency.USDT,
-          fromAddress: '0xSeller',
-          to: '0xBuyer',
-          amount: '9.95000000',
-        }),
-      );
-      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          asset: Currency.USDT,
-          fromAddress: '0xSeller',
-          to: '0xFee',
-          amount: '0.05000000',
-        }),
-      );
-      expect(tatumTransfer.recordOnChainTransaction).toHaveBeenCalledTimes(2);
-
       expect(eventEmitter.emit).toHaveBeenCalledWith('order.completed', mockCompletedOrder);
       expect(result.status).toBe(OrderStatus.COMPLETED);
     });
@@ -560,18 +516,10 @@ describe('OrdersService', () => {
         },
       });
 
-      // On-chain legs from the responder's address
-      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fromAddress: '0xResponder',
-          to: '0xAdOwner',
-        }),
-      );
-      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(2);
       expect(result.status).toBe(OrderStatus.COMPLETED);
     });
 
-    it('should skip the fee leg when the fee wallet has no on-chain address', async () => {
+    it('should settle ledger-only when the fee wallet has no on-chain address', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder(AdType.SELL));
       mockPlatformService.getPlatformFeeWallet.mockResolvedValue({ id: 'platform-fee-wallet-uuid', address: null });
 
@@ -599,10 +547,17 @@ describe('OrdersService', () => {
 
       const result = await service.approveOrder(orderId, sellerId);
 
-      // Only the buyer trade leg is broadcast; the fee leg needs an address
-      expect(tatumTransfer.transfer).toHaveBeenCalledTimes(1);
-      expect(tatumTransfer.transfer).toHaveBeenCalledWith(
-        expect.objectContaining({ to: '0xBuyer', amount: '9.95000000' }),
+      // No on-chain transfer is ever broadcast; the fee wallet ledger row is
+      // still created regardless of its address.
+      const ledgerData = mockTransactionClient.ledgerEntry.createMany.mock.calls[0][0].data;
+      expect(ledgerData).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            walletId: 'platform-fee-wallet-uuid',
+            amount: new Decimal('0.05'),
+            type: LedgerType.FEE,
+          }),
+        ]),
       );
       expect(result.status).toBe(OrderStatus.COMPLETED);
     });

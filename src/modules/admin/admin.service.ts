@@ -1,19 +1,37 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UserStatus, Currency, LedgerType } from '@src/generated/client';
 import { Prisma } from '@src/generated/client';
-import { TatumWithdrawalService } from '../tatum/tatum-withdrawal.service';
-import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
+import { randomUUID } from 'crypto';
+import { CryptoWithdrawalService } from '../crypto/crypto-withdrawal.service';
+import { ExchangeRateService } from '../crypto/exchange-rate.service';
+import { CryptoConfigService } from '../crypto/crypto-config.service';
+import { DepositAddressRegistry } from '../crypto/deposit-address-registry.service';
+import { HdWalletService } from '../crypto/hd-wallet.service';
+import { ChainClientService } from '../crypto/chain-client.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
-import { PLATFORM_EMAIL } from '../tatum/tatum-platform.service';
+import { PLATFORM_EMAIL } from '../crypto/platform.service';
+
+interface ErrorLike {
+  message?: string;
+}
 
 @Injectable()
 export class AdminService {
   constructor(
     private prisma: PrismaService,
-    private readonly tatumWithdrawal: TatumWithdrawalService,
-    private readonly exchangeRateService: TatumExchangeRateService,
+    private readonly cryptoWithdrawal: CryptoWithdrawalService,
+    private readonly exchangeRateService: ExchangeRateService,
+    private readonly cryptoConfig: CryptoConfigService,
+    private readonly depositRegistry: DepositAddressRegistry,
+    private readonly hdWallet: HdWalletService,
+    private readonly chainClient: ChainClientService,
     private readonly paystackService: PaystackService,
     private readonly walletService: WalletService,
   ) {}
@@ -28,8 +46,16 @@ export class AdminService {
             OR: [
               { email: { contains: search, mode: 'insensitive' } },
               { phone: { contains: search, mode: 'insensitive' } },
-              { profile: { firstName: { contains: search, mode: 'insensitive' } } },
-              { profile: { lastName: { contains: search, mode: 'insensitive' } } },
+              {
+                profile: {
+                  firstName: { contains: search, mode: 'insensitive' },
+                },
+              },
+              {
+                profile: {
+                  lastName: { contains: search, mode: 'insensitive' },
+                },
+              },
             ],
           }
         : {}),
@@ -82,10 +108,14 @@ export class AdminService {
   async getAllWallets(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const where: any = search
-      ? { user: { OR: [
-            { email: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search, mode: 'insensitive' } },
-          ] } }
+      ? {
+          user: {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+        }
       : {};
 
     const [wallets, total] = await Promise.all([
@@ -110,7 +140,11 @@ export class AdminService {
       where: { id: walletId },
       include: {
         user: { include: { profile: true } },
-        ledgerEntries: { take: 50, orderBy: { createdAt: 'desc' }, include: { transaction: true } },
+        ledgerEntries: {
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+          include: { transaction: true },
+        },
         snapshots: { take: 10, orderBy: { createdAt: 'desc' } },
       },
     });
@@ -162,17 +196,59 @@ export class AdminService {
     if (!address || typeof address !== 'string') {
       throw new BadRequestException('Treasury destination address is required');
     }
-    if (currency === 'NGN' as Currency) {
-      throw new BadRequestException('NGN fee revenue is held in the ledger, not on-chain');
+    if (currency === ('NGN' as Currency)) {
+      throw new BadRequestException(
+        'NGN fee revenue is held in the ledger, not on-chain',
+      );
     }
 
-    return this.tatumWithdrawal.sweepFeeWallet({
+    return this.cryptoWithdrawal.sweepFeeWallet({
       currency,
       destinationAddress: address,
       amount,
     });
   }
 
+  /**
+   * Credits a user's wallet with test funds via the ledger. Only available on
+   * testnet (mainnet funds are real money and must never be fabricated).
+   */
+  async creditTestFunds(email: string, currency: Currency, amount: number) {
+    if (!this.cryptoConfig.isTestnet) {
+      throw new ForbiddenException(
+        'Testnet credit is disabled on a mainnet environment',
+      );
+    }
+    if (!email) {
+      throw new BadRequestException('User email is required');
+    }
+    if (!amount || amount <= 0) {
+      throw new BadRequestException('Amount must be a positive number');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new NotFoundException(`No user found with email ${email}`);
+    }
+
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { userId_currency: { userId: user.id, currency } },
+    });
+    if (!wallet) {
+      throw new NotFoundException(
+        `No ${currency} wallet for ${email} — create one first`,
+      );
+    }
+
+    return this.walletService.createTransaction({
+      walletId: wallet.id,
+      type: LedgerType.DEPOSIT,
+      amount,
+      reference: `testnet-credit-${randomUUID()}`,
+      status: 'COMPLETED',
+      metadata: { testnet: true, source: 'admin' },
+    });
+  }
 
   async getAllTransactions(page: number, limit: number) {
     const skip = (page - 1) * limit;
@@ -181,7 +257,9 @@ export class AdminService {
       this.prisma.walletTransaction.findMany({
         skip,
         take: limit,
-        include: { wallet: { include: { user: { include: { profile: true } } } } },
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count(),
@@ -196,11 +274,13 @@ export class AdminService {
   async getAllOrders(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const where: any = search
-      ? { OR: [
+      ? {
+          OR: [
             { id: { contains: search, mode: 'insensitive' } },
             { buyer: { email: { contains: search, mode: 'insensitive' } } },
             { seller: { email: { contains: search, mode: 'insensitive' } } },
-          ] }
+          ],
+        }
       : {};
 
     const [orders, total] = await Promise.all([
@@ -246,7 +326,9 @@ export class AdminService {
         where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
         skip,
         take: limit,
-        include: { wallet: { include: { user: { include: { profile: true } } } } },
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count({
@@ -267,7 +349,9 @@ export class AdminService {
         where: { status: 'FAILED' },
         skip,
         take: limit,
-        include: { wallet: { include: { user: { include: { profile: true } } } } },
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count({ where: { status: 'FAILED' } }),
@@ -289,9 +373,10 @@ export class AdminService {
     });
 
     if (!tx) throw new NotFoundException('Transaction not found');
-    if (tx.status !== 'FAILED') throw new BadRequestException('Only failed transactions can be retried');
+    if (tx.status !== 'FAILED')
+      throw new BadRequestException('Only failed transactions can be retried');
 
-    return this.tatumWithdrawal.retryWithdrawal(transactionId);
+    return this.cryptoWithdrawal.retryWithdrawal(transactionId);
   }
 
   /**
@@ -355,7 +440,8 @@ export class AdminService {
         total: b._sum.balance?.toNumber() || 0,
         walletCount: b._count.id,
         rate: rates[b.currency] || 0,
-        valueInNgn: (b._sum.balance?.toNumber() || 0) * (rates[b.currency] || 0),
+        valueInNgn:
+          (b._sum.balance?.toNumber() || 0) * (rates[b.currency] || 0),
       })),
       totalBalanceNgn: balanceAgg._sum.balance?.toNumber() || 0,
       txCount24h,
@@ -368,12 +454,20 @@ export class AdminService {
 
   async getPaymentStats() {
     const totalDeposits = await this.prisma.walletTransaction.aggregate({
-      where: { type: 'DEPOSIT', status: 'COMPLETED', wallet: { currency: 'NGN' } },
+      where: {
+        type: 'DEPOSIT',
+        status: 'COMPLETED',
+        wallet: { currency: 'NGN' },
+      },
       _sum: { amount: true },
     });
 
     const totalWithdrawals = await this.prisma.walletTransaction.aggregate({
-      where: { type: 'WITHDRAWAL', status: 'COMPLETED', wallet: { currency: 'NGN' } },
+      where: {
+        type: 'WITHDRAWAL',
+        status: 'COMPLETED',
+        wallet: { currency: 'NGN' },
+      },
       _sum: { amount: true },
     });
 
@@ -407,9 +501,29 @@ export class AdminService {
     if (filters?.search) {
       where.OR = [
         { reference: { contains: filters.search, mode: 'insensitive' } },
-        { wallet: { user: { email: { contains: filters.search, mode: 'insensitive' } } } },
-        { wallet: { user: { profile: { firstName: { contains: filters.search, mode: 'insensitive' } } } } },
-        { wallet: { user: { profile: { lastName: { contains: filters.search, mode: 'insensitive' } } } } },
+        {
+          wallet: {
+            user: { email: { contains: filters.search, mode: 'insensitive' } },
+          },
+        },
+        {
+          wallet: {
+            user: {
+              profile: {
+                firstName: { contains: filters.search, mode: 'insensitive' },
+              },
+            },
+          },
+        },
+        {
+          wallet: {
+            user: {
+              profile: {
+                lastName: { contains: filters.search, mode: 'insensitive' },
+              },
+            },
+          },
+        },
       ];
     }
 
@@ -418,7 +532,9 @@ export class AdminService {
         where,
         skip,
         take: limit,
-        include: { wallet: { include: { user: { include: { profile: true } } } } },
+        include: {
+          wallet: { include: { user: { include: { profile: true } } } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.walletTransaction.count({ where }),
@@ -465,10 +581,12 @@ export class AdminService {
     const skip = (page - 1) * limit;
     const where: any = {};
 
-    if (filters?.action) where.action = { contains: filters.action, mode: 'insensitive' };
+    if (filters?.action)
+      where.action = { contains: filters.action, mode: 'insensitive' };
     if (filters?.resource) where.resource = filters.resource;
     if (filters?.userId) where.userId = filters.userId;
-    if (filters?.success !== undefined && filters.success !== '') where.success = filters.success === 'true';
+    if (filters?.success !== undefined && filters.success !== '')
+      where.success = filters.success === 'true';
     if (filters?.startDate || filters?.endDate) {
       where.createdAt = {};
       if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
@@ -489,7 +607,13 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profile: { select: { firstName: true, lastName: true } },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -532,8 +656,14 @@ export class AdminService {
       last24h: last24hCount,
       failures,
       last7d,
-      byResource: byResource.map((r) => ({ resource: r.resource || 'UNKNOWN', count: r._count.resource })),
-      byAction: byAction.map((a) => ({ action: a.action, count: a._count.action })),
+      byResource: byResource.map((r) => ({
+        resource: r.resource || 'UNKNOWN',
+        count: r._count.resource,
+      })),
+      byAction: byAction.map((a) => ({
+        action: a.action,
+        count: a._count.action,
+      })),
     };
   }
 
@@ -546,12 +676,26 @@ export class AdminService {
 
     if (configs.length === 0) {
       const defaults = [
-        { key: 'trade_buy_fee_percent', value: 0.5, label: 'Trade Fee (Buy Side) %' },
-        { key: 'trade_sell_fee_percent', value: 0.5, label: 'Trade Fee (Sell Side) %' },
-        { key: 'trade_sponsored_fee_percent', value: 0.5, label: 'Sponsored Ad Fee %' },
+        {
+          key: 'trade_buy_fee_percent',
+          value: 0.5,
+          label: 'Trade Fee (Buy Side) %',
+        },
+        {
+          key: 'trade_sell_fee_percent',
+          value: 0.5,
+          label: 'Trade Fee (Sell Side) %',
+        },
+        {
+          key: 'trade_sponsored_fee_percent',
+          value: 0.5,
+          label: 'Sponsored Ad Fee %',
+        },
       ];
       await this.prisma.platformFeeConfig.createMany({ data: defaults });
-      return this.prisma.platformFeeConfig.findMany({ orderBy: { key: 'asc' } });
+      return this.prisma.platformFeeConfig.findMany({
+        orderBy: { key: 'asc' },
+      });
     }
 
     return configs;
@@ -562,7 +706,9 @@ export class AdminService {
       throw new BadRequestException('Fee percentage must be between 0 and 10');
     }
 
-    const existing = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+    const existing = await this.prisma.platformFeeConfig.findUnique({
+      where: { key },
+    });
     if (!existing) throw new NotFoundException(`Fee config '${key}' not found`);
 
     return this.prisma.platformFeeConfig.update({
@@ -572,7 +718,9 @@ export class AdminService {
   }
 
   async getFeeValue(key: string): Promise<number> {
-    const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
+    const config = await this.prisma.platformFeeConfig.findUnique({
+      where: { key },
+    });
     return config ? Number(config.value) : 0.5;
   }
 
@@ -587,7 +735,13 @@ export class AdminService {
         skip,
         take: limit,
         include: {
-          user: { select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } } } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              profile: { select: { firstName: true, lastName: true } },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -597,6 +751,118 @@ export class AdminService {
     return {
       logs,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  // ─── Crypto Monitoring (Phase 6) ─────────────────────────────────────────
+
+  /**
+   * Consolidated local-first crypto system status: provider/network config,
+   * master wallets, deposit address registry size, chain cursors and recent
+   * sweep activity.
+   */
+  async getCryptoSystemStatus() {
+    const [evmCursor, btcCursor] = await Promise.all([
+      this.prisma.chainCursor.findUnique({ where: { chain: 'EVM' } }),
+      this.prisma.chainCursor.findUnique({ where: { chain: 'BTC' } }),
+    ]);
+
+    const recentSweeps = await this.prisma.walletTransaction.findMany({
+      where: { metadata: { path: ['sweep'], equals: true } },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        amount: true,
+        status: true,
+        reference: true,
+        createdAt: true,
+        wallet: { select: { currency: true } },
+      },
+    });
+
+    return {
+      provider: this.cryptoConfig.provider,
+      network: this.cryptoConfig.network,
+      isTestnet: this.cryptoConfig.isTestnet,
+      confirmations: {
+        eth: this.cryptoConfig.evmConfirmations,
+        btc: this.cryptoConfig.btcConfirmations,
+      },
+      depositSweepThreshold: this.cryptoConfig.depositSweepThreshold,
+      registrySize: this.depositRegistry.size,
+      cursors: { evm: evmCursor ?? null, btc: btcCursor ?? null },
+      masterWallets: {
+        evm: this.hdWallet.getMasterAddress('EVM'),
+        btc: this.hdWallet.getMasterAddress('BTC'),
+      },
+      recentSweeps,
+    };
+  }
+
+  /**
+   * Lists withdrawal confirmation jobs with pagination and optional status filter.
+   */
+  async getWithdrawalJobs(page: number, limit: number, status?: string) {
+    const skip = (page - 1) * limit;
+    const where: Prisma.WithdrawalJobWhereInput = status ? { status } : {};
+
+    const [jobs, total] = await Promise.all([
+      this.prisma.withdrawalJob.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.withdrawalJob.count({ where }),
+    ]);
+
+    return {
+      jobs,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  /**
+   * Live on-chain balances of the platform master wallets (ETH/USDT/USDC on
+   * the EVM master, BTC on the BTC master).
+   */
+  async getChainBalances() {
+    const evmMaster = this.hdWallet.getMasterAddress('EVM');
+    const btcMaster = this.hdWallet.getMasterAddress('BTC');
+    const currencies: Currency[] = ['BTC', 'ETH', 'USDT', 'USDC'];
+
+    const balances = await Promise.all(
+      currencies.map(async (currency) => {
+        try {
+          if (currency === Currency.BTC) {
+            const utxos = await this.chainClient.getBtcUtxos(btcMaster);
+            return {
+              currency,
+              address: btcMaster,
+              balance: utxos.reduce((sum, u) => sum + u.value, 0) / 1e8,
+            };
+          }
+          return {
+            currency,
+            address: evmMaster,
+            balance: await this.chainClient.getEvmBalance(evmMaster, currency),
+          };
+        } catch (error) {
+          const err = error as ErrorLike;
+          return {
+            currency,
+            address: currency === Currency.BTC ? btcMaster : evmMaster,
+            balance: 0,
+            error: err.message || 'Balance query failed',
+          };
+        }
+      }),
+    );
+
+    return {
+      masterWallets: { evm: evmMaster, btc: btcMaster },
+      balances,
     };
   }
 }

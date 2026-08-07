@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
-import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
+import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { Currency, Role, LedgerType, Prisma } from '@src/generated/client';
 
 @Injectable()
@@ -9,12 +9,12 @@ export class WalletService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
-    private readonly exchangeRateService: TatumExchangeRateService,
+    private readonly exchangeRateService: ExchangeRateService,
   ) {}
 
   /**
    * Returns all wallets for a user with their current balances.
-   * Uses live exchange rates from CoinGecko (via TatumExchangeRateService).
+   * Uses live exchange rates from CoinGecko (via ExchangeRateService).
    */
   async getUserWallets(userId: string) {
     const wallets = await this.prisma.wallet.findMany({
@@ -189,6 +189,20 @@ export class WalletService {
     return this.prisma.wallet.update({
       where: { id: walletId },
       data: { address },
+    });
+  }
+
+  /**
+   * Updates a wallet's local-first HD deposit info (address, derivation index
+   * and chain kind). Used when the crypto provider is "alchemy".
+   */
+  async updateWalletDepositInfo(
+    walletId: string,
+    params: { address: string; derivationIndex: number; chain: string },
+  ) {
+    return this.prisma.wallet.update({
+      where: { id: walletId },
+      data: params,
     });
   }
 

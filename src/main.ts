@@ -95,9 +95,8 @@ async function bootstrap() {
     }),
   );
 
-  // Raw body for webhook signature verification (Paystack + Tatum HMAC)
+  // Raw body for webhook signature verification (Paystack HMAC)
   app.use('/paystack/webhook', rawBodyForWebhook);
-  app.use('/tatum/webhooks', rawBodyForWebhook);
 
   // Static file serving for uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));

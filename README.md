@@ -31,6 +31,75 @@
 $ npm install
 ```
 
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in real values:
+
+```bash
+$ cp .env.example .env
+```
+
+### Crypto / blockchain (local-first, Alchemy)
+
+The platform derives all deposit addresses locally from HD master seeds and
+scans/pushes transactions via Alchemy + mempool.space — there is no third-party
+wallet/wallet-service API.
+
+| Key | Required | Default | Description |
+| --- | --- | --- | --- |
+| `CRYPTO_PROVIDER` | no | `alchemy` | Only `alchemy` is supported. |
+| `ALCHEMY_NETWORK` | no | `sepolia` | `sepolia` or `mainnet`. Selects the ERC-20 contract defaults. |
+| `ALCHEMY_ETH_WS_URL` | yes* | — | Alchemy WebSocket URL for the EVM network. |
+| `ALCHEMY_ETH_HTTP_URL` | yes* | — | Alchemy HTTP URL for the EVM network (used for `alchemy_getAssetTransfers`, receipts, broadcasts). |
+| `ALCHEMY_BTC_HTTP_URL` | yes* | — | Alchemy HTTP URL for Bitcoin (broadcast). |
+| `MEMPOOL_API_URL` | no | `https://mempool.space/api` | mempool.space base URL for BTC address scans. |
+| `HD_EVM_MASTER_MNEMONIC` | yes* | — | BIP-39 mnemonic for the EVM master wallet. Required for private-key derivation (signing). |
+| `HD_BTC_MASTER_MNEMONIC` | yes* | — | BIP-39 mnemonic for the BTC master wallet. Required for signing. |
+| `HD_EVM_MASTER_XPUB` | no | — | Optional read-only EVM xpub (not used for signing). |
+| `HD_BTC_MASTER_XPUB` | no | — | Optional read-only BTC xpub (not used for signing). |
+| `HD_EVM_DERIVATION_PATH` | no | `m/44'/60'/0'/0` | EVM derivation path prefix. |
+| `HD_BTC_DERIVATION_PATH` | no | `m/84'/0'/0'/0` | BTC native-SegWit (bech32) derivation path prefix. |
+| `HD_EVM_ACCOUNT` / `HD_BTC_ACCOUNT` | no | `0` | Account index within the derivation path. |
+| `BLOCK_CONFIRMATIONS_ETH` | no | `12` | EVM confirmations before a deposit is credited. |
+| `BLOCK_CONFIRMATIONS_BTC` | no | `2` | BTC confirmations before a deposit is credited. |
+| `DEPOSIT_SWEEP_THRESHOLD` | no | `0` | Sweep fee-wallet funds to the master wallet once the balance reaches this amount. |
+| `ALCHEMY_USDT_CONTRACT` / `ALCHEMY_USDC_CONTRACT` | no | network default | Override the ERC-20 contract address (only needed on non-default networks). |
+
+\* Required at runtime for the corresponding chain to work. The API warns on
+startup and keeps the app running when seeds are missing, but deposits,
+withdrawals and sweeping for that chain will fail.
+
+> **Security**: HD master mnemonics are signing material — keep them in `.env`
+> (or a KMS), never in the database, logs, or committed files.
+
+## Database (reset / seed)
+
+The schema is managed with `prisma db push` (the crypto tables have no
+migration files). Seed is idempotent and safe to re-run.
+
+```bash
+# Seed an existing database (super admin, platform fee wallets, fee configs)
+$ npm run db:seed
+
+# ⚠️ DESTRUCTIVE — drops and recreates the schema, then seeds it
+$ npm run db:reset
+```
+
+`db:reset` is **destructive**: it wipes all data via
+`prisma db push --force-reset` before re-seeding. Never run it against a
+production database.
+
+The seed creates:
+
+1. A `SUPER_ADMIN` login — email/password from `SEED_ADMIN_EMAIL` /
+   `SEED_ADMIN_PASSWORD` (defaults `admin@admin.com` / `Admin@12345!`), with a
+   verified profile and default preferences.
+2. The internal platform user and the BTC/ETH/USDT/USDC fee wallets via
+   `PlatformService.ensurePlatformWallets()`, which also mirrors the HD master
+   xpubs into `PlatformSetting` (`master_xpub_evm` / `master_xpub_btc`).
+3. The three default `PlatformFeeConfig` rows (`trade_buy_fee_percent`,
+   `trade_sell_fee_percent`, `trade_sponsored_fee_percent`) at `0.5`.
+
 ## Compile and run the project
 
 ```bash

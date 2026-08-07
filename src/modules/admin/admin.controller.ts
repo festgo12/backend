@@ -1,13 +1,20 @@
-import { Controller, Get, Patch, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
 import { AdminService } from './admin.service';
-import { TatumExchangeRateService } from '../tatum/tatum-exchange-rate.service';
-import { TatumDepositService } from '../tatum/tatum-deposit.service';
-import { TatumWebhookService } from '../tatum/tatum-webhook.service';
-import { TatumPlatformService } from '../tatum/tatum-platform.service';
+import { ExchangeRateService } from '../crypto/exchange-rate.service';
+import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Role, Currency } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
 
@@ -19,10 +26,8 @@ import { AuditLog } from '../audit/audit.decorator';
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
-    private readonly exchangeRateService: TatumExchangeRateService,
-    private readonly depositService: TatumDepositService,
-    private readonly webhookService: TatumWebhookService,
-    private readonly platformService: TatumPlatformService,
+    private readonly exchangeRateService: ExchangeRateService,
+    private readonly platformService: PlatformService,
   ) {}
 
   @Get('users')
@@ -38,7 +43,10 @@ export class AdminController {
   @Patch('users/:id/status')
   @AuditLog('ADMIN_USER_STATUS_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user account status' })
-  updateUserStatus(@Param('id') userId: string, @Body('status') status: UserStatus) {
+  updateUserStatus(
+    @Param('id') userId: string,
+    @Body('status') status: UserStatus,
+  ) {
     return this.adminService.updateUserStatus(userId, status);
   }
 
@@ -55,7 +63,11 @@ export class AdminController {
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAllWallets(parseInt(page), parseInt(limit), search);
+    return this.adminService.getAllWallets(
+      parseInt(page),
+      parseInt(limit),
+      search,
+    );
   }
 
   @Get('wallets/:id')
@@ -70,7 +82,10 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getAllTransactions(parseInt(page), parseInt(limit));
+    return this.adminService.getAllTransactions(
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 
   @Get('orders')
@@ -80,7 +95,11 @@ export class AdminController {
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAllOrders(parseInt(page), parseInt(limit), search);
+    return this.adminService.getAllOrders(
+      parseInt(page),
+      parseInt(limit),
+      search,
+    );
   }
 
   @Get('orders/:id')
@@ -101,7 +120,10 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getBlockchainTransactions(parseInt(page), parseInt(limit));
+    return this.adminService.getBlockchainTransactions(
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 
   @Get('blockchain/failed')
@@ -110,7 +132,10 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getFailedTransactions(parseInt(page), parseInt(limit));
+    return this.adminService.getFailedTransactions(
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 
   @Post('blockchain/failed/:id/retry')
@@ -120,11 +145,36 @@ export class AdminController {
     return this.adminService.retryFailedTransaction(transactionId);
   }
 
-  @Post('blockchain/sync')
-  @AuditLog('ADMIN_BALANCE_SYNC', 'WALLET')
-  @ApiOperation({ summary: 'Trigger balance sync for all crypto wallets' })
-  async syncAllBalances() {
-    return this.depositService.syncAllWallets();
+  // ─── Crypto Monitoring (Phase 6) ─────────────────────────────────────────
+
+  @Get('crypto/status')
+  @ApiOperation({
+    summary: 'Local-first crypto system status (provider, cursors, sweeps)',
+  })
+  getCryptoSystemStatus() {
+    return this.adminService.getCryptoSystemStatus();
+  }
+
+  @Get('crypto/withdrawal-jobs')
+  @ApiOperation({ summary: 'List withdrawal confirmation jobs' })
+  getWithdrawalJobs(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query('status') status?: string,
+  ) {
+    return this.adminService.getWithdrawalJobs(
+      parseInt(page),
+      parseInt(limit),
+      status,
+    );
+  }
+
+  @Get('crypto/chain-balances')
+  @ApiOperation({
+    summary: 'Live on-chain balances of the platform master wallets',
+  })
+  getChainBalances() {
+    return this.adminService.getChainBalances();
   }
 
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────
@@ -137,7 +187,9 @@ export class AdminController {
 
   @Post('fee-wallets/init')
   @AuditLog('ADMIN_FEE_WALLET_INIT', 'WALLET')
-  @ApiOperation({ summary: 'Create/assign the platform fee wallets for all crypto currencies' })
+  @ApiOperation({
+    summary: 'Create/assign the platform fee wallets for all crypto currencies',
+  })
   async initFeeWallets() {
     const result = await this.platformService.ensurePlatformWallets();
     return {
@@ -149,13 +201,28 @@ export class AdminController {
 
   @Post('fee-wallets/:currency/sweep')
   @AuditLog('ADMIN_FEE_SWEEP', 'WALLET')
-  @ApiOperation({ summary: 'Sweep platform fee wallet balance to a treasury address' })
+  @ApiOperation({
+    summary: 'Sweep platform fee wallet balance to a treasury address',
+  })
   sweepFeeWallet(
     @Param('currency') currency: Currency,
     @Body('address') address: string,
     @Body('amount') amount?: number,
   ) {
     return this.adminService.sweepFeeWallet(currency, address, amount);
+  }
+
+  @Post('testnet/credit')
+  @AuditLog('ADMIN_TESTNET_CREDIT', 'WALLET')
+  @ApiOperation({
+    summary: 'Credit a user wallet with test funds (testnet environments only)',
+  })
+  creditTestFunds(
+    @Body('email') email: string,
+    @Body('currency') currency: Currency,
+    @Body('amount') amount: number,
+  ) {
+    return this.adminService.creditTestFunds(email, currency, amount);
   }
 
   @Get('payments/stats')
@@ -175,9 +242,17 @@ export class AdminController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit), {
-      search, status, type, startDate, endDate,
-    });
+    return this.adminService.getPaymentTransactions(
+      parseInt(page),
+      parseInt(limit),
+      {
+        search,
+        status,
+        type,
+        startDate,
+        endDate,
+      },
+    );
   }
 
   @Get('payments/transactions/:id')
@@ -217,11 +292,15 @@ export class AdminController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAuditLogs(
-      parseInt(page),
-      parseInt(limit),
-      { action, resource, userId, success, startDate, endDate, search },
-    );
+    return this.adminService.getAuditLogs(parseInt(page), parseInt(limit), {
+      action,
+      resource,
+      userId,
+      success,
+      startDate,
+      endDate,
+      search,
+    });
   }
 
   @Get('audit-logs/stats')
@@ -237,7 +316,11 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
   ) {
-    return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
+    return this.adminService.getUserAuditTrail(
+      userId,
+      parseInt(page),
+      parseInt(limit),
+    );
   }
 
   // ─── Fee Configuration ─────────────────────────────────────────────────────
@@ -253,29 +336,5 @@ export class AdminController {
   @ApiOperation({ summary: 'Update a platform fee configuration' })
   updateFeeConfig(@Param('key') key: string, @Body('value') value: number) {
     return this.adminService.updateFeeConfig(key, value);
-  }
-
-  // ─── Webhook Subscription Management ──────────────────────────────────────
-
-  @Get('webhooks')
-  @ApiOperation({ summary: 'List active Tatum webhook subscriptions' })
-  getWebhookSubscriptions() {
-    return this.webhookService.getSubscriptionSummary();
-  }
-
-  @Post('webhooks/init')
-  @AuditLog('ADMIN_WEBHOOK_INIT', 'SYSTEM')
-  @ApiOperation({ summary: 'Register outgoing webhooks for all chains' })
-  async initOutgoingWebhooks() {
-    await this.webhookService.ensureOutgoingWebhooks();
-    return { success: true, message: 'Outgoing webhooks initialized for all chains' };
-  }
-
-  @Post('webhooks/cancel/:id')
-  @AuditLog('ADMIN_WEBHOOK_CANCEL', 'SYSTEM')
-  @ApiOperation({ summary: 'Cancel a Tatum webhook subscription' })
-  async cancelWebhook(@Param('id') subscriptionId: string) {
-    const success = await this.webhookService.cancelSubscription(subscriptionId);
-    return { success, message: success ? 'Subscription cancelled' : 'Failed to cancel subscription' };
   }
 }

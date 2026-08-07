@@ -175,6 +175,8 @@ exports.Prisma.WalletScalarFieldEnum = {
   balance: 'balance',
   reservedBalance: 'reservedBalance',
   address: 'address',
+  derivationIndex: 'derivationIndex',
+  chain: 'chain',
   updatedAt: 'updatedAt',
   version: 'version'
 };
@@ -455,6 +457,29 @@ exports.Prisma.ReconciliationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ChainCursorScalarFieldEnum = {
+  id: 'id',
+  chain: 'chain',
+  lastBlock: 'lastBlock',
+  lastBlockHash: 'lastBlockHash',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WithdrawalJobScalarFieldEnum = {
+  id: 'id',
+  txHash: 'txHash',
+  walletId: 'walletId',
+  currency: 'currency',
+  amount: 'amount',
+  destination: 'destination',
+  status: 'status',
+  attempts: 'attempts',
+  nextPollAt: 'nextPollAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.DailyReportScalarFieldEnum = {
   id: 'id',
   date: 'date',
@@ -640,6 +665,8 @@ exports.Prisma.ModelName = {
   PlatformFeeConfig: 'PlatformFeeConfig',
   PlatformSetting: 'PlatformSetting',
   Reconciliation: 'Reconciliation',
+  ChainCursor: 'ChainCursor',
+  WithdrawalJob: 'WithdrawalJob',
   DailyReport: 'DailyReport',
   HelpContent: 'HelpContent'
 };

@@ -1,0 +1,53 @@
+import { OnApplicationShutdown, OnApplicationBootstrap } from '@nestjs/common';
+import { PrismaService } from '../../core/database/prisma.service';
+import { WalletService } from '../wallet/wallet.service';
+import { DepositAddressRegistry } from './deposit-address-registry.service';
+import { CryptoConfigService } from './crypto-config.service';
+export interface EvmDepositListenerStatus {
+    enabled: boolean;
+    connected: boolean;
+    lastConnectedAt: string | null;
+    lastError: string | null;
+    depositsDetected: number;
+    catchUpRuns: number;
+    pendingCount: number;
+    latestBlock: number | null;
+}
+export declare class EvmDepositListenerService implements OnApplicationBootstrap, OnApplicationShutdown {
+    private readonly prisma;
+    private readonly walletService;
+    private readonly depositRegistry;
+    private readonly config;
+    private readonly logger;
+    private provider;
+    private connected;
+    private lastConnectedAt;
+    private lastError;
+    private depositsDetected;
+    private catchUpRuns;
+    private latestBlock;
+    private reconnectTimer;
+    private reconnectAttempts;
+    private connecting;
+    private processingBlock;
+    private pendingBlocks;
+    private recentHashes;
+    private cursorLastBlock;
+    private cursorLastBlockHash;
+    constructor(prisma: PrismaService, walletService: WalletService, depositRegistry: DepositAddressRegistry, config: CryptoConfigService);
+    onApplicationBootstrap(): Promise<void>;
+    onApplicationShutdown(): void;
+    getStatus(): Promise<EvmDepositListenerStatus>;
+    private connect;
+    private handleClose;
+    private scheduleReconnect;
+    private teardown;
+    private subscribeTokens;
+    private handleTransferLog;
+    private drainBlocks;
+    private handleBlock;
+    catchUp(): Promise<void>;
+    private rewindForCatchUp;
+    finalizePendingDeposits(maxFrom: number): Promise<void>;
+    private recordPending;
+}

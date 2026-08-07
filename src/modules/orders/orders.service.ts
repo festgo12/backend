@@ -4,9 +4,7 @@ import { CreateOrderDto } from './dto/order.dto';
 import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
-import { TatumTransferService } from '../tatum/tatum-transfer.service';
-import { TatumPlatformService } from '../tatum/tatum-platform.service';
-import { TatumWalletService } from '../tatum/tatum-wallet.service';
+import { PlatformService } from '../crypto/platform.service';
 
 @Injectable()
 export class OrdersService {
@@ -15,9 +13,7 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-    private tatumTransfer: TatumTransferService,
-    private platformService: TatumPlatformService,
-    private tatumWallet: TatumWalletService,
+    private platformService: PlatformService,
   ) {}
 
   private async getFeePercent(key: string): Promise<number> {
@@ -367,103 +363,10 @@ export class OrdersService {
       return { finalOrder, sellerCryptoWallet, buyerCryptoWallet };
     });
 
-    // --- STAGE 8: On-chain settlement legs (post-commit, best-effort) ---
-    await this.settleOrderOnChain({
-      order,
-      asset: order.ad.asset,
-      cryptoAmount,
-      buyerFee,
-      sellerCryptoWallet: settlement.sellerCryptoWallet,
-      buyerCryptoWallet: settlement.buyerCryptoWallet,
-    });
-
+    // Trades are settled purely on the internal ledger. On-chain movement
+    // between users is intentionally not broadcast: deposits and withdrawals
+    // reconcile against user-owned addresses instead (see crypto module).
     return settlement.finalOrder;
-  }
-
-  /**
-   * Broadcasts the crypto movement for a settled trade:
-   *   seller -> buyer  : cryptoAmount - buyerFee
-   *   seller -> fees   : buyerFee (platform fee wallet)
-   * The internal ledger was already finalised inside the settlement transaction;
-   * these on-chain transfers are recorded for tracking and reconciled later.
-   */
-  private async settleOrderOnChain(params: {
-    order: any;
-    asset: Currency;
-    cryptoAmount: Decimal;
-    buyerFee: Decimal;
-    sellerCryptoWallet: any;
-    buyerCryptoWallet: any;
-  }) {
-    const { order, asset, cryptoAmount, buyerFee, sellerCryptoWallet, buyerCryptoWallet } = params;
-
-    const sellerAddress = sellerCryptoWallet?.address;
-    const buyerAddress = buyerCryptoWallet?.address;
-
-    if (!sellerAddress || !buyerAddress) {
-      this.logger.error(
-        `On-chain settlement skipped for order ${order.id}: missing addresses ` +
-          `(seller=${sellerAddress || 'NONE'}, buyer=${buyerAddress || 'NONE'})`,
-      );
-      return;
-    }
-
-    const sellerIndex = this.tatumWallet.getAddressIndex(sellerCryptoWallet.id);
-
-    let feeWallet: { id: string; address: string | null } | null = null;
-    try {
-      feeWallet = await this.platformService.getPlatformFeeWallet(asset);
-    } catch (error: any) {
-      this.logger.error(`On-chain settlement skipped for order ${order.id}: fee wallet unavailable (${error.message})`);
-      return;
-    }
-    const feeAddress = feeWallet?.address ?? null;
-
-    const legs: { to: string; amount: string; type: 'trade' | 'fee' }[] = [];
-
-    const buyerLegAmount = cryptoAmount.minus(buyerFee);
-    if (buyerLegAmount.greaterThan(0)) {
-      legs.push({ to: buyerAddress, amount: buyerLegAmount.toFixed(8), type: 'trade' });
-    }
-    if (buyerFee.greaterThan(0) && feeAddress) {
-      legs.push({ to: feeAddress, amount: buyerFee.toFixed(8), type: 'fee' });
-    }
-
-    for (const leg of legs) {
-      try {
-        const txId = await this.tatumTransfer.transfer({
-          asset,
-          fromAddress: sellerAddress,
-          fromIndex: sellerIndex,
-          to: leg.to,
-          amount: leg.amount,
-        });
-
-        await this.tatumTransfer.recordOnChainTransaction({
-          walletId: sellerCryptoWallet.id,
-          orderId: order.id,
-          asset,
-          txId,
-          fromAddress: sellerAddress,
-          to: leg.to,
-          amount: leg.amount,
-          type: leg.type,
-        });
-      } catch (error: any) {
-        this.logger.error(`On-chain leg failed for order ${order.id} (${leg.type}): ${error.message}`);
-        await this.tatumTransfer.recordOnChainTransaction({
-          walletId: sellerCryptoWallet.id,
-          orderId: order.id,
-          asset,
-          txId: `failed-${order.id}-${leg.type}-${Date.now()}`,
-          fromAddress: sellerAddress,
-          to: leg.to,
-          amount: leg.amount,
-          type: leg.type,
-          status: 'FAILED',
-        });
-      }
-    }
   }
 
   async declineOrder(orderId: string, initiatorId: string) {

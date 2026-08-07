@@ -139,6 +139,19 @@ export type PlatformSetting = $Result.DefaultSelection<Prisma.$PlatformSettingPa
  */
 export type Reconciliation = $Result.DefaultSelection<Prisma.$ReconciliationPayload>
 /**
+ * Model ChainCursor
+ * Per-chain block cursor used by the deposit listeners to resume from the
+ * last processed block and to run catch-up scans after downtime.
+ */
+export type ChainCursor = $Result.DefaultSelection<Prisma.$ChainCursorPayload>
+/**
+ * Model WithdrawalJob
+ * Database-backed withdrawal tracking queue (mirrors the notifications
+ * queue pattern). A row is created when a withdrawal is broadcast and polled
+ * by a cron worker until CONFIRMED or FAILED.
+ */
+export type WithdrawalJob = $Result.DefaultSelection<Prisma.$WithdrawalJobPayload>
+/**
  * Model DailyReport
  * 
  */
@@ -712,6 +725,26 @@ export class PrismaClient<
   get reconciliation(): Prisma.ReconciliationDelegate<ExtArgs>;
 
   /**
+   * `prisma.chainCursor`: Exposes CRUD operations for the **ChainCursor** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChainCursors
+    * const chainCursors = await prisma.chainCursor.findMany()
+    * ```
+    */
+  get chainCursor(): Prisma.ChainCursorDelegate<ExtArgs>;
+
+  /**
+   * `prisma.withdrawalJob`: Exposes CRUD operations for the **WithdrawalJob** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WithdrawalJobs
+    * const withdrawalJobs = await prisma.withdrawalJob.findMany()
+    * ```
+    */
+  get withdrawalJob(): Prisma.WithdrawalJobDelegate<ExtArgs>;
+
+  /**
    * `prisma.dailyReport`: Exposes CRUD operations for the **DailyReport** model.
     * Example usage:
     * ```ts
@@ -1196,6 +1229,8 @@ export namespace Prisma {
     PlatformFeeConfig: 'PlatformFeeConfig',
     PlatformSetting: 'PlatformSetting',
     Reconciliation: 'Reconciliation',
+    ChainCursor: 'ChainCursor',
+    WithdrawalJob: 'WithdrawalJob',
     DailyReport: 'DailyReport',
     HelpContent: 'HelpContent'
   };
@@ -1213,7 +1248,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "platformSetting" | "reconciliation" | "dailyReport" | "helpContent"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "platformSetting" | "reconciliation" | "chainCursor" | "withdrawalJob" | "dailyReport" | "helpContent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2967,6 +3002,146 @@ export namespace Prisma {
           }
         }
       }
+      ChainCursor: {
+        payload: Prisma.$ChainCursorPayload<ExtArgs>
+        fields: Prisma.ChainCursorFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChainCursorFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChainCursorFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          findFirst: {
+            args: Prisma.ChainCursorFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChainCursorFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          findMany: {
+            args: Prisma.ChainCursorFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>[]
+          }
+          create: {
+            args: Prisma.ChainCursorCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          createMany: {
+            args: Prisma.ChainCursorCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChainCursorCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>[]
+          }
+          delete: {
+            args: Prisma.ChainCursorDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          update: {
+            args: Prisma.ChainCursorUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChainCursorDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChainCursorUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ChainCursorUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChainCursorPayload>
+          }
+          aggregate: {
+            args: Prisma.ChainCursorAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChainCursor>
+          }
+          groupBy: {
+            args: Prisma.ChainCursorGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChainCursorGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChainCursorCountArgs<ExtArgs>
+            result: $Utils.Optional<ChainCursorCountAggregateOutputType> | number
+          }
+        }
+      }
+      WithdrawalJob: {
+        payload: Prisma.$WithdrawalJobPayload<ExtArgs>
+        fields: Prisma.WithdrawalJobFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WithdrawalJobFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WithdrawalJobFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          findFirst: {
+            args: Prisma.WithdrawalJobFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WithdrawalJobFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          findMany: {
+            args: Prisma.WithdrawalJobFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>[]
+          }
+          create: {
+            args: Prisma.WithdrawalJobCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          createMany: {
+            args: Prisma.WithdrawalJobCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WithdrawalJobCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>[]
+          }
+          delete: {
+            args: Prisma.WithdrawalJobDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          update: {
+            args: Prisma.WithdrawalJobUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          deleteMany: {
+            args: Prisma.WithdrawalJobDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WithdrawalJobUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WithdrawalJobUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalJobPayload>
+          }
+          aggregate: {
+            args: Prisma.WithdrawalJobAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWithdrawalJob>
+          }
+          groupBy: {
+            args: Prisma.WithdrawalJobGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WithdrawalJobGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WithdrawalJobCountArgs<ExtArgs>
+            result: $Utils.Optional<WithdrawalJobCountAggregateOutputType> | number
+          }
+        }
+      }
       DailyReport: {
         payload: Prisma.$DailyReportPayload<ExtArgs>
         fields: Prisma.DailyReportFieldRefs
@@ -3455,12 +3630,14 @@ export namespace Prisma {
     ledgerEntries: number
     transactions: number
     snapshots: number
+    withdrawalJobs: number
   }
 
   export type WalletCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ledgerEntries?: boolean | WalletCountOutputTypeCountLedgerEntriesArgs
     transactions?: boolean | WalletCountOutputTypeCountTransactionsArgs
     snapshots?: boolean | WalletCountOutputTypeCountSnapshotsArgs
+    withdrawalJobs?: boolean | WalletCountOutputTypeCountWithdrawalJobsArgs
   }
 
   // Custom InputTypes
@@ -3493,6 +3670,13 @@ export namespace Prisma {
    */
   export type WalletCountOutputTypeCountSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BalanceSnapshotWhereInput
+  }
+
+  /**
+   * WalletCountOutputType without action
+   */
+  export type WalletCountOutputTypeCountWithdrawalJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WithdrawalJobWhereInput
   }
 
 
@@ -7246,12 +7430,14 @@ export namespace Prisma {
   export type WalletAvgAggregateOutputType = {
     balance: Decimal | null
     reservedBalance: Decimal | null
+    derivationIndex: number | null
     version: number | null
   }
 
   export type WalletSumAggregateOutputType = {
     balance: Decimal | null
     reservedBalance: Decimal | null
+    derivationIndex: number | null
     version: number | null
   }
 
@@ -7262,6 +7448,8 @@ export namespace Prisma {
     balance: Decimal | null
     reservedBalance: Decimal | null
     address: string | null
+    derivationIndex: number | null
+    chain: string | null
     updatedAt: Date | null
     version: number | null
   }
@@ -7273,6 +7461,8 @@ export namespace Prisma {
     balance: Decimal | null
     reservedBalance: Decimal | null
     address: string | null
+    derivationIndex: number | null
+    chain: string | null
     updatedAt: Date | null
     version: number | null
   }
@@ -7284,6 +7474,8 @@ export namespace Prisma {
     balance: number
     reservedBalance: number
     address: number
+    derivationIndex: number
+    chain: number
     updatedAt: number
     version: number
     _all: number
@@ -7293,12 +7485,14 @@ export namespace Prisma {
   export type WalletAvgAggregateInputType = {
     balance?: true
     reservedBalance?: true
+    derivationIndex?: true
     version?: true
   }
 
   export type WalletSumAggregateInputType = {
     balance?: true
     reservedBalance?: true
+    derivationIndex?: true
     version?: true
   }
 
@@ -7309,6 +7503,8 @@ export namespace Prisma {
     balance?: true
     reservedBalance?: true
     address?: true
+    derivationIndex?: true
+    chain?: true
     updatedAt?: true
     version?: true
   }
@@ -7320,6 +7516,8 @@ export namespace Prisma {
     balance?: true
     reservedBalance?: true
     address?: true
+    derivationIndex?: true
+    chain?: true
     updatedAt?: true
     version?: true
   }
@@ -7331,6 +7529,8 @@ export namespace Prisma {
     balance?: true
     reservedBalance?: true
     address?: true
+    derivationIndex?: true
+    chain?: true
     updatedAt?: true
     version?: true
     _all?: true
@@ -7429,6 +7629,8 @@ export namespace Prisma {
     balance: Decimal
     reservedBalance: Decimal
     address: string | null
+    derivationIndex: number | null
+    chain: string | null
     updatedAt: Date
     version: number
     _count: WalletCountAggregateOutputType | null
@@ -7459,12 +7661,15 @@ export namespace Prisma {
     balance?: boolean
     reservedBalance?: boolean
     address?: boolean
+    derivationIndex?: boolean
+    chain?: boolean
     updatedAt?: boolean
     version?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     ledgerEntries?: boolean | Wallet$ledgerEntriesArgs<ExtArgs>
     transactions?: boolean | Wallet$transactionsArgs<ExtArgs>
     snapshots?: boolean | Wallet$snapshotsArgs<ExtArgs>
+    withdrawalJobs?: boolean | Wallet$withdrawalJobsArgs<ExtArgs>
     _count?: boolean | WalletCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["wallet"]>
 
@@ -7475,6 +7680,8 @@ export namespace Prisma {
     balance?: boolean
     reservedBalance?: boolean
     address?: boolean
+    derivationIndex?: boolean
+    chain?: boolean
     updatedAt?: boolean
     version?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7487,6 +7694,8 @@ export namespace Prisma {
     balance?: boolean
     reservedBalance?: boolean
     address?: boolean
+    derivationIndex?: boolean
+    chain?: boolean
     updatedAt?: boolean
     version?: boolean
   }
@@ -7496,6 +7705,7 @@ export namespace Prisma {
     ledgerEntries?: boolean | Wallet$ledgerEntriesArgs<ExtArgs>
     transactions?: boolean | Wallet$transactionsArgs<ExtArgs>
     snapshots?: boolean | Wallet$snapshotsArgs<ExtArgs>
+    withdrawalJobs?: boolean | Wallet$withdrawalJobsArgs<ExtArgs>
     _count?: boolean | WalletCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WalletIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7509,6 +7719,7 @@ export namespace Prisma {
       ledgerEntries: Prisma.$LedgerEntryPayload<ExtArgs>[]
       transactions: Prisma.$WalletTransactionPayload<ExtArgs>[]
       snapshots: Prisma.$BalanceSnapshotPayload<ExtArgs>[]
+      withdrawalJobs: Prisma.$WithdrawalJobPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7517,6 +7728,8 @@ export namespace Prisma {
       balance: Prisma.Decimal
       reservedBalance: Prisma.Decimal
       address: string | null
+      derivationIndex: number | null
+      chain: string | null
       updatedAt: Date
       version: number
     }, ExtArgs["result"]["wallet"]>
@@ -7887,6 +8100,7 @@ export namespace Prisma {
     ledgerEntries<T extends Wallet$ledgerEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Wallet$ledgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LedgerEntryPayload<ExtArgs>, T, "findMany"> | Null>
     transactions<T extends Wallet$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Wallet$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WalletTransactionPayload<ExtArgs>, T, "findMany"> | Null>
     snapshots<T extends Wallet$snapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Wallet$snapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceSnapshotPayload<ExtArgs>, T, "findMany"> | Null>
+    withdrawalJobs<T extends Wallet$withdrawalJobsArgs<ExtArgs> = {}>(args?: Subset<T, Wallet$withdrawalJobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7922,6 +8136,8 @@ export namespace Prisma {
     readonly balance: FieldRef<"Wallet", 'Decimal'>
     readonly reservedBalance: FieldRef<"Wallet", 'Decimal'>
     readonly address: FieldRef<"Wallet", 'String'>
+    readonly derivationIndex: FieldRef<"Wallet", 'Int'>
+    readonly chain: FieldRef<"Wallet", 'String'>
     readonly updatedAt: FieldRef<"Wallet", 'DateTime'>
     readonly version: FieldRef<"Wallet", 'Int'>
   }
@@ -8299,6 +8515,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: BalanceSnapshotScalarFieldEnum | BalanceSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * Wallet.withdrawalJobs
+   */
+  export type Wallet$withdrawalJobsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    where?: WithdrawalJobWhereInput
+    orderBy?: WithdrawalJobOrderByWithRelationInput | WithdrawalJobOrderByWithRelationInput[]
+    cursor?: WithdrawalJobWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WithdrawalJobScalarFieldEnum | WithdrawalJobScalarFieldEnum[]
   }
 
   /**
@@ -29679,6 +29915,1969 @@ export namespace Prisma {
 
 
   /**
+   * Model ChainCursor
+   */
+
+  export type AggregateChainCursor = {
+    _count: ChainCursorCountAggregateOutputType | null
+    _avg: ChainCursorAvgAggregateOutputType | null
+    _sum: ChainCursorSumAggregateOutputType | null
+    _min: ChainCursorMinAggregateOutputType | null
+    _max: ChainCursorMaxAggregateOutputType | null
+  }
+
+  export type ChainCursorAvgAggregateOutputType = {
+    lastBlock: number | null
+  }
+
+  export type ChainCursorSumAggregateOutputType = {
+    lastBlock: number | null
+  }
+
+  export type ChainCursorMinAggregateOutputType = {
+    id: string | null
+    chain: string | null
+    lastBlock: number | null
+    lastBlockHash: string | null
+    updatedAt: Date | null
+  }
+
+  export type ChainCursorMaxAggregateOutputType = {
+    id: string | null
+    chain: string | null
+    lastBlock: number | null
+    lastBlockHash: string | null
+    updatedAt: Date | null
+  }
+
+  export type ChainCursorCountAggregateOutputType = {
+    id: number
+    chain: number
+    lastBlock: number
+    lastBlockHash: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ChainCursorAvgAggregateInputType = {
+    lastBlock?: true
+  }
+
+  export type ChainCursorSumAggregateInputType = {
+    lastBlock?: true
+  }
+
+  export type ChainCursorMinAggregateInputType = {
+    id?: true
+    chain?: true
+    lastBlock?: true
+    lastBlockHash?: true
+    updatedAt?: true
+  }
+
+  export type ChainCursorMaxAggregateInputType = {
+    id?: true
+    chain?: true
+    lastBlock?: true
+    lastBlockHash?: true
+    updatedAt?: true
+  }
+
+  export type ChainCursorCountAggregateInputType = {
+    id?: true
+    chain?: true
+    lastBlock?: true
+    lastBlockHash?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ChainCursorAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChainCursor to aggregate.
+     */
+    where?: ChainCursorWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChainCursors to fetch.
+     */
+    orderBy?: ChainCursorOrderByWithRelationInput | ChainCursorOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChainCursorWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChainCursors from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChainCursors.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChainCursors
+    **/
+    _count?: true | ChainCursorCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ChainCursorAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ChainCursorSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChainCursorMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChainCursorMaxAggregateInputType
+  }
+
+  export type GetChainCursorAggregateType<T extends ChainCursorAggregateArgs> = {
+        [P in keyof T & keyof AggregateChainCursor]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChainCursor[P]>
+      : GetScalarType<T[P], AggregateChainCursor[P]>
+  }
+
+
+
+
+  export type ChainCursorGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChainCursorWhereInput
+    orderBy?: ChainCursorOrderByWithAggregationInput | ChainCursorOrderByWithAggregationInput[]
+    by: ChainCursorScalarFieldEnum[] | ChainCursorScalarFieldEnum
+    having?: ChainCursorScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChainCursorCountAggregateInputType | true
+    _avg?: ChainCursorAvgAggregateInputType
+    _sum?: ChainCursorSumAggregateInputType
+    _min?: ChainCursorMinAggregateInputType
+    _max?: ChainCursorMaxAggregateInputType
+  }
+
+  export type ChainCursorGroupByOutputType = {
+    id: string
+    chain: string
+    lastBlock: number
+    lastBlockHash: string | null
+    updatedAt: Date
+    _count: ChainCursorCountAggregateOutputType | null
+    _avg: ChainCursorAvgAggregateOutputType | null
+    _sum: ChainCursorSumAggregateOutputType | null
+    _min: ChainCursorMinAggregateOutputType | null
+    _max: ChainCursorMaxAggregateOutputType | null
+  }
+
+  type GetChainCursorGroupByPayload<T extends ChainCursorGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChainCursorGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChainCursorGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChainCursorGroupByOutputType[P]>
+            : GetScalarType<T[P], ChainCursorGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChainCursorSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    chain?: boolean
+    lastBlock?: boolean
+    lastBlockHash?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["chainCursor"]>
+
+  export type ChainCursorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    chain?: boolean
+    lastBlock?: boolean
+    lastBlockHash?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["chainCursor"]>
+
+  export type ChainCursorSelectScalar = {
+    id?: boolean
+    chain?: boolean
+    lastBlock?: boolean
+    lastBlockHash?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $ChainCursorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChainCursor"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      chain: string
+      lastBlock: number
+      lastBlockHash: string | null
+      updatedAt: Date
+    }, ExtArgs["result"]["chainCursor"]>
+    composites: {}
+  }
+
+  type ChainCursorGetPayload<S extends boolean | null | undefined | ChainCursorDefaultArgs> = $Result.GetResult<Prisma.$ChainCursorPayload, S>
+
+  type ChainCursorCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ChainCursorFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ChainCursorCountAggregateInputType | true
+    }
+
+  export interface ChainCursorDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChainCursor'], meta: { name: 'ChainCursor' } }
+    /**
+     * Find zero or one ChainCursor that matches the filter.
+     * @param {ChainCursorFindUniqueArgs} args - Arguments to find a ChainCursor
+     * @example
+     * // Get one ChainCursor
+     * const chainCursor = await prisma.chainCursor.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChainCursorFindUniqueArgs>(args: SelectSubset<T, ChainCursorFindUniqueArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ChainCursor that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ChainCursorFindUniqueOrThrowArgs} args - Arguments to find a ChainCursor
+     * @example
+     * // Get one ChainCursor
+     * const chainCursor = await prisma.chainCursor.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChainCursorFindUniqueOrThrowArgs>(args: SelectSubset<T, ChainCursorFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ChainCursor that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorFindFirstArgs} args - Arguments to find a ChainCursor
+     * @example
+     * // Get one ChainCursor
+     * const chainCursor = await prisma.chainCursor.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChainCursorFindFirstArgs>(args?: SelectSubset<T, ChainCursorFindFirstArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ChainCursor that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorFindFirstOrThrowArgs} args - Arguments to find a ChainCursor
+     * @example
+     * // Get one ChainCursor
+     * const chainCursor = await prisma.chainCursor.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChainCursorFindFirstOrThrowArgs>(args?: SelectSubset<T, ChainCursorFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ChainCursors that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChainCursors
+     * const chainCursors = await prisma.chainCursor.findMany()
+     * 
+     * // Get first 10 ChainCursors
+     * const chainCursors = await prisma.chainCursor.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chainCursorWithIdOnly = await prisma.chainCursor.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChainCursorFindManyArgs>(args?: SelectSubset<T, ChainCursorFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ChainCursor.
+     * @param {ChainCursorCreateArgs} args - Arguments to create a ChainCursor.
+     * @example
+     * // Create one ChainCursor
+     * const ChainCursor = await prisma.chainCursor.create({
+     *   data: {
+     *     // ... data to create a ChainCursor
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChainCursorCreateArgs>(args: SelectSubset<T, ChainCursorCreateArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ChainCursors.
+     * @param {ChainCursorCreateManyArgs} args - Arguments to create many ChainCursors.
+     * @example
+     * // Create many ChainCursors
+     * const chainCursor = await prisma.chainCursor.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChainCursorCreateManyArgs>(args?: SelectSubset<T, ChainCursorCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChainCursors and returns the data saved in the database.
+     * @param {ChainCursorCreateManyAndReturnArgs} args - Arguments to create many ChainCursors.
+     * @example
+     * // Create many ChainCursors
+     * const chainCursor = await prisma.chainCursor.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChainCursors and only return the `id`
+     * const chainCursorWithIdOnly = await prisma.chainCursor.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChainCursorCreateManyAndReturnArgs>(args?: SelectSubset<T, ChainCursorCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ChainCursor.
+     * @param {ChainCursorDeleteArgs} args - Arguments to delete one ChainCursor.
+     * @example
+     * // Delete one ChainCursor
+     * const ChainCursor = await prisma.chainCursor.delete({
+     *   where: {
+     *     // ... filter to delete one ChainCursor
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChainCursorDeleteArgs>(args: SelectSubset<T, ChainCursorDeleteArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ChainCursor.
+     * @param {ChainCursorUpdateArgs} args - Arguments to update one ChainCursor.
+     * @example
+     * // Update one ChainCursor
+     * const chainCursor = await prisma.chainCursor.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChainCursorUpdateArgs>(args: SelectSubset<T, ChainCursorUpdateArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ChainCursors.
+     * @param {ChainCursorDeleteManyArgs} args - Arguments to filter ChainCursors to delete.
+     * @example
+     * // Delete a few ChainCursors
+     * const { count } = await prisma.chainCursor.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChainCursorDeleteManyArgs>(args?: SelectSubset<T, ChainCursorDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChainCursors.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChainCursors
+     * const chainCursor = await prisma.chainCursor.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChainCursorUpdateManyArgs>(args: SelectSubset<T, ChainCursorUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ChainCursor.
+     * @param {ChainCursorUpsertArgs} args - Arguments to update or create a ChainCursor.
+     * @example
+     * // Update or create a ChainCursor
+     * const chainCursor = await prisma.chainCursor.upsert({
+     *   create: {
+     *     // ... data to create a ChainCursor
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChainCursor we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChainCursorUpsertArgs>(args: SelectSubset<T, ChainCursorUpsertArgs<ExtArgs>>): Prisma__ChainCursorClient<$Result.GetResult<Prisma.$ChainCursorPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ChainCursors.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorCountArgs} args - Arguments to filter ChainCursors to count.
+     * @example
+     * // Count the number of ChainCursors
+     * const count = await prisma.chainCursor.count({
+     *   where: {
+     *     // ... the filter for the ChainCursors we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChainCursorCountArgs>(
+      args?: Subset<T, ChainCursorCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChainCursorCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChainCursor.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChainCursorAggregateArgs>(args: Subset<T, ChainCursorAggregateArgs>): Prisma.PrismaPromise<GetChainCursorAggregateType<T>>
+
+    /**
+     * Group by ChainCursor.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChainCursorGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChainCursorGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChainCursorGroupByArgs['orderBy'] }
+        : { orderBy?: ChainCursorGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChainCursorGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChainCursorGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChainCursor model
+   */
+  readonly fields: ChainCursorFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChainCursor.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChainCursorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChainCursor model
+   */ 
+  interface ChainCursorFieldRefs {
+    readonly id: FieldRef<"ChainCursor", 'String'>
+    readonly chain: FieldRef<"ChainCursor", 'String'>
+    readonly lastBlock: FieldRef<"ChainCursor", 'Int'>
+    readonly lastBlockHash: FieldRef<"ChainCursor", 'String'>
+    readonly updatedAt: FieldRef<"ChainCursor", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChainCursor findUnique
+   */
+  export type ChainCursorFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter, which ChainCursor to fetch.
+     */
+    where: ChainCursorWhereUniqueInput
+  }
+
+  /**
+   * ChainCursor findUniqueOrThrow
+   */
+  export type ChainCursorFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter, which ChainCursor to fetch.
+     */
+    where: ChainCursorWhereUniqueInput
+  }
+
+  /**
+   * ChainCursor findFirst
+   */
+  export type ChainCursorFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter, which ChainCursor to fetch.
+     */
+    where?: ChainCursorWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChainCursors to fetch.
+     */
+    orderBy?: ChainCursorOrderByWithRelationInput | ChainCursorOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChainCursors.
+     */
+    cursor?: ChainCursorWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChainCursors from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChainCursors.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChainCursors.
+     */
+    distinct?: ChainCursorScalarFieldEnum | ChainCursorScalarFieldEnum[]
+  }
+
+  /**
+   * ChainCursor findFirstOrThrow
+   */
+  export type ChainCursorFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter, which ChainCursor to fetch.
+     */
+    where?: ChainCursorWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChainCursors to fetch.
+     */
+    orderBy?: ChainCursorOrderByWithRelationInput | ChainCursorOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChainCursors.
+     */
+    cursor?: ChainCursorWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChainCursors from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChainCursors.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChainCursors.
+     */
+    distinct?: ChainCursorScalarFieldEnum | ChainCursorScalarFieldEnum[]
+  }
+
+  /**
+   * ChainCursor findMany
+   */
+  export type ChainCursorFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter, which ChainCursors to fetch.
+     */
+    where?: ChainCursorWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChainCursors to fetch.
+     */
+    orderBy?: ChainCursorOrderByWithRelationInput | ChainCursorOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChainCursors.
+     */
+    cursor?: ChainCursorWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChainCursors from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChainCursors.
+     */
+    skip?: number
+    distinct?: ChainCursorScalarFieldEnum | ChainCursorScalarFieldEnum[]
+  }
+
+  /**
+   * ChainCursor create
+   */
+  export type ChainCursorCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * The data needed to create a ChainCursor.
+     */
+    data: XOR<ChainCursorCreateInput, ChainCursorUncheckedCreateInput>
+  }
+
+  /**
+   * ChainCursor createMany
+   */
+  export type ChainCursorCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChainCursors.
+     */
+    data: ChainCursorCreateManyInput | ChainCursorCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChainCursor createManyAndReturn
+   */
+  export type ChainCursorCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ChainCursors.
+     */
+    data: ChainCursorCreateManyInput | ChainCursorCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChainCursor update
+   */
+  export type ChainCursorUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * The data needed to update a ChainCursor.
+     */
+    data: XOR<ChainCursorUpdateInput, ChainCursorUncheckedUpdateInput>
+    /**
+     * Choose, which ChainCursor to update.
+     */
+    where: ChainCursorWhereUniqueInput
+  }
+
+  /**
+   * ChainCursor updateMany
+   */
+  export type ChainCursorUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChainCursors.
+     */
+    data: XOR<ChainCursorUpdateManyMutationInput, ChainCursorUncheckedUpdateManyInput>
+    /**
+     * Filter which ChainCursors to update
+     */
+    where?: ChainCursorWhereInput
+  }
+
+  /**
+   * ChainCursor upsert
+   */
+  export type ChainCursorUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * The filter to search for the ChainCursor to update in case it exists.
+     */
+    where: ChainCursorWhereUniqueInput
+    /**
+     * In case the ChainCursor found by the `where` argument doesn't exist, create a new ChainCursor with this data.
+     */
+    create: XOR<ChainCursorCreateInput, ChainCursorUncheckedCreateInput>
+    /**
+     * In case the ChainCursor was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChainCursorUpdateInput, ChainCursorUncheckedUpdateInput>
+  }
+
+  /**
+   * ChainCursor delete
+   */
+  export type ChainCursorDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+    /**
+     * Filter which ChainCursor to delete.
+     */
+    where: ChainCursorWhereUniqueInput
+  }
+
+  /**
+   * ChainCursor deleteMany
+   */
+  export type ChainCursorDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChainCursors to delete
+     */
+    where?: ChainCursorWhereInput
+  }
+
+  /**
+   * ChainCursor without action
+   */
+  export type ChainCursorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChainCursor
+     */
+    select?: ChainCursorSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WithdrawalJob
+   */
+
+  export type AggregateWithdrawalJob = {
+    _count: WithdrawalJobCountAggregateOutputType | null
+    _avg: WithdrawalJobAvgAggregateOutputType | null
+    _sum: WithdrawalJobSumAggregateOutputType | null
+    _min: WithdrawalJobMinAggregateOutputType | null
+    _max: WithdrawalJobMaxAggregateOutputType | null
+  }
+
+  export type WithdrawalJobAvgAggregateOutputType = {
+    amount: Decimal | null
+    attempts: number | null
+  }
+
+  export type WithdrawalJobSumAggregateOutputType = {
+    amount: Decimal | null
+    attempts: number | null
+  }
+
+  export type WithdrawalJobMinAggregateOutputType = {
+    id: string | null
+    txHash: string | null
+    walletId: string | null
+    currency: $Enums.Currency | null
+    amount: Decimal | null
+    destination: string | null
+    status: string | null
+    attempts: number | null
+    nextPollAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WithdrawalJobMaxAggregateOutputType = {
+    id: string | null
+    txHash: string | null
+    walletId: string | null
+    currency: $Enums.Currency | null
+    amount: Decimal | null
+    destination: string | null
+    status: string | null
+    attempts: number | null
+    nextPollAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WithdrawalJobCountAggregateOutputType = {
+    id: number
+    txHash: number
+    walletId: number
+    currency: number
+    amount: number
+    destination: number
+    status: number
+    attempts: number
+    nextPollAt: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type WithdrawalJobAvgAggregateInputType = {
+    amount?: true
+    attempts?: true
+  }
+
+  export type WithdrawalJobSumAggregateInputType = {
+    amount?: true
+    attempts?: true
+  }
+
+  export type WithdrawalJobMinAggregateInputType = {
+    id?: true
+    txHash?: true
+    walletId?: true
+    currency?: true
+    amount?: true
+    destination?: true
+    status?: true
+    attempts?: true
+    nextPollAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WithdrawalJobMaxAggregateInputType = {
+    id?: true
+    txHash?: true
+    walletId?: true
+    currency?: true
+    amount?: true
+    destination?: true
+    status?: true
+    attempts?: true
+    nextPollAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WithdrawalJobCountAggregateInputType = {
+    id?: true
+    txHash?: true
+    walletId?: true
+    currency?: true
+    amount?: true
+    destination?: true
+    status?: true
+    attempts?: true
+    nextPollAt?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type WithdrawalJobAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WithdrawalJob to aggregate.
+     */
+    where?: WithdrawalJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WithdrawalJobs to fetch.
+     */
+    orderBy?: WithdrawalJobOrderByWithRelationInput | WithdrawalJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WithdrawalJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WithdrawalJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WithdrawalJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WithdrawalJobs
+    **/
+    _count?: true | WithdrawalJobCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WithdrawalJobAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WithdrawalJobSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WithdrawalJobMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WithdrawalJobMaxAggregateInputType
+  }
+
+  export type GetWithdrawalJobAggregateType<T extends WithdrawalJobAggregateArgs> = {
+        [P in keyof T & keyof AggregateWithdrawalJob]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWithdrawalJob[P]>
+      : GetScalarType<T[P], AggregateWithdrawalJob[P]>
+  }
+
+
+
+
+  export type WithdrawalJobGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WithdrawalJobWhereInput
+    orderBy?: WithdrawalJobOrderByWithAggregationInput | WithdrawalJobOrderByWithAggregationInput[]
+    by: WithdrawalJobScalarFieldEnum[] | WithdrawalJobScalarFieldEnum
+    having?: WithdrawalJobScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WithdrawalJobCountAggregateInputType | true
+    _avg?: WithdrawalJobAvgAggregateInputType
+    _sum?: WithdrawalJobSumAggregateInputType
+    _min?: WithdrawalJobMinAggregateInputType
+    _max?: WithdrawalJobMaxAggregateInputType
+  }
+
+  export type WithdrawalJobGroupByOutputType = {
+    id: string
+    txHash: string
+    walletId: string
+    currency: $Enums.Currency
+    amount: Decimal
+    destination: string
+    status: string
+    attempts: number
+    nextPollAt: Date
+    metadata: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: WithdrawalJobCountAggregateOutputType | null
+    _avg: WithdrawalJobAvgAggregateOutputType | null
+    _sum: WithdrawalJobSumAggregateOutputType | null
+    _min: WithdrawalJobMinAggregateOutputType | null
+    _max: WithdrawalJobMaxAggregateOutputType | null
+  }
+
+  type GetWithdrawalJobGroupByPayload<T extends WithdrawalJobGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WithdrawalJobGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WithdrawalJobGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WithdrawalJobGroupByOutputType[P]>
+            : GetScalarType<T[P], WithdrawalJobGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WithdrawalJobSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    txHash?: boolean
+    walletId?: boolean
+    currency?: boolean
+    amount?: boolean
+    destination?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextPollAt?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    wallet?: boolean | WalletDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["withdrawalJob"]>
+
+  export type WithdrawalJobSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    txHash?: boolean
+    walletId?: boolean
+    currency?: boolean
+    amount?: boolean
+    destination?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextPollAt?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    wallet?: boolean | WalletDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["withdrawalJob"]>
+
+  export type WithdrawalJobSelectScalar = {
+    id?: boolean
+    txHash?: boolean
+    walletId?: boolean
+    currency?: boolean
+    amount?: boolean
+    destination?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextPollAt?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type WithdrawalJobInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    wallet?: boolean | WalletDefaultArgs<ExtArgs>
+  }
+  export type WithdrawalJobIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    wallet?: boolean | WalletDefaultArgs<ExtArgs>
+  }
+
+  export type $WithdrawalJobPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WithdrawalJob"
+    objects: {
+      wallet: Prisma.$WalletPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      txHash: string
+      walletId: string
+      currency: $Enums.Currency
+      amount: Prisma.Decimal
+      destination: string
+      status: string
+      attempts: number
+      nextPollAt: Date
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["withdrawalJob"]>
+    composites: {}
+  }
+
+  type WithdrawalJobGetPayload<S extends boolean | null | undefined | WithdrawalJobDefaultArgs> = $Result.GetResult<Prisma.$WithdrawalJobPayload, S>
+
+  type WithdrawalJobCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<WithdrawalJobFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: WithdrawalJobCountAggregateInputType | true
+    }
+
+  export interface WithdrawalJobDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WithdrawalJob'], meta: { name: 'WithdrawalJob' } }
+    /**
+     * Find zero or one WithdrawalJob that matches the filter.
+     * @param {WithdrawalJobFindUniqueArgs} args - Arguments to find a WithdrawalJob
+     * @example
+     * // Get one WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WithdrawalJobFindUniqueArgs>(args: SelectSubset<T, WithdrawalJobFindUniqueArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one WithdrawalJob that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {WithdrawalJobFindUniqueOrThrowArgs} args - Arguments to find a WithdrawalJob
+     * @example
+     * // Get one WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WithdrawalJobFindUniqueOrThrowArgs>(args: SelectSubset<T, WithdrawalJobFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first WithdrawalJob that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobFindFirstArgs} args - Arguments to find a WithdrawalJob
+     * @example
+     * // Get one WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WithdrawalJobFindFirstArgs>(args?: SelectSubset<T, WithdrawalJobFindFirstArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first WithdrawalJob that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobFindFirstOrThrowArgs} args - Arguments to find a WithdrawalJob
+     * @example
+     * // Get one WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WithdrawalJobFindFirstOrThrowArgs>(args?: SelectSubset<T, WithdrawalJobFindFirstOrThrowArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more WithdrawalJobs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WithdrawalJobs
+     * const withdrawalJobs = await prisma.withdrawalJob.findMany()
+     * 
+     * // Get first 10 WithdrawalJobs
+     * const withdrawalJobs = await prisma.withdrawalJob.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const withdrawalJobWithIdOnly = await prisma.withdrawalJob.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WithdrawalJobFindManyArgs>(args?: SelectSubset<T, WithdrawalJobFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a WithdrawalJob.
+     * @param {WithdrawalJobCreateArgs} args - Arguments to create a WithdrawalJob.
+     * @example
+     * // Create one WithdrawalJob
+     * const WithdrawalJob = await prisma.withdrawalJob.create({
+     *   data: {
+     *     // ... data to create a WithdrawalJob
+     *   }
+     * })
+     * 
+     */
+    create<T extends WithdrawalJobCreateArgs>(args: SelectSubset<T, WithdrawalJobCreateArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many WithdrawalJobs.
+     * @param {WithdrawalJobCreateManyArgs} args - Arguments to create many WithdrawalJobs.
+     * @example
+     * // Create many WithdrawalJobs
+     * const withdrawalJob = await prisma.withdrawalJob.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WithdrawalJobCreateManyArgs>(args?: SelectSubset<T, WithdrawalJobCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WithdrawalJobs and returns the data saved in the database.
+     * @param {WithdrawalJobCreateManyAndReturnArgs} args - Arguments to create many WithdrawalJobs.
+     * @example
+     * // Create many WithdrawalJobs
+     * const withdrawalJob = await prisma.withdrawalJob.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WithdrawalJobs and only return the `id`
+     * const withdrawalJobWithIdOnly = await prisma.withdrawalJob.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WithdrawalJobCreateManyAndReturnArgs>(args?: SelectSubset<T, WithdrawalJobCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a WithdrawalJob.
+     * @param {WithdrawalJobDeleteArgs} args - Arguments to delete one WithdrawalJob.
+     * @example
+     * // Delete one WithdrawalJob
+     * const WithdrawalJob = await prisma.withdrawalJob.delete({
+     *   where: {
+     *     // ... filter to delete one WithdrawalJob
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WithdrawalJobDeleteArgs>(args: SelectSubset<T, WithdrawalJobDeleteArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one WithdrawalJob.
+     * @param {WithdrawalJobUpdateArgs} args - Arguments to update one WithdrawalJob.
+     * @example
+     * // Update one WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WithdrawalJobUpdateArgs>(args: SelectSubset<T, WithdrawalJobUpdateArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more WithdrawalJobs.
+     * @param {WithdrawalJobDeleteManyArgs} args - Arguments to filter WithdrawalJobs to delete.
+     * @example
+     * // Delete a few WithdrawalJobs
+     * const { count } = await prisma.withdrawalJob.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WithdrawalJobDeleteManyArgs>(args?: SelectSubset<T, WithdrawalJobDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WithdrawalJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WithdrawalJobs
+     * const withdrawalJob = await prisma.withdrawalJob.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WithdrawalJobUpdateManyArgs>(args: SelectSubset<T, WithdrawalJobUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one WithdrawalJob.
+     * @param {WithdrawalJobUpsertArgs} args - Arguments to update or create a WithdrawalJob.
+     * @example
+     * // Update or create a WithdrawalJob
+     * const withdrawalJob = await prisma.withdrawalJob.upsert({
+     *   create: {
+     *     // ... data to create a WithdrawalJob
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WithdrawalJob we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WithdrawalJobUpsertArgs>(args: SelectSubset<T, WithdrawalJobUpsertArgs<ExtArgs>>): Prisma__WithdrawalJobClient<$Result.GetResult<Prisma.$WithdrawalJobPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of WithdrawalJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobCountArgs} args - Arguments to filter WithdrawalJobs to count.
+     * @example
+     * // Count the number of WithdrawalJobs
+     * const count = await prisma.withdrawalJob.count({
+     *   where: {
+     *     // ... the filter for the WithdrawalJobs we want to count
+     *   }
+     * })
+    **/
+    count<T extends WithdrawalJobCountArgs>(
+      args?: Subset<T, WithdrawalJobCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WithdrawalJobCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WithdrawalJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WithdrawalJobAggregateArgs>(args: Subset<T, WithdrawalJobAggregateArgs>): Prisma.PrismaPromise<GetWithdrawalJobAggregateType<T>>
+
+    /**
+     * Group by WithdrawalJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalJobGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WithdrawalJobGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WithdrawalJobGroupByArgs['orderBy'] }
+        : { orderBy?: WithdrawalJobGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WithdrawalJobGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWithdrawalJobGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WithdrawalJob model
+   */
+  readonly fields: WithdrawalJobFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WithdrawalJob.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WithdrawalJobClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    wallet<T extends WalletDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WalletDefaultArgs<ExtArgs>>): Prisma__WalletClient<$Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WithdrawalJob model
+   */ 
+  interface WithdrawalJobFieldRefs {
+    readonly id: FieldRef<"WithdrawalJob", 'String'>
+    readonly txHash: FieldRef<"WithdrawalJob", 'String'>
+    readonly walletId: FieldRef<"WithdrawalJob", 'String'>
+    readonly currency: FieldRef<"WithdrawalJob", 'Currency'>
+    readonly amount: FieldRef<"WithdrawalJob", 'Decimal'>
+    readonly destination: FieldRef<"WithdrawalJob", 'String'>
+    readonly status: FieldRef<"WithdrawalJob", 'String'>
+    readonly attempts: FieldRef<"WithdrawalJob", 'Int'>
+    readonly nextPollAt: FieldRef<"WithdrawalJob", 'DateTime'>
+    readonly metadata: FieldRef<"WithdrawalJob", 'Json'>
+    readonly createdAt: FieldRef<"WithdrawalJob", 'DateTime'>
+    readonly updatedAt: FieldRef<"WithdrawalJob", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WithdrawalJob findUnique
+   */
+  export type WithdrawalJobFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter, which WithdrawalJob to fetch.
+     */
+    where: WithdrawalJobWhereUniqueInput
+  }
+
+  /**
+   * WithdrawalJob findUniqueOrThrow
+   */
+  export type WithdrawalJobFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter, which WithdrawalJob to fetch.
+     */
+    where: WithdrawalJobWhereUniqueInput
+  }
+
+  /**
+   * WithdrawalJob findFirst
+   */
+  export type WithdrawalJobFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter, which WithdrawalJob to fetch.
+     */
+    where?: WithdrawalJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WithdrawalJobs to fetch.
+     */
+    orderBy?: WithdrawalJobOrderByWithRelationInput | WithdrawalJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WithdrawalJobs.
+     */
+    cursor?: WithdrawalJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WithdrawalJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WithdrawalJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WithdrawalJobs.
+     */
+    distinct?: WithdrawalJobScalarFieldEnum | WithdrawalJobScalarFieldEnum[]
+  }
+
+  /**
+   * WithdrawalJob findFirstOrThrow
+   */
+  export type WithdrawalJobFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter, which WithdrawalJob to fetch.
+     */
+    where?: WithdrawalJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WithdrawalJobs to fetch.
+     */
+    orderBy?: WithdrawalJobOrderByWithRelationInput | WithdrawalJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WithdrawalJobs.
+     */
+    cursor?: WithdrawalJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WithdrawalJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WithdrawalJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WithdrawalJobs.
+     */
+    distinct?: WithdrawalJobScalarFieldEnum | WithdrawalJobScalarFieldEnum[]
+  }
+
+  /**
+   * WithdrawalJob findMany
+   */
+  export type WithdrawalJobFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter, which WithdrawalJobs to fetch.
+     */
+    where?: WithdrawalJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WithdrawalJobs to fetch.
+     */
+    orderBy?: WithdrawalJobOrderByWithRelationInput | WithdrawalJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WithdrawalJobs.
+     */
+    cursor?: WithdrawalJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WithdrawalJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WithdrawalJobs.
+     */
+    skip?: number
+    distinct?: WithdrawalJobScalarFieldEnum | WithdrawalJobScalarFieldEnum[]
+  }
+
+  /**
+   * WithdrawalJob create
+   */
+  export type WithdrawalJobCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WithdrawalJob.
+     */
+    data: XOR<WithdrawalJobCreateInput, WithdrawalJobUncheckedCreateInput>
+  }
+
+  /**
+   * WithdrawalJob createMany
+   */
+  export type WithdrawalJobCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WithdrawalJobs.
+     */
+    data: WithdrawalJobCreateManyInput | WithdrawalJobCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WithdrawalJob createManyAndReturn
+   */
+  export type WithdrawalJobCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many WithdrawalJobs.
+     */
+    data: WithdrawalJobCreateManyInput | WithdrawalJobCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WithdrawalJob update
+   */
+  export type WithdrawalJobUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WithdrawalJob.
+     */
+    data: XOR<WithdrawalJobUpdateInput, WithdrawalJobUncheckedUpdateInput>
+    /**
+     * Choose, which WithdrawalJob to update.
+     */
+    where: WithdrawalJobWhereUniqueInput
+  }
+
+  /**
+   * WithdrawalJob updateMany
+   */
+  export type WithdrawalJobUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WithdrawalJobs.
+     */
+    data: XOR<WithdrawalJobUpdateManyMutationInput, WithdrawalJobUncheckedUpdateManyInput>
+    /**
+     * Filter which WithdrawalJobs to update
+     */
+    where?: WithdrawalJobWhereInput
+  }
+
+  /**
+   * WithdrawalJob upsert
+   */
+  export type WithdrawalJobUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WithdrawalJob to update in case it exists.
+     */
+    where: WithdrawalJobWhereUniqueInput
+    /**
+     * In case the WithdrawalJob found by the `where` argument doesn't exist, create a new WithdrawalJob with this data.
+     */
+    create: XOR<WithdrawalJobCreateInput, WithdrawalJobUncheckedCreateInput>
+    /**
+     * In case the WithdrawalJob was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WithdrawalJobUpdateInput, WithdrawalJobUncheckedUpdateInput>
+  }
+
+  /**
+   * WithdrawalJob delete
+   */
+  export type WithdrawalJobDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+    /**
+     * Filter which WithdrawalJob to delete.
+     */
+    where: WithdrawalJobWhereUniqueInput
+  }
+
+  /**
+   * WithdrawalJob deleteMany
+   */
+  export type WithdrawalJobDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WithdrawalJobs to delete
+     */
+    where?: WithdrawalJobWhereInput
+  }
+
+  /**
+   * WithdrawalJob without action
+   */
+  export type WithdrawalJobDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WithdrawalJob
+     */
+    select?: WithdrawalJobSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalJobInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model DailyReport
    */
 
@@ -31858,6 +34057,8 @@ export namespace Prisma {
     balance: 'balance',
     reservedBalance: 'reservedBalance',
     address: 'address',
+    derivationIndex: 'derivationIndex',
+    chain: 'chain',
     updatedAt: 'updatedAt',
     version: 'version'
   };
@@ -32202,6 +34403,35 @@ export namespace Prisma {
   };
 
   export type ReconciliationScalarFieldEnum = (typeof ReconciliationScalarFieldEnum)[keyof typeof ReconciliationScalarFieldEnum]
+
+
+  export const ChainCursorScalarFieldEnum: {
+    id: 'id',
+    chain: 'chain',
+    lastBlock: 'lastBlock',
+    lastBlockHash: 'lastBlockHash',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ChainCursorScalarFieldEnum = (typeof ChainCursorScalarFieldEnum)[keyof typeof ChainCursorScalarFieldEnum]
+
+
+  export const WithdrawalJobScalarFieldEnum: {
+    id: 'id',
+    txHash: 'txHash',
+    walletId: 'walletId',
+    currency: 'currency',
+    amount: 'amount',
+    destination: 'destination',
+    status: 'status',
+    attempts: 'attempts',
+    nextPollAt: 'nextPollAt',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type WithdrawalJobScalarFieldEnum = (typeof WithdrawalJobScalarFieldEnum)[keyof typeof WithdrawalJobScalarFieldEnum]
 
 
   export const DailyReportScalarFieldEnum: {
@@ -32889,12 +35119,15 @@ export namespace Prisma {
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     address?: StringNullableFilter<"Wallet"> | string | null
+    derivationIndex?: IntNullableFilter<"Wallet"> | number | null
+    chain?: StringNullableFilter<"Wallet"> | string | null
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
     ledgerEntries?: LedgerEntryListRelationFilter
     transactions?: WalletTransactionListRelationFilter
     snapshots?: BalanceSnapshotListRelationFilter
+    withdrawalJobs?: WithdrawalJobListRelationFilter
   }
 
   export type WalletOrderByWithRelationInput = {
@@ -32904,12 +35137,15 @@ export namespace Prisma {
     balance?: SortOrder
     reservedBalance?: SortOrder
     address?: SortOrderInput | SortOrder
+    derivationIndex?: SortOrderInput | SortOrder
+    chain?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
     user?: UserOrderByWithRelationInput
     ledgerEntries?: LedgerEntryOrderByRelationAggregateInput
     transactions?: WalletTransactionOrderByRelationAggregateInput
     snapshots?: BalanceSnapshotOrderByRelationAggregateInput
+    withdrawalJobs?: WithdrawalJobOrderByRelationAggregateInput
   }
 
   export type WalletWhereUniqueInput = Prisma.AtLeast<{
@@ -32923,12 +35159,15 @@ export namespace Prisma {
     currency?: EnumCurrencyFilter<"Wallet"> | $Enums.Currency
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    derivationIndex?: IntNullableFilter<"Wallet"> | number | null
+    chain?: StringNullableFilter<"Wallet"> | string | null
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
     ledgerEntries?: LedgerEntryListRelationFilter
     transactions?: WalletTransactionListRelationFilter
     snapshots?: BalanceSnapshotListRelationFilter
+    withdrawalJobs?: WithdrawalJobListRelationFilter
   }, "id" | "address" | "userId_currency">
 
   export type WalletOrderByWithAggregationInput = {
@@ -32938,6 +35177,8 @@ export namespace Prisma {
     balance?: SortOrder
     reservedBalance?: SortOrder
     address?: SortOrderInput | SortOrder
+    derivationIndex?: SortOrderInput | SortOrder
+    chain?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
     _count?: WalletCountOrderByAggregateInput
@@ -32957,6 +35198,8 @@ export namespace Prisma {
     balance?: DecimalWithAggregatesFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalWithAggregatesFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     address?: StringNullableWithAggregatesFilter<"Wallet"> | string | null
+    derivationIndex?: IntNullableWithAggregatesFilter<"Wallet"> | number | null
+    chain?: StringNullableWithAggregatesFilter<"Wallet"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
     version?: IntWithAggregatesFilter<"Wallet"> | number
   }
@@ -34720,6 +36963,152 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Reconciliation"> | Date | string
   }
 
+  export type ChainCursorWhereInput = {
+    AND?: ChainCursorWhereInput | ChainCursorWhereInput[]
+    OR?: ChainCursorWhereInput[]
+    NOT?: ChainCursorWhereInput | ChainCursorWhereInput[]
+    id?: UuidFilter<"ChainCursor"> | string
+    chain?: StringFilter<"ChainCursor"> | string
+    lastBlock?: IntFilter<"ChainCursor"> | number
+    lastBlockHash?: StringNullableFilter<"ChainCursor"> | string | null
+    updatedAt?: DateTimeFilter<"ChainCursor"> | Date | string
+  }
+
+  export type ChainCursorOrderByWithRelationInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    lastBlock?: SortOrder
+    lastBlockHash?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChainCursorWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    chain?: string
+    AND?: ChainCursorWhereInput | ChainCursorWhereInput[]
+    OR?: ChainCursorWhereInput[]
+    NOT?: ChainCursorWhereInput | ChainCursorWhereInput[]
+    lastBlock?: IntFilter<"ChainCursor"> | number
+    lastBlockHash?: StringNullableFilter<"ChainCursor"> | string | null
+    updatedAt?: DateTimeFilter<"ChainCursor"> | Date | string
+  }, "id" | "chain">
+
+  export type ChainCursorOrderByWithAggregationInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    lastBlock?: SortOrder
+    lastBlockHash?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    _count?: ChainCursorCountOrderByAggregateInput
+    _avg?: ChainCursorAvgOrderByAggregateInput
+    _max?: ChainCursorMaxOrderByAggregateInput
+    _min?: ChainCursorMinOrderByAggregateInput
+    _sum?: ChainCursorSumOrderByAggregateInput
+  }
+
+  export type ChainCursorScalarWhereWithAggregatesInput = {
+    AND?: ChainCursorScalarWhereWithAggregatesInput | ChainCursorScalarWhereWithAggregatesInput[]
+    OR?: ChainCursorScalarWhereWithAggregatesInput[]
+    NOT?: ChainCursorScalarWhereWithAggregatesInput | ChainCursorScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"ChainCursor"> | string
+    chain?: StringWithAggregatesFilter<"ChainCursor"> | string
+    lastBlock?: IntWithAggregatesFilter<"ChainCursor"> | number
+    lastBlockHash?: StringNullableWithAggregatesFilter<"ChainCursor"> | string | null
+    updatedAt?: DateTimeWithAggregatesFilter<"ChainCursor"> | Date | string
+  }
+
+  export type WithdrawalJobWhereInput = {
+    AND?: WithdrawalJobWhereInput | WithdrawalJobWhereInput[]
+    OR?: WithdrawalJobWhereInput[]
+    NOT?: WithdrawalJobWhereInput | WithdrawalJobWhereInput[]
+    id?: UuidFilter<"WithdrawalJob"> | string
+    txHash?: StringFilter<"WithdrawalJob"> | string
+    walletId?: UuidFilter<"WithdrawalJob"> | string
+    currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
+    destination?: StringFilter<"WithdrawalJob"> | string
+    status?: StringFilter<"WithdrawalJob"> | string
+    attempts?: IntFilter<"WithdrawalJob"> | number
+    nextPollAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    metadata?: JsonNullableFilter<"WithdrawalJob">
+    createdAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    updatedAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    wallet?: XOR<WalletRelationFilter, WalletWhereInput>
+  }
+
+  export type WithdrawalJobOrderByWithRelationInput = {
+    id?: SortOrder
+    txHash?: SortOrder
+    walletId?: SortOrder
+    currency?: SortOrder
+    amount?: SortOrder
+    destination?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextPollAt?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    wallet?: WalletOrderByWithRelationInput
+  }
+
+  export type WithdrawalJobWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    txHash?: string
+    AND?: WithdrawalJobWhereInput | WithdrawalJobWhereInput[]
+    OR?: WithdrawalJobWhereInput[]
+    NOT?: WithdrawalJobWhereInput | WithdrawalJobWhereInput[]
+    walletId?: UuidFilter<"WithdrawalJob"> | string
+    currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
+    destination?: StringFilter<"WithdrawalJob"> | string
+    status?: StringFilter<"WithdrawalJob"> | string
+    attempts?: IntFilter<"WithdrawalJob"> | number
+    nextPollAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    metadata?: JsonNullableFilter<"WithdrawalJob">
+    createdAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    updatedAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    wallet?: XOR<WalletRelationFilter, WalletWhereInput>
+  }, "id" | "txHash">
+
+  export type WithdrawalJobOrderByWithAggregationInput = {
+    id?: SortOrder
+    txHash?: SortOrder
+    walletId?: SortOrder
+    currency?: SortOrder
+    amount?: SortOrder
+    destination?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextPollAt?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: WithdrawalJobCountOrderByAggregateInput
+    _avg?: WithdrawalJobAvgOrderByAggregateInput
+    _max?: WithdrawalJobMaxOrderByAggregateInput
+    _min?: WithdrawalJobMinOrderByAggregateInput
+    _sum?: WithdrawalJobSumOrderByAggregateInput
+  }
+
+  export type WithdrawalJobScalarWhereWithAggregatesInput = {
+    AND?: WithdrawalJobScalarWhereWithAggregatesInput | WithdrawalJobScalarWhereWithAggregatesInput[]
+    OR?: WithdrawalJobScalarWhereWithAggregatesInput[]
+    NOT?: WithdrawalJobScalarWhereWithAggregatesInput | WithdrawalJobScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"WithdrawalJob"> | string
+    txHash?: StringWithAggregatesFilter<"WithdrawalJob"> | string
+    walletId?: UuidWithAggregatesFilter<"WithdrawalJob"> | string
+    currency?: EnumCurrencyWithAggregatesFilter<"WithdrawalJob"> | $Enums.Currency
+    amount?: DecimalWithAggregatesFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
+    destination?: StringWithAggregatesFilter<"WithdrawalJob"> | string
+    status?: StringWithAggregatesFilter<"WithdrawalJob"> | string
+    attempts?: IntWithAggregatesFilter<"WithdrawalJob"> | number
+    nextPollAt?: DateTimeWithAggregatesFilter<"WithdrawalJob"> | Date | string
+    metadata?: JsonNullableWithAggregatesFilter<"WithdrawalJob">
+    createdAt?: DateTimeWithAggregatesFilter<"WithdrawalJob"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"WithdrawalJob"> | Date | string
+  }
+
   export type DailyReportWhereInput = {
     AND?: DailyReportWhereInput | DailyReportWhereInput[]
     OR?: DailyReportWhereInput[]
@@ -35324,12 +37713,15 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateInput = {
@@ -35339,11 +37731,14 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotUncheckedCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUpdateInput = {
@@ -35352,12 +37747,15 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateInput = {
@@ -35367,11 +37765,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUncheckedUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletCreateManyInput = {
@@ -35381,6 +37782,8 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
   }
@@ -35391,6 +37794,8 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -35402,6 +37807,8 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -37339,6 +39746,166 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ChainCursorCreateInput = {
+    id?: string
+    chain: string
+    lastBlock?: number
+    lastBlockHash?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type ChainCursorUncheckedCreateInput = {
+    id?: string
+    chain: string
+    lastBlock?: number
+    lastBlockHash?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type ChainCursorUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    lastBlock?: IntFieldUpdateOperationsInput | number
+    lastBlockHash?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChainCursorUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    lastBlock?: IntFieldUpdateOperationsInput | number
+    lastBlockHash?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChainCursorCreateManyInput = {
+    id?: string
+    chain: string
+    lastBlock?: number
+    lastBlockHash?: string | null
+    updatedAt?: Date | string
+  }
+
+  export type ChainCursorUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    lastBlock?: IntFieldUpdateOperationsInput | number
+    lastBlockHash?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChainCursorUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    lastBlock?: IntFieldUpdateOperationsInput | number
+    lastBlockHash?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobCreateInput = {
+    id?: string
+    txHash: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    wallet: WalletCreateNestedOneWithoutWithdrawalJobsInput
+  }
+
+  export type WithdrawalJobUncheckedCreateInput = {
+    id?: string
+    txHash: string
+    walletId: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WithdrawalJobUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    wallet?: WalletUpdateOneRequiredWithoutWithdrawalJobsNestedInput
+  }
+
+  export type WithdrawalJobUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    walletId?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobCreateManyInput = {
+    id?: string
+    txHash: string
+    walletId: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WithdrawalJobUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    walletId?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type DailyReportCreateInput = {
     id?: string
     date: Date | string
@@ -38118,6 +40685,17 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type LedgerEntryListRelationFilter = {
     every?: LedgerEntryWhereInput
     some?: LedgerEntryWhereInput
@@ -38136,6 +40714,12 @@ export namespace Prisma {
     none?: BalanceSnapshotWhereInput
   }
 
+  export type WithdrawalJobListRelationFilter = {
+    every?: WithdrawalJobWhereInput
+    some?: WithdrawalJobWhereInput
+    none?: WithdrawalJobWhereInput
+  }
+
   export type LedgerEntryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -38145,6 +40729,10 @@ export namespace Prisma {
   }
 
   export type BalanceSnapshotOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WithdrawalJobOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -38160,6 +40748,8 @@ export namespace Prisma {
     balance?: SortOrder
     reservedBalance?: SortOrder
     address?: SortOrder
+    derivationIndex?: SortOrder
+    chain?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -38167,6 +40757,7 @@ export namespace Prisma {
   export type WalletAvgOrderByAggregateInput = {
     balance?: SortOrder
     reservedBalance?: SortOrder
+    derivationIndex?: SortOrder
     version?: SortOrder
   }
 
@@ -38177,6 +40768,8 @@ export namespace Prisma {
     balance?: SortOrder
     reservedBalance?: SortOrder
     address?: SortOrder
+    derivationIndex?: SortOrder
+    chain?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -38188,6 +40781,8 @@ export namespace Prisma {
     balance?: SortOrder
     reservedBalance?: SortOrder
     address?: SortOrder
+    derivationIndex?: SortOrder
+    chain?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -38195,6 +40790,7 @@ export namespace Prisma {
   export type WalletSumOrderByAggregateInput = {
     balance?: SortOrder
     reservedBalance?: SortOrder
+    derivationIndex?: SortOrder
     version?: SortOrder
   }
 
@@ -38222,6 +40818,22 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type UuidNullableFilter<$PrismaModel = never> = {
@@ -39438,6 +42050,91 @@ export namespace Prisma {
     difference?: SortOrder
   }
 
+  export type ChainCursorCountOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    lastBlock?: SortOrder
+    lastBlockHash?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChainCursorAvgOrderByAggregateInput = {
+    lastBlock?: SortOrder
+  }
+
+  export type ChainCursorMaxOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    lastBlock?: SortOrder
+    lastBlockHash?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChainCursorMinOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    lastBlock?: SortOrder
+    lastBlockHash?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChainCursorSumOrderByAggregateInput = {
+    lastBlock?: SortOrder
+  }
+
+  export type WithdrawalJobCountOrderByAggregateInput = {
+    id?: SortOrder
+    txHash?: SortOrder
+    walletId?: SortOrder
+    currency?: SortOrder
+    amount?: SortOrder
+    destination?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextPollAt?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WithdrawalJobAvgOrderByAggregateInput = {
+    amount?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type WithdrawalJobMaxOrderByAggregateInput = {
+    id?: SortOrder
+    txHash?: SortOrder
+    walletId?: SortOrder
+    currency?: SortOrder
+    amount?: SortOrder
+    destination?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextPollAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WithdrawalJobMinOrderByAggregateInput = {
+    id?: SortOrder
+    txHash?: SortOrder
+    walletId?: SortOrder
+    currency?: SortOrder
+    amount?: SortOrder
+    destination?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextPollAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WithdrawalJobSumOrderByAggregateInput = {
+    amount?: SortOrder
+    attempts?: SortOrder
+  }
+
   export type DailyReportCountOrderByAggregateInput = {
     id?: SortOrder
     date?: SortOrder
@@ -40499,6 +43196,13 @@ export namespace Prisma {
     connect?: BalanceSnapshotWhereUniqueInput | BalanceSnapshotWhereUniqueInput[]
   }
 
+  export type WithdrawalJobCreateNestedManyWithoutWalletInput = {
+    create?: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput> | WithdrawalJobCreateWithoutWalletInput[] | WithdrawalJobUncheckedCreateWithoutWalletInput[]
+    connectOrCreate?: WithdrawalJobCreateOrConnectWithoutWalletInput | WithdrawalJobCreateOrConnectWithoutWalletInput[]
+    createMany?: WithdrawalJobCreateManyWalletInputEnvelope
+    connect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+  }
+
   export type LedgerEntryUncheckedCreateNestedManyWithoutWalletInput = {
     create?: XOR<LedgerEntryCreateWithoutWalletInput, LedgerEntryUncheckedCreateWithoutWalletInput> | LedgerEntryCreateWithoutWalletInput[] | LedgerEntryUncheckedCreateWithoutWalletInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutWalletInput | LedgerEntryCreateOrConnectWithoutWalletInput[]
@@ -40520,6 +43224,13 @@ export namespace Prisma {
     connect?: BalanceSnapshotWhereUniqueInput | BalanceSnapshotWhereUniqueInput[]
   }
 
+  export type WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput = {
+    create?: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput> | WithdrawalJobCreateWithoutWalletInput[] | WithdrawalJobUncheckedCreateWithoutWalletInput[]
+    connectOrCreate?: WithdrawalJobCreateOrConnectWithoutWalletInput | WithdrawalJobCreateOrConnectWithoutWalletInput[]
+    createMany?: WithdrawalJobCreateManyWalletInputEnvelope
+    connect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+  }
+
   export type EnumCurrencyFieldUpdateOperationsInput = {
     set?: $Enums.Currency
   }
@@ -40530,6 +43241,14 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserUpdateOneRequiredWithoutWalletsNestedInput = {
@@ -40582,6 +43301,20 @@ export namespace Prisma {
     deleteMany?: BalanceSnapshotScalarWhereInput | BalanceSnapshotScalarWhereInput[]
   }
 
+  export type WithdrawalJobUpdateManyWithoutWalletNestedInput = {
+    create?: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput> | WithdrawalJobCreateWithoutWalletInput[] | WithdrawalJobUncheckedCreateWithoutWalletInput[]
+    connectOrCreate?: WithdrawalJobCreateOrConnectWithoutWalletInput | WithdrawalJobCreateOrConnectWithoutWalletInput[]
+    upsert?: WithdrawalJobUpsertWithWhereUniqueWithoutWalletInput | WithdrawalJobUpsertWithWhereUniqueWithoutWalletInput[]
+    createMany?: WithdrawalJobCreateManyWalletInputEnvelope
+    set?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    disconnect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    delete?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    connect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    update?: WithdrawalJobUpdateWithWhereUniqueWithoutWalletInput | WithdrawalJobUpdateWithWhereUniqueWithoutWalletInput[]
+    updateMany?: WithdrawalJobUpdateManyWithWhereWithoutWalletInput | WithdrawalJobUpdateManyWithWhereWithoutWalletInput[]
+    deleteMany?: WithdrawalJobScalarWhereInput | WithdrawalJobScalarWhereInput[]
+  }
+
   export type LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput = {
     create?: XOR<LedgerEntryCreateWithoutWalletInput, LedgerEntryUncheckedCreateWithoutWalletInput> | LedgerEntryCreateWithoutWalletInput[] | LedgerEntryUncheckedCreateWithoutWalletInput[]
     connectOrCreate?: LedgerEntryCreateOrConnectWithoutWalletInput | LedgerEntryCreateOrConnectWithoutWalletInput[]
@@ -40622,6 +43355,20 @@ export namespace Prisma {
     update?: BalanceSnapshotUpdateWithWhereUniqueWithoutWalletInput | BalanceSnapshotUpdateWithWhereUniqueWithoutWalletInput[]
     updateMany?: BalanceSnapshotUpdateManyWithWhereWithoutWalletInput | BalanceSnapshotUpdateManyWithWhereWithoutWalletInput[]
     deleteMany?: BalanceSnapshotScalarWhereInput | BalanceSnapshotScalarWhereInput[]
+  }
+
+  export type WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput = {
+    create?: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput> | WithdrawalJobCreateWithoutWalletInput[] | WithdrawalJobUncheckedCreateWithoutWalletInput[]
+    connectOrCreate?: WithdrawalJobCreateOrConnectWithoutWalletInput | WithdrawalJobCreateOrConnectWithoutWalletInput[]
+    upsert?: WithdrawalJobUpsertWithWhereUniqueWithoutWalletInput | WithdrawalJobUpsertWithWhereUniqueWithoutWalletInput[]
+    createMany?: WithdrawalJobCreateManyWalletInputEnvelope
+    set?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    disconnect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    delete?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    connect?: WithdrawalJobWhereUniqueInput | WithdrawalJobWhereUniqueInput[]
+    update?: WithdrawalJobUpdateWithWhereUniqueWithoutWalletInput | WithdrawalJobUpdateWithWhereUniqueWithoutWalletInput[]
+    updateMany?: WithdrawalJobUpdateManyWithWhereWithoutWalletInput | WithdrawalJobUpdateManyWithWhereWithoutWalletInput[]
+    deleteMany?: WithdrawalJobScalarWhereInput | WithdrawalJobScalarWhereInput[]
   }
 
   export type WalletCreateNestedOneWithoutLedgerEntriesInput = {
@@ -41340,6 +44087,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardEvidenceInput, UserUpdateWithoutGiftCardEvidenceInput>, UserUncheckedUpdateWithoutGiftCardEvidenceInput>
   }
 
+  export type WalletCreateNestedOneWithoutWithdrawalJobsInput = {
+    create?: XOR<WalletCreateWithoutWithdrawalJobsInput, WalletUncheckedCreateWithoutWithdrawalJobsInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutWithdrawalJobsInput
+    connect?: WalletWhereUniqueInput
+  }
+
+  export type WalletUpdateOneRequiredWithoutWithdrawalJobsNestedInput = {
+    create?: XOR<WalletCreateWithoutWithdrawalJobsInput, WalletUncheckedCreateWithoutWithdrawalJobsInput>
+    connectOrCreate?: WalletCreateOrConnectWithoutWithdrawalJobsInput
+    upsert?: WalletUpsertWithoutWithdrawalJobsInput
+    connect?: WalletWhereUniqueInput
+    update?: XOR<XOR<WalletUpdateToOneWithWhereWithoutWithdrawalJobsInput, WalletUpdateWithoutWithdrawalJobsInput>, WalletUncheckedUpdateWithoutWithdrawalJobsInput>
+  }
+
   export type NestedUuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -41617,6 +44378,33 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -41869,11 +44657,14 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateWithoutUserInput = {
@@ -41882,11 +44673,14 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotUncheckedCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletCreateOrConnectWithoutUserInput = {
@@ -42643,6 +45437,8 @@ export namespace Prisma {
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     address?: StringNullableFilter<"Wallet"> | string | null
+    derivationIndex?: IntNullableFilter<"Wallet"> | number | null
+    chain?: StringNullableFilter<"Wallet"> | string | null
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
   }
@@ -43725,6 +46521,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WithdrawalJobCreateWithoutWalletInput = {
+    id?: string
+    txHash: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WithdrawalJobUncheckedCreateWithoutWalletInput = {
+    id?: string
+    txHash: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WithdrawalJobCreateOrConnectWithoutWalletInput = {
+    where: WithdrawalJobWhereUniqueInput
+    create: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput>
+  }
+
+  export type WithdrawalJobCreateManyWalletInputEnvelope = {
+    data: WithdrawalJobCreateManyWalletInput | WithdrawalJobCreateManyWalletInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutWalletsInput = {
     update: XOR<UserUpdateWithoutWalletsInput, UserUncheckedUpdateWithoutWalletsInput>
     create: XOR<UserCreateWithoutWalletsInput, UserUncheckedCreateWithoutWalletsInput>
@@ -43917,17 +46751,54 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"BalanceSnapshot"> | Date | string
   }
 
+  export type WithdrawalJobUpsertWithWhereUniqueWithoutWalletInput = {
+    where: WithdrawalJobWhereUniqueInput
+    update: XOR<WithdrawalJobUpdateWithoutWalletInput, WithdrawalJobUncheckedUpdateWithoutWalletInput>
+    create: XOR<WithdrawalJobCreateWithoutWalletInput, WithdrawalJobUncheckedCreateWithoutWalletInput>
+  }
+
+  export type WithdrawalJobUpdateWithWhereUniqueWithoutWalletInput = {
+    where: WithdrawalJobWhereUniqueInput
+    data: XOR<WithdrawalJobUpdateWithoutWalletInput, WithdrawalJobUncheckedUpdateWithoutWalletInput>
+  }
+
+  export type WithdrawalJobUpdateManyWithWhereWithoutWalletInput = {
+    where: WithdrawalJobScalarWhereInput
+    data: XOR<WithdrawalJobUpdateManyMutationInput, WithdrawalJobUncheckedUpdateManyWithoutWalletInput>
+  }
+
+  export type WithdrawalJobScalarWhereInput = {
+    AND?: WithdrawalJobScalarWhereInput | WithdrawalJobScalarWhereInput[]
+    OR?: WithdrawalJobScalarWhereInput[]
+    NOT?: WithdrawalJobScalarWhereInput | WithdrawalJobScalarWhereInput[]
+    id?: UuidFilter<"WithdrawalJob"> | string
+    txHash?: StringFilter<"WithdrawalJob"> | string
+    walletId?: UuidFilter<"WithdrawalJob"> | string
+    currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
+    destination?: StringFilter<"WithdrawalJob"> | string
+    status?: StringFilter<"WithdrawalJob"> | string
+    attempts?: IntFilter<"WithdrawalJob"> | number
+    nextPollAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    metadata?: JsonNullableFilter<"WithdrawalJob">
+    createdAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+    updatedAt?: DateTimeFilter<"WithdrawalJob"> | Date | string
+  }
+
   export type WalletCreateWithoutLedgerEntriesInput = {
     id?: string
     currency: $Enums.Currency
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
     transactions?: WalletTransactionCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateWithoutLedgerEntriesInput = {
@@ -43937,10 +46808,13 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotUncheckedCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletCreateOrConnectWithoutLedgerEntriesInput = {
@@ -44035,11 +46909,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
     transactions?: WalletTransactionUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateWithoutLedgerEntriesInput = {
@@ -44049,10 +46926,13 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUncheckedUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletTransactionUpsertWithoutLedgerEntriesInput = {
@@ -44143,11 +47023,14 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateWithoutTransactionsInput = {
@@ -44157,10 +47040,13 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
     snapshots?: BalanceSnapshotUncheckedCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletCreateOrConnectWithoutTransactionsInput = {
@@ -44219,11 +47105,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateWithoutTransactionsInput = {
@@ -44233,10 +47122,13 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUncheckedUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput
   }
 
   export type LedgerEntryUpsertWithWhereUniqueWithoutTransactionInput = {
@@ -44261,11 +47153,14 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateWithoutSnapshotsInput = {
@@ -44275,10 +47170,13 @@ export namespace Prisma {
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
     transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
+    withdrawalJobs?: WithdrawalJobUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletCreateOrConnectWithoutSnapshotsInput = {
@@ -44303,11 +47201,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
     ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateWithoutSnapshotsInput = {
@@ -44317,10 +47218,13 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput
   }
 
   export type UserCreateWithoutAdsInput = {
@@ -48391,12 +51295,94 @@ export namespace Prisma {
     securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type WalletCreateWithoutWithdrawalJobsInput = {
+    id?: string
+    currency: $Enums.Currency
+    balance?: Decimal | DecimalJsLike | number | string
+    reservedBalance?: Decimal | DecimalJsLike | number | string
+    address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
+    updatedAt?: Date | string
+    version?: number
+    user: UserCreateNestedOneWithoutWalletsInput
+    ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
+    transactions?: WalletTransactionCreateNestedManyWithoutWalletInput
+    snapshots?: BalanceSnapshotCreateNestedManyWithoutWalletInput
+  }
+
+  export type WalletUncheckedCreateWithoutWithdrawalJobsInput = {
+    id?: string
+    userId: string
+    currency: $Enums.Currency
+    balance?: Decimal | DecimalJsLike | number | string
+    reservedBalance?: Decimal | DecimalJsLike | number | string
+    address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
+    updatedAt?: Date | string
+    version?: number
+    ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
+    transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
+    snapshots?: BalanceSnapshotUncheckedCreateNestedManyWithoutWalletInput
+  }
+
+  export type WalletCreateOrConnectWithoutWithdrawalJobsInput = {
+    where: WalletWhereUniqueInput
+    create: XOR<WalletCreateWithoutWithdrawalJobsInput, WalletUncheckedCreateWithoutWithdrawalJobsInput>
+  }
+
+  export type WalletUpsertWithoutWithdrawalJobsInput = {
+    update: XOR<WalletUpdateWithoutWithdrawalJobsInput, WalletUncheckedUpdateWithoutWithdrawalJobsInput>
+    create: XOR<WalletCreateWithoutWithdrawalJobsInput, WalletUncheckedCreateWithoutWithdrawalJobsInput>
+    where?: WalletWhereInput
+  }
+
+  export type WalletUpdateToOneWithWhereWithoutWithdrawalJobsInput = {
+    where?: WalletWhereInput
+    data: XOR<WalletUpdateWithoutWithdrawalJobsInput, WalletUncheckedUpdateWithoutWithdrawalJobsInput>
+  }
+
+  export type WalletUpdateWithoutWithdrawalJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    user?: UserUpdateOneRequiredWithoutWalletsNestedInput
+    ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
+    transactions?: WalletTransactionUpdateManyWithoutWalletNestedInput
+    snapshots?: BalanceSnapshotUpdateManyWithoutWalletNestedInput
+  }
+
+  export type WalletUncheckedUpdateWithoutWithdrawalJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
+    transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
+    snapshots?: BalanceSnapshotUncheckedUpdateManyWithoutWalletNestedInput
+  }
+
   export type WalletCreateManyUserInput = {
     id?: string
     currency: $Enums.Currency
     balance?: Decimal | DecimalJsLike | number | string
     reservedBalance?: Decimal | DecimalJsLike | number | string
     address?: string | null
+    derivationIndex?: number | null
+    chain?: string | null
     updatedAt?: Date | string
     version?: number
   }
@@ -48641,11 +51627,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateWithoutUserInput = {
@@ -48654,11 +51643,14 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
     transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
     snapshots?: BalanceSnapshotUncheckedUpdateManyWithoutWalletNestedInput
+    withdrawalJobs?: WithdrawalJobUncheckedUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateManyWithoutUserInput = {
@@ -48667,6 +51659,8 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -49426,6 +52420,20 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type WithdrawalJobCreateManyWalletInput = {
+    id?: string
+    txHash: string
+    currency: $Enums.Currency
+    amount: Decimal | DecimalJsLike | number | string
+    destination: string
+    status?: string
+    attempts?: number
+    nextPollAt?: Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LedgerEntryUpdateWithoutWalletInput = {
     id?: StringFieldUpdateOperationsInput | string
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -49519,6 +52527,48 @@ export namespace Prisma {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     ledgerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobUpdateWithoutWalletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobUncheckedUpdateWithoutWalletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalJobUncheckedUpdateManyWithoutWalletInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    txHash?: StringFieldUpdateOperationsInput | string
+    currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    destination?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextPollAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LedgerEntryCreateManyTransactionInput = {
@@ -50000,6 +53050,14 @@ export namespace Prisma {
      * @deprecated Use ReconciliationDefaultArgs instead
      */
     export type ReconciliationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ReconciliationDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ChainCursorDefaultArgs instead
+     */
+    export type ChainCursorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ChainCursorDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use WithdrawalJobDefaultArgs instead
+     */
+    export type WithdrawalJobArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WithdrawalJobDefaultArgs<ExtArgs>
     /**
      * @deprecated Use DailyReportDefaultArgs instead
      */

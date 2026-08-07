@@ -9,7 +9,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { TatumModule } from './modules/tatum/tatum.module';
+import { CryptoModule } from './modules/crypto/crypto.module';
 import { PaystackModule } from './modules/paystack/paystack.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -27,14 +27,14 @@ import { AppService } from './app.service';
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    CoreModule, 
-    AuthModule, 
-    UsersModule, 
-    AdminModule, 
+    CoreModule,
+    AuthModule,
+    UsersModule,
+    AdminModule,
     WalletModule,
     MarketplaceModule,
     OrdersModule,
-    TatumModule,
+    CryptoModule,
     PaystackModule,
     TransactionsModule,
     NotificationsModule,
@@ -50,4 +50,4 @@ import { AppService } from './app.service';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
