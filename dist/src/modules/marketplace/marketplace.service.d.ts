@@ -10,8 +10,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -25,8 +25,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -40,8 +40,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -55,8 +55,8 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         price: Decimal;
         quantity: Decimal;
@@ -92,8 +92,8 @@ export declare class MarketplaceService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             price: Decimal;
             quantity: Decimal;
