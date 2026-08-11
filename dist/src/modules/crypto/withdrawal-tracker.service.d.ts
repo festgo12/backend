@@ -23,8 +23,8 @@ export declare class WithdrawalTrackerService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: import("@src/generated/client").$Enums.Currency;
         metadata: Prisma.JsonValue | null;
+        currency: import("@src/generated/client").$Enums.Currency;
         destination: string;
         amount: Prisma.Decimal;
         walletId: string;

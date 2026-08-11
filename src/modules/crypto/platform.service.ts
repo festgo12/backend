@@ -4,6 +4,7 @@ import { Currency, Role } from '@src/generated/client';
 import { HdWalletService } from './hd-wallet.service';
 import { DepositAddressRegistry } from './deposit-address-registry.service';
 import { CryptoConfigService } from './crypto-config.service';
+import { MASTER_WALLET_INDEX } from './hd-wallet.service';
 import * as crypto from 'crypto';
 
 export const PLATFORM_EMAIL = 'platform@p2n.app';
@@ -13,6 +14,12 @@ export const PLATFORM_EMAIL = 'platform@p2n.app';
  * buyerFee leg of every settled trade on-chain and are the ledger home for
  * platform fee revenue. Addresses are derived locally from the HD master seed
  * (unified EVM address across ETH/USDT/USDC) with zero external API calls.
+ *
+ * Every platform fee wallet is pinned to MASTER_WALLET_INDEX (index 0) so the
+ * address is a pure function of the HD mnemonic in .env and stays IDENTICAL
+ * across database resets (unlike user wallets, which are keyed off the user
+ * UUID). User deposit addresses start at USER_INDEX_BASE, so index 0 is never
+ * claimed by a user.
  */
 @Injectable()
 export class PlatformService implements OnApplicationBootstrap {
@@ -78,13 +85,24 @@ export class PlatformService implements OnApplicationBootstrap {
         });
       }
 
-      // Assign a locally-derived address if missing so on-chain fees have a home.
+      // Assign a locally-derived address if missing so on-chain fees have a
+      // home. Pinned to MASTER_WALLET_INDEX (index 0) so the address is a
+      // deterministic function of the HD mnemonic and survives DB resets.
+      // EVM currencies (ETH/USDT/USDC) all share the single master EVM address.
       if (!wallet.address) {
         try {
-          const info = await this.hdWallet.getOrAssignDepositInfo(
-            platformUser.id,
-            currency,
-          );
+          const info =
+            currency === Currency.BTC
+              ? {
+                  chain: 'BTC' as const,
+                  address: this.hdWallet.getMasterAddress('BTC'),
+                  derivationIndex: MASTER_WALLET_INDEX,
+                }
+              : {
+                  chain: 'EVM' as const,
+                  address: this.hdWallet.getMasterAddress('EVM'),
+                  derivationIndex: MASTER_WALLET_INDEX,
+                };
           wallet = await this.prisma.wallet.update({
             where: { id: wallet.id },
             data: {

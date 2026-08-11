@@ -42,12 +42,36 @@ interface MempoolFees {
 
 interface ErrorLike {
   message?: string;
-  response?: { data?: { message?: string } };
+  code?: string;
+  response?: { status?: number; data?: unknown };
 }
 
 export interface EvmReceipt {
   blockNumber: number;
   status: number | null;
+}
+
+export interface EvmAssetTransfer {
+  category: string;
+  from: string;
+  to: string;
+  value: string;
+  amount: number;
+  asset: string;
+  hash: string;
+  blockNumber: number;
+}
+
+export interface AssetTransfersParams {
+  fromBlock: number;
+  toBlock: number;
+  toAddresses: string[];
+  categories?: ('external' | 'erc20')[];
+}
+
+/** Minimal structural view of an RPC transport with a raw `send` method. */
+export interface TransferProvider {
+  send(method: string, params: unknown[]): Promise<unknown>;
 }
 
 export interface BtcUtxo {
@@ -97,9 +121,11 @@ export class ChainClientService {
   }
 
   private get btcApiBase(): string {
+    const explicit = this.config.mempoolApiUrl;
+    if (explicit) return explicit;
     return this.config.isTestnet
       ? 'https://mempool.space/testnet/api'
-      : this.config.mempoolApiUrl;
+      : 'https://mempool.space/api';
   }
 
   private get btcNetwork(): bitcoin.Network {
@@ -137,21 +163,127 @@ export class ChainClientService {
     return Number(formatUnits(raw, this.decimalsFor(currency)));
   }
 
+  /**
+   * Transfer scan for a block range via alchemy_getAssetTransfers (one call,
+   * ~30 CU, versus ~60 CU per eth_getLogs or getBlock). Uses the given
+   * provider (the live WebSocket one when connected) so no extra HTTP
+   * connection is opened. Native ETH (external) and ERC-20 transfers to the
+   * registered addresses are returned with block numbers and human units.
+   */
+  async getAssetTransfers(
+    provider: TransferProvider,
+    params: AssetTransfersParams,
+  ): Promise<EvmAssetTransfer[]> {
+    const { fromBlock, toBlock, categories = ['external', 'erc20'] } = params;
+    const toAddresses = params.toAddresses.map((a) => a.toLowerCase());
+    try {
+      return await this.fetchAssetTransfers(
+        provider,
+        fromBlock,
+        toBlock,
+        toAddresses,
+        categories,
+      );
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `alchemy_getAssetTransfers array query failed (${err.message}); falling back to per-address queries`,
+      );
+      const all: EvmAssetTransfer[] = [];
+      for (const address of toAddresses) {
+        all.push(
+          ...(await this.fetchAssetTransfers(
+            provider,
+            fromBlock,
+            toBlock,
+            [address],
+            categories,
+          )),
+        );
+      }
+      return all;
+    }
+  }
+
+  private async fetchAssetTransfers(
+    provider: TransferProvider,
+    fromBlock: number,
+    toBlock: number,
+    toAddresses: string[],
+    categories: ('external' | 'erc20')[],
+  ): Promise<EvmAssetTransfer[]> {
+    const transfers: EvmAssetTransfer[] = [];
+    let pageKey: string | undefined;
+    do {
+      const request: Record<string, unknown> = {
+        fromBlock: `0x${fromBlock.toString(16)}`,
+        toBlock: `0x${toBlock.toString(16)}`,
+        toAddress: toAddresses,
+        category: categories,
+        order: 'asc',
+        maxCount: '0x3e8',
+      };
+      if (pageKey) request.pageKey = pageKey;
+      const result = (await provider.send('alchemy_getAssetTransfers', [
+        request,
+      ])) as {
+        transfers?: Array<{
+          category?: string;
+          from?: string;
+          to?: string;
+          value?: string;
+          asset?: string;
+          hash?: string;
+          blockNum?: string;
+          rawContract?: { decimal?: string };
+        }>;
+        pageKey?: string;
+      };
+      const items = Array.isArray(result?.transfers) ? result.transfers : [];
+      for (const t of items) {
+        const category = t.category ?? '';
+        const blockNumber = parseInt(t.blockNum ?? '', 16);
+        if (!Number.isFinite(blockNumber)) continue;
+        const raw = BigInt(t.value ?? '0');
+        const amount =
+          category === 'external'
+            ? Number(raw) / 1e18
+            : Number(raw) /
+              10 **
+                (t.rawContract?.decimal ? Number(t.rawContract.decimal) : 6);
+        transfers.push({
+          category,
+          from: (t.from ?? '').toLowerCase(),
+          to: (t.to ?? '').toLowerCase(),
+          value: t.value ?? '0',
+          amount,
+          asset: t.asset ?? '',
+          hash: t.hash ?? '',
+          blockNumber,
+        });
+      }
+      pageKey = result?.pageKey;
+    } while (pageKey && transfers.length < 10_000);
+    return transfers;
+  }
+
   // --- BTC reads ---
 
   async getBtcTipHeight(): Promise<number> {
-    const res = await lastValueFrom(
-      this.httpService.get(`${this.btcApiBase}/blocks/tip/height`),
-    );
-    return Number(res.data);
+    const data = await this.btcGet<unknown>('/blocks/tip/height');
+    const tip = Number(data);
+    if (!Number.isFinite(tip)) {
+      throw new Error(
+        `mempool.space returned a non-numeric tip height: "${String(data)}"`,
+      );
+    }
+    return tip;
   }
 
   /** Confirmed utxos for a bech32/legacy address. */
   async getBtcUtxos(address: string): Promise<BtcUtxo[]> {
-    const res = await lastValueFrom(
-      this.httpService.get(`${this.btcApiBase}/address/${address}/utxo`),
-    );
-    const utxos = (Array.isArray(res.data) ? res.data : []) as MempoolUtxo[];
+    const data = await this.btcGet<unknown>(`/address/${address}/utxo`);
+    const utxos = (Array.isArray(data) ? data : []) as MempoolUtxo[];
     return utxos
       .filter((u) => u.status?.confirmed)
       .map((u) => ({
@@ -162,10 +294,39 @@ export class ChainClientService {
       }));
   }
 
+  /**
+   * mempool.space GET with a timeout and a descriptive error (HTTP status,
+   * response body and axios code) so failures are never logged as empty
+   * messages by callers.
+   */
+  private async btcGet<T>(path: string): Promise<T> {
+    try {
+      const res = await lastValueFrom(
+        this.httpService.get<T>(`${this.btcApiBase}${path}`, {
+          timeout: 10_000,
+        }),
+      );
+      return res.data;
+    } catch (error) {
+      const err = error as ErrorLike;
+      const status = err.response?.status;
+      const body = err.response?.data;
+      const detail =
+        typeof body === 'string'
+          ? body
+          : JSON.stringify(body ?? err.message ?? err);
+      throw new Error(
+        `mempool.space ${path} failed (status=${status ?? 'n/a'} code=${err.code ?? 'n/a'}): ${detail}`,
+      );
+    }
+  }
+
   async getBtcTx(txid: string): Promise<BtcTxStatus> {
     try {
       const res = await lastValueFrom(
-        this.httpService.get(`${this.btcApiBase}/tx/${txid}`),
+        this.httpService.get(`${this.btcApiBase}/tx/${txid}`, {
+          timeout: 10_000,
+        }),
       );
       const data = (res.data || {}) as MempoolTx;
       return {
@@ -174,10 +335,18 @@ export class ChainClientService {
       };
     } catch (error) {
       const err = error as ErrorLike;
+      const body = err.response?.data;
+      const message =
+        typeof body === 'object' &&
+        body !== null &&
+        'message' in body &&
+        typeof (body as { message?: unknown }).message === 'string'
+          ? ((body as { message?: string }).message as string)
+          : err.message;
       return {
         confirmed: false,
         blockHeight: null,
-        error: err.response?.data?.message || err.message,
+        error: message,
       };
     }
   }
@@ -185,7 +354,9 @@ export class ChainClientService {
   async getBtcRecommendedFee(): Promise<number> {
     try {
       const res = await lastValueFrom(
-        this.httpService.get(`${this.btcApiBase}/v1/fees/recommended`),
+        this.httpService.get(`${this.btcApiBase}/v1/fees/recommended`, {
+          timeout: 10_000,
+        }),
       );
       const fees = res.data as MempoolFees;
       const satPerVb = Number(fees.halfHourFee);
@@ -308,6 +479,7 @@ export class ChainClientService {
     const res = await lastValueFrom(
       this.httpService.post(`${this.btcApiBase}/tx`, rawHex, {
         headers: { 'content-type': 'text/plain' },
+        timeout: 10_000,
       }),
     );
     const txid = String(res.data).trim();

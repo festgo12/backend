@@ -12,6 +12,7 @@ export declare class BtcDepositPollerService {
     private readonly config;
     private readonly logger;
     private isRunning;
+    private nextPollAllowedAt;
     constructor(prisma: PrismaService, walletService: WalletService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService);
     scan(): Promise<void>;
     creditDeposit(params: {

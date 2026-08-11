@@ -50,6 +50,7 @@ const client_1 = require("../../generated/client/index.js");
 const hd_wallet_service_1 = require("./hd-wallet.service");
 const deposit_address_registry_service_1 = require("./deposit-address-registry.service");
 const crypto_config_service_1 = require("./crypto-config.service");
+const hd_wallet_service_2 = require("./hd-wallet.service");
 const crypto = __importStar(require("crypto"));
 exports.PLATFORM_EMAIL = 'platform@p2n.app';
 let PlatformService = PlatformService_1 = class PlatformService {
@@ -103,7 +104,17 @@ let PlatformService = PlatformService_1 = class PlatformService {
             }
             if (!wallet.address) {
                 try {
-                    const info = await this.hdWallet.getOrAssignDepositInfo(platformUser.id, currency);
+                    const info = currency === client_1.Currency.BTC
+                        ? {
+                            chain: 'BTC',
+                            address: this.hdWallet.getMasterAddress('BTC'),
+                            derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+                        }
+                        : {
+                            chain: 'EVM',
+                            address: this.hdWallet.getMasterAddress('EVM'),
+                            derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+                        };
                     wallet = await this.prisma.wallet.update({
                         where: { id: wallet.id },
                         data: {

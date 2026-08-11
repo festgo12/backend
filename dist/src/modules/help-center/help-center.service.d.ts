@@ -7,15 +7,15 @@ export declare class HelpCenterService {
             title: string;
             id: string;
             content: string;
-            sortOrder: number;
             category: string;
+            sortOrder: number;
         }[];
         contact: {
             title: string;
             id: string;
             content: string;
-            sortOrder: number;
             category: string;
+            sortOrder: number;
         }[];
     }>;
     getAllContent(): Promise<{
@@ -24,8 +24,8 @@ export declare class HelpCenterService {
         createdAt: Date;
         updatedAt: Date;
         content: string;
-        sortOrder: number;
         category: string;
+        sortOrder: number;
         active: boolean;
     }[]>;
     createItem(data: {
@@ -40,8 +40,8 @@ export declare class HelpCenterService {
         createdAt: Date;
         updatedAt: Date;
         content: string;
-        sortOrder: number;
         category: string;
+        sortOrder: number;
         active: boolean;
     }>;
     updateItem(id: string, data: {
@@ -56,8 +56,8 @@ export declare class HelpCenterService {
         createdAt: Date;
         updatedAt: Date;
         content: string;
-        sortOrder: number;
         category: string;
+        sortOrder: number;
         active: boolean;
     }>;
     deleteItem(id: string): Promise<{
@@ -66,8 +66,8 @@ export declare class HelpCenterService {
         createdAt: Date;
         updatedAt: Date;
         content: string;
-        sortOrder: number;
         category: string;
+        sortOrder: number;
         active: boolean;
     }>;
 }

@@ -145,7 +145,7 @@ model Wallet {
   currency        Currency
   balance         Decimal             @default(0) @db.Decimal(20, 8)
   reservedBalance Decimal             @default(0) @db.Decimal(20, 8)
-  address         String?             @unique
+  address         String?
   derivationIndex Int?
   chain           String?
   ledgerEntries   LedgerEntry[]
@@ -158,6 +158,7 @@ model Wallet {
   @@unique([userId, currency])
   @@index([userId])
   @@index([chain])
+  @@index([address])
 }
 
 model LedgerEntry {

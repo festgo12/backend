@@ -103,9 +103,24 @@ export class PaystackService {
       );
       return response.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-      this.logger.error(`Paystack verifyAccountNumber error: ${errorMessage}`, error.stack);
-      throw new BadRequestException(`Account verification failed: ${errorMessage}`);
+      const err = error as {
+        message?: string;
+        stack?: string;
+        response?: { status?: number; data?: { message?: string } };
+      };
+      const errorMessage = err.response?.data?.message || err.message;
+      this.logger.error(
+        `Paystack verifyAccountNumber error: ${errorMessage}`,
+        err.stack,
+      );
+      const isInvalidAccount =
+        err.response?.status === 422 ||
+        /could not resolve account name/i.test(errorMessage || '');
+      throw new BadRequestException(
+        isInvalidAccount
+          ? 'Invalid account number or bank. Please check and try again.'
+          : `Account verification failed: ${errorMessage}`,
+      );
     }
   }
 

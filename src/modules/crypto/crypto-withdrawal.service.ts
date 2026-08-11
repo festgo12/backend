@@ -222,13 +222,21 @@ export class CryptoWithdrawalService {
 
     let fromIndex = feeWallet.derivationIndex;
     if (fromIndex === null) {
-      // Legacy fee wallet (pre-HD address, no derivation index): reassign a
-      // local HD address so the sweep can be signed from a derived key.
-      const platformUserId = await this.platformService.getPlatformUserId();
-      const info = await this.hdWallet.getOrAssignDepositInfo(
-        platformUserId,
-        currency,
-      );
+      // Legacy fee wallet (pre-HD address, no derivation index): reassign the
+      // platform's pinned master address (index 0) so the sweep can be signed
+      // from a derived key. Deterministic across DB resets.
+      const info =
+        currency === Currency.BTC
+          ? {
+              address: this.hdWallet.getMasterAddress('BTC'),
+              derivationIndex: 0,
+              chain: 'BTC' as const,
+            }
+          : {
+              address: this.hdWallet.getMasterAddress('EVM'),
+              derivationIndex: 0,
+              chain: 'EVM' as const,
+            };
       await this.prisma.wallet.update({
         where: { id: feeWallet.id },
         data: {

@@ -18,6 +18,7 @@ describe('PlatformService', () => {
 
   const mockHdWallet = {
     getOrAssignDepositInfo: jest.fn(),
+    getMasterAddress: jest.fn(),
   };
 
   const mockDepositRegistry = {
@@ -49,7 +50,7 @@ describe('PlatformService', () => {
   });
 
   describe('ensurePlatformWallets', () => {
-    it('creates the platform user and a wallet per crypto currency, assigning derived addresses', async () => {
+    it('creates the platform user and a wallet per crypto currency, assigning pinned master addresses', async () => {
       mockPrismaService.user.upsert.mockResolvedValue({
         id: 'platform-user-uuid',
       });
@@ -67,13 +68,7 @@ describe('PlatformService', () => {
           address: data.address,
         }),
       );
-      mockHdWallet.getOrAssignDepositInfo.mockImplementation(
-        (_userId: string, currency: Currency) => ({
-          chain: currency === Currency.BTC ? 'BTC' : 'EVM',
-          address: '0xDerivedFeeAddress',
-          derivationIndex: 1000,
-        }),
-      );
+      mockHdWallet.getMasterAddress.mockReturnValue('0xDerivedFeeAddress');
 
       const result = await service.ensurePlatformWallets();
 
@@ -86,6 +81,12 @@ describe('PlatformService', () => {
           isSystem: true,
         }),
       });
+
+      expect(mockHdWallet.getOrAssignDepositInfo).not.toHaveBeenCalled();
+      // BTC once plus EVM once per EVM currency (ETH/USDT/USDC).
+      expect(mockHdWallet.getMasterAddress).toHaveBeenCalledTimes(4);
+      expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('BTC');
+      expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('EVM');
 
       expect(mockPrismaService.wallet.create).toHaveBeenCalledTimes(4);
       expect(mockPrismaService.wallet.update).toHaveBeenCalledTimes(4);

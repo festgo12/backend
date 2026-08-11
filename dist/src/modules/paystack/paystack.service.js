@@ -122,9 +122,14 @@ let PaystackService = PaystackService_1 = class PaystackService {
             return response.data;
         }
         catch (error) {
-            const errorMessage = error.response?.data?.message || error.message;
-            this.logger.error(`Paystack verifyAccountNumber error: ${errorMessage}`, error.stack);
-            throw new common_1.BadRequestException(`Account verification failed: ${errorMessage}`);
+            const err = error;
+            const errorMessage = err.response?.data?.message || err.message;
+            this.logger.error(`Paystack verifyAccountNumber error: ${errorMessage}`, err.stack);
+            const isInvalidAccount = err.response?.status === 422 ||
+                /could not resolve account name/i.test(errorMessage || '');
+            throw new common_1.BadRequestException(isInvalidAccount
+                ? 'Invalid account number or bank. Please check and try again.'
+                : `Account verification failed: ${errorMessage}`);
         }
     }
     async createTransferRecipient(name, accountNumber, bankCode) {

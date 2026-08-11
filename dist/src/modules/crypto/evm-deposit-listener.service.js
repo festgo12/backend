@@ -16,12 +16,12 @@ const ethers_1 = require("ethers");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const deposit_address_registry_service_1 = require("./deposit-address-registry.service");
+const chain_client_service_1 = require("./chain-client.service");
 const crypto_config_service_1 = require("./crypto-config.service");
 const client_1 = require("../../generated/client/index.js");
 const TRANSFER_TOPIC = (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('Transfer(address,address,uint256)'));
 const STABLECOIN_DECIMALS = 6;
 const RECENT_HASHES_MAX = 2048;
-const CATCH_UP_MAX_BLOCKS = 200;
 const RECONNECT_BASE_MS = 2_000;
 const RECONNECT_MAX_MS = 60_000;
 let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositListenerService {
@@ -29,6 +29,7 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
     walletService;
     depositRegistry;
     config;
+    chainClient;
     logger = new common_1.Logger(EvmDepositListenerService_1.name);
     provider = null;
     connected = false;
@@ -38,18 +39,26 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
     catchUpRuns = 0;
     latestBlock = null;
     reconnectTimer = null;
+    catchUpRetryTimer = null;
+    batchTimer = null;
     reconnectAttempts = 0;
     connecting = false;
-    processingBlock = false;
+    batchFlushing = false;
+    socketDown = false;
     pendingBlocks = new Set();
     recentHashes = new Map();
     cursorLastBlock = 0;
     cursorLastBlockHash = null;
-    constructor(prisma, walletService, depositRegistry, config) {
+    lastCatchUpAt = 0;
+    pendingHashes = new Set();
+    pendingCacheLoaded = false;
+    staleReceiptMisses = new Map();
+    constructor(prisma, walletService, depositRegistry, config, chainClient) {
         this.prisma = prisma;
         this.walletService = walletService;
         this.depositRegistry = depositRegistry;
         this.config = config;
+        this.chainClient = chainClient;
     }
     async onApplicationBootstrap() {
         await this.depositRegistry.rebuild();
@@ -100,7 +109,7 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
             };
             await provider.on('block', (blockNumber) => {
                 this.pendingBlocks.add(blockNumber);
-                void this.drainBlocks();
+                this.scheduleBatchFlush();
             });
             await this.subscribeTokens(provider);
             await provider.getBlockNumber();
@@ -109,9 +118,16 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
             this.lastError = null;
             this.reconnectAttempts = 0;
             this.logger.log('EVM WebSocket connected; listening for deposits');
-            await this.catchUp();
-            const latest = await provider.getBlockNumber();
-            await this.finalizePendingDeposits(latest - this.config.evmConfirmations + 1);
+            try {
+                await this.catchUp();
+                const latest = await provider.getBlockNumber();
+                await this.finalizePendingDeposits(latest - this.config.evmConfirmations + 1);
+            }
+            catch (error) {
+                const err = error;
+                this.logger.error(`EVM catch-up after connect failed: ${err.message}`);
+                this.scheduleCatchUpRetry();
+            }
         }
         catch (error) {
             const err = error;
@@ -126,6 +142,7 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
     }
     handleClose() {
         this.connected = false;
+        this.socketDown = true;
         this.logger.warn('EVM WebSocket connection closed');
         this.scheduleReconnect();
     }
@@ -140,10 +157,33 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
             void this.connect();
         }, delay);
     }
+    scheduleCatchUpRetry() {
+        if (this.catchUpRetryTimer)
+            return;
+        const delay = Math.max(this.config.evmCatchUpMinIntervalMs, 5_000);
+        this.logger.log(`EVM catch-up retry scheduled in ${delay}ms`);
+        this.catchUpRetryTimer = setTimeout(() => {
+            this.catchUpRetryTimer = null;
+            if (!this.connected)
+                return;
+            void this.catchUp().catch((error) => {
+                this.logger.error(`EVM catch-up retry failed: ${error.message}`);
+                this.scheduleCatchUpRetry();
+            });
+        }, delay);
+    }
     teardown(clearReconnect = true) {
         if (clearReconnect && this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
+        }
+        if (this.catchUpRetryTimer) {
+            clearTimeout(this.catchUpRetryTimer);
+            this.catchUpRetryTimer = null;
+        }
+        if (this.batchTimer) {
+            clearTimeout(this.batchTimer);
+            this.batchTimer = null;
         }
         const provider = this.provider;
         this.provider = null;
@@ -185,8 +225,12 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
         }
     }
     async handleTransferLog(log, currency) {
-        if (log.removed || !log.topics?.[2])
+        if (!log.topics?.[2])
             return;
+        if (log.removed) {
+            await this.cancelRemovedTransfer(log.transactionHash);
+            return;
+        }
         const to = '0x' + log.topics[2].slice(26).toLowerCase();
         if (!this.depositRegistry.has(to, 'EVM'))
             return;
@@ -205,89 +249,169 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
             blockNumber: log.blockNumber,
         });
     }
-    async drainBlocks() {
-        if (this.processingBlock)
+    async cancelRemovedTransfer(txHash) {
+        if (!txHash)
             return;
-        this.processingBlock = true;
+        const existing = await this.prisma.walletTransaction.findUnique({
+            where: { reference: txHash },
+        });
+        if (!existing || existing.status !== 'PENDING')
+            return;
+        await this.walletService.updateTransactionStatus(existing.id, 'CANCELLED', {
+            finalization: 'REORG_REMOVED_LOG',
+            cancelledAt: new Date().toISOString(),
+        });
+        this.pendingHashes.delete(txHash);
+        this.staleReceiptMisses.delete(txHash);
+        this.logger.warn(`Deposit cancelled (REORG_REMOVED_LOG): ${txHash}`);
+    }
+    scheduleBatchFlush() {
+        if (this.pendingBlocks.size >=
+            Math.max(1, this.config.evmAssetTransferBatchBlocks)) {
+            void this.flushBatch();
+            return;
+        }
+        if (this.batchTimer)
+            return;
+        this.batchTimer = setTimeout(() => {
+            this.batchTimer = null;
+            void this.flushBatch();
+        }, Math.max(1, this.config.evmAssetTransferBatchMaxMs));
+    }
+    async flushBatch() {
+        if (this.batchFlushing)
+            return;
+        this.batchFlushing = true;
         try {
-            while (this.pendingBlocks.size > 0) {
-                const next = Math.min(...this.pendingBlocks);
-                this.pendingBlocks.delete(next);
-                await this.handleBlock(next);
+            if (this.pendingBlocks.size === 0)
+                return;
+            const numbers = [...this.pendingBlocks].sort((a, b) => a - b);
+            this.pendingBlocks.clear();
+            const first = numbers[0];
+            const last = numbers[numbers.length - 1];
+            const provider = this.provider;
+            if (!provider)
+                return;
+            this.latestBlock = last;
+            const required = this.config.evmConfirmations;
+            const maxFrom = last - required + 1;
+            const addresses = this.depositRegistry.addressesForChain('EVM');
+            if (maxFrom > 0) {
+                await this.finalizePendingDeposits(maxFrom);
+            }
+            const reorged = await this.checkReorg(provider, numbers, maxFrom);
+            if (reorged) {
+                if (addresses.length > 0) {
+                    await this.scanTransfers(provider, Math.max(1, maxFrom), last, addresses);
+                }
+                return;
+            }
+            if (addresses.length > 0) {
+                await this.scanTransfers(provider, first, last, addresses);
+            }
+            if (maxFrom > this.cursorLastBlock) {
+                const boundaryHash = this.recentHashes.get(maxFrom) ?? null;
+                await this.prisma.chainCursor.upsert({
+                    where: { chain: 'EVM' },
+                    update: { lastBlock: maxFrom, lastBlockHash: boundaryHash },
+                    create: {
+                        chain: 'EVM',
+                        lastBlock: maxFrom,
+                        lastBlockHash: boundaryHash,
+                    },
+                });
+                this.cursorLastBlock = maxFrom;
+                this.cursorLastBlockHash = boundaryHash;
             }
         }
         catch (error) {
             const err = error;
-            this.logger.error(`EVM block handler failed: ${err.message}`);
+            this.logger.error(`EVM batch scan failed: ${err.message}`);
         }
         finally {
-            this.processingBlock = false;
+            this.batchFlushing = false;
         }
     }
-    async handleBlock(blockNumber) {
-        const provider = this.provider;
-        if (!provider)
-            return;
-        this.latestBlock = blockNumber;
-        const required = this.config.evmConfirmations;
-        const maxFrom = blockNumber - required + 1;
-        if (maxFrom > 0) {
-            await this.finalizePendingDeposits(maxFrom);
-        }
-        const addresses = this.depositRegistry.addressesForChain('EVM');
-        if (addresses.length === 0)
-            return;
-        const block = await provider.getBlock(blockNumber, true);
-        if (!block)
-            return;
-        if (block.hash)
-            this.recentHashes.set(blockNumber, block.hash);
-        if (this.recentHashes.size > RECENT_HASHES_MAX) {
-            const oldest = Math.min(...this.recentHashes.keys());
-            this.recentHashes.delete(oldest);
-        }
-        const prevHash = this.recentHashes.get(blockNumber - 1);
-        const boundaryHash = this.recentHashes.get(maxFrom);
-        const reorged = (prevHash && block.parentHash !== prevHash) ||
-            (this.cursorLastBlockHash &&
-                boundaryHash &&
-                boundaryHash !== this.cursorLastBlockHash);
-        if (reorged) {
-            this.logger.warn(`EVM re-org detected near block ${blockNumber}; rewinding for catch-up`);
-            await this.rewindForCatchUp(maxFrom);
-            await this.catchUp();
-            return;
-        }
-        const addressSet = new Set(addresses.map((a) => a.toLowerCase()));
-        const txs = block.prefetchedTransactions;
-        for (const tx of txs) {
-            if (!tx.to || !addressSet.has(tx.to.toLowerCase()))
+    async checkReorg(provider, numbers, maxFrom) {
+        let reorged = false;
+        for (const b of numbers) {
+            const block = await provider.getBlock(b, false);
+            if (!block)
                 continue;
-            const amount = Number((0, ethers_1.formatEther)(tx.value));
-            if (!Number.isFinite(amount) || amount <= 0)
+            if (block.hash) {
+                this.recentHashes.set(b, block.hash);
+                if (this.recentHashes.size > RECENT_HASHES_MAX) {
+                    const oldest = Math.min(...this.recentHashes.keys());
+                    this.recentHashes.delete(oldest);
+                }
+            }
+            const prevHash = this.recentHashes.get(b - 1);
+            if (block.parentHash && prevHash && block.parentHash !== prevHash) {
+                reorged = true;
+            }
+        }
+        const boundaryHash = this.recentHashes.get(maxFrom);
+        if (this.cursorLastBlockHash &&
+            boundaryHash &&
+            boundaryHash !== this.cursorLastBlockHash) {
+            reorged = true;
+        }
+        if (!reorged)
+            return false;
+        this.logger.warn(`EVM re-org detected near block ${numbers[numbers.length - 1]}; resetting cursor (live newHeads continue)`);
+        await this.rewindForReorg(maxFrom);
+        return true;
+    }
+    async rewindForReorg(maxFrom) {
+        this.cursorLastBlock = 0;
+        this.cursorLastBlockHash = null;
+        this.recentHashes.clear();
+        await this.prisma.chainCursor.upsert({
+            where: { chain: 'EVM' },
+            update: { lastBlock: Math.max(0, maxFrom - 1), lastBlockHash: null },
+            create: {
+                chain: 'EVM',
+                lastBlock: Math.max(0, maxFrom - 1),
+                lastBlockHash: null,
+            },
+        });
+    }
+    async scanTransfers(provider, fromBlock, toBlock, addresses) {
+        if (fromBlock > toBlock)
+            return;
+        const transfers = await this.chainClient.getAssetTransfers(provider, {
+            fromBlock,
+            toBlock,
+            toAddresses: addresses,
+        });
+        const addressSet = new Set(addresses.map((a) => a.toLowerCase()));
+        for (const t of transfers) {
+            if (!addressSet.has(t.to))
+                continue;
+            if (!Number.isFinite(t.amount) || t.amount <= 0)
+                continue;
+            const currency = this.currencyForTransfer(t);
+            if (!currency)
                 continue;
             await this.recordPending({
-                address: tx.to.toLowerCase(),
-                currency: client_1.Currency.ETH,
-                amount,
-                txHash: tx.hash,
-                sourceAddress: tx.from || null,
-                blockNumber,
+                address: t.to,
+                currency,
+                amount: t.amount,
+                txHash: t.hash,
+                sourceAddress: t.from || null,
+                blockNumber: t.blockNumber,
             });
         }
-        if (maxFrom > this.cursorLastBlock) {
-            await this.prisma.chainCursor.upsert({
-                where: { chain: 'EVM' },
-                update: { lastBlock: maxFrom, lastBlockHash: boundaryHash ?? null },
-                create: {
-                    chain: 'EVM',
-                    lastBlock: maxFrom,
-                    lastBlockHash: boundaryHash ?? null,
-                },
-            });
-            this.cursorLastBlock = maxFrom;
-            this.cursorLastBlockHash = boundaryHash ?? null;
-        }
+    }
+    currencyForTransfer(transfer) {
+        if (transfer.category === 'external')
+            return client_1.Currency.ETH;
+        const asset = (transfer.asset ?? '').toUpperCase();
+        if (asset === 'USDT')
+            return client_1.Currency.USDT;
+        if (asset === 'USDC')
+            return client_1.Currency.USDC;
+        return null;
     }
     async catchUp() {
         const provider = this.provider;
@@ -308,97 +432,37 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
         let from = cursor.lastBlock + 1;
         if (from > maxFrom)
             return;
-        if (maxFrom - from + 1 > CATCH_UP_MAX_BLOCKS) {
-            from = maxFrom - CATCH_UP_MAX_BLOCKS + 1;
-            this.logger.warn(`EVM catch-up gap exceeds ${CATCH_UP_MAX_BLOCKS} blocks; scanning the most recent ${CATCH_UP_MAX_BLOCKS}`);
+        const maxBlocks = Math.max(1, this.config.evmCatchUpMaxBlocks);
+        const gap = maxFrom - from + 1;
+        if (gap > maxBlocks) {
+            from = maxFrom - maxBlocks + 1;
+            this.logger.warn(`EVM catch-up gap exceeds ${maxBlocks} blocks; scanning the most recent ${maxBlocks}`);
         }
-        const addressSet = new Set(addresses.map((a) => a.toLowerCase()));
-        const contracts = [
-            {
-                currency: client_1.Currency.USDT,
-                address: this.config.getStablecoinContract('USDT'),
-            },
-            {
-                currency: client_1.Currency.USDC,
-                address: this.config.getStablecoinContract('USDC'),
-            },
-        ];
-        for (const { currency, address } of contracts) {
-            if (!address)
-                continue;
-            const logs = await provider.getLogs({
-                fromBlock: from,
-                toBlock: maxFrom,
-                address: address.toLowerCase(),
-                topics: [TRANSFER_TOPIC],
-            });
-            for (const log of logs) {
-                if (log.removed || !log.topics?.[2])
-                    continue;
-                const to = '0x' + log.topics[2].slice(26).toLowerCase();
-                if (!addressSet.has(to))
-                    continue;
-                const amount = Number((0, ethers_1.formatUnits)(BigInt(log.data), STABLECOIN_DECIMALS));
-                if (!Number.isFinite(amount) || amount <= 0)
-                    continue;
-                await this.recordPending({
-                    address: to,
-                    currency,
-                    amount,
-                    txHash: log.transactionHash,
-                    sourceAddress: log.topics[1]
-                        ? '0x' + log.topics[1].slice(26).toLowerCase()
-                        : null,
-                    blockNumber: log.blockNumber,
-                });
-            }
+        const now = Date.now();
+        const elapsed = this.lastCatchUpAt > 0 ? now - this.lastCatchUpAt : Infinity;
+        if (!this.socketDown &&
+            elapsed < this.config.evmCatchUpMinIntervalMs &&
+            gap <= maxBlocks) {
+            this.logger.debug(`EVM catch-up throttled (${elapsed}ms since last run); live subscription covers recent blocks`);
+            return;
         }
-        for (let b = from; b <= maxFrom; b++) {
-            const block = await provider.getBlock(b, true);
-            if (!block)
-                continue;
-            const txs = block.prefetchedTransactions;
-            for (const tx of txs) {
-                if (!tx.to || !addressSet.has(tx.to.toLowerCase()))
-                    continue;
-                const amount = Number((0, ethers_1.formatEther)(tx.value));
-                if (!Number.isFinite(amount) || amount <= 0)
-                    continue;
-                await this.recordPending({
-                    address: tx.to.toLowerCase(),
-                    currency: client_1.Currency.ETH,
-                    amount,
-                    txHash: tx.hash,
-                    sourceAddress: tx.from || null,
-                    blockNumber: b,
-                });
-            }
-        }
+        await this.scanTransfers(provider, from, maxFrom, addresses);
         await this.prisma.chainCursor.upsert({
             where: { chain: 'EVM' },
             update: { lastBlock: maxFrom },
             create: { chain: 'EVM', lastBlock: maxFrom, lastBlockHash: null },
         });
         this.catchUpRuns += 1;
+        this.lastCatchUpAt = Date.now();
+        this.socketDown = false;
         this.logger.log(`EVM catch-up complete: scanned blocks ${from}..${maxFrom}`);
-    }
-    async rewindForCatchUp(maxFrom) {
-        this.cursorLastBlock = 0;
-        this.cursorLastBlockHash = null;
-        this.recentHashes.clear();
-        await this.prisma.chainCursor.upsert({
-            where: { chain: 'EVM' },
-            update: { lastBlock: Math.max(0, maxFrom - 1) },
-            create: {
-                chain: 'EVM',
-                lastBlock: Math.max(0, maxFrom - 1),
-                lastBlockHash: null,
-            },
-        });
     }
     async finalizePendingDeposits(maxFrom) {
         const provider = this.provider;
         if (!provider || maxFrom < 1)
+            return;
+        await this.loadPendingCache();
+        if (this.pendingHashes.size === 0)
             return;
         const pending = await this.prisma.walletTransaction.findMany({
             where: {
@@ -416,14 +480,55 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
             if (!tx.reference)
                 continue;
             const receipt = await provider.getTransactionReceipt(tx.reference);
-            if (!receipt || receipt.blockNumber !== blockNumber)
-                continue;
-            await this.walletService.updateTransactionStatus(tx.id, 'COMPLETED', {
-                confirmations: maxFrom - blockNumber + 1,
-                completedAt: new Date().toISOString(),
-            });
-            this.logger.log(`Deposit finalized: ${tx.amount.toNumber()} ${meta.asset ?? ''} wallet ${tx.walletId} (TX: ${tx.reference})`);
+            if (receipt && receipt.blockNumber === blockNumber) {
+                await this.walletService.updateTransactionStatus(tx.id, 'COMPLETED', {
+                    confirmations: maxFrom - blockNumber + 1,
+                    completedAt: new Date().toISOString(),
+                });
+                this.pendingHashes.delete(tx.reference);
+                this.staleReceiptMisses.delete(tx.reference);
+                this.logger.log(`Deposit finalized: ${tx.amount.toNumber()} ${meta.asset ?? ''} wallet ${tx.walletId} (TX: ${tx.reference})`);
+            }
+            else if (receipt && receipt.blockNumber !== blockNumber) {
+                await this.cancelPending(tx, blockNumber, 'REORG_DROPPED');
+            }
+            else {
+                const miss = this.staleReceiptMisses.get(tx.reference) ?? 0;
+                this.staleReceiptMisses.set(tx.reference, miss + 1);
+                if (miss + 1 >= 2) {
+                    await this.cancelPending(tx, blockNumber, 'RECEIPT_MISSING');
+                }
+            }
         }
+    }
+    async loadPendingCache() {
+        if (this.pendingCacheLoaded)
+            return;
+        const pendings = await this.prisma.walletTransaction.findMany({
+            where: {
+                type: client_1.LedgerType.DEPOSIT,
+                status: 'PENDING',
+                metadata: { path: ['listener'], equals: 'EVM_WS' },
+            },
+            select: { reference: true },
+            take: 500,
+        });
+        for (const p of pendings) {
+            if (p.reference)
+                this.pendingHashes.add(p.reference);
+        }
+        this.pendingCacheLoaded = true;
+    }
+    async cancelPending(tx, blockNumber, reason) {
+        if (!tx.reference)
+            return;
+        await this.walletService.updateTransactionStatus(tx.id, 'CANCELLED', {
+            finalization: reason,
+            cancelledAt: new Date().toISOString(),
+        });
+        this.pendingHashes.delete(tx.reference);
+        this.staleReceiptMisses.delete(tx.reference);
+        this.logger.warn(`Deposit cancelled (${reason}): ${tx.reference} (was block ${blockNumber})`);
     }
     async recordPending(params) {
         const { address, currency, amount, txHash, sourceAddress, blockNumber } = params;
@@ -461,6 +566,7 @@ let EvmDepositListenerService = EvmDepositListenerService_1 = class EvmDepositLi
                     },
                 });
                 this.depositsDetected += 1;
+                this.pendingHashes.add(txHash);
                 this.logger.log(`Deposit detected (pending): ${amount} ${currency} to wallet ${wallet.id} (TX: ${txHash}, block ${blockNumber})`);
             }
             catch (error) {
@@ -481,6 +587,7 @@ exports.EvmDepositListenerService = EvmDepositListenerService = EvmDepositListen
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         wallet_service_1.WalletService,
         deposit_address_registry_service_1.DepositAddressRegistry,
-        crypto_config_service_1.CryptoConfigService])
+        crypto_config_service_1.CryptoConfigService,
+        chain_client_service_1.ChainClientService])
 ], EvmDepositListenerService);
 //# sourceMappingURL=evm-deposit-listener.service.js.map

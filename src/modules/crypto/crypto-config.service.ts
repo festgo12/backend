@@ -119,13 +119,8 @@ export class CryptoConfigService implements OnModuleInit {
     return this.configService.get<string>('ALCHEMY_BTC_HTTP_URL') || null;
   }
 
-  get mempoolApiUrl(): string {
-    return (
-      this.configService.get<string>(
-        'MEMPOOL_API_URL',
-        'https://mempool.space/api',
-      ) || 'https://mempool.space/api'
-    );
+  get mempoolApiUrl(): string | null {
+    return this.configService.get<string>('MEMPOOL_API_URL') || null;
   }
 
   get evmConfirmations(): number {
@@ -137,6 +132,53 @@ export class CryptoConfigService implements OnModuleInit {
   get btcConfirmations(): number {
     return Number(
       this.configService.get<string>('BLOCK_CONFIRMATIONS_BTC', '2'),
+    );
+  }
+
+  /**
+   * Maximum number of blocks the EVM deposit listener re-scans after a
+   * (re)connect. Defaults to 50 (~10 minutes at ~12s/block). The Alchemy free
+   * tier caps each eth_getLogs request at a 10-block range, so the scan is
+   * chunked into <=10-block windows regardless.
+   */
+  get evmCatchUpMaxBlocks(): number {
+    return Number(
+      this.configService.get<string>('EVM_CATCH_UP_MAX_BLOCKS', '50'),
+    );
+  }
+
+  /**
+   * Minimum delay between EVM catch-up re-scans. Prevents reconnect loops
+   * from hammering eth_getLogs. A gap smaller than the current window can be
+   * re-scanned immediately; only repeated scans are throttled.
+   */
+  get evmCatchUpMinIntervalMs(): number {
+    return Number(
+      this.configService.get<string>('EVM_CATCH_UP_MIN_INTERVAL_MS', '60000'),
+    );
+  }
+
+  /**
+   * Maximum number of newHeads blocks buffered before the steady-state
+   * native-ETH scan is flushed with a single alchemy_getAssetTransfers call.
+   * Larger batches mean fewer CU, at the cost of a small detection delay.
+   */
+  get evmAssetTransferBatchBlocks(): number {
+    return Number(
+      this.configService.get<string>('EVM_ASSET_TRANSFER_BATCH_BLOCKS', '5'),
+    );
+  }
+
+  /**
+   * Maximum time a partial batch is held before it is flushed, so low block
+   * rates never delay detection indefinitely.
+   */
+  get evmAssetTransferBatchMaxMs(): number {
+    return Number(
+      this.configService.get<string>(
+        'EVM_ASSET_TRANSFER_BATCH_MAX_MS',
+        '30000',
+      ),
     );
   }
 

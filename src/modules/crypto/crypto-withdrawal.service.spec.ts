@@ -32,6 +32,7 @@ describe('CryptoWithdrawalService', () => {
   const mockHdWallet = {
     chainForCurrency: jest.fn().mockReturnValue('EVM'),
     getOrAssignDepositInfo: jest.fn(),
+    getMasterAddress: jest.fn(),
   };
 
   const mockPlatformService = {
@@ -233,12 +234,7 @@ describe('CryptoWithdrawalService', () => {
       derivationIndex: null,
       currency: Currency.ETH,
     });
-    mockPlatformService.getPlatformUserId.mockResolvedValue('p-user');
-    mockHdWallet.getOrAssignDepositInfo.mockResolvedValue({
-      address: '0xNewFrom',
-      derivationIndex: 1050,
-      chain: 'EVM',
-    });
+    mockHdWallet.getMasterAddress.mockReturnValue('0xNewFrom');
     mockChainClient.broadcastEvmNative.mockResolvedValue('0xsweephash');
 
     await service.sweepFeeWallet({
@@ -247,16 +243,17 @@ describe('CryptoWithdrawalService', () => {
       amount: 2,
     });
 
+    expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('EVM');
     expect(mockPrisma.wallet.update).toHaveBeenCalledWith({
       where: { id: 'w-fee-legacy' },
       data: {
         address: '0xNewFrom',
-        derivationIndex: 1050,
+        derivationIndex: 0,
         chain: 'EVM',
       },
     });
     expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
-      1050,
+      0,
       '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
       2,
     );

@@ -19,6 +19,7 @@ const deposit_address_registry_service_1 = require("./deposit-address-registry.s
 const chain_client_service_1 = require("./chain-client.service");
 const crypto_config_service_1 = require("./crypto-config.service");
 const client_1 = require("../../generated/client/index.js");
+const RATE_LIMIT_COOLDOWN_MS = 10 * 60 * 1000;
 let BtcDepositPollerService = BtcDepositPollerService_1 = class BtcDepositPollerService {
     prisma;
     walletService;
@@ -27,6 +28,7 @@ let BtcDepositPollerService = BtcDepositPollerService_1 = class BtcDepositPoller
     config;
     logger = new common_1.Logger(BtcDepositPollerService_1.name);
     isRunning = false;
+    nextPollAllowedAt = 0;
     constructor(prisma, walletService, depositRegistry, chainClient, config) {
         this.prisma = prisma;
         this.walletService = walletService;
@@ -36,6 +38,8 @@ let BtcDepositPollerService = BtcDepositPollerService_1 = class BtcDepositPoller
     }
     async scan() {
         if (!this.config.isAlchemy || this.isRunning)
+            return;
+        if (Date.now() < this.nextPollAllowedAt)
             return;
         this.isRunning = true;
         try {
@@ -65,7 +69,15 @@ let BtcDepositPollerService = BtcDepositPollerService_1 = class BtcDepositPoller
         }
         catch (error) {
             const err = error;
-            this.logger.error(`BTC deposit poll failed: ${err.message}`);
+            const message = err.message || 'unknown error';
+            if (/status=429|Too many requests|rate.?limit/i.test(message)) {
+                this.nextPollAllowedAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+                this.logger.warn(`BTC deposit poll rate-limited; backing off for ${RATE_LIMIT_COOLDOWN_MS / 1000}s`);
+            }
+            else {
+                const stack = error?.stack;
+                this.logger.error(`BTC deposit poll failed: ${message}${stack ? `\n${stack}` : ''}`);
+            }
         }
         finally {
             this.isRunning = false;

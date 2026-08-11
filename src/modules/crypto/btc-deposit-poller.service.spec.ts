@@ -123,6 +123,34 @@ describe('BtcDepositPollerService', () => {
 
       expect(mockWalletService.createTransaction).not.toHaveBeenCalled();
     });
+
+    it('backs off for a cooldown after a rate-limit error', async () => {
+      mockDepositRegistry.addressesForChain.mockReturnValue(['tb1qconfirmed']);
+      mockChainClient.getBtcTipHeight.mockRejectedValue(
+        new Error(
+          'mempool.space /blocks/tip/height failed (status=429 code=ERR_BAD_RESPONSE): Too many requests',
+        ),
+      );
+
+      await service.scan();
+      expect(mockChainClient.getBtcTipHeight).toHaveBeenCalledTimes(1);
+
+      // Cooldown active: the next scheduled scan skips without calling the API.
+      await service.scan();
+      expect(mockChainClient.getBtcTipHeight).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not suppress subsequent scans after a non-rate-limit failure', async () => {
+      mockDepositRegistry.addressesForChain.mockReturnValue(['tb1qconfirmed']);
+      mockChainClient.getBtcTipHeight.mockRejectedValue(
+        new Error('connection reset'),
+      );
+
+      await service.scan();
+      await service.scan();
+
+      expect(mockChainClient.getBtcTipHeight).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('creditDeposit', () => {

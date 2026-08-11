@@ -85,13 +85,25 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         return this.configService.get('ALCHEMY_BTC_HTTP_URL') || null;
     }
     get mempoolApiUrl() {
-        return (this.configService.get('MEMPOOL_API_URL', 'https://mempool.space/api') || 'https://mempool.space/api');
+        return this.configService.get('MEMPOOL_API_URL') || null;
     }
     get evmConfirmations() {
         return Number(this.configService.get('BLOCK_CONFIRMATIONS_ETH', '12'));
     }
     get btcConfirmations() {
         return Number(this.configService.get('BLOCK_CONFIRMATIONS_BTC', '2'));
+    }
+    get evmCatchUpMaxBlocks() {
+        return Number(this.configService.get('EVM_CATCH_UP_MAX_BLOCKS', '50'));
+    }
+    get evmCatchUpMinIntervalMs() {
+        return Number(this.configService.get('EVM_CATCH_UP_MIN_INTERVAL_MS', '60000'));
+    }
+    get evmAssetTransferBatchBlocks() {
+        return Number(this.configService.get('EVM_ASSET_TRANSFER_BATCH_BLOCKS', '5'));
+    }
+    get evmAssetTransferBatchMaxMs() {
+        return Number(this.configService.get('EVM_ASSET_TRANSFER_BATCH_MAX_MS', '30000'));
     }
     get depositSweepThreshold() {
         return Number(this.configService.get('DEPOSIT_SWEEP_THRESHOLD', '0'));

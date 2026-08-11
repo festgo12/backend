@@ -35150,7 +35150,6 @@ export namespace Prisma {
 
   export type WalletWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    address?: string
     userId_currency?: WalletUserIdCurrencyCompoundUniqueInput
     AND?: WalletWhereInput | WalletWhereInput[]
     OR?: WalletWhereInput[]
@@ -35159,6 +35158,7 @@ export namespace Prisma {
     currency?: EnumCurrencyFilter<"Wallet"> | $Enums.Currency
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
     reservedBalance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    address?: StringNullableFilter<"Wallet"> | string | null
     derivationIndex?: IntNullableFilter<"Wallet"> | number | null
     chain?: StringNullableFilter<"Wallet"> | string | null
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
@@ -35168,7 +35168,7 @@ export namespace Prisma {
     transactions?: WalletTransactionListRelationFilter
     snapshots?: BalanceSnapshotListRelationFilter
     withdrawalJobs?: WithdrawalJobListRelationFilter
-  }, "id" | "address" | "userId_currency">
+  }, "id" | "userId_currency">
 
   export type WalletOrderByWithAggregationInput = {
     id?: SortOrder

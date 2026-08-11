@@ -147,8 +147,17 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         }
         let fromIndex = feeWallet.derivationIndex;
         if (fromIndex === null) {
-            const platformUserId = await this.platformService.getPlatformUserId();
-            const info = await this.hdWallet.getOrAssignDepositInfo(platformUserId, currency);
+            const info = currency === client_1.Currency.BTC
+                ? {
+                    address: this.hdWallet.getMasterAddress('BTC'),
+                    derivationIndex: 0,
+                    chain: 'BTC',
+                }
+                : {
+                    address: this.hdWallet.getMasterAddress('EVM'),
+                    derivationIndex: 0,
+                    chain: 'EVM',
+                };
             await this.prisma.wallet.update({
                 where: { id: feeWallet.id },
                 data: {

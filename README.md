@@ -52,7 +52,7 @@ wallet/wallet-service API.
 | `ALCHEMY_ETH_WS_URL` | yes* | — | Alchemy WebSocket URL for the EVM network. |
 | `ALCHEMY_ETH_HTTP_URL` | yes* | — | Alchemy HTTP URL for the EVM network (used for `alchemy_getAssetTransfers`, receipts, broadcasts). |
 | `ALCHEMY_BTC_HTTP_URL` | yes* | — | Alchemy HTTP URL for Bitcoin (broadcast). |
-| `MEMPOOL_API_URL` | no | `https://mempool.space/api` | mempool.space base URL for BTC address scans. |
+| `MEMPOOL_API_URL` | no | network default | mempool.space base URL for BTC address scans. Defaults to `https://mempool.space/testnet/api` on testnet and `https://mempool.space/api` on mainnet; overrides the network default when set. |
 | `HD_EVM_MASTER_MNEMONIC` | yes* | — | BIP-39 mnemonic for the EVM master wallet. Required for private-key derivation (signing). |
 | `HD_BTC_MASTER_MNEMONIC` | yes* | — | BIP-39 mnemonic for the BTC master wallet. Required for signing. |
 | `HD_EVM_MASTER_XPUB` | no | — | Optional read-only EVM xpub (not used for signing). |
@@ -62,6 +62,10 @@ wallet/wallet-service API.
 | `HD_EVM_ACCOUNT` / `HD_BTC_ACCOUNT` | no | `0` | Account index within the derivation path. |
 | `BLOCK_CONFIRMATIONS_ETH` | no | `12` | EVM confirmations before a deposit is credited. |
 | `BLOCK_CONFIRMATIONS_BTC` | no | `2` | BTC confirmations before a deposit is credited. |
+| `EVM_CATCH_UP_MAX_BLOCKS` | no | `50` | Max blocks the EVM catch-up re-scans after the WebSocket was down. |
+| `EVM_CATCH_UP_MIN_INTERVAL_MS` | no | `60000` | Min delay between catch-up re-scans (reconnect-loop protection). |
+| `EVM_ASSET_TRANSFER_BATCH_BLOCKS` | no | `5` | Flush the native-ETH batch scan once this many newHeads accumulate. |
+| `EVM_ASSET_TRANSFER_BATCH_MAX_MS` | no | `30000` | Max time a partial batch is held before it is flushed. |
 | `DEPOSIT_SWEEP_THRESHOLD` | no | `0` | Sweep fee-wallet funds to the master wallet once the balance reaches this amount. |
 | `ALCHEMY_USDT_CONTRACT` / `ALCHEMY_USDC_CONTRACT` | no | network default | Override the ERC-20 contract address (only needed on non-default networks). |
 

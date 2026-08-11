@@ -12,6 +12,8 @@ interface ErrorLike {
   code?: string;
 }
 
+const RATE_LIMIT_COOLDOWN_MS = 10 * 60 * 1000;
+
 /**
  * Local-first BTC inbound deposit poller. mempool.space has no push
  * subscription, so each registered bech32 address is polled for confirmed
@@ -23,6 +25,7 @@ interface ErrorLike {
 export class BtcDepositPollerService {
   private readonly logger = new Logger(BtcDepositPollerService.name);
   private isRunning = false;
+  private nextPollAllowedAt = 0;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -35,6 +38,7 @@ export class BtcDepositPollerService {
   @Cron('0 */2 * * * *')
   async scan(): Promise<void> {
     if (!this.config.isAlchemy || this.isRunning) return;
+    if (Date.now() < this.nextPollAllowedAt) return;
     this.isRunning = true;
     try {
       const addresses = this.depositRegistry.addressesForChain('BTC');
@@ -61,7 +65,18 @@ export class BtcDepositPollerService {
       }
     } catch (error) {
       const err = error as ErrorLike;
-      this.logger.error(`BTC deposit poll failed: ${err.message}`);
+      const message = err.message || 'unknown error';
+      if (/status=429|Too many requests|rate.?limit/i.test(message)) {
+        this.nextPollAllowedAt = Date.now() + RATE_LIMIT_COOLDOWN_MS;
+        this.logger.warn(
+          `BTC deposit poll rate-limited; backing off for ${RATE_LIMIT_COOLDOWN_MS / 1000}s`,
+        );
+      } else {
+        const stack = (error as { stack?: string })?.stack;
+        this.logger.error(
+          `BTC deposit poll failed: ${message}${stack ? `\n${stack}` : ''}`,
+        );
+      }
     } finally {
       this.isRunning = false;
     }
