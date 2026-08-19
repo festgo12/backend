@@ -45,8 +45,9 @@ export declare class ChainClientService {
     private providerInstance;
     constructor(httpService: HttpService, config: CryptoConfigService, hdWallet: HdWalletService);
     get provider(): JsonRpcProvider;
-    private get btcApiBase();
+    private get btcRpcUrl();
     private get btcNetwork();
+    private btcRpcCall;
     getLatestEvmBlock(): Promise<number>;
     getEvmBlockHash(blockNumber: number): Promise<string | null>;
     getEvmReceipt(txHash: string): Promise<EvmReceipt | null>;
@@ -54,10 +55,9 @@ export declare class ChainClientService {
     getAssetTransfers(provider: TransferProvider, params: AssetTransfersParams): Promise<EvmAssetTransfer[]>;
     private fetchAssetTransfers;
     getBtcTipHeight(): Promise<number>;
-    getBtcUtxos(address: string): Promise<BtcUtxo[]>;
-    private btcGet;
-    getBtcTx(txid: string): Promise<BtcTxStatus>;
+    getBtcTxStatus(txid: string): Promise<BtcTxStatus>;
     getBtcRecommendedFee(): Promise<number>;
+    getBtcUtxos(address: string): Promise<BtcUtxo[]>;
     broadcastEvmNative(fromIndex: number, to: string, amount: number): Promise<string>;
     broadcastEvmToken(currency: Currency, fromIndex: number, to: string, amount: number): Promise<string>;
     broadcastBtc(fromIndex: number, to: string, amountBtc: number, feePerByte: number): Promise<string>;

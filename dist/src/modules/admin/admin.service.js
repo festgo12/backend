@@ -651,10 +651,6 @@ let AdminService = class AdminService {
         };
     }
     async getCryptoSystemStatus() {
-        const [evmCursor, btcCursor] = await Promise.all([
-            this.prisma.chainCursor.findUnique({ where: { chain: 'EVM' } }),
-            this.prisma.chainCursor.findUnique({ where: { chain: 'BTC' } }),
-        ]);
         const recentSweeps = await this.prisma.walletTransaction.findMany({
             where: { metadata: { path: ['sweep'], equals: true } },
             orderBy: { createdAt: 'desc' },
@@ -672,13 +668,16 @@ let AdminService = class AdminService {
             provider: this.cryptoConfig.provider,
             network: this.cryptoConfig.network,
             isTestnet: this.cryptoConfig.isTestnet,
+            webhookProviders: {
+                evm: 'alchemy',
+                btc: 'quicknode',
+            },
             confirmations: {
                 eth: this.cryptoConfig.evmConfirmations,
                 btc: this.cryptoConfig.btcConfirmations,
             },
             depositSweepThreshold: this.cryptoConfig.depositSweepThreshold,
             registrySize: this.depositRegistry.size,
-            cursors: { evm: evmCursor ?? null, btc: btcCursor ?? null },
             masterWallets: {
                 evm: this.hdWallet.getMasterAddress('EVM'),
                 btc: this.hdWallet.getMasterAddress('BTC'),

@@ -23,8 +23,8 @@ export declare class WithdrawalTrackerService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: import("@src/generated/client").$Enums.Currency;
         metadata: Prisma.JsonValue | null;
+        currency: import("@src/generated/client").$Enums.Currency;
         destination: string;
         amount: Prisma.Decimal;
         walletId: string;
@@ -32,6 +32,7 @@ export declare class WithdrawalTrackerService {
         attempts: number;
         nextPollAt: Date;
     }>;
+    confirmFromWebhook(txHash: string, requiredConfirmations: number): Promise<void>;
     processQueue(): Promise<void>;
     private poll;
     private finalize;

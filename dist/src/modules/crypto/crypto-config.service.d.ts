@@ -21,16 +21,17 @@ export declare class CryptoConfigService implements OnModuleInit {
     get btcDerivationPath(): string;
     get evmAccountIndex(): number;
     get btcAccountIndex(): number;
-    get alchemyEthWsUrl(): string | null;
     get alchemyEthHttpUrl(): string | null;
-    get alchemyBtcHttpUrl(): string | null;
-    get mempoolApiUrl(): string | null;
+    get alchemySigningKey(): string | null;
+    get alchemyAuthToken(): string | null;
+    get alchemyWebhookId(): string | null;
+    get quicknodeApiKey(): string | null;
+    get quicknodeStreamsId(): string | null;
+    get quicknodeStreamsSecret(): string | null;
+    get quicknodeRpcUrl(): string | null;
+    get quicknodeKvListName(): string;
     get evmConfirmations(): number;
     get btcConfirmations(): number;
-    get evmCatchUpMaxBlocks(): number;
-    get evmCatchUpMinIntervalMs(): number;
-    get evmAssetTransferBatchBlocks(): number;
-    get evmAssetTransferBatchMaxMs(): number;
     get depositSweepThreshold(): number;
     getStablecoinContract(currency: string): string | null;
 }

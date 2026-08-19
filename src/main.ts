@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
@@ -10,41 +10,27 @@ import * as express from 'express';
 import rateLimit from 'express-rate-limit';
 
 /**
- * Captures the raw request body (required for HMAC signature verification)
- * while keeping a JSON-parsed body available for NestJS @Body() decorators.
- * Mounted BEFORE Nest's own JSON parser (registered during app.listen), so the
- * raw parser consumes the stream first; Nest's parser then skips these paths.
+ * Extended Request type that carries the raw request body buffer.
+ * Used by webhook controllers for HMAC signature verification.
  */
 interface RawBodyRequest extends express.Request {
   rawBody?: Buffer;
 }
 
-function rawBodyForWebhook(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  express.raw({
-    type: 'application/json',
-    verify: (rawReq: express.Request, _res: express.Response, buf: Buffer) => {
-      (rawReq as RawBodyRequest).rawBody = buf;
-    },
-  })(req, res, (err?: any) => {
-    if (err) return next(err);
-    if (Buffer.isBuffer(req.body) && req.body.length) {
-      try {
-        req.body = JSON.parse(req.body.toString('utf8')) as object;
-      } catch {
-        return next(new BadRequestException('Invalid JSON body'));
-      }
-    }
-    next();
-  });
-}
-
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // Global JSON parser that captures raw body for HMAC signature verification.
+  // The verify callback saves the raw buffer to req.rawBody before the parsed
+  // result is placed on req.body — single stream read, no conflicts.
+  app.use(
+    express.json({
+      verify: (req, _res, buf) => {
+        (req as RawBodyRequest).rawBody = buf;
+      },
+    }),
+  );
 
   // Trust the immediate proxy hop (e.g. ngrok) for correct client IP detection.
   // NOT `true`: express-rate-limit v7 throws ERR_ERL_PERMISSIVE_TRUST_PROXY when
@@ -94,9 +80,6 @@ async function bootstrap() {
       legacyHeaders: false,
     }),
   );
-
-  // Raw body for webhook signature verification (Paystack HMAC)
-  app.use('/paystack/webhook', rawBodyForWebhook);
 
   // Static file serving for uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));

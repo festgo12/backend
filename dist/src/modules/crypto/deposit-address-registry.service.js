@@ -14,12 +14,15 @@ exports.DepositAddressRegistry = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("../../generated/client/index.js");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const address_registration_service_1 = require("./address-registration.service");
 let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegistry {
     prisma;
+    addressRegistration;
     logger = new common_1.Logger(DepositAddressRegistry_1.name);
     addresses = new Map();
-    constructor(prisma) {
+    constructor(prisma, addressRegistration) {
         this.prisma = prisma;
+        this.addressRegistration = addressRegistration;
     }
     async onApplicationBootstrap() {
         await this.rebuild();
@@ -42,7 +45,15 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
         this.logger.log(`Deposit address registry loaded: ${this.addresses.size} unique addresses, ${wallets.length} wallets`);
     }
     register(address, chain, walletId) {
-        this.add(address, { chain, walletId }, true);
+        const isNew = this.add(address, { chain, walletId }, true);
+        if (isNew) {
+            this.addressRegistration
+                .registerAddress(address, chain)
+                .catch((error) => {
+                const err = error;
+                this.logger.warn(`Failed to register ${chain} address ${address} with provider: ${err.message}`);
+            });
+        }
     }
     add(address, registration, log) {
         const key = this.keyFor(address, registration.chain);
@@ -50,13 +61,15 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
         if (existing) {
             if (!existing.some((r) => r.walletId === registration.walletId)) {
                 existing.push(registration);
+                return true;
             }
-            return;
+            return false;
         }
         this.addresses.set(key, [registration]);
         if (log) {
             this.logger.debug(`Registered deposit address ${address} for wallet ${registration.walletId}`);
         }
+        return true;
     }
     unregister(address, chain, walletId) {
         const key = this.keyFor(address, chain);
@@ -98,6 +111,7 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
 exports.DepositAddressRegistry = DepositAddressRegistry;
 exports.DepositAddressRegistry = DepositAddressRegistry = DepositAddressRegistry_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        address_registration_service_1.AddressRegistrationService])
 ], DepositAddressRegistry);
 //# sourceMappingURL=deposit-address-registry.service.js.map

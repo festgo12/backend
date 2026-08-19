@@ -79,7 +79,9 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                     metadata: {
                         destination: destinationAddress,
                         blockchain: this.hdWallet.chainForCurrency(currency),
-                        provider: 'alchemy',
+                        provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
+                            ? 'quicknode'
+                            : 'alchemy',
                         lastError: message,
                         retryCount: 0,
                     },
@@ -97,7 +99,9 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                 metadata: {
                     destination: destinationAddress,
                     blockchain: this.hdWallet.chainForCurrency(currency),
-                    provider: 'alchemy',
+                    provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
+                        ? 'quicknode'
+                        : 'alchemy',
                     initiatedAt: new Date().toISOString(),
                 },
             },
@@ -200,7 +204,9 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                 metadata: {
                     destination: destinationAddress,
                     blockchain: this.hdWallet.chainForCurrency(currency),
-                    provider: 'alchemy',
+                    provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
+                        ? 'quicknode'
+                        : 'alchemy',
                     sweep: true,
                     feeWallet: true,
                     initiatedAt: new Date().toISOString(),

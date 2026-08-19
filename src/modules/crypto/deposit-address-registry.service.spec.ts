@@ -1,11 +1,17 @@
 import { DepositAddressRegistry } from './deposit-address-registry.service';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AddressRegistrationService } from './address-registration.service';
 
 describe('DepositAddressRegistry', () => {
   let registry: DepositAddressRegistry;
 
   beforeEach(() => {
-    registry = new DepositAddressRegistry({} as PrismaService);
+    registry = new DepositAddressRegistry(
+      {} as PrismaService,
+      {
+        registerAddress: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AddressRegistrationService,
+    );
   });
 
   describe('register / lookup / has', () => {

@@ -77,18 +77,24 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         }
         return this.providerInstance;
     }
-    get btcApiBase() {
-        const explicit = this.config.mempoolApiUrl;
-        if (explicit)
-            return explicit;
-        return this.config.isTestnet
-            ? 'https://mempool.space/testnet/api'
-            : 'https://mempool.space/api';
+    get btcRpcUrl() {
+        const url = this.config.quicknodeRpcUrl;
+        if (!url) {
+            throw new common_1.InternalServerErrorException('QUICKNODE_RPC_URL is not configured');
+        }
+        return url;
     }
     get btcNetwork() {
         return this.config.isTestnet
             ? bitcoin.networks.testnet
             : bitcoin.networks.bitcoin;
+    }
+    async btcRpcCall(method, params = []) {
+        const res = await (0, rxjs_1.lastValueFrom)(this.httpService.post(this.btcRpcUrl, { jsonrpc: '2.0', id: 1, method, params }, { timeout: 15_000, headers: { 'Content-Type': 'application/json' } }));
+        if (res.data.error) {
+            throw new Error(`Bitcoin RPC ${method} failed: ${res.data.error.message} (code ${res.data.error.code})`);
+        }
+        return res.data.result;
     }
     async getLatestEvmBlock() {
         return this.provider.getBlockNumber();
@@ -175,83 +181,55 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         return transfers;
     }
     async getBtcTipHeight() {
-        const data = await this.btcGet('/blocks/tip/height');
-        const tip = Number(data);
-        if (!Number.isFinite(tip)) {
-            throw new Error(`mempool.space returned a non-numeric tip height: "${String(data)}"`);
+        const height = await this.btcRpcCall('getblockcount');
+        if (!Number.isFinite(height)) {
+            throw new Error(`QuickNode getblockcount returned non-numeric value: "${String(height)}"`);
         }
-        return tip;
+        return height;
     }
-    async getBtcUtxos(address) {
-        const data = await this.btcGet(`/address/${address}/utxo`);
-        const utxos = (Array.isArray(data) ? data : []);
-        return utxos
-            .filter((u) => u.status?.confirmed)
-            .map((u) => ({
-            txid: u.txid,
-            vout: u.vout,
-            value: Number(u.value),
-            blockHeight: Number(u.status?.block_height),
-        }));
-    }
-    async btcGet(path) {
+    async getBtcTxStatus(txid) {
         try {
-            const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(`${this.btcApiBase}${path}`, {
-                timeout: 10_000,
-            }));
-            return res.data;
+            const tx = await this.btcRpcCall('getrawtransaction', [txid, true]);
+            if (tx.error) {
+                return { confirmed: false, blockHeight: null, error: tx.error };
+            }
+            if (tx.confirmations && tx.confirmations > 0) {
+                return {
+                    confirmed: true,
+                    blockHeight: tx.blockheight ?? null,
+                };
+            }
+            return { confirmed: false, blockHeight: null };
         }
         catch (error) {
             const err = error;
-            const status = err.response?.status;
-            const body = err.response?.data;
-            const detail = typeof body === 'string'
-                ? body
-                : JSON.stringify(body ?? err.message ?? err);
-            throw new Error(`mempool.space ${path} failed (status=${status ?? 'n/a'} code=${err.code ?? 'n/a'}): ${detail}`);
-        }
-    }
-    async getBtcTx(txid) {
-        try {
-            const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(`${this.btcApiBase}/tx/${txid}`, {
-                timeout: 10_000,
-            }));
-            const data = (res.data || {});
-            return {
-                confirmed: Boolean(data.status?.confirmed),
-                blockHeight: data.status?.block_height ?? null,
-            };
-        }
-        catch (error) {
-            const err = error;
-            const body = err.response?.data;
-            const message = typeof body === 'object' &&
-                body !== null &&
-                'message' in body &&
-                typeof body.message === 'string'
-                ? body.message
-                : err.message;
-            return {
-                confirmed: false,
-                blockHeight: null,
-                error: message,
-            };
+            return { confirmed: false, blockHeight: null, error: err.message };
         }
     }
     async getBtcRecommendedFee() {
         try {
-            const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(`${this.btcApiBase}/v1/fees/recommended`, {
-                timeout: 10_000,
-            }));
-            const fees = res.data;
-            const satPerVb = Number(fees.halfHourFee);
-            return satPerVb > 0 ? satPerVb : 2;
+            const result = await this.btcRpcCall('estimatesmartfee', [6]);
+            if (result.feerate && result.feerate > 0) {
+                return Math.ceil(result.feerate * 100);
+            }
+            return 2;
         }
         catch (error) {
             const err = error;
             this.logger.warn(`BTC fee estimate failed (${err.message}); using 2 sat/vB`);
             return 2;
         }
+    }
+    async getBtcUtxos(address) {
+        const utxos = await this.btcRpcCall('listunspent', [1, 9999999, [address]]);
+        return utxos
+            .filter((u) => u.confirmations > 0)
+            .map((u) => ({
+            txid: u.txid,
+            vout: u.vout,
+            value: Math.round(u.amount * 1e8),
+            blockHeight: u.blockheight ?? 0,
+        }));
     }
     async broadcastEvmNative(fromIndex, to, amount) {
         const signer = this.evmSigner(fromIndex);
@@ -319,11 +297,10 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         psbt.finalizeAllInputs();
         const tx = psbt.extractTransaction();
         const rawHex = tx.toHex();
-        const res = await (0, rxjs_1.lastValueFrom)(this.httpService.post(`${this.btcApiBase}/tx`, rawHex, {
-            headers: { 'content-type': 'text/plain' },
-            timeout: 10_000,
-        }));
-        const txid = String(res.data).trim();
+        const txid = await this.btcRpcCall('sendrawtransaction', [
+            rawHex,
+            0.1,
+        ]);
         this.logger.log(`BTC broadcast: ${amountBtc} ${to} (TX: ${txid})`);
         return txid;
     }

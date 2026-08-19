@@ -26,7 +26,6 @@ describe('AdminService', () => {
   const mockPrismaService = {
     user: { findUnique: jest.fn() },
     wallet: { findMany: jest.fn(), findUnique: jest.fn() },
-    chainCursor: { findUnique: jest.fn() },
     walletTransaction: { findMany: jest.fn() },
     withdrawalJob: { findMany: jest.fn(), count: jest.fn() },
   };
@@ -164,14 +163,7 @@ describe('AdminService', () => {
   });
 
   describe('getCryptoSystemStatus', () => {
-    it('reports provider config, registry size and chain cursors', async () => {
-      mockPrismaService.chainCursor.findUnique
-        .mockResolvedValueOnce({
-          chain: 'EVM',
-          lastBlock: 1234,
-          lastBlockHash: '0xabc',
-        })
-        .mockResolvedValueOnce(null);
+    it('reports provider config, registry size and webhook providers', async () => {
       mockPrismaService.walletTransaction.findMany.mockResolvedValue([
         {
           id: 'sweep-1',
@@ -189,9 +181,9 @@ describe('AdminService', () => {
       expect(result.provider).toBe('alchemy');
       expect(result.network).toBe('sepolia');
       expect(result.isTestnet).toBe(true);
+      expect(result.webhookProviders.evm).toBe('alchemy');
+      expect(result.webhookProviders.btc).toBe('quicknode');
       expect(result.registrySize).toBe(3);
-      expect(result.cursors.evm?.lastBlock).toBe(1234);
-      expect(result.cursors.btc).toBeNull();
       expect(result.masterWallets.evm).toBe('0xMaster');
       expect(result.recentSweeps).toHaveLength(1);
     });

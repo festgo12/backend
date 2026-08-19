@@ -37,7 +37,7 @@ export class SweepService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async sweepAll() {
-    if (!this.config.isAlchemy || this.isRunning) return;
+    if (this.isRunning) return;
     if (this.config.depositSweepThreshold <= 0) return;
     this.isRunning = true;
     try {
@@ -177,7 +177,7 @@ export class SweepService {
         metadata: {
           destination,
           blockchain: currency === Currency.BTC ? 'BTC' : 'EVM',
-          provider: 'alchemy',
+          provider: currency === Currency.BTC ? 'quicknode' : 'alchemy',
           sweep: true,
           fromAddress,
           initiatedAt: new Date().toISOString(),

@@ -24,7 +24,6 @@ describe('WithdrawalTrackerService', () => {
   let walletService: WalletService;
 
   const mockConfig = {
-    isAlchemy: true,
     evmConfirmations: 12,
     btcConfirmations: 2,
   };
@@ -32,6 +31,7 @@ describe('WithdrawalTrackerService', () => {
   const mockPrisma = {
     withdrawalJob: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
     walletTransaction: {
@@ -47,7 +47,7 @@ describe('WithdrawalTrackerService', () => {
     getEvmReceipt: jest.fn(),
     getLatestEvmBlock: jest.fn(),
     getBtcTipHeight: jest.fn(),
-    getBtcTx: jest.fn(),
+    getBtcTxStatus: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -134,5 +134,51 @@ describe('WithdrawalTrackerService', () => {
       },
     });
     expect(mockWalletService.updateTransactionStatus).not.toHaveBeenCalled();
+  });
+
+  it('confirms BTC jobs via polling using getBtcTxStatus', async () => {
+    const btcJob = { ...BASE_JOB, currency: Currency.BTC };
+    mockPrisma.withdrawalJob.findMany.mockResolvedValue([btcJob]);
+    mockChainClient.getBtcTipHeight.mockResolvedValue(100);
+    mockChainClient.getBtcTxStatus.mockResolvedValue({
+      confirmed: true,
+      blockHeight: 98,
+    });
+    mockPrisma.walletTransaction.findUnique.mockResolvedValue({
+      id: 'wt-1',
+      status: 'PENDING',
+    });
+    mockWalletService.updateTransactionStatus.mockResolvedValue({});
+
+    await service.processQueue();
+
+    expect(mockChainClient.getBtcTxStatus).toHaveBeenCalledWith('0xtxhash');
+    expect(mockPrisma.withdrawalJob.update).toHaveBeenCalledWith({
+      where: { id: 'job-1' },
+      data: {
+        status: 'CONFIRMED',
+        metadata: expect.objectContaining({ confirmations: 3 }),
+      },
+    });
+  });
+
+  it('confirms withdrawal via webhook path', async () => {
+    mockPrisma.withdrawalJob.findUnique.mockResolvedValue(BASE_JOB);
+    mockChainClient.getEvmReceipt.mockResolvedValue({
+      blockNumber: 50,
+      status: 1,
+    });
+    mockPrisma.walletTransaction.findUnique.mockResolvedValue({
+      id: 'wt-1',
+      status: 'PENDING',
+    });
+    mockWalletService.updateTransactionStatus.mockResolvedValue({});
+
+    await service.confirmFromWebhook('0xtxhash', 12);
+
+    expect(mockPrisma.withdrawalJob.update).toHaveBeenCalledWith({
+      where: { id: 'job-1' },
+      data: expect.objectContaining({ status: 'CONFIRMED' }),
+    });
   });
 });

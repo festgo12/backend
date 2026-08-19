@@ -38,6 +38,12 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         if (!this.btcMasterMnemonic) {
             this.logger.warn('No BTC master mnemonic configured (HD_BTC_MASTER_MNEMONIC); BTC address/private-key derivation will fail.');
         }
+        if (!this.alchemySigningKey) {
+            this.logger.warn('ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.');
+        }
+        if (!this.quicknodeStreamsSecret) {
+            this.logger.warn('QN_STREAM_SECRET is not set; QuickNode webhook signature verification will fail.');
+        }
     }
     get provider() {
         return 'alchemy';
@@ -75,35 +81,39 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
     get btcAccountIndex() {
         return Number(this.configService.get('HD_BTC_ACCOUNT', '0'));
     }
-    get alchemyEthWsUrl() {
-        return this.configService.get('ALCHEMY_ETH_WS_URL') || null;
-    }
     get alchemyEthHttpUrl() {
         return this.configService.get('ALCHEMY_ETH_HTTP_URL') || null;
     }
-    get alchemyBtcHttpUrl() {
-        return this.configService.get('ALCHEMY_BTC_HTTP_URL') || null;
+    get alchemySigningKey() {
+        return this.configService.get('ALCHEMY_SIGNING_KEY') || null;
     }
-    get mempoolApiUrl() {
-        return this.configService.get('MEMPOOL_API_URL') || null;
+    get alchemyAuthToken() {
+        return this.configService.get('ALCHEMY_AUTH_TOKEN') || null;
+    }
+    get alchemyWebhookId() {
+        return this.configService.get('ALCHEMY_WEBHOOK_ID') || null;
+    }
+    get quicknodeApiKey() {
+        return this.configService.get('QUICKNODE_API_KEY') || null;
+    }
+    get quicknodeStreamsId() {
+        return this.configService.get('QUICKNODE_STREAMS_ID') || null;
+    }
+    get quicknodeStreamsSecret() {
+        return this.configService.get('QN_STREAM_SECRET') || null;
+    }
+    get quicknodeRpcUrl() {
+        return this.configService.get('QUICKNODE_RPC_URL') || null;
+    }
+    get quicknodeKvListName() {
+        return (this.configService.get('QN_STREAMS_KV_LIST') ||
+            'p2n_btc_addresses');
     }
     get evmConfirmations() {
         return Number(this.configService.get('BLOCK_CONFIRMATIONS_ETH', '12'));
     }
     get btcConfirmations() {
         return Number(this.configService.get('BLOCK_CONFIRMATIONS_BTC', '2'));
-    }
-    get evmCatchUpMaxBlocks() {
-        return Number(this.configService.get('EVM_CATCH_UP_MAX_BLOCKS', '50'));
-    }
-    get evmCatchUpMinIntervalMs() {
-        return Number(this.configService.get('EVM_CATCH_UP_MIN_INTERVAL_MS', '60000'));
-    }
-    get evmAssetTransferBatchBlocks() {
-        return Number(this.configService.get('EVM_ASSET_TRANSFER_BATCH_BLOCKS', '5'));
-    }
-    get evmAssetTransferBatchMaxMs() {
-        return Number(this.configService.get('EVM_ASSET_TRANSFER_BATCH_MAX_MS', '30000'));
     }
     get depositSweepThreshold() {
         return Number(this.configService.get('DEPOSIT_SWEEP_THRESHOLD', '0'));

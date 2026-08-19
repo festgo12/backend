@@ -255,7 +255,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('crypto/status'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Local-first crypto system status (provider, cursors, sweeps)',
+        summary: 'Hybrid webhook crypto system status (providers, registry, sweeps)',
     }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),

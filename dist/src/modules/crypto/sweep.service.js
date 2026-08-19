@@ -38,7 +38,7 @@ let SweepService = SweepService_1 = class SweepService {
         this.tracker = tracker;
     }
     async sweepAll() {
-        if (!this.config.isAlchemy || this.isRunning)
+        if (this.isRunning)
             return;
         if (this.config.depositSweepThreshold <= 0)
             return;
@@ -136,7 +136,7 @@ let SweepService = SweepService_1 = class SweepService {
                 metadata: {
                     destination,
                     blockchain: currency === client_1.Currency.BTC ? 'BTC' : 'EVM',
-                    provider: 'alchemy',
+                    provider: currency === client_1.Currency.BTC ? 'quicknode' : 'alchemy',
                     sweep: true,
                     fromAddress,
                     initiatedAt: new Date().toISOString(),

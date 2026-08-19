@@ -15,25 +15,25 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
-        version: number;
     }[]>;
     getOrCreateWallet(userId: string, currency: Currency): Promise<{
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
-        version: number;
     }>;
     getWalletHistory(walletId: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -115,13 +115,13 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
-        version: number;
     }>;
     updateWalletDepositInfo(walletId: string, params: {
         address: string;
@@ -131,13 +131,13 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
-        version: number;
     }>;
     findTransactionById(id: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import * as bitcoin from 'bitcoinjs-lib';
 import * as bip39 from 'bip39';
 import { BIP32Factory } from 'bip32';
@@ -29,7 +29,7 @@ describe('ChainClientService', () => {
   const mockConfig = {
     isTestnet: true,
     alchemyEthHttpUrl: 'https://eth-sepolia.g.alchemy.com/v2/test',
-    mempoolApiUrl: 'https://mempool.space/api',
+    quicknodeRpcUrl: 'https://test.quiknode.pro/test',
     isAlchemy: true,
     getStablecoinContract: jest.fn(),
   };
@@ -60,50 +60,102 @@ describe('ChainClientService', () => {
   });
 
   describe('getBtcUtxos', () => {
-    it('returns only confirmed utxos with heights', async () => {
-      (http.get as jest.Mock).mockReturnValue(
+    it('returns only confirmed utxos from QuickNode listunspent', async () => {
+      (http.post as jest.Mock).mockReturnValue(
         of({
-          data: [
-            {
-              txid: 'aa',
-              vout: 0,
-              value: 1000,
-              status: { confirmed: true, block_height: 10 },
-            },
-            { txid: 'bb', vout: 0, value: 2000, status: { confirmed: false } },
-          ],
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: [
+              {
+                txid: 'aa',
+                vout: 0,
+                amount: 0.00001,
+                confirmations: 10,
+                blockheight: 100,
+              },
+              {
+                txid: 'bb',
+                vout: 0,
+                amount: 0.00002,
+                confirmations: 0,
+              },
+            ],
+          },
         }),
       );
 
       const utxos = await service.getBtcUtxos('tb1abc');
 
       expect(utxos).toEqual([
-        { txid: 'aa', vout: 0, value: 1000, blockHeight: 10 },
+        { txid: 'aa', vout: 0, value: 1000, blockHeight: 100 },
       ]);
     });
   });
 
   describe('getBtcTipHeight', () => {
-    it('throws a descriptive error including status and body on HTTP failure', async () => {
-      (http.get as jest.Mock).mockReturnValue(
-        throwError(() => ({
-          message: 'Request failed with status code 429',
-          code: 'ERR_BAD_RESPONSE',
-          response: { status: 429, data: 'Too many requests' },
-        })),
+    it('throws a descriptive error on RPC failure', async () => {
+      (http.post as jest.Mock).mockReturnValue(
+        of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            error: { code: -1, message: 'RPC error' },
+          },
+        }),
       );
 
       await expect(service.getBtcTipHeight()).rejects.toThrow(
-        /status=429.*Too many requests/,
+        /Bitcoin RPC getblockcount failed/,
       );
     });
 
     it('throws a descriptive error for a non-numeric tip', async () => {
-      (http.get as jest.Mock).mockReturnValue(of({ data: 'oops' }));
+      (http.post as jest.Mock).mockReturnValue(
+        of({
+          data: { jsonrpc: '2.0', id: 1, result: 'oops' },
+        }),
+      );
 
       await expect(service.getBtcTipHeight()).rejects.toThrow(
-        /non-numeric tip/,
+        /non-numeric value/,
       );
+    });
+  });
+
+  describe('getBtcTxStatus', () => {
+    it('returns confirmed status with block height', async () => {
+      (http.post as jest.Mock).mockReturnValue(
+        of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: {
+              confirmations: 3,
+              blockheight: 200,
+              blockhash: 'abc123',
+            },
+          },
+        }),
+      );
+
+      const status = await service.getBtcTxStatus('txhash');
+      expect(status).toEqual({ confirmed: true, blockHeight: 200 });
+    });
+
+    it('returns unconfirmed status for mempool tx', async () => {
+      (http.post as jest.Mock).mockReturnValue(
+        of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: { confirmations: 0 },
+          },
+        }),
+      );
+
+      const status = await service.getBtcTxStatus('txhash');
+      expect(status).toEqual({ confirmed: false, blockHeight: null });
     });
   });
 
@@ -208,26 +260,28 @@ describe('ChainClientService', () => {
   });
 
   describe('broadcastBtc', () => {
-    it('selects inputs, signs with the HD node and broadcasts raw hex', async () => {
-      (http.get as jest.Mock).mockImplementation((url: string) => {
-        if (url.includes('/utxo')) {
-          return of({
-            data: [
+    it('selects inputs, signs with the HD node and broadcasts via QuickNode RPC', async () => {
+      (http.post as jest.Mock).mockImplementation((url: string) => {
+        // listunspent call
+        if (!url.includes('quiknode')) {
+          return of({ data: {} });
+        }
+        return of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: [
               {
                 txid: 'cc'.repeat(32),
                 vout: 0,
-                value: 100000,
-                status: { confirmed: true, block_height: 100 },
+                amount: 0.001,
+                confirmations: 10,
+                blockheight: 100,
               },
             ],
-          });
-        }
-        if (url.includes('/v1/fees/recommended')) {
-          return of({ data: { halfHourFee: 2 } });
-        }
-        throw new Error(`Unexpected GET ${url}`);
+          },
+        });
       });
-      (http.post as jest.Mock).mockReturnValue(of({ data: 'deadbeef' }));
 
       const txid = await service.broadcastBtc(
         1000,
@@ -237,39 +291,44 @@ describe('ChainClientService', () => {
       );
 
       expect(txid).toBe('deadbeef');
-      const postedArgs = ((http.post as jest.Mock).mock.calls ?? []) as Array<
-        Array<unknown>
-      >;
-      const postedHex = (postedArgs[0]?.[1] ?? '') as string;
-      expect(typeof postedHex).toBe('string');
-      expect(postedHex.length).toBeGreaterThan(200);
+      const postCalls = (http.post as jest.Mock).mock.calls;
+      const lastCall = postCalls[postCalls.length - 1] as unknown[];
+      const body = lastCall[1] as {
+        method: string;
+        params: string[];
+      };
+      expect(body.method).toBe('sendrawtransaction');
+      expect(typeof body.params[0]).toBe('string');
+      expect(body.params[0].length).toBeGreaterThan(200);
     });
 
     it('throws when the confirmed balance is insufficient', async () => {
-      (http.get as jest.Mock).mockImplementation((url: string) => {
-        if (url.includes('/utxo')) {
-          return of({
-            data: [
+      (http.post as jest.Mock).mockImplementation((url: string) => {
+        if (!url.includes('quiknode')) {
+          return of({ data: {} });
+        }
+        return of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: [
               {
                 txid: 'cc'.repeat(32),
                 vout: 0,
-                value: 1000,
-                status: { confirmed: true, block_height: 100 },
+                amount: 0.00001,
+                confirmations: 10,
+                blockheight: 100,
               },
             ],
-          });
-        }
-        if (url.includes('/v1/fees/recommended')) {
-          return of({ data: { halfHourFee: 2 } });
-        }
-        throw new Error(`Unexpected GET ${url}`);
+          },
+        });
       });
 
       await expect(
         service.broadcastBtc(
           1000,
           'tb1qj0ruzthcv9s8kr55uuvcm73zj5zva3jh93swme',
-          0.05,
+          0.0005,
           2,
         ),
       ).rejects.toThrow('Insufficient confirmed BTC balance');

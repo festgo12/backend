@@ -46,29 +46,14 @@ const helmet_1 = __importDefault(require("helmet"));
 const path_1 = require("path");
 const express = __importStar(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-function rawBodyForWebhook(req, res, next) {
-    express.raw({
-        type: 'application/json',
-        verify: (rawReq, _res, buf) => {
-            rawReq.rawBody = buf;
-        },
-    })(req, res, (err) => {
-        if (err)
-            return next(err);
-        if (Buffer.isBuffer(req.body) && req.body.length) {
-            try {
-                req.body = JSON.parse(req.body.toString('utf8'));
-            }
-            catch {
-                return next(new common_1.BadRequestException('Invalid JSON body'));
-            }
-        }
-        next();
-    });
-}
 async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, { bodyParser: false });
+    app.use(express.json({
+        verify: (req, _res, buf) => {
+            req.rawBody = buf;
+        },
+    }));
     app.getHttpAdapter().getInstance().set('trust proxy', 1);
     app.use((0, helmet_1.default)());
     app.enableCors();
@@ -98,7 +83,6 @@ async function bootstrap() {
         standardHeaders: true,
         legacyHeaders: false,
     }));
-    app.use('/paystack/webhook', rawBodyForWebhook);
     app.use('/uploads', express.static((0, path_1.join)(__dirname, '..', 'uploads')));
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

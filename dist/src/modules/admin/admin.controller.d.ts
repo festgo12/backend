@@ -22,13 +22,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             }[];
         } & {
             id: string;
@@ -111,13 +111,13 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
+            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
-            version: number;
         }[];
         devices: {
             id: string;
@@ -215,13 +215,13 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
+            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
-            version: number;
         })[];
         meta: {
             total: number;
@@ -302,13 +302,13 @@ export declare class AdminController {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
-        version: number;
     }>;
     getAllTransactions(page?: string, limit?: string): Promise<{
         transactions: ({
@@ -352,13 +352,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -387,8 +387,8 @@ export declare class AdminController {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -471,11 +471,11 @@ export declare class AdminController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -495,8 +495,8 @@ export declare class AdminController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
             price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -509,13 +509,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -543,13 +543,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             }[];
         } & {
             id: string;
@@ -590,13 +590,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             }[];
         } & {
             id: string;
@@ -628,11 +628,11 @@ export declare class AdminController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
+        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -695,13 +695,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -764,13 +764,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -799,28 +799,16 @@ export declare class AdminController {
         provider: "alchemy";
         network: string;
         isTestnet: boolean;
+        webhookProviders: {
+            evm: string;
+            btc: string;
+        };
         confirmations: {
             eth: number;
             btc: number;
         };
         depositSweepThreshold: number;
         registrySize: number;
-        cursors: {
-            evm: {
-                id: string;
-                updatedAt: Date;
-                chain: string;
-                lastBlock: number;
-                lastBlockHash: string | null;
-            } | null;
-            btc: {
-                id: string;
-                updatedAt: Date;
-                chain: string;
-                lastBlock: number;
-                lastBlockHash: string | null;
-            } | null;
-        };
         masterWallets: {
             evm: string;
             btc: string;
@@ -842,8 +830,8 @@ export declare class AdminController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            currency: import("@src/generated/client").$Enums.Currency;
             metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            currency: import("@src/generated/client").$Enums.Currency;
             destination: string;
             amount: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
@@ -869,7 +857,7 @@ export declare class AdminController {
             balance: number;
             error?: undefined;
         } | {
-            currency: "NGN" | "USDT" | "ETH" | "USDC";
+            currency: "NGN" | "ETH" | "USDT" | "USDC";
             address: string;
             balance: number;
             error?: undefined;
@@ -964,13 +952,13 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
-                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -1032,13 +1020,13 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
+            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
-            version: number;
         };
         ledgerEntries: {
             type: import("@src/generated/client").$Enums.LedgerType;

@@ -14,11 +14,14 @@ interface ErrorLike {
 }
 
 /**
- * Database-backed withdrawal confirmation queue (mirrors the notifications
- * queue pattern). A WithdrawalJob row is created when a local (Alchemy)
- * withdrawal is broadcast; a cron worker polls the chain until the
- * transaction is CONFIRMED or FAILED and then finalises the corresponding
- * WalletTransaction (which creates the ledger debit on COMPLETED).
+ * Hybrid withdrawal confirmation queue.
+ *
+ * Primary path: WebhookProcessorService receives a push notification from
+ * Alchemy (EVM) or QuickNode (BTC) when the outgoing tx is mined, and calls
+ * confirmFromWebhook() for instant finalization.
+ *
+ * Fallback path: A 30-second cron polls the chain directly for any pending
+ * jobs that were not confirmed via webhook within the expected window.
  */
 @Injectable()
 export class WithdrawalTrackerService {
@@ -54,9 +57,63 @@ export class WithdrawalTrackerService {
     });
   }
 
+  // ─── Webhook Confirmation (Primary Path) ────────────────────────────────
+
+  /**
+   * Called by WebhookProcessorService when an outbound transaction is detected
+   * via webhook push. Immediately finalizes if enough confirmations are met;
+   * otherwise stores the confirmation count for the polling fallback.
+   */
+  async confirmFromWebhook(
+    txHash: string,
+    requiredConfirmations: number,
+  ): Promise<void> {
+    const job = await this.prisma.withdrawalJob.findUnique({
+      where: { txHash },
+    });
+    if (!job || job.status !== 'PENDING') return;
+
+    // For EVM, we can check the receipt for success/failure
+    if (job.currency !== Currency.BTC) {
+      const receipt = await this.chainClient.getEvmReceipt(txHash);
+      if (receipt && receipt.status === 0) {
+        await this.finalize(job, 'FAILED', {
+          lastError: 'Transaction reverted on-chain',
+          confirmedVia: 'webhook',
+          failedAt: new Date().toISOString(),
+        });
+        return;
+      }
+    }
+
+    // Store the webhook confirmation — the cron fallback will finalize
+    // when enough confirmations accumulate
+    const currentMeta = (job.metadata ?? {}) as Record<string, unknown>;
+    await this.prisma.withdrawalJob.update({
+      where: { id: job.id },
+      data: {
+        metadata: {
+          ...currentMeta,
+          webhookConfirmed: true,
+          webhookConfirmations: requiredConfirmations,
+          lastWebhookAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    // If already at enough confirmations, finalize immediately
+    await this.finalize(job, 'CONFIRMED', {
+      confirmations: requiredConfirmations,
+      confirmedVia: 'webhook',
+      confirmedAt: new Date().toISOString(),
+    });
+  }
+
+  // ─── Polling Fallback (Cron) ───────────────────────────────────────────
+
   @Cron(CronExpression.EVERY_30_SECONDS)
   async processQueue() {
-    if (!this.config.isAlchemy || this.isProcessing) return;
+    if (this.isProcessing) return;
     this.isProcessing = true;
     try {
       const due = await this.prisma.withdrawalJob.findMany({
@@ -84,9 +141,8 @@ export class WithdrawalTrackerService {
   }
 
   /**
-   * Polls the chain for a single job and updates its status. On CONFIRMED the
-   * linked WalletTransaction is marked COMPLETED (creating the ledger debit);
-   * on FAILED the transaction is marked FAILED for admin retry.
+   * Polls the chain for a single job. On CONFIRMED the linked WalletTransaction
+   * is marked COMPLETED; on FAILED it is marked FAILED for admin retry.
    */
   private async poll(job: WithdrawalJob) {
     const currency = job.currency;
@@ -98,7 +154,7 @@ export class WithdrawalTrackerService {
 
     if (currency === Currency.BTC) {
       const tip = await this.chainClient.getBtcTipHeight();
-      const status = await this.chainClient.getBtcTx(job.txHash);
+      const status = await this.chainClient.getBtcTxStatus(job.txHash);
       if (status.error) {
         pollError = status.error;
       } else if (status.confirmed) {
@@ -123,6 +179,7 @@ export class WithdrawalTrackerService {
     if (confirmed) {
       await this.finalize(job, 'CONFIRMED', {
         confirmations,
+        confirmedVia: 'polling',
         confirmedAt: new Date().toISOString(),
       });
       return;
@@ -131,6 +188,7 @@ export class WithdrawalTrackerService {
     if (failed) {
       await this.finalize(job, 'FAILED', {
         lastError: 'Transaction reverted on-chain',
+        confirmedVia: 'polling',
         failedAt: new Date().toISOString(),
       });
       return;
@@ -184,8 +242,12 @@ export class WithdrawalTrackerService {
         transactionStatus,
         extraMetadata,
       );
+      const via =
+        typeof extraMetadata.confirmedVia === 'string'
+          ? extraMetadata.confirmedVia
+          : 'unknown';
       this.logger.log(
-        `Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'}`,
+        `Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'} (via ${via})`,
       );
     }
   }

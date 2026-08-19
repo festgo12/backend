@@ -25,19 +25,11 @@ const ERC20_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
 ];
 
-interface MempoolUtxo {
-  txid: string;
-  vout: number;
-  value: number;
-  status?: { confirmed?: boolean; block_height?: number };
-}
-
-interface MempoolTx {
-  status?: { confirmed?: boolean; block_height?: number };
-}
-
-interface MempoolFees {
-  halfHourFee?: number;
+interface JsonRpcResponse<T = unknown> {
+  jsonrpc: string;
+  id: number;
+  result?: T;
+  error?: { code: number; message: string };
 }
 
 interface ErrorLike {
@@ -88,13 +80,12 @@ export interface BtcTxStatus {
 }
 
 /**
- * Low-level chain access for the local-first (Alchemy) provider:
- *   - EVM: ethers JsonRpcProvider over the configured Alchemy HTTP URL.
- *     Deposits are detected with `alchemy_getAssetTransfers` (covers native
- *     ETH and ERC-20 in one call); transfers are broadcast with ethers.
- *   - BTC: mempool.space REST API for addresses/utxos/broadcast, with
- *     bitcoinjs-lib PSBT construction/signing from the HD wallet.
- * All keys derive from the HD master seed.
+ * Low-level chain access for the hybrid provider architecture:
+ *   - EVM: ethers JsonRpcProvider over Alchemy HTTP URL for RPC + broadcast.
+ *     Deposit detection via Alchemy Address Activity Webhook (push).
+ *   - BTC: QuickNode Bitcoin JSON-RPC for broadcast + confirmation checks.
+ *     Deposit detection via QuickNode Streams (push).
+ * All signing keys derive from the HD master seed.
  */
 @Injectable()
 export class ChainClientService {
@@ -106,6 +97,8 @@ export class ChainClientService {
     private readonly config: CryptoConfigService,
     private readonly hdWallet: HdWalletService,
   ) {}
+
+  // ─── EVM Provider ──────────────────────────────────────────────────────
 
   get provider(): JsonRpcProvider {
     const url = this.config.alchemyEthHttpUrl;
@@ -120,12 +113,16 @@ export class ChainClientService {
     return this.providerInstance;
   }
 
-  private get btcApiBase(): string {
-    const explicit = this.config.mempoolApiUrl;
-    if (explicit) return explicit;
-    return this.config.isTestnet
-      ? 'https://mempool.space/testnet/api'
-      : 'https://mempool.space/api';
+  // ─── Bitcoin JSON-RPC (QuickNode) ──────────────────────────────────────
+
+  private get btcRpcUrl(): string {
+    const url = this.config.quicknodeRpcUrl;
+    if (!url) {
+      throw new InternalServerErrorException(
+        'QUICKNODE_RPC_URL is not configured',
+      );
+    }
+    return url;
   }
 
   private get btcNetwork(): bitcoin.Network {
@@ -134,7 +131,26 @@ export class ChainClientService {
       : bitcoin.networks.bitcoin;
   }
 
-  // --- EVM reads ---
+  private async btcRpcCall<T>(
+    method: string,
+    params: unknown[] = [],
+  ): Promise<T> {
+    const res = await lastValueFrom(
+      this.httpService.post<JsonRpcResponse<T>>(
+        this.btcRpcUrl,
+        { jsonrpc: '2.0', id: 1, method, params },
+        { timeout: 15_000, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    if (res.data.error) {
+      throw new Error(
+        `Bitcoin RPC ${method} failed: ${res.data.error.message} (code ${res.data.error.code})`,
+      );
+    }
+    return res.data.result as T;
+  }
+
+  // ─── EVM Reads ─────────────────────────────────────────────────────────
 
   async getLatestEvmBlock(): Promise<number> {
     return this.provider.getBlockNumber();
@@ -151,7 +167,6 @@ export class ChainClientService {
     return { blockNumber: receipt.blockNumber, status: receipt.status };
   }
 
-  /** Human-unit balance for a currency at an EVM address (native or ERC-20). */
   async getEvmBalance(address: string, currency: Currency): Promise<number> {
     if (currency === Currency.ETH) {
       return Number(formatEther(await this.provider.getBalance(address)));
@@ -165,10 +180,7 @@ export class ChainClientService {
 
   /**
    * Transfer scan for a block range via alchemy_getAssetTransfers (one call,
-   * ~30 CU, versus ~60 CU per eth_getLogs or getBlock). Uses the given
-   * provider (the live WebSocket one when connected) so no extra HTTP
-   * connection is opened. Native ETH (external) and ERC-20 transfers to the
-   * registered addresses are returned with block numbers and human units.
+   * ~30 CU). Used for catch-up scanning if needed.
    */
   async getAssetTransfers(
     provider: TransferProvider,
@@ -267,100 +279,60 @@ export class ChainClientService {
     return transfers;
   }
 
-  // --- BTC reads ---
+  // ─── Bitcoin Reads (QuickNode RPC) ─────────────────────────────────────
 
   async getBtcTipHeight(): Promise<number> {
-    const data = await this.btcGet<unknown>('/blocks/tip/height');
-    const tip = Number(data);
-    if (!Number.isFinite(tip)) {
+    const height = await this.btcRpcCall<number>('getblockcount');
+    if (!Number.isFinite(height)) {
       throw new Error(
-        `mempool.space returned a non-numeric tip height: "${String(data)}"`,
+        `QuickNode getblockcount returned non-numeric value: "${String(height)}"`,
       );
     }
-    return tip;
-  }
-
-  /** Confirmed utxos for a bech32/legacy address. */
-  async getBtcUtxos(address: string): Promise<BtcUtxo[]> {
-    const data = await this.btcGet<unknown>(`/address/${address}/utxo`);
-    const utxos = (Array.isArray(data) ? data : []) as MempoolUtxo[];
-    return utxos
-      .filter((u) => u.status?.confirmed)
-      .map((u) => ({
-        txid: u.txid,
-        vout: u.vout,
-        value: Number(u.value),
-        blockHeight: Number(u.status?.block_height),
-      }));
+    return height;
   }
 
   /**
-   * mempool.space GET with a timeout and a descriptive error (HTTP status,
-   * response body and axios code) so failures are never logged as empty
-   * messages by callers.
+   * Checks the status of a BTC transaction via QuickNode's getrawtransaction.
+   * Returns confirmation info for the withdrawal tracker.
    */
-  private async btcGet<T>(path: string): Promise<T> {
+  async getBtcTxStatus(txid: string): Promise<BtcTxStatus> {
     try {
-      const res = await lastValueFrom(
-        this.httpService.get<T>(`${this.btcApiBase}${path}`, {
-          timeout: 10_000,
-        }),
-      );
-      return res.data;
-    } catch (error) {
-      const err = error as ErrorLike;
-      const status = err.response?.status;
-      const body = err.response?.data;
-      const detail =
-        typeof body === 'string'
-          ? body
-          : JSON.stringify(body ?? err.message ?? err);
-      throw new Error(
-        `mempool.space ${path} failed (status=${status ?? 'n/a'} code=${err.code ?? 'n/a'}): ${detail}`,
-      );
-    }
-  }
+      const tx = await this.btcRpcCall<{
+        confirmations?: number;
+        blockhash?: string;
+        blockheight?: number;
+        blocktime?: number;
+        error?: string;
+      }>('getrawtransaction', [txid, true]);
 
-  async getBtcTx(txid: string): Promise<BtcTxStatus> {
-    try {
-      const res = await lastValueFrom(
-        this.httpService.get(`${this.btcApiBase}/tx/${txid}`, {
-          timeout: 10_000,
-        }),
-      );
-      const data = (res.data || {}) as MempoolTx;
-      return {
-        confirmed: Boolean(data.status?.confirmed),
-        blockHeight: data.status?.block_height ?? null,
-      };
+      if (tx.error) {
+        return { confirmed: false, blockHeight: null, error: tx.error };
+      }
+      if (tx.confirmations && tx.confirmations > 0) {
+        return {
+          confirmed: true,
+          blockHeight: tx.blockheight ?? null,
+        };
+      }
+      return { confirmed: false, blockHeight: null };
     } catch (error) {
       const err = error as ErrorLike;
-      const body = err.response?.data;
-      const message =
-        typeof body === 'object' &&
-        body !== null &&
-        'message' in body &&
-        typeof (body as { message?: unknown }).message === 'string'
-          ? ((body as { message?: string }).message as string)
-          : err.message;
-      return {
-        confirmed: false,
-        blockHeight: null,
-        error: message,
-      };
+      return { confirmed: false, blockHeight: null, error: err.message };
     }
   }
 
   async getBtcRecommendedFee(): Promise<number> {
     try {
-      const res = await lastValueFrom(
-        this.httpService.get(`${this.btcApiBase}/v1/fees/recommended`, {
-          timeout: 10_000,
-        }),
+      const result = await this.btcRpcCall<{ feerate?: number }>(
+        'estimatesmartfee',
+        [6],
       );
-      const fees = res.data as MempoolFees;
-      const satPerVb = Number(fees.halfHourFee);
-      return satPerVb > 0 ? satPerVb : 2;
+      // estimatesmartfee returns BTC/kB, we want sat/vB
+      if (result.feerate && result.feerate > 0) {
+        // BTC/kB to sat/vB: multiply by 100000 / 1000 = 100
+        return Math.ceil(result.feerate * 100);
+      }
+      return 2;
     } catch (error) {
       const err = error as ErrorLike;
       this.logger.warn(
@@ -370,7 +342,29 @@ export class ChainClientService {
     }
   }
 
-  // --- EVM broadcast ---
+  /** Confirmed utxos for a bech32 address via QuickNode's listunspent. */
+  async getBtcUtxos(address: string): Promise<BtcUtxo[]> {
+    const utxos = await this.btcRpcCall<
+      Array<{
+        txid: string;
+        vout: number;
+        amount: number;
+        confirmations: number;
+        blockheight?: number;
+      }>
+    >('listunspent', [1, 9999999, [address]]);
+
+    return utxos
+      .filter((u) => u.confirmations > 0)
+      .map((u) => ({
+        txid: u.txid,
+        vout: u.vout,
+        value: Math.round(u.amount * 1e8),
+        blockHeight: u.blockheight ?? 0,
+      }));
+  }
+
+  // ─── EVM Broadcast ─────────────────────────────────────────────────────
 
   async broadcastEvmNative(
     fromIndex: number,
@@ -409,12 +403,12 @@ export class ChainClientService {
     return tx.hash;
   }
 
-  // --- BTC broadcast ---
+  // ─── BTC Broadcast (QuickNode RPC) ─────────────────────────────────────
 
   /**
    * Broadcasts a native BTC payment from the derived index to `to`. Performs
-   * simple descending coin selection over confirmed utxos; change returns to
-   * the source address. Returns the txid.
+   * descending coin selection over confirmed utxos; change returns to the
+   * source address. Returns the txid.
    */
   async broadcastBtc(
     fromIndex: number,
@@ -476,18 +470,15 @@ export class ChainClientService {
     const tx = psbt.extractTransaction();
     const rawHex = tx.toHex();
 
-    const res = await lastValueFrom(
-      this.httpService.post(`${this.btcApiBase}/tx`, rawHex, {
-        headers: { 'content-type': 'text/plain' },
-        timeout: 10_000,
-      }),
-    );
-    const txid = String(res.data).trim();
+    const txid = await this.btcRpcCall<string>('sendrawtransaction', [
+      rawHex,
+      0.1,
+    ]);
     this.logger.log(`BTC broadcast: ${amountBtc} ${to} (TX: ${txid})`);
     return txid;
   }
 
-  // --- helpers ---
+  // ─── Helpers ────────────────────────────────────────────────────────────
 
   private evmSigner(fromIndex: number): Wallet {
     const pk = this.hdWallet.derivePrivateKey(Currency.ETH, fromIndex);
@@ -507,7 +498,6 @@ export class ChainClientService {
     return Math.max(1, Math.round(size * feePerByte));
   }
 
-  /** Currency-safe chain kind (re-export for consumers). */
   chainKind(currency: Currency): ChainKind | null {
     return this.hdWallet.chainForCurrency(currency);
   }

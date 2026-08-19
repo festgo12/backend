@@ -17,10 +17,7 @@ let AdminModule = class AdminModule {
 exports.AdminModule = AdminModule;
 exports.AdminModule = AdminModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            (0, common_1.forwardRef)(() => paystack_module_1.PaystackModule),
-            (0, common_1.forwardRef)(() => wallet_module_1.WalletModule),
-        ],
+        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), (0, common_1.forwardRef)(() => wallet_module_1.WalletModule)],
         controllers: [admin_controller_1.AdminController],
         providers: [admin_service_1.AdminService],
         exports: [admin_service_1.AdminService],

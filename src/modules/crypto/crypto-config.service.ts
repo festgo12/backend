@@ -7,18 +7,17 @@ export const STABLECOIN_CONTRACTS_MAINNET: Record<string, string> = {
 };
 
 export const STABLECOIN_CONTRACTS_TESTNET: Record<string, string> = {
-  USDT: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0', // USDT on Sepolia
-  USDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC on Sepolia
+  USDT: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',
+  USDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
 };
 
 export type CryptoProvider = 'alchemy';
 export type ChainKind = 'EVM' | 'BTC';
 
 /**
- * Central configuration for the local-first crypto architecture.
- * Resolves provider mode, network, HD master seeds/xpubs and per-chain
- * confirmation thresholds from environment variables. CRYPTO_PROVIDER is
- * pinned to 'alchemy'; master seeds come from the HD_* keys.
+ * Central configuration for the hybrid webhook-based crypto architecture.
+ * EVM deposits arrive via Alchemy Address Activity Webhook; BTC deposits
+ * via QuickNode Streams. Both providers push events to a unified endpoint.
  */
 @Injectable()
 export class CryptoConfigService implements OnModuleInit {
@@ -45,7 +44,19 @@ export class CryptoConfigService implements OnModuleInit {
         'No BTC master mnemonic configured (HD_BTC_MASTER_MNEMONIC); BTC address/private-key derivation will fail.',
       );
     }
+    if (!this.alchemySigningKey) {
+      this.logger.warn(
+        'ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.',
+      );
+    }
+    if (!this.quicknodeStreamsSecret) {
+      this.logger.warn(
+        'QN_STREAM_SECRET is not set; QuickNode webhook signature verification will fail.',
+      );
+    }
   }
+
+  // ─── Provider ──────────────────────────────────────────────────────────────
 
   get provider(): CryptoProvider {
     return 'alchemy';
@@ -64,6 +75,8 @@ export class CryptoConfigService implements OnModuleInit {
   get isTestnet(): boolean {
     return this.network !== 'mainnet';
   }
+
+  // ─── HD Master Seeds ──────────────────────────────────────────────────────
 
   get evmMasterMnemonic(): string | null {
     return this.configService.get<string>('HD_EVM_MASTER_MNEMONIC') || null;
@@ -107,21 +120,58 @@ export class CryptoConfigService implements OnModuleInit {
     return Number(this.configService.get<string>('HD_BTC_ACCOUNT', '0'));
   }
 
-  get alchemyEthWsUrl(): string | null {
-    return this.configService.get<string>('ALCHEMY_ETH_WS_URL') || null;
-  }
+  // ─── Alchemy (EVM RPC + Webhook) ─────────────────────────────────────────
 
   get alchemyEthHttpUrl(): string | null {
     return this.configService.get<string>('ALCHEMY_ETH_HTTP_URL') || null;
   }
 
-  get alchemyBtcHttpUrl(): string | null {
-    return this.configService.get<string>('ALCHEMY_BTC_HTTP_URL') || null;
+  /** Per-webhook signing key for verifying X-Alchemy-Signature. */
+  get alchemySigningKey(): string | null {
+    return this.configService.get<string>('ALCHEMY_SIGNING_KEY') || null;
   }
 
-  get mempoolApiUrl(): string | null {
-    return this.configService.get<string>('MEMPOOL_API_URL') || null;
+  /** Auth token for the Alchemy Notify API (create/update webhooks). */
+  get alchemyAuthToken(): string | null {
+    return this.configService.get<string>('ALCHEMY_AUTH_TOKEN') || null;
   }
+
+  /** The Alchemy webhook ID to manage addresses on. */
+  get alchemyWebhookId(): string | null {
+    return this.configService.get<string>('ALCHEMY_WEBHOOK_ID') || null;
+  }
+
+  // ─── QuickNode (BTC RPC + Streams) ──────────────────────────────────────
+
+  /** QuickNode API key for Streams/REST management. */
+  get quicknodeApiKey(): string | null {
+    return this.configService.get<string>('QUICKNODE_API_KEY') || null;
+  }
+
+  /** QuickNode Streams ID for BTC address activity. */
+  get quicknodeStreamsId(): string | null {
+    return this.configService.get<string>('QUICKNODE_STREAMS_ID') || null;
+  }
+
+  /** Security token for verifying X-QN-Signature on incoming webhooks. */
+  get quicknodeStreamsSecret(): string | null {
+    return this.configService.get<string>('QN_STREAM_SECRET') || null;
+  }
+
+  /** QuickNode Bitcoin JSON-RPC endpoint URL. */
+  get quicknodeRpcUrl(): string | null {
+    return this.configService.get<string>('QUICKNODE_RPC_URL') || null;
+  }
+
+  /** KV Store list name for BTC watched addresses. */
+  get quicknodeKvListName(): string {
+    return (
+      this.configService.get<string>('QN_STREAMS_KV_LIST') ||
+      'p2n_btc_addresses'
+    );
+  }
+
+  // ─── Confirmation Thresholds ─────────────────────────────────────────────
 
   get evmConfirmations(): number {
     return Number(
@@ -135,52 +185,7 @@ export class CryptoConfigService implements OnModuleInit {
     );
   }
 
-  /**
-   * Maximum number of blocks the EVM deposit listener re-scans after a
-   * (re)connect. Defaults to 50 (~10 minutes at ~12s/block). The Alchemy free
-   * tier caps each eth_getLogs request at a 10-block range, so the scan is
-   * chunked into <=10-block windows regardless.
-   */
-  get evmCatchUpMaxBlocks(): number {
-    return Number(
-      this.configService.get<string>('EVM_CATCH_UP_MAX_BLOCKS', '50'),
-    );
-  }
-
-  /**
-   * Minimum delay between EVM catch-up re-scans. Prevents reconnect loops
-   * from hammering eth_getLogs. A gap smaller than the current window can be
-   * re-scanned immediately; only repeated scans are throttled.
-   */
-  get evmCatchUpMinIntervalMs(): number {
-    return Number(
-      this.configService.get<string>('EVM_CATCH_UP_MIN_INTERVAL_MS', '60000'),
-    );
-  }
-
-  /**
-   * Maximum number of newHeads blocks buffered before the steady-state
-   * native-ETH scan is flushed with a single alchemy_getAssetTransfers call.
-   * Larger batches mean fewer CU, at the cost of a small detection delay.
-   */
-  get evmAssetTransferBatchBlocks(): number {
-    return Number(
-      this.configService.get<string>('EVM_ASSET_TRANSFER_BATCH_BLOCKS', '5'),
-    );
-  }
-
-  /**
-   * Maximum time a partial batch is held before it is flushed, so low block
-   * rates never delay detection indefinitely.
-   */
-  get evmAssetTransferBatchMaxMs(): number {
-    return Number(
-      this.configService.get<string>(
-        'EVM_ASSET_TRANSFER_BATCH_MAX_MS',
-        '30000',
-      ),
-    );
-  }
+  // ─── Sweep ────────────────────────────────────────────────────────────────
 
   get depositSweepThreshold(): number {
     return Number(
@@ -188,12 +193,8 @@ export class CryptoConfigService implements OnModuleInit {
     );
   }
 
-  /**
-   * Resolves the ERC-20 contract for a stablecoin. An explicit env override
-   * (`ALCHEMY_<CURRENCY>_CONTRACT`) always wins; otherwise the
-   * network-appropriate default is returned. Returns null when no contract is
-   * configured for the active network.
-   */
+  // ─── Stablecoin Contracts ────────────────────────────────────────────────
+
   getStablecoinContract(currency: string): string | null {
     const override = this.configService.get<string>(
       `ALCHEMY_${currency}_CONTRACT`,

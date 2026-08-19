@@ -46,8 +46,43 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
             },
         });
     }
+    async confirmFromWebhook(txHash, requiredConfirmations) {
+        const job = await this.prisma.withdrawalJob.findUnique({
+            where: { txHash },
+        });
+        if (!job || job.status !== 'PENDING')
+            return;
+        if (job.currency !== client_1.Currency.BTC) {
+            const receipt = await this.chainClient.getEvmReceipt(txHash);
+            if (receipt && receipt.status === 0) {
+                await this.finalize(job, 'FAILED', {
+                    lastError: 'Transaction reverted on-chain',
+                    confirmedVia: 'webhook',
+                    failedAt: new Date().toISOString(),
+                });
+                return;
+            }
+        }
+        const currentMeta = (job.metadata ?? {});
+        await this.prisma.withdrawalJob.update({
+            where: { id: job.id },
+            data: {
+                metadata: {
+                    ...currentMeta,
+                    webhookConfirmed: true,
+                    webhookConfirmations: requiredConfirmations,
+                    lastWebhookAt: new Date().toISOString(),
+                },
+            },
+        });
+        await this.finalize(job, 'CONFIRMED', {
+            confirmations: requiredConfirmations,
+            confirmedVia: 'webhook',
+            confirmedAt: new Date().toISOString(),
+        });
+    }
     async processQueue() {
-        if (!this.config.isAlchemy || this.isProcessing)
+        if (this.isProcessing)
             return;
         this.isProcessing = true;
         try {
@@ -82,7 +117,7 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         let pollError = null;
         if (currency === client_1.Currency.BTC) {
             const tip = await this.chainClient.getBtcTipHeight();
-            const status = await this.chainClient.getBtcTx(job.txHash);
+            const status = await this.chainClient.getBtcTxStatus(job.txHash);
             if (status.error) {
                 pollError = status.error;
             }
@@ -110,6 +145,7 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         if (confirmed) {
             await this.finalize(job, 'CONFIRMED', {
                 confirmations,
+                confirmedVia: 'polling',
                 confirmedAt: new Date().toISOString(),
             });
             return;
@@ -117,6 +153,7 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         if (failed) {
             await this.finalize(job, 'FAILED', {
                 lastError: 'Transaction reverted on-chain',
+                confirmedVia: 'polling',
                 failedAt: new Date().toISOString(),
             });
             return;
@@ -154,7 +191,10 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         const transactionStatus = status === 'CONFIRMED' ? 'COMPLETED' : 'FAILED';
         if (transaction && transaction.status !== transactionStatus) {
             await this.walletService.updateTransactionStatus(transaction.id, transactionStatus, extraMetadata);
-            this.logger.log(`Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'}`);
+            const via = typeof extraMetadata.confirmedVia === 'string'
+                ? extraMetadata.confirmedVia
+                : 'unknown';
+            this.logger.log(`Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'} (via ${via})`);
         }
     }
 };

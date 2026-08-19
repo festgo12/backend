@@ -2,6 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Currency } from '@src/generated/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { ChainKind } from './crypto-config.service';
+import { AddressRegistrationService } from './address-registration.service';
 
 export interface AddressRegistration {
   chain: ChainKind;
@@ -14,13 +15,19 @@ export interface AddressRegistration {
  * database on boot (cold start) and updated as new wallets are initialised.
  * A single address may map to multiple wallets (defensive; collisions are
  * near-impossible with the deterministic index scheme).
+ *
+ * On register(), the address is also pushed to the appropriate webhook
+ * provider (Alchemy for EVM, QuickNode KV Store for BTC).
  */
 @Injectable()
 export class DepositAddressRegistry implements OnApplicationBootstrap {
   private readonly logger = new Logger(DepositAddressRegistry.name);
   private readonly addresses = new Map<string, AddressRegistration[]>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly addressRegistration: AddressRegistrationService,
+  ) {}
 
   async onApplicationBootstrap() {
     await this.rebuild();
@@ -50,23 +57,42 @@ export class DepositAddressRegistry implements OnApplicationBootstrap {
     );
   }
 
-  /** Registers an address for a wallet (no-op if already registered). */
+  /**
+   * Registers an address for a wallet and pushes it to the webhook provider.
+   * No-op if already registered (does not re-push to the provider).
+   */
   register(address: string, chain: ChainKind, walletId: string) {
-    this.add(address, { chain, walletId }, true);
+    const isNew = this.add(address, { chain, walletId }, true);
+    if (isNew) {
+      // Fire-and-forget: register with webhook provider
+      this.addressRegistration
+        .registerAddress(address, chain)
+        .catch((error) => {
+          const err = error as Error;
+          this.logger.warn(
+            `Failed to register ${chain} address ${address} with provider: ${err.message}`,
+          );
+        });
+    }
   }
 
+  /**
+   * Adds an address to the in-memory map. Returns true if the address is new
+   * (not previously registered for this wallet).
+   */
   private add(
     address: string,
     registration: AddressRegistration,
     log: boolean,
-  ) {
+  ): boolean {
     const key = this.keyFor(address, registration.chain);
     const existing = this.addresses.get(key);
     if (existing) {
       if (!existing.some((r) => r.walletId === registration.walletId)) {
         existing.push(registration);
+        return true;
       }
-      return;
+      return false;
     }
     this.addresses.set(key, [registration]);
     if (log) {
@@ -74,6 +100,7 @@ export class DepositAddressRegistry implements OnApplicationBootstrap {
         `Registered deposit address ${address} for wallet ${registration.walletId}`,
       );
     }
+    return true;
   }
 
   /** Removes a wallet from the registry. */
@@ -102,7 +129,7 @@ export class DepositAddressRegistry implements OnApplicationBootstrap {
     return this.addresses.has(this.keyFor(address, chain));
   }
 
-  /** All tracked addresses for a chain (for BTC polling workers). */
+  /** All tracked addresses for a chain. */
   addressesForChain(chain: ChainKind): string[] {
     const out: string[] = [];
     for (const [key, registrations] of this.addresses.entries()) {

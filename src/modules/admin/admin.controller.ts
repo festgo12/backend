@@ -149,7 +149,8 @@ export class AdminController {
 
   @Get('crypto/status')
   @ApiOperation({
-    summary: 'Local-first crypto system status (provider, cursors, sweeps)',
+    summary:
+      'Hybrid webhook crypto system status (providers, registry, sweeps)',
   })
   getCryptoSystemStatus() {
     return this.adminService.getCryptoSystemStatus();

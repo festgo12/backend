@@ -1,20 +1,14 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
-import { DepositAddressRegistry } from './deposit-address-registry.service';
-import { ChainClientService } from './chain-client.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { Currency } from '@src/generated/client';
-export declare class BtcDepositPollerService {
+export declare class BtcDepositProcessorService {
     private readonly prisma;
     private readonly walletService;
-    private readonly depositRegistry;
-    private readonly chainClient;
     private readonly config;
     private readonly logger;
-    private isRunning;
-    private nextPollAllowedAt;
-    constructor(prisma: PrismaService, walletService: WalletService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService);
-    scan(): Promise<void>;
+    constructor(prisma: PrismaService, walletService: WalletService, config: CryptoConfigService);
+    getPendingCount(): Promise<number>;
     creditDeposit(params: {
         address: string;
         currency: Currency;
@@ -22,5 +16,6 @@ export declare class BtcDepositPollerService {
         txHash: string;
         sourceAddress: string | null;
         confirmations: number;
+        walletId: string;
     }): Promise<void>;
 }

@@ -100,9 +100,9 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
             buyerId: string;
+            version: number;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
@@ -157,8 +157,8 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
@@ -209,8 +209,8 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         cardCode: string;
         cardPin: string | null;
@@ -299,8 +299,8 @@ export declare class AdminGiftCardController {
                 status: import("@src/generated/client").$Enums.GiftCardListingStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 brand: import("@src/generated/client").$Enums.GiftCardBrand;
                 cardCode: string;
                 cardPin: string | null;
@@ -317,9 +317,9 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
             buyerId: string;
+            version: number;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
@@ -342,8 +342,8 @@ export declare class AdminGiftCardController {
             status: import("@src/generated/client").$Enums.GiftCardListingStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             brand: import("@src/generated/client").$Enums.GiftCardBrand;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             cardCurrency: string;
@@ -427,9 +427,9 @@ export declare class AdminGiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
         buyerId: string;
+        version: number;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
