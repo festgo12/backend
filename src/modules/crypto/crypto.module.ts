@@ -5,7 +5,7 @@ import { HdWalletService } from './hd-wallet.service';
 import { DepositAddressRegistry } from './deposit-address-registry.service';
 import { ChainClientService } from './chain-client.service';
 import { EvmDepositProcessorService } from './evm-deposit-processor.service';
-import { BtcDepositProcessorService } from './btc-deposit-processor.service';
+import { BtcAlchemyWebSocketService } from './btc-websocket.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { CryptoWithdrawalService } from './crypto-withdrawal.service';
 import { SweepService } from './sweep.service';
@@ -14,13 +14,14 @@ import { ExchangeRateService } from './exchange-rate.service';
 import { WebhookController } from './webhook.controller';
 import { WebhookProcessorService } from './webhook-processor.service';
 import { AddressRegistrationService } from './address-registration.service';
+import { ReconciliationService } from './reconciliation.service';
 import { WalletModule } from '../wallet/wallet.module';
 
 /**
  * Hybrid webhook-based crypto module. EVM deposits arrive via Alchemy
- * Address Activity Webhook; BTC deposits via QuickNode Streams. Both are
- * received by a unified webhook controller and processed by the
- * WebhookProcessorService.
+ * Address Activity Webhook; BTC deposits arrive via Alchemy WebSocket
+ * subscribeAddresses. Both are processed by the WebhookProcessorService.
+ * Automated reconciliation runs on a configurable cron schedule.
  */
 @Global()
 @Module({
@@ -32,7 +33,7 @@ import { WalletModule } from '../wallet/wallet.module';
     DepositAddressRegistry,
     ChainClientService,
     EvmDepositProcessorService,
-    BtcDepositProcessorService,
+    BtcAlchemyWebSocketService,
     WithdrawalTrackerService,
     CryptoWithdrawalService,
     SweepService,
@@ -40,6 +41,7 @@ import { WalletModule } from '../wallet/wallet.module';
     ExchangeRateService,
     WebhookProcessorService,
     AddressRegistrationService,
+    ReconciliationService,
   ],
   exports: [
     CryptoConfigService,
@@ -47,7 +49,7 @@ import { WalletModule } from '../wallet/wallet.module';
     DepositAddressRegistry,
     ChainClientService,
     EvmDepositProcessorService,
-    BtcDepositProcessorService,
+    BtcAlchemyWebSocketService,
     WithdrawalTrackerService,
     CryptoWithdrawalService,
     SweepService,
@@ -55,6 +57,7 @@ import { WalletModule } from '../wallet/wallet.module';
     ExchangeRateService,
     WebhookProcessorService,
     AddressRegistrationService,
+    ReconciliationService,
   ],
 })
 export class CryptoModule {}

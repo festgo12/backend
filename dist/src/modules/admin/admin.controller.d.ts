@@ -29,6 +29,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -118,6 +119,7 @@ export declare class AdminController {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         }[];
         devices: {
             id: string;
@@ -222,6 +224,7 @@ export declare class AdminController {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         })[];
         meta: {
             total: number;
@@ -278,6 +281,7 @@ export declare class AdminController {
                 fee: import("@src/generated/client/runtime/library").Decimal;
                 walletId: string;
                 reference: string;
+                resolvedAt: Date | null;
             } | null;
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -309,6 +313,7 @@ export declare class AdminController {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     getAllTransactions(page?: string, limit?: string): Promise<{
         transactions: ({
@@ -359,6 +364,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -371,6 +377,7 @@ export declare class AdminController {
             fee: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -516,6 +523,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -550,6 +558,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -597,6 +606,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -702,6 +712,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -714,6 +725,7 @@ export declare class AdminController {
             fee: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -771,6 +783,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -783,6 +796,7 @@ export declare class AdminController {
             fee: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -868,6 +882,8 @@ export declare class AdminController {
             error: string;
         })[];
     }>;
+    reconcileAll(): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
+    reconcileCurrency(currency: Currency): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
     getFeeWallets(): Promise<{
         wallets: {
             id: string;
@@ -905,6 +921,7 @@ export declare class AdminController {
         fee: import("@src/generated/client/runtime/library").Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     getPaymentStats(): Promise<{
         totalDeposits: number | import("@src/generated/client/runtime/library").Decimal;
@@ -959,6 +976,7 @@ export declare class AdminController {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -971,6 +989,7 @@ export declare class AdminController {
             fee: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -1027,6 +1046,7 @@ export declare class AdminController {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         };
         ledgerEntries: {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -1051,6 +1071,7 @@ export declare class AdminController {
         fee: import("@src/generated/client/runtime/library").Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     getExchangeRates(): {
         rates: Record<string, number>;

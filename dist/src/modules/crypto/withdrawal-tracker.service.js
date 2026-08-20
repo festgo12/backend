@@ -191,6 +191,12 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         const transactionStatus = status === 'CONFIRMED' ? 'COMPLETED' : 'FAILED';
         if (transaction && transaction.status !== transactionStatus) {
             await this.walletService.updateTransactionStatus(transaction.id, transactionStatus, extraMetadata);
+            if (status === 'CONFIRMED') {
+                await this.prisma.walletTransaction.update({
+                    where: { id: transaction.id },
+                    data: { resolvedAt: new Date() },
+                });
+            }
             const via = typeof extraMetadata.confirmedVia === 'string'
                 ? extraMetadata.confirmedVia
                 : 'unknown';

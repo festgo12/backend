@@ -485,7 +485,16 @@ let AuthService = class AuthService {
                 emailVerificationExpires: new Date(Date.now() + 15 * 60 * 1000),
             },
         });
-        return { success: true, code };
+        const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #E89E2D;">P2N Marketplace - Email Verification</h2>
+        <p>Your 6-digit verification code is:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px; margin: 20px 0;">${code}</div>
+        <p style="color: #666;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
+      </div>
+    `;
+        await this.emailService.sendEmail(user.email, 'Your P2N Email Verification Code', html);
+        return { success: true };
     }
     async verifyEmail(userId, token) {
         const user = await this.prisma.user.findUnique({ where: { id: userId } });

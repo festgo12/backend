@@ -47,12 +47,13 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
     register(address, chain, walletId) {
         const isNew = this.add(address, { chain, walletId }, true);
         if (isNew) {
-            this.addressRegistration
-                .registerAddress(address, chain)
-                .catch((error) => {
+            try {
+                this.addressRegistration.registerAddress(address, chain);
+            }
+            catch (error) {
                 const err = error;
                 this.logger.warn(`Failed to register ${chain} address ${address} with provider: ${err.message}`);
-            });
+            }
         }
     }
     add(address, registration, log) {

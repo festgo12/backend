@@ -53,6 +53,13 @@ export class CryptoWithdrawalService {
     });
     if (!wallet) throw new BadRequestException('Wallet not found');
 
+    // Wallet frozen due to rollback detection
+    if (wallet.isFrozen) {
+      throw new BadRequestException(
+        'Wallet is frozen due to rollback detection. Please contact support.',
+      );
+    }
+
     const available = wallet.balance.minus(wallet.reservedBalance);
     if (available.lessThan(amount)) {
       throw new BadRequestException(
@@ -117,10 +124,7 @@ export class CryptoWithdrawalService {
           metadata: {
             destination: destinationAddress,
             blockchain: this.hdWallet.chainForCurrency(currency),
-            provider:
-              this.hdWallet.chainForCurrency(currency) === 'BTC'
-                ? 'quicknode'
-                : 'alchemy',
+            provider: 'alchemy',
             lastError: message,
             retryCount: 0,
           },
@@ -141,10 +145,7 @@ export class CryptoWithdrawalService {
         metadata: {
           destination: destinationAddress,
           blockchain: this.hdWallet.chainForCurrency(currency),
-          provider:
-            this.hdWallet.chainForCurrency(currency) === 'BTC'
-              ? 'quicknode'
-              : 'alchemy',
+          provider: 'alchemy',
           initiatedAt: new Date().toISOString(),
         },
       },
@@ -299,10 +300,7 @@ export class CryptoWithdrawalService {
         metadata: {
           destination: destinationAddress,
           blockchain: this.hdWallet.chainForCurrency(currency),
-          provider:
-            this.hdWallet.chainForCurrency(currency) === 'BTC'
-              ? 'quicknode'
-              : 'alchemy',
+          provider: 'alchemy',
           sweep: true,
           feeWallet: true,
           initiatedAt: new Date().toISOString(),

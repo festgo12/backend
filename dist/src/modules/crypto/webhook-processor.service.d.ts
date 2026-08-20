@@ -5,7 +5,7 @@ import { CryptoConfigService } from './crypto-config.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { Currency } from '@src/generated/client';
 export interface NormalizedCryptoEvent {
-    provider: 'alchemy' | 'quicknode';
+    provider: 'alchemy' | 'btc_websocket';
     chain: 'EVM' | 'BTC';
     direction: 'INBOUND' | 'OUTBOUND';
     txHash: string;
@@ -27,9 +27,10 @@ export declare class WebhookProcessorService {
     constructor(prisma: PrismaService, walletService: WalletService, depositRegistry: DepositAddressRegistry, config: CryptoConfigService, tracker: WithdrawalTrackerService);
     processAlchemyEvent(payload: Record<string, unknown>): Promise<void>;
     private normalizeAlchemyActivity;
-    processQuickNodeEvent(payload: Record<string, unknown>): Promise<void>;
-    private normalizeQuickNodeEvent;
-    private processEvent;
+    processBtcEvent(event: Omit<NormalizedCryptoEvent, 'provider'> & {
+        provider: 'btc_websocket';
+    }): Promise<void>;
+    processEvent(event: NormalizedCryptoEvent): Promise<void>;
     private processDeposit;
     private cancelRemovedDeposit;
     private processWithdrawalConfirmation;

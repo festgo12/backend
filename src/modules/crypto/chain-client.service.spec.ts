@@ -29,7 +29,7 @@ describe('ChainClientService', () => {
   const mockConfig = {
     isTestnet: true,
     alchemyEthHttpUrl: 'https://eth-sepolia.g.alchemy.com/v2/test',
-    quicknodeRpcUrl: 'https://test.quiknode.pro/test',
+    alchemyBtcHttpUrl: 'https://btc-testnet.g.alchemy.com/v2/test',
     isAlchemy: true,
     getStablecoinContract: jest.fn(),
   };
@@ -60,7 +60,7 @@ describe('ChainClientService', () => {
   });
 
   describe('getBtcUtxos', () => {
-    it('returns only confirmed utxos from QuickNode listunspent', async () => {
+    it('returns only confirmed utxos from Alchemy listunspent', async () => {
       (http.post as jest.Mock).mockReturnValue(
         of({
           data: {
@@ -260,10 +260,10 @@ describe('ChainClientService', () => {
   });
 
   describe('broadcastBtc', () => {
-    it('selects inputs, signs with the HD node and broadcasts via QuickNode RPC', async () => {
+    it('selects inputs, signs with the HD node and broadcasts via Alchemy RPC', async () => {
       (http.post as jest.Mock).mockImplementation((url: string) => {
         // listunspent call
-        if (!url.includes('quiknode')) {
+        if (!url.includes('alchemy')) {
           return of({ data: {} });
         }
         return of({

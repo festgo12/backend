@@ -17,7 +17,8 @@ export type ChainKind = 'EVM' | 'BTC';
 /**
  * Central configuration for the hybrid webhook-based crypto architecture.
  * EVM deposits arrive via Alchemy Address Activity Webhook; BTC deposits
- * via QuickNode Streams. Both providers push events to a unified endpoint.
+ * arrive via Alchemy WebSocket subscribeAddresses. Both are processed by
+ * a unified WebhookProcessorService.
  */
 @Injectable()
 export class CryptoConfigService implements OnModuleInit {
@@ -47,11 +48,6 @@ export class CryptoConfigService implements OnModuleInit {
     if (!this.alchemySigningKey) {
       this.logger.warn(
         'ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.',
-      );
-    }
-    if (!this.quicknodeStreamsSecret) {
-      this.logger.warn(
-        'QN_STREAM_SECRET is not set; QuickNode webhook signature verification will fail.',
       );
     }
   }
@@ -141,34 +137,16 @@ export class CryptoConfigService implements OnModuleInit {
     return this.configService.get<string>('ALCHEMY_WEBHOOK_ID') || null;
   }
 
-  // ─── QuickNode (BTC RPC + Streams) ──────────────────────────────────────
+  // ─── Alchemy Bitcoin (HTTP RPC + WebSocket) ─────────────────────────────
 
-  /** QuickNode API key for Streams/REST management. */
-  get quicknodeApiKey(): string | null {
-    return this.configService.get<string>('QUICKNODE_API_KEY') || null;
+  /** Alchemy Bitcoin JSON-RPC endpoint URL. */
+  get alchemyBtcHttpUrl(): string | null {
+    return this.configService.get<string>('ALCHEMY_BTC_HTTP_URL') || null;
   }
 
-  /** QuickNode Streams ID for BTC address activity. */
-  get quicknodeStreamsId(): string | null {
-    return this.configService.get<string>('QUICKNODE_STREAMS_ID') || null;
-  }
-
-  /** Security token for verifying X-QN-Signature on incoming webhooks. */
-  get quicknodeStreamsSecret(): string | null {
-    return this.configService.get<string>('QN_STREAM_SECRET') || null;
-  }
-
-  /** QuickNode Bitcoin JSON-RPC endpoint URL. */
-  get quicknodeRpcUrl(): string | null {
-    return this.configService.get<string>('QUICKNODE_RPC_URL') || null;
-  }
-
-  /** KV Store list name for BTC watched addresses. */
-  get quicknodeKvListName(): string {
-    return (
-      this.configService.get<string>('QN_STREAMS_KV_LIST') ||
-      'p2n_btc_addresses'
-    );
+  /** Alchemy Bitcoin WebSocket URL for subscribeAddresses. */
+  get alchemyBtcWsUrl(): string | null {
+    return this.configService.get<string>('ALCHEMY_BTC_WS_URL') || null;
   }
 
   // ─── Confirmation Thresholds ─────────────────────────────────────────────
@@ -190,6 +168,14 @@ export class CryptoConfigService implements OnModuleInit {
   get depositSweepThreshold(): number {
     return Number(
       this.configService.get<string>('DEPOSIT_SWEEP_THRESHOLD', '0'),
+    );
+  }
+
+  // ─── Reconciliation ─────────────────────────────────────────────────────
+
+  get reconciliationCron(): string {
+    return (
+      this.configService.get<string>('RECONCILIATION_CRON') || '0 */8 * * *'
     );
   }
 

@@ -152,6 +152,7 @@ model Wallet {
   transactions    WalletTransaction[]
   snapshots       BalanceSnapshot[]
   withdrawalJobs  WithdrawalJob[]
+  isFrozen        Boolean             @default(false)
   updatedAt       DateTime            @updatedAt
   version         Int                 @default(0)
 
@@ -159,6 +160,7 @@ model Wallet {
   @@index([userId])
   @@index([chain])
   @@index([address])
+  @@index([isFrozen])
 }
 
 model LedgerEntry {
@@ -191,11 +193,13 @@ model WalletTransaction {
   fee           Decimal       @default(0) @db.Decimal(20, 8)
   reference     String        @unique
   metadata      Json?
+  resolvedAt    DateTime?
   ledgerEntries LedgerEntry[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([walletId, status])
+  @@index([resolvedAt])
 }
 
 model BalanceSnapshot {

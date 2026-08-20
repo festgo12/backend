@@ -142,6 +142,7 @@ export declare class AdminDisputesController {
                     address: string | null;
                     derivationIndex: number | null;
                     chain: string | null;
+                    isFrozen: boolean;
                 }[];
             } & {
                 id: string;
@@ -189,6 +190,7 @@ export declare class AdminDisputesController {
                     address: string | null;
                     derivationIndex: number | null;
                     chain: string | null;
+                    isFrozen: boolean;
                 }[];
             } & {
                 id: string;

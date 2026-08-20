@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
 const path_1 = require("path");
+const promises_1 = require("fs/promises");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const users_service_1 = require("./users.service");
@@ -31,8 +32,17 @@ let UsersController = class UsersController {
     getMe(userId) {
         return this.usersService.findMe(userId);
     }
-    updateProfile(userId, dto, file) {
+    async updateProfile(userId, dto, file) {
         if (file) {
+            try {
+                const currentProfile = await this.usersService.findMe(userId);
+                const oldAvatar = currentProfile?.profile?.avatarUrl;
+                if (oldAvatar && oldAvatar.startsWith('/uploads/avatars/')) {
+                    const oldPath = (0, path_1.join)(__dirname, '..', '..', '..', oldAvatar);
+                    await (0, promises_1.unlink)(oldPath).catch(() => { });
+                }
+            }
+            catch (_) { }
             dto.avatarUrl = `/uploads/avatars/${file.filename}`;
         }
         return this.usersService.updateProfile(userId, dto);
@@ -75,7 +85,7 @@ __decorate([
     __param(2, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_user_dto_1.UpdateProfileDto, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateProfile", null);
 __decorate([
     (0, common_1.Patch)('preferences'),

@@ -177,6 +177,7 @@ exports.Prisma.WalletScalarFieldEnum = {
   address: 'address',
   derivationIndex: 'derivationIndex',
   chain: 'chain',
+  isFrozen: 'isFrozen',
   updatedAt: 'updatedAt',
   version: 'version'
 };
@@ -203,6 +204,7 @@ exports.Prisma.WalletTransactionScalarFieldEnum = {
   fee: 'fee',
   reference: 'reference',
   metadata: 'metadata',
+  resolvedAt: 'resolvedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -83,8 +83,8 @@ export interface BtcTxStatus {
  * Low-level chain access for the hybrid provider architecture:
  *   - EVM: ethers JsonRpcProvider over Alchemy HTTP URL for RPC + broadcast.
  *     Deposit detection via Alchemy Address Activity Webhook (push).
- *   - BTC: QuickNode Bitcoin JSON-RPC for broadcast + confirmation checks.
- *     Deposit detection via QuickNode Streams (push).
+ *   - BTC: Alchemy Bitcoin JSON-RPC for broadcast + confirmation checks.
+ *     Deposit detection via Alchemy WebSocket subscribeAddresses (push).
  * All signing keys derive from the HD master seed.
  */
 @Injectable()
@@ -113,13 +113,13 @@ export class ChainClientService {
     return this.providerInstance;
   }
 
-  // ─── Bitcoin JSON-RPC (QuickNode) ──────────────────────────────────────
+  // ─── Bitcoin JSON-RPC (Alchemy) ───────────────────────────────────────
 
   private get btcRpcUrl(): string {
-    const url = this.config.quicknodeRpcUrl;
+    const url = this.config.alchemyBtcHttpUrl;
     if (!url) {
       throw new InternalServerErrorException(
-        'QUICKNODE_RPC_URL is not configured',
+        'ALCHEMY_BTC_HTTP_URL is not configured',
       );
     }
     return url;
@@ -279,20 +279,20 @@ export class ChainClientService {
     return transfers;
   }
 
-  // ─── Bitcoin Reads (QuickNode RPC) ─────────────────────────────────────
+  // ─── Bitcoin Reads (Alchemy RPC) ──────────────────────────────────────
 
   async getBtcTipHeight(): Promise<number> {
     const height = await this.btcRpcCall<number>('getblockcount');
     if (!Number.isFinite(height)) {
       throw new Error(
-        `QuickNode getblockcount returned non-numeric value: "${String(height)}"`,
+        `Alchemy BTC getblockcount returned non-numeric value: "${String(height)}"`,
       );
     }
     return height;
   }
 
   /**
-   * Checks the status of a BTC transaction via QuickNode's getrawtransaction.
+   * Checks the status of a BTC transaction via Alchemy's getrawtransaction.
    * Returns confirmation info for the withdrawal tracker.
    */
   async getBtcTxStatus(txid: string): Promise<BtcTxStatus> {
@@ -342,7 +342,7 @@ export class ChainClientService {
     }
   }
 
-  /** Confirmed utxos for a bech32 address via QuickNode's listunspent. */
+  /** Confirmed utxos for a bech32 address via Alchemy's listunspent. */
   async getBtcUtxos(address: string): Promise<BtcUtxo[]> {
     const utxos = await this.btcRpcCall<
       Array<{
@@ -403,7 +403,7 @@ export class ChainClientService {
     return tx.hash;
   }
 
-  // ─── BTC Broadcast (QuickNode RPC) ─────────────────────────────────────
+  // ─── BTC Broadcast (Alchemy RPC) ──────────────────────────────────────
 
   /**
    * Broadcasts a native BTC payment from the derived index to `to`. Performs

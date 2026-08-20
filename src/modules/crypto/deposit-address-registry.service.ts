@@ -17,7 +17,7 @@ export interface AddressRegistration {
  * near-impossible with the deterministic index scheme).
  *
  * On register(), the address is also pushed to the appropriate webhook
- * provider (Alchemy for EVM, QuickNode KV Store for BTC).
+ * provider (Alchemy for EVM, Alchemy WebSocket for BTC).
  */
 @Injectable()
 export class DepositAddressRegistry implements OnApplicationBootstrap {
@@ -64,15 +64,15 @@ export class DepositAddressRegistry implements OnApplicationBootstrap {
   register(address: string, chain: ChainKind, walletId: string) {
     const isNew = this.add(address, { chain, walletId }, true);
     if (isNew) {
-      // Fire-and-forget: register with webhook provider
-      this.addressRegistration
-        .registerAddress(address, chain)
-        .catch((error) => {
-          const err = error as Error;
-          this.logger.warn(
-            `Failed to register ${chain} address ${address} with provider: ${err.message}`,
-          );
-        });
+      // Fire-and-forget: register with webhook provider (EVM queues, BTC is WebSocket)
+      try {
+        this.addressRegistration.registerAddress(address, chain);
+      } catch (error) {
+        const err = error as Error;
+        this.logger.warn(
+          `Failed to register ${chain} address ${address} with provider: ${err.message}`,
+        );
+      }
     }
   }
 

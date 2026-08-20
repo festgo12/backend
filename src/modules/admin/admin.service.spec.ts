@@ -182,7 +182,7 @@ describe('AdminService', () => {
       expect(result.network).toBe('sepolia');
       expect(result.isTestnet).toBe(true);
       expect(result.webhookProviders.evm).toBe('alchemy');
-      expect(result.webhookProviders.btc).toBe('quicknode');
+      expect(result.webhookProviders.btc).toBe('alchemy');
       expect(result.registrySize).toBe(3);
       expect(result.masterWallets.evm).toBe('0xMaster');
       expect(result.recentSweeps).toHaveLength(1);

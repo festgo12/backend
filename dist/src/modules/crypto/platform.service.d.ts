@@ -34,6 +34,7 @@ export declare class PlatformService implements OnApplicationBootstrap {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     } | null>;
     getPlatformUserId(): Promise<string>;
 }

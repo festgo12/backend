@@ -402,6 +402,7 @@ export declare class DisputesService {
                     address: string | null;
                     derivationIndex: number | null;
                     chain: string | null;
+                    isFrozen: boolean;
                 }[];
             } & {
                 id: string;
@@ -449,6 +450,7 @@ export declare class DisputesService {
                     address: string | null;
                     derivationIndex: number | null;
                     chain: string | null;
+                    isFrozen: boolean;
                 }[];
             } & {
                 id: string;

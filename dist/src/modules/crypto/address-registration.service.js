@@ -79,38 +79,9 @@ let AddressRegistrationService = class AddressRegistrationService {
             timeout: 15_000,
         }));
     }
-    async registerBtcAddress(address) {
-        const apiKey = this.config.quicknodeApiKey;
-        const listName = this.config.quicknodeKvListName;
-        if (!apiKey) {
-            this.logger.warn('QUICKNODE_API_KEY not configured; skipping BTC address registration');
-            return;
-        }
-        try {
-            await (0, rxjs_1.lastValueFrom)(this.httpService.post(`https://api.quicknode.com/key-value-store/rest/v1/lists/${listName}/items`, { item: address }, {
-                headers: {
-                    'x-api-key': apiKey,
-                    'Content-Type': 'application/json',
-                },
-                timeout: 15_000,
-            }));
-            this.logger.debug(`Registered BTC address ${address} with QuickNode KV store`);
-        }
-        catch (error) {
-            const err = error;
-            if (err.response?.status === 409) {
-                this.logger.debug(`BTC address ${address} already registered in QuickNode KV store`);
-                return;
-            }
-            this.logger.error(`Failed to register BTC address ${address} with QuickNode: ${err.message}`);
-        }
-    }
-    async registerAddress(address, chain) {
+    registerAddress(address, chain) {
         if (chain === 'EVM') {
             this.queueEvmAddress(address);
-        }
-        else if (chain === 'BTC') {
-            await this.registerBtcAddress(address);
         }
     }
 };

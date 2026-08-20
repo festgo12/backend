@@ -14,6 +14,7 @@ import { CryptoConfigService } from '../crypto/crypto-config.service';
 import { DepositAddressRegistry } from '../crypto/deposit-address-registry.service';
 import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
+import { ReconciliationService } from '../crypto/reconciliation.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
@@ -34,6 +35,7 @@ export class AdminService {
     private readonly chainClient: ChainClientService,
     private readonly paystackService: PaystackService,
     private readonly walletService: WalletService,
+    private readonly reconciliationService: ReconciliationService,
   ) {}
 
   async getUsers(page: number, limit: number, search?: string) {
@@ -782,7 +784,7 @@ export class AdminService {
       isTestnet: this.cryptoConfig.isTestnet,
       webhookProviders: {
         evm: 'alchemy',
-        btc: 'quicknode',
+        btc: 'alchemy',
       },
       confirmations: {
         eth: this.cryptoConfig.evmConfirmations,
@@ -862,5 +864,17 @@ export class AdminService {
       masterWallets: { evm: evmMaster, btc: btcMaster },
       balances,
     };
+  }
+
+  // ─── Reconciliation ────────────────────────────────────────────────────
+
+  /** Triggers full reconciliation across all chains. */
+  async reconcileAll() {
+    return this.reconciliationService.reconcileAll();
+  }
+
+  /** Triggers reconciliation for a specific currency. */
+  async reconcileCurrency(currency: Currency) {
+    return this.reconciliationService.reconcileCurrency(currency);
   }
 }

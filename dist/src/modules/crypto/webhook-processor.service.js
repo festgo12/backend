@@ -120,48 +120,8 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         }
         return null;
     }
-    async processQuickNodeEvent(payload) {
-        const events = payload.events;
-        if (!Array.isArray(events) || events.length === 0)
-            return;
-        for (const item of events) {
-            const normalized = this.normalizeQuickNodeEvent(item);
-            if (!normalized)
-                continue;
-            await this.processEvent(normalized);
-        }
-    }
-    normalizeQuickNodeEvent(item) {
-        const txHash = (item.txHash || item.txid || item.hash);
-        const from = (item.from ||
-            item.sourceAddress ||
-            '').toLowerCase();
-        const to = (item.to ||
-            item.destAddress ||
-            item.address ||
-            '').toLowerCase();
-        const blockNumber = Number(item.blockNumber ?? item.block_height ?? 0);
-        const amount = Number(item.amount ?? item.value ?? 0);
-        if (!txHash || !Number.isFinite(blockNumber) || blockNumber <= 0)
-            return null;
-        if (!Number.isFinite(amount) || amount <= 0)
-            return null;
-        const isToOurs = to ? this.depositRegistry.has(to, 'BTC') : false;
-        const isFromOurs = from ? this.depositRegistry.has(from, 'BTC') : false;
-        if (!isToOurs && !isFromOurs)
-            return null;
-        const normalizedAmount = amount > 10000 ? amount / 1e8 : amount;
-        return {
-            provider: 'quicknode',
-            chain: 'BTC',
-            direction: isToOurs ? 'INBOUND' : 'OUTBOUND',
-            txHash,
-            fromAddress: from,
-            toAddress: to,
-            asset: client_1.Currency.BTC,
-            amount: normalizedAmount,
-            blockNumber,
-        };
+    async processBtcEvent(event) {
+        await this.processEvent(event);
     }
     async processEvent(event) {
         if (event.direction === 'INBOUND') {
@@ -198,8 +158,8 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
             const canCreditImmediately = event.blockNumber > 0;
             const status = canCreditImmediately ? 'COMPLETED' : 'PENDING';
             const metadata = {
-                source: event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'QN_STREAMS',
-                listener: event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBHOOK',
+                source: event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'BTC_WEBSOCKET',
+                listener: event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBSOCKET',
                 blockTxId: event.txHash,
                 asset: event.asset,
                 address,
@@ -217,6 +177,17 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
                     status,
                     metadata,
                 });
+                if (status === 'COMPLETED') {
+                    const created = await this.prisma.walletTransaction.findUnique({
+                        where: { reference: event.txHash },
+                    });
+                    if (created && !created.resolvedAt) {
+                        await this.prisma.walletTransaction.update({
+                            where: { id: created.id },
+                            data: { resolvedAt: new Date() },
+                        });
+                    }
+                }
                 this.logger.log(`Deposit ${status}: ${event.amount} ${event.asset} to wallet ${wallet.id} (TX: ${event.txHash}, block ${event.blockNumber})`);
             }
             catch (error) {

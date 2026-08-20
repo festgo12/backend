@@ -10,8 +10,6 @@ export declare class WebhookController {
     private readonly logger;
     constructor(config: CryptoConfigService, processor: WebhookProcessorService);
     handleAlchemy(req: RawBodyRequest, res: Response): Promise<void>;
-    handleQuickNode(req: RawBodyRequest, res: Response): Promise<void>;
     private verifyAlchemySignature;
-    private verifyQuickNodeSignature;
 }
 export {};

@@ -183,10 +183,8 @@ export declare class AuthService {
     sendEmailVerification(userId: string): Promise<{
         success: boolean;
         message: string;
-        code?: undefined;
     } | {
         success: boolean;
-        code: string;
         message?: undefined;
     }>;
     verifyEmail(userId: string, token: string): Promise<{

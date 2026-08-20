@@ -14,6 +14,5 @@ export declare class AddressRegistrationService {
     private scheduleFlush;
     private flushEvmAddresses;
     private registerEvmAddressesWithAlchemy;
-    registerBtcAddress(address: string): Promise<void>;
-    registerAddress(address: string, chain: ChainKind): Promise<void>;
+    registerAddress(address: string, chain: ChainKind): void;
 }

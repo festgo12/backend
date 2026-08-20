@@ -91,39 +91,6 @@ let WebhookController = WebhookController_1 = class WebhookController {
             this.logger.error(`Alchemy webhook processing failed: ${err.message}`);
         }
     }
-    async handleQuickNode(req, res) {
-        const rawBody = req.rawBody;
-        if (!rawBody) {
-            this.logger.warn('QuickNode webhook received without raw body');
-            res.status(common_1.HttpStatus.BAD_REQUEST).json({ error: 'Missing raw body' });
-            return;
-        }
-        const nonce = req.headers['x-qn-nonce'];
-        const timestamp = req.headers['x-qn-timestamp'];
-        const signature = req.headers['x-qn-signature'];
-        if (!this.verifyQuickNodeSignature(rawBody, nonce, timestamp, signature)) {
-            this.logger.warn('QuickNode webhook signature verification failed');
-            res.status(common_1.HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
-            return;
-        }
-        let payload;
-        try {
-            payload = JSON.parse(rawBody.toString('utf8'));
-        }
-        catch {
-            this.logger.warn('QuickNode webhook: invalid JSON payload');
-            res.status(common_1.HttpStatus.BAD_REQUEST).json({ error: 'Invalid JSON' });
-            return;
-        }
-        res.status(common_1.HttpStatus.OK).json({ received: true });
-        try {
-            await this.processor.processQuickNodeEvent(payload);
-        }
-        catch (error) {
-            const err = error;
-            this.logger.error(`QuickNode webhook processing failed: ${err.message}`);
-        }
-    }
     verifyAlchemySignature(rawBody, givenSignature) {
         const signingKey = this.config.alchemySigningKey;
         if (!signingKey) {
@@ -143,27 +110,6 @@ let WebhookController = WebhookController_1 = class WebhookController {
             return false;
         }
     }
-    verifyQuickNodeSignature(rawBody, nonce, timestamp, givenSignature) {
-        const secret = this.config.quicknodeStreamsSecret;
-        if (!secret) {
-            this.logger.warn('QN_STREAM_SECRET not configured; skipping QuickNode signature verification');
-            return true;
-        }
-        if (!nonce || !timestamp || !givenSignature)
-            return false;
-        const bodyString = rawBody.toString('utf8');
-        const signatureData = nonce + timestamp + bodyString;
-        const hmac = crypto
-            .createHmac('sha256', Buffer.from(secret))
-            .update(Buffer.from(signatureData))
-            .digest('hex');
-        try {
-            return crypto.timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(givenSignature, 'hex'));
-        }
-        catch {
-            return false;
-        }
-    }
 };
 exports.WebhookController = WebhookController;
 __decorate([
@@ -175,15 +121,6 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], WebhookController.prototype, "handleAlchemy", null);
-__decorate([
-    (0, common_1.Post)('quicknode'),
-    (0, swagger_1.ApiOperation)({ summary: 'QuickNode Streams Webhook receiver (BTC)' }),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
-], WebhookController.prototype, "handleQuickNode", null);
 exports.WebhookController = WebhookController = WebhookController_1 = __decorate([
     (0, swagger_1.ApiTags)('Crypto Webhooks'),
     (0, common_1.Controller)('api/v1/webhooks'),

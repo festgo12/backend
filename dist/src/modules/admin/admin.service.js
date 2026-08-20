@@ -20,6 +20,7 @@ const crypto_config_service_1 = require("../crypto/crypto-config.service");
 const deposit_address_registry_service_1 = require("../crypto/deposit-address-registry.service");
 const hd_wallet_service_1 = require("../crypto/hd-wallet.service");
 const chain_client_service_1 = require("../crypto/chain-client.service");
+const reconciliation_service_1 = require("../crypto/reconciliation.service");
 const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const platform_service_1 = require("../crypto/platform.service");
@@ -33,7 +34,8 @@ let AdminService = class AdminService {
     chainClient;
     paystackService;
     walletService;
-    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService) {
+    reconciliationService;
+    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService, reconciliationService) {
         this.prisma = prisma;
         this.cryptoWithdrawal = cryptoWithdrawal;
         this.exchangeRateService = exchangeRateService;
@@ -43,6 +45,7 @@ let AdminService = class AdminService {
         this.chainClient = chainClient;
         this.paystackService = paystackService;
         this.walletService = walletService;
+        this.reconciliationService = reconciliationService;
     }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
@@ -670,7 +673,7 @@ let AdminService = class AdminService {
             isTestnet: this.cryptoConfig.isTestnet,
             webhookProviders: {
                 evm: 'alchemy',
-                btc: 'quicknode',
+                btc: 'alchemy',
             },
             confirmations: {
                 eth: this.cryptoConfig.evmConfirmations,
@@ -737,6 +740,12 @@ let AdminService = class AdminService {
             balances,
         };
     }
+    async reconcileAll() {
+        return this.reconciliationService.reconcileAll();
+    }
+    async reconcileCurrency(currency) {
+        return this.reconciliationService.reconcileCurrency(currency);
+    }
 };
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([
@@ -749,6 +758,7 @@ exports.AdminService = AdminService = __decorate([
         hd_wallet_service_1.HdWalletService,
         chain_client_service_1.ChainClientService,
         paystack_service_1.PaystackService,
-        wallet_service_1.WalletService])
+        wallet_service_1.WalletService,
+        reconciliation_service_1.ReconciliationService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

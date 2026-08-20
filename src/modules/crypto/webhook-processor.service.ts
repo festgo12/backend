@@ -11,9 +11,9 @@ interface ErrorLike {
   code?: string;
 }
 
-/** Normalized event produced by both Alchemy and QuickNode normalizers. */
+/** Normalized event produced by Alchemy normalizer and BTC WebSocket service. */
 export interface NormalizedCryptoEvent {
-  provider: 'alchemy' | 'quicknode';
+  provider: 'alchemy' | 'btc_websocket';
   chain: 'EVM' | 'BTC';
   direction: 'INBOUND' | 'OUTBOUND';
   txHash: string;
@@ -27,9 +27,9 @@ export interface NormalizedCryptoEvent {
 }
 
 /**
- * Processes normalized crypto events from both Alchemy (EVM) and QuickNode
- * (BTC) webhooks. Handles idempotent deposit recording, reorg cancellation,
- * and outbound withdrawal confirmation.
+ * Processes normalized crypto events from Alchemy (EVM) webhooks and the
+ * BtcAlchemyWebSocketService (BTC WebSocket). Handles idempotent deposit
+ * recording, reorg cancellation, and outbound withdrawal confirmation.
  */
 @Injectable()
 export class WebhookProcessorService {
@@ -145,65 +145,24 @@ export class WebhookProcessorService {
     return null;
   }
 
-  // ─── QuickNode Event Processing ─────────────────────────────────────────
+  // ─── BTC WebSocket Event Processing ─────────────────────────────────────
 
-  async processQuickNodeEvent(payload: Record<string, unknown>): Promise<void> {
-    const events = payload.events as Array<Record<string, unknown>> | undefined;
-    if (!Array.isArray(events) || events.length === 0) return;
-
-    for (const item of events) {
-      const normalized = this.normalizeQuickNodeEvent(item);
-      if (!normalized) continue;
-      await this.processEvent(normalized);
-    }
-  }
-
-  private normalizeQuickNodeEvent(
-    item: Record<string, unknown>,
-  ): NormalizedCryptoEvent | null {
-    const txHash = (item.txHash || item.txid || item.hash) as string;
-    const from = (
-      (item.from as string) ||
-      (item.sourceAddress as string) ||
-      ''
-    ).toLowerCase();
-    const to = (
-      (item.to as string) ||
-      (item.destAddress as string) ||
-      (item.address as string) ||
-      ''
-    ).toLowerCase();
-    const blockNumber = Number(item.blockNumber ?? item.block_height ?? 0);
-    const amount = Number(item.amount ?? item.value ?? 0);
-
-    if (!txHash || !Number.isFinite(blockNumber) || blockNumber <= 0)
-      return null;
-    if (!Number.isFinite(amount) || amount <= 0) return null;
-
-    const isToOurs = to ? this.depositRegistry.has(to, 'BTC') : false;
-    const isFromOurs = from ? this.depositRegistry.has(from, 'BTC') : false;
-
-    if (!isToOurs && !isFromOurs) return null;
-
-    // BTC amount may come in satoshis from QuickNode — convert if > 1 BTC-like
-    const normalizedAmount = amount > 10000 ? amount / 1e8 : amount;
-
-    return {
-      provider: 'quicknode',
-      chain: 'BTC',
-      direction: isToOurs ? 'INBOUND' : 'OUTBOUND',
-      txHash,
-      fromAddress: from,
-      toAddress: to,
-      asset: Currency.BTC,
-      amount: normalizedAmount,
-      blockNumber,
-    };
+  /**
+   * Processes a normalized BTC event from BtcAlchemyWebSocketService.
+   * The WebSocket service handles address matching; this just normalizes
+   * the event into the common format and processes it.
+   */
+  async processBtcEvent(
+    event: Omit<NormalizedCryptoEvent, 'provider'> & {
+      provider: 'btc_websocket';
+    },
+  ): Promise<void> {
+    await this.processEvent(event);
   }
 
   // ─── Core Event Processing ──────────────────────────────────────────────
 
-  private async processEvent(event: NormalizedCryptoEvent): Promise<void> {
+  async processEvent(event: NormalizedCryptoEvent): Promise<void> {
     if (event.direction === 'INBOUND') {
       await this.processDeposit(event);
     } else {
@@ -239,20 +198,19 @@ export class WebhookProcessorService {
       });
       if (!wallet || wallet.currency !== event.asset) continue;
 
-      // Determine if we can credit immediately (enough confirmations)
       const requiredConfirmations =
         event.chain === 'EVM'
           ? this.config.evmConfirmations
           : this.config.btcConfirmations;
-      // Webhook-delivered events are already mined; Alchemy fires after
-      // inclusion, QuickNode Streams fire per block. We treat 1 confirmation
-      // as the minimum since the block is already known.
+
       const canCreditImmediately = event.blockNumber > 0;
 
       const status = canCreditImmediately ? 'COMPLETED' : 'PENDING';
       const metadata = {
-        source: event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'QN_STREAMS',
-        listener: event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBHOOK',
+        source:
+          event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'BTC_WEBSOCKET',
+        listener:
+          event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBSOCKET',
         blockTxId: event.txHash,
         asset: event.asset,
         address,
@@ -271,6 +229,20 @@ export class WebhookProcessorService {
           status,
           metadata,
         });
+
+        // Mark as resolved when deposited via webhook with confirmations
+        if (status === 'COMPLETED') {
+          const created = await this.prisma.walletTransaction.findUnique({
+            where: { reference: event.txHash },
+          });
+          if (created && !created.resolvedAt) {
+            await this.prisma.walletTransaction.update({
+              where: { id: created.id },
+              data: { resolvedAt: new Date() },
+            });
+          }
+        }
+
         this.logger.log(
           `Deposit ${status}: ${event.amount} ${event.asset} to wallet ${wallet.id} (TX: ${event.txHash}, block ${event.blockNumber})`,
         );

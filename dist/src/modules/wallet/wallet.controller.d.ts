@@ -30,6 +30,7 @@ export declare class WalletController {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }[]>;
     getHistory(user: User, walletId?: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -46,6 +47,7 @@ export declare class WalletController {
             fee: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         } | null;
     } & {
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -76,6 +78,7 @@ export declare class WalletController {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     withdrawCrypto(user: User, walletId: string, address: string, amount: number): Promise<{
         success: boolean;

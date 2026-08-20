@@ -22,6 +22,7 @@ export declare class WalletService {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }[]>;
     getOrCreateWallet(userId: string, currency: Currency): Promise<{
         id: string;
@@ -34,6 +35,7 @@ export declare class WalletService {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     getWalletHistory(walletId: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -50,6 +52,7 @@ export declare class WalletService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         } | null;
     } & {
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -78,6 +81,7 @@ export declare class WalletService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         } | null;
     } & {
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -109,6 +113,7 @@ export declare class WalletService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     verifyAndSyncBalance(walletId: string): Promise<Prisma.Decimal>;
     updateWalletAddress(walletId: string, address: string): Promise<{
@@ -122,6 +127,7 @@ export declare class WalletService {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     updateWalletDepositInfo(walletId: string, params: {
         address: string;
@@ -138,6 +144,7 @@ export declare class WalletService {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     findTransactionById(id: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -150,6 +157,7 @@ export declare class WalletService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     } | null>;
     findTransactionByReference(reference: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -162,6 +170,7 @@ export declare class WalletService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     } | null>;
     updateTransactionStatus(transactionId: string, status: string, metadata?: any): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
@@ -174,6 +183,7 @@ export declare class WalletService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     reverseTransaction(transactionId: string, reason: string): Promise<void>;
 }

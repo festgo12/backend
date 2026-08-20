@@ -31,8 +31,8 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'https://example.com/avatar.jpg', required: false }),
-    (0, class_validator_1.IsUrl)(),
+    (0, swagger_1.ApiProperty)({ example: '/uploads/avatars/abc.jpg', required: false }),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateProfileDto.prototype, "avatarUrl", void 0);

@@ -136,7 +136,7 @@ let SweepService = SweepService_1 = class SweepService {
                 metadata: {
                     destination,
                     blockchain: currency === client_1.Currency.BTC ? 'BTC' : 'EVM',
-                    provider: currency === client_1.Currency.BTC ? 'quicknode' : 'alchemy',
+                    provider: currency === client_1.Currency.BTC ? 'alchemy' : 'alchemy',
                     sweep: true,
                     fromAddress,
                     initiatedAt: new Date().toISOString(),

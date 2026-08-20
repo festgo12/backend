@@ -1,0 +1,677 @@
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { PrismaService } from '../../core/database/prisma.service';
+import { WalletService } from '../wallet/wallet.service';
+import { CryptoConfigService } from './crypto-config.service';
+import { Currency, LedgerType, Prisma } from '@src/generated/client';
+
+interface ErrorLike {
+  message?: string;
+  code?: string;
+}
+
+interface XpubTxItem {
+  txid: string;
+  confirmations: number;
+  blockHeight: number;
+  value: string;
+  vin: Array<{ addresses?: string[] }>;
+  vout: Array<{ addresses?: string[]; value: string }>;
+}
+
+interface XpubResponse {
+  page: number;
+  totalPages: number;
+  txs: XpubTxItem[];
+  txids: string[];
+}
+
+interface EvmTransfer {
+  hash: string;
+  from: string;
+  to: string;
+  value: number;
+  asset: string;
+  blockNum: string;
+  category: string;
+}
+
+interface EvmTransfersResponse {
+  transfers: EvmTransfer[];
+  pageKey?: string;
+}
+
+export interface ReconciliationResult {
+  resolved: number;
+  missed: number;
+  rollbacks: number;
+  pending: number;
+  skippedTestnet: number;
+}
+
+/**
+ * Automated and on-demand transaction reconciliation.
+ *
+ * Compares on-chain state (via Alchemy xpub/assetTransfers endpoints)
+ * against DB WalletTransaction records to detect:
+ *   - Fully Resolved: on-chain confirmed + DB processed + resolvedAt set
+ *   - Missed Event: confirmed on-chain, no DB record → auto-credit
+ *   - Rollback Alert: DB COMPLETED, missing/reverted on-chain → revert + freeze
+ *   - Pending Mempool: DB PENDING, 0 confirmations → hold
+ *
+ * System testnet transactions (reference: testnet-credit-*) are ignored.
+ */
+@Injectable()
+export class ReconciliationService implements OnModuleInit {
+  private readonly logger = new Logger(ReconciliationService.name);
+  private isRunning = false;
+
+  private static readonly JOB_NAME = 'reconciliation';
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly walletService: WalletService,
+    private readonly config: CryptoConfigService,
+    private readonly httpService: HttpService,
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) {}
+
+  onModuleInit() {
+    const cronExpression = this.config.reconciliationCron;
+    const job = new CronJob(cronExpression, () => {
+      void this.runAutomatedReconciliation();
+    });
+    this.schedulerRegistry.addCronJob(ReconciliationService.JOB_NAME, job);
+    job.start();
+    this.logger.log(`Reconciliation cron scheduled: ${cronExpression}`);
+  }
+
+  // ─── Automated Cron ────────────────────────────────────────────────────
+
+  async runAutomatedReconciliation() {
+    if (this.isRunning) {
+      this.logger.debug('Reconciliation already in progress; skipping');
+      return;
+    }
+    this.isRunning = true;
+    try {
+      this.logger.log('Starting automated reconciliation…');
+      const result = await this.reconcileAll();
+      this.logger.log(
+        `Reconciliation complete: resolved=${result.resolved} missed=${result.missed} rollbacks=${result.rollbacks} pending=${result.pending} skippedTestnet=${result.skippedTestnet}`,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Reconciliation failed: ${err.message}`);
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  // ─── Manual Trigger ────────────────────────────────────────────────────
+
+  /** Reconcile all chains (called by admin endpoint). */
+  async reconcileAll(): Promise<ReconciliationResult> {
+    const [btcResult, evmResult] = await Promise.allSettled([
+      this.reconcileBtc(),
+      this.reconcileEvm(),
+    ]);
+
+    const btc =
+      btcResult.status === 'fulfilled' ? btcResult.value : this.emptyResult();
+    const evm =
+      evmResult.status === 'fulfilled' ? evmResult.value : this.emptyResult();
+
+    if (btcResult.status === 'rejected') {
+      this.logger.error(
+        `BTC reconciliation failed: ${(btcResult.reason as Error).message}`,
+      );
+    }
+    if (evmResult.status === 'rejected') {
+      this.logger.error(
+        `EVM reconciliation failed: ${(evmResult.reason as Error).message}`,
+      );
+    }
+
+    return this.mergeResults(btc, evm);
+  }
+
+  /** Reconcile a single currency (called by admin endpoint). */
+  async reconcileCurrency(currency: Currency): Promise<ReconciliationResult> {
+    const chain = currency === Currency.BTC ? 'BTC' : 'EVM';
+
+    if (chain === 'BTC') {
+      return this.reconcileBtc();
+    }
+    return this.reconcileEvm();
+  }
+
+  // ─── BTC Reconciliation (xpub endpoint) ────────────────────────────────
+
+  private async reconcileBtc(): Promise<ReconciliationResult> {
+    const result = this.emptyResult();
+    const xpub = this.config.btcMasterXpub;
+    if (!xpub) {
+      this.logger.warn('BTC xpub not configured; skipping BTC reconciliation');
+      return result;
+    }
+
+    const btcUrl = this.config.alchemyBtcHttpUrl;
+    if (!btcUrl) {
+      this.logger.warn(
+        'ALCHEMY_BTC_HTTP_URL not configured; skipping BTC reconciliation',
+      );
+      return result;
+    }
+
+    // 1. Fetch all on-chain BTC transactions via xpub (paginate)
+    const onChainTxs = await this.fetchBtcXpubTxs(btcUrl, xpub);
+    const onChainTxMap = new Map<string, XpubTxItem>();
+    for (const tx of onChainTxs) {
+      onChainTxMap.set(tx.txid, tx);
+    }
+    this.logger.log(
+      `BTC reconciliation: fetched ${onChainTxs.length} on-chain transactions`,
+    );
+
+    // 2. Fetch all unresolved BTC deposit transactions
+    const unresolved = await this.prisma.walletTransaction.findMany({
+      where: {
+        resolvedAt: null,
+        reference: { not: { startsWith: 'testnet-credit-' } },
+        wallet: { currency: Currency.BTC },
+      },
+      include: {
+        wallet: {
+          select: { id: true, currency: true, address: true, isFrozen: true },
+        },
+      },
+    });
+    this.logger.log(
+      `BTC reconciliation: ${unresolved.length} unresolved DB transactions`,
+    );
+
+    // 3. Classify each unresolved DB transaction
+    for (const tx of unresolved) {
+      const onChain = onChainTxMap.get(tx.reference);
+
+      if (onChain) {
+        // Found on-chain → mark resolved
+        await this.markResolved(tx.id);
+        result.resolved++;
+      } else if (tx.status === 'COMPLETED') {
+        // COMPLETED in DB but not on-chain → rollback
+        await this.executeRollback(tx);
+        result.rollbacks++;
+      } else if (tx.status === 'PENDING') {
+        // PENDING in DB, not on-chain → check if stale
+        const age = Date.now() - tx.createdAt.getTime();
+        const staleThreshold = 2 * 60 * 60 * 1000; // 2 hours
+        if (age > staleThreshold) {
+          // Stale pending → rollback
+          await this.executeRollback(tx);
+          result.rollbacks++;
+        } else {
+          result.pending++;
+        }
+      }
+    }
+
+    // 4. Check for missed events: on-chain txs with no DB record
+    const allBtcRefs = new Set(
+      (
+        await this.prisma.walletTransaction.findMany({
+          where: { wallet: { currency: Currency.BTC } },
+          select: { reference: true },
+        })
+      ).map((r) => r.reference),
+    );
+
+    for (const onChainTx of onChainTxs) {
+      if (allBtcRefs.has(onChainTx.txid)) continue;
+      if (onChainTx.txid.startsWith('testnet-credit-')) {
+        result.skippedTestnet++;
+        continue;
+      }
+
+      // Missed event → find the receiving wallet and auto-credit
+      const credited = await this.autoCreditBtcDeposit(onChainTx);
+      if (credited) result.missed++;
+    }
+
+    return result;
+  }
+
+  private async fetchBtcXpubTxs(
+    baseUrl: string,
+    xpub: string,
+  ): Promise<XpubTxItem[]> {
+    const allTxs: XpubTxItem[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const url = `${baseUrl}/api/v2/xpub/${encodeURIComponent(xpub)}?details=txs&pageSize=1000&page=${page}`;
+      try {
+        const res = await lastValueFrom(
+          this.httpService.get<XpubResponse>(url, { timeout: 30_000 }),
+        );
+        const data = res.data;
+        allTxs.push(...(data.txs || []));
+        totalPages = data.totalPages || 1;
+        page++;
+      } catch (error) {
+        const err = error as ErrorLike;
+        this.logger.error(
+          `BTC xpub fetch failed (page ${page}): ${err.message}`,
+        );
+        break;
+      }
+    } while (page <= totalPages);
+
+    return allTxs;
+  }
+
+  private async autoCreditBtcDeposit(tx: XpubTxItem): Promise<boolean> {
+    // Find which of our addresses received in this tx
+    const voutAddresses = tx.vout.flatMap((o) => o.addresses || []);
+    for (const addr of voutAddresses) {
+      const registrations = await this.prisma.wallet.findMany({
+        where: { address: addr, currency: Currency.BTC },
+        select: { id: true, currency: true, isFrozen: true },
+      });
+
+      for (const wallet of registrations) {
+        if (wallet.isFrozen) continue;
+        const amount = Math.abs(parseFloat(tx.value || '0'));
+        if (amount <= 0) continue;
+
+        try {
+          await this.prisma.$transaction(async (prismaTx) => {
+            await prismaTx.walletTransaction.create({
+              data: {
+                walletId: wallet.id,
+                type: LedgerType.DEPOSIT,
+                status: 'COMPLETED',
+                amount,
+                reference: tx.txid,
+                resolvedAt: new Date(),
+                metadata: {
+                  source: 'RECONCILIATION',
+                  listener: 'BTC_RECONCILIATION',
+                  blockTxId: tx.txid,
+                  asset: Currency.BTC,
+                  address: addr,
+                  blockNumber: tx.blockHeight,
+                  confirmations: tx.confirmations,
+                  missedEvent: true,
+                  receivedAt: new Date().toISOString(),
+                },
+              },
+            });
+            await prismaTx.wallet.update({
+              where: { id: wallet.id },
+              data: { balance: { increment: amount } },
+            });
+          });
+          this.logger.log(
+            `Missed BTC deposit auto-credited: ${amount} BTC to wallet ${wallet.id} (TX: ${tx.txid})`,
+          );
+          return true;
+        } catch (error) {
+          const err = error as ErrorLike;
+          if (err.code === 'P2002') {
+            this.logger.debug(
+              `BTC deposit ${tx.txid} already recorded; skipping`,
+            );
+          } else {
+            this.logger.error(
+              `Failed to auto-credit BTC deposit ${tx.txid}: ${err.message}`,
+            );
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  // ─── EVM Reconciliation (alchemy_getAssetTransfers) ────────────────────
+
+  private async reconcileEvm(): Promise<ReconciliationResult> {
+    const result = this.emptyResult();
+    const ethUrl = this.config.alchemyEthHttpUrl;
+    if (!ethUrl) {
+      this.logger.warn(
+        'ALCHEMY_ETH_HTTP_URL not configured; skipping EVM reconciliation',
+      );
+      return result;
+    }
+
+    // 1. Fetch all EVM addresses from the registry
+    const evmWallets = await this.prisma.wallet.findMany({
+      where: {
+        currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
+        address: { not: null },
+      },
+      select: { id: true, address: true, currency: true, isFrozen: true },
+    });
+
+    const evmAddresses = [
+      ...new Set(evmWallets.map((w) => w.address!.toLowerCase())),
+    ];
+    if (evmAddresses.length === 0) {
+      this.logger.log('EVM reconciliation: no addresses found');
+      return result;
+    }
+
+    // 2. Fetch all on-chain EVM transfers
+    const onChainTxs = await this.fetchEvmTransfers(ethUrl, evmAddresses);
+    const onChainTxMap = new Map<string, EvmTransfer>();
+    for (const tx of onChainTxs) {
+      onChainTxMap.set(tx.hash, tx);
+    }
+    this.logger.log(
+      `EVM reconciliation: fetched ${onChainTxs.length} on-chain transfers`,
+    );
+
+    // 3. Fetch all unresolved EVM deposit transactions
+    const unresolved = await this.prisma.walletTransaction.findMany({
+      where: {
+        resolvedAt: null,
+        reference: { not: { startsWith: 'testnet-credit-' } },
+        wallet: {
+          currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
+        },
+      },
+      include: {
+        wallet: {
+          select: { id: true, currency: true, address: true, isFrozen: true },
+        },
+      },
+    });
+    this.logger.log(
+      `EVM reconciliation: ${unresolved.length} unresolved DB transactions`,
+    );
+
+    // 4. Classify each unresolved DB transaction
+    for (const tx of unresolved) {
+      const onChain = onChainTxMap.get(tx.reference);
+
+      if (onChain) {
+        await this.markResolved(tx.id);
+        result.resolved++;
+      } else if (tx.status === 'COMPLETED') {
+        await this.executeRollback(tx);
+        result.rollbacks++;
+      } else if (tx.status === 'PENDING') {
+        const age = Date.now() - tx.createdAt.getTime();
+        const staleThreshold = 30 * 60 * 1000; // 30 min for EVM (faster blocks)
+        if (age > staleThreshold) {
+          await this.executeRollback(tx);
+          result.rollbacks++;
+        } else {
+          result.pending++;
+        }
+      }
+    }
+
+    // 5. Check for missed events
+    const allEvmRefs = new Set(
+      (
+        await this.prisma.walletTransaction.findMany({
+          where: {
+            wallet: {
+              currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
+            },
+          },
+          select: { reference: true },
+        })
+      ).map((r) => r.reference),
+    );
+
+    for (const onChainTx of onChainTxs) {
+      if (allEvmRefs.has(onChainTx.hash)) continue;
+      if (onChainTx.hash.startsWith('testnet-credit-')) {
+        result.skippedTestnet++;
+        continue;
+      }
+
+      const credited = await this.autoCreditEvmDeposit(onChainTx, evmWallets);
+      if (credited) result.missed++;
+    }
+
+    return result;
+  }
+
+  private async fetchEvmTransfers(
+    rpcUrl: string,
+    addresses: string[],
+  ): Promise<EvmTransfer[]> {
+    const allTransfers: EvmTransfer[] = [];
+    const batchSize = 50;
+
+    for (let i = 0; i < addresses.length; i += batchSize) {
+      const batch = addresses.slice(i, i + batchSize);
+      let pageKey: string | undefined;
+
+      do {
+        try {
+          const params: Record<string, unknown> = {
+            toAddress: batch,
+            category: ['external', 'internal', 'erc20'],
+            fromBlock: '0x0',
+            toBlock: 'latest',
+            order: 'asc',
+            maxCount: '0x3e8',
+            withMetadata: false,
+          };
+          if (pageKey) params.pageKey = pageKey;
+
+          const res = await lastValueFrom(
+            this.httpService.post(
+              rpcUrl,
+              {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'alchemy_getAssetTransfers',
+                params: [params],
+              },
+              { timeout: 30_000 },
+            ),
+          );
+
+          const data = (res.data as Record<string, unknown>)?.result as
+            | EvmTransfersResponse
+            | undefined;
+          const transfers = data?.transfers || [];
+          allTransfers.push(...transfers);
+          pageKey = data?.pageKey;
+        } catch (error) {
+          const err = error as ErrorLike;
+          this.logger.error(`EVM transfer fetch failed: ${err.message}`);
+          break;
+        }
+      } while (pageKey);
+    }
+
+    return allTransfers;
+  }
+
+  private async autoCreditEvmDeposit(
+    tx: EvmTransfer,
+    wallets: Array<{
+      id: string;
+      address: string | null;
+      currency: Currency;
+      isFrozen: boolean;
+    }>,
+  ): Promise<boolean> {
+    const toAddr = (tx.to || '').toLowerCase();
+    const asset = (tx.asset || '').toUpperCase();
+
+    let currency: Currency;
+    if (
+      asset === 'ETH' ||
+      tx.category === 'external' ||
+      tx.category === 'internal'
+    ) {
+      currency = Currency.ETH;
+    } else if (asset === 'USDT') {
+      currency = Currency.USDT;
+    } else if (asset === 'USDC') {
+      currency = Currency.USDC;
+    } else {
+      return false;
+    }
+
+    const matchingWallet = wallets.find(
+      (w) => w.address?.toLowerCase() === toAddr && w.currency === currency,
+    );
+    if (!matchingWallet || matchingWallet.isFrozen) return false;
+
+    const amount = tx.value;
+    if (!Number.isFinite(amount) || amount <= 0) return false;
+
+    const blockNum = parseInt(tx.blockNum, 16);
+
+    try {
+      await this.prisma.$transaction(async (prismaTx) => {
+        await prismaTx.walletTransaction.create({
+          data: {
+            walletId: matchingWallet.id,
+            type: LedgerType.DEPOSIT,
+            status: 'COMPLETED',
+            amount,
+            reference: tx.hash,
+            resolvedAt: new Date(),
+            metadata: {
+              source: 'RECONCILIATION',
+              listener: 'EVM_RECONCILIATION',
+              blockTxId: tx.hash,
+              asset: currency,
+              address: toAddr,
+              sourceAddress: (tx.from || '').toLowerCase(),
+              blockNumber: blockNum,
+              missedEvent: true,
+              receivedAt: new Date().toISOString(),
+            },
+          },
+        });
+        await prismaTx.wallet.update({
+          where: { id: matchingWallet.id },
+          data: { balance: { increment: amount } },
+        });
+      });
+      this.logger.log(
+        `Missed EVM deposit auto-credited: ${amount} ${currency} to wallet ${matchingWallet.id} (TX: ${tx.hash})`,
+      );
+      return true;
+    } catch (error) {
+      const err = error as ErrorLike;
+      if (err.code === 'P2002') {
+        this.logger.debug(`EVM deposit ${tx.hash} already recorded; skipping`);
+      } else {
+        this.logger.error(
+          `Failed to auto-credit EVM deposit ${tx.hash}: ${err.message}`,
+        );
+      }
+    }
+    return false;
+  }
+
+  // ─── Shared Helpers ────────────────────────────────────────────────────
+
+  private async markResolved(transactionId: string): Promise<void> {
+    await this.prisma.walletTransaction.update({
+      where: { id: transactionId },
+      data: { resolvedAt: new Date() },
+    });
+  }
+
+  private async executeRollback(tx: {
+    id: string;
+    walletId: string;
+    amount: Prisma.Decimal | number | string;
+    reference: string;
+    metadata: unknown;
+  }): Promise<void> {
+    const meta = (tx.metadata || {}) as Record<string, unknown>;
+    this.logger.warn(
+      `Rollback detected: ${tx.reference} — reverting ${String(tx.amount)} from wallet ${tx.walletId}`,
+    );
+
+    await this.prisma.$transaction(async (prismaTx) => {
+      const wallet = await prismaTx.wallet.findUniqueOrThrow({
+        where: { id: tx.walletId },
+      });
+      const newBalance = new Prisma.Decimal(wallet.balance.toString()).minus(
+        new Prisma.Decimal(tx.amount),
+      );
+
+      // Debit the wallet balance
+      await prismaTx.wallet.update({
+        where: { id: tx.walletId },
+        data: {
+          balance: newBalance,
+          isFrozen: true,
+        },
+      });
+
+      // Mark the transaction as cancelled
+      await prismaTx.walletTransaction.update({
+        where: { id: tx.id },
+        data: {
+          status: 'CANCELLED',
+          resolvedAt: new Date(),
+          metadata: {
+            ...meta,
+            rollbackDetectedAt: new Date().toISOString(),
+            rollbackReason:
+              'Transaction missing/reverted on-chain during reconciliation',
+          },
+        },
+      });
+
+      // Create a reversal ledger entry
+      await prismaTx.ledgerEntry.create({
+        data: {
+          walletId: tx.walletId,
+          amount: new Prisma.Decimal(tx.amount).negated(),
+          type: LedgerType.RECONCILIATION_ADJUSTMENT,
+          reference: `${tx.reference}-rollback-${Date.now()}`,
+          balanceAfter: newBalance,
+          metadata: {
+            reason: 'RECONCILIATION_ROLLBACK',
+            originalReference: tx.reference,
+          },
+        },
+      });
+    });
+  }
+
+  private emptyResult(): ReconciliationResult {
+    return {
+      resolved: 0,
+      missed: 0,
+      rollbacks: 0,
+      pending: 0,
+      skippedTestnet: 0,
+    };
+  }
+
+  private mergeResults(
+    a: ReconciliationResult,
+    b: ReconciliationResult,
+  ): ReconciliationResult {
+    return {
+      resolved: a.resolved + b.resolved,
+      missed: a.missed + b.missed,
+      rollbacks: a.rollbacks + b.rollbacks,
+      pending: a.pending + b.pending,
+      skippedTestnet: a.skippedTestnet + b.skippedTestnet,
+    };
+  }
+}

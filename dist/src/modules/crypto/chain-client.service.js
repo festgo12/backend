@@ -78,9 +78,9 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         return this.providerInstance;
     }
     get btcRpcUrl() {
-        const url = this.config.quicknodeRpcUrl;
+        const url = this.config.alchemyBtcHttpUrl;
         if (!url) {
-            throw new common_1.InternalServerErrorException('QUICKNODE_RPC_URL is not configured');
+            throw new common_1.InternalServerErrorException('ALCHEMY_BTC_HTTP_URL is not configured');
         }
         return url;
     }
@@ -183,7 +183,7 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
     async getBtcTipHeight() {
         const height = await this.btcRpcCall('getblockcount');
         if (!Number.isFinite(height)) {
-            throw new Error(`QuickNode getblockcount returned non-numeric value: "${String(height)}"`);
+            throw new Error(`Alchemy BTC getblockcount returned non-numeric value: "${String(height)}"`);
         }
         return height;
     }

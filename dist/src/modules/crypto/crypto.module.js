@@ -14,7 +14,7 @@ const hd_wallet_service_1 = require("./hd-wallet.service");
 const deposit_address_registry_service_1 = require("./deposit-address-registry.service");
 const chain_client_service_1 = require("./chain-client.service");
 const evm_deposit_processor_service_1 = require("./evm-deposit-processor.service");
-const btc_deposit_processor_service_1 = require("./btc-deposit-processor.service");
+const btc_websocket_service_1 = require("./btc-websocket.service");
 const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
 const crypto_withdrawal_service_1 = require("./crypto-withdrawal.service");
 const sweep_service_1 = require("./sweep.service");
@@ -23,6 +23,7 @@ const exchange_rate_service_1 = require("./exchange-rate.service");
 const webhook_controller_1 = require("./webhook.controller");
 const webhook_processor_service_1 = require("./webhook-processor.service");
 const address_registration_service_1 = require("./address-registration.service");
+const reconciliation_service_1 = require("./reconciliation.service");
 const wallet_module_1 = require("../wallet/wallet.module");
 let CryptoModule = class CryptoModule {
 };
@@ -38,7 +39,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             deposit_address_registry_service_1.DepositAddressRegistry,
             chain_client_service_1.ChainClientService,
             evm_deposit_processor_service_1.EvmDepositProcessorService,
-            btc_deposit_processor_service_1.BtcDepositProcessorService,
+            btc_websocket_service_1.BtcAlchemyWebSocketService,
             withdrawal_tracker_service_1.WithdrawalTrackerService,
             crypto_withdrawal_service_1.CryptoWithdrawalService,
             sweep_service_1.SweepService,
@@ -46,6 +47,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             exchange_rate_service_1.ExchangeRateService,
             webhook_processor_service_1.WebhookProcessorService,
             address_registration_service_1.AddressRegistrationService,
+            reconciliation_service_1.ReconciliationService,
         ],
         exports: [
             crypto_config_service_1.CryptoConfigService,
@@ -53,7 +55,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             deposit_address_registry_service_1.DepositAddressRegistry,
             chain_client_service_1.ChainClientService,
             evm_deposit_processor_service_1.EvmDepositProcessorService,
-            btc_deposit_processor_service_1.BtcDepositProcessorService,
+            btc_websocket_service_1.BtcAlchemyWebSocketService,
             withdrawal_tracker_service_1.WithdrawalTrackerService,
             crypto_withdrawal_service_1.CryptoWithdrawalService,
             sweep_service_1.SweepService,
@@ -61,6 +63,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             exchange_rate_service_1.ExchangeRateService,
             webhook_processor_service_1.WebhookProcessorService,
             address_registration_service_1.AddressRegistrationService,
+            reconciliation_service_1.ReconciliationService,
         ],
     })
 ], CryptoModule);

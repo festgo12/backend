@@ -33,6 +33,7 @@ export declare class UsersController {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         }[];
         id: string;
         email: string | null;

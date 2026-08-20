@@ -7,6 +7,7 @@ import { CryptoConfigService } from '../crypto/crypto-config.service';
 import { DepositAddressRegistry } from '../crypto/deposit-address-registry.service';
 import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
+import { ReconciliationService } from '../crypto/reconciliation.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 export declare class AdminService {
@@ -19,7 +20,8 @@ export declare class AdminService {
     private readonly chainClient;
     private readonly paystackService;
     private readonly walletService;
-    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService);
+    private readonly reconciliationService;
+    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService);
     getUsers(page: number, limit: number, search?: string): Promise<{
         users: ({
             profile: {
@@ -42,6 +44,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -131,6 +134,7 @@ export declare class AdminService {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         }[];
         devices: {
             id: string;
@@ -235,6 +239,7 @@ export declare class AdminService {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         })[];
         meta: {
             total: number;
@@ -291,6 +296,7 @@ export declare class AdminService {
                 fee: Prisma.Decimal;
                 walletId: string;
                 reference: string;
+                resolvedAt: Date | null;
             } | null;
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -322,6 +328,7 @@ export declare class AdminService {
         address: string | null;
         derivationIndex: number | null;
         chain: string | null;
+        isFrozen: boolean;
     }>;
     getFeeWallets(): Promise<{
         wallets: {
@@ -351,6 +358,7 @@ export declare class AdminService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     getAllTransactions(page: number, limit: number): Promise<{
         transactions: ({
@@ -401,6 +409,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -413,6 +422,7 @@ export declare class AdminService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -558,6 +568,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -592,6 +603,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -639,6 +651,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             }[];
         } & {
             id: string;
@@ -729,6 +742,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -741,6 +755,7 @@ export declare class AdminService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -798,6 +813,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -810,6 +826,7 @@ export declare class AdminService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -896,6 +913,7 @@ export declare class AdminService {
                 address: string | null;
                 derivationIndex: number | null;
                 chain: string | null;
+                isFrozen: boolean;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -908,6 +926,7 @@ export declare class AdminService {
             fee: Prisma.Decimal;
             walletId: string;
             reference: string;
+            resolvedAt: Date | null;
         })[];
         meta: {
             total: number;
@@ -964,6 +983,7 @@ export declare class AdminService {
             address: string | null;
             derivationIndex: number | null;
             chain: string | null;
+            isFrozen: boolean;
         };
         ledgerEntries: {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -988,6 +1008,7 @@ export declare class AdminService {
         fee: Prisma.Decimal;
         walletId: string;
         reference: string;
+        resolvedAt: Date | null;
     }>;
     getAuditLogs(page: number, limit: number, filters?: {
         action?: string;
@@ -1165,4 +1186,6 @@ export declare class AdminService {
             error: string;
         })[];
     }>;
+    reconcileAll(): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
+    reconcileCurrency(currency: Currency): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
 }

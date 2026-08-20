@@ -177,7 +177,7 @@ export class SweepService {
         metadata: {
           destination,
           blockchain: currency === Currency.BTC ? 'BTC' : 'EVM',
-          provider: currency === Currency.BTC ? 'quicknode' : 'alchemy',
+          provider: currency === Currency.BTC ? 'alchemy' : 'alchemy',
           sweep: true,
           fromAddress,
           initiatedAt: new Date().toISOString(),

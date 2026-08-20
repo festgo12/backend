@@ -40,6 +40,9 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         });
         if (!wallet)
             throw new common_1.BadRequestException('Wallet not found');
+        if (wallet.isFrozen) {
+            throw new common_1.BadRequestException('Wallet is frozen due to rollback detection. Please contact support.');
+        }
         const available = wallet.balance.minus(wallet.reservedBalance);
         if (available.lessThan(amount)) {
             throw new common_1.BadRequestException(`Insufficient balance. Available: ${available.toString()} ${currency}`);
@@ -79,9 +82,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                     metadata: {
                         destination: destinationAddress,
                         blockchain: this.hdWallet.chainForCurrency(currency),
-                        provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
-                            ? 'quicknode'
-                            : 'alchemy',
+                        provider: 'alchemy',
                         lastError: message,
                         retryCount: 0,
                     },
@@ -99,9 +100,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                 metadata: {
                     destination: destinationAddress,
                     blockchain: this.hdWallet.chainForCurrency(currency),
-                    provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
-                        ? 'quicknode'
-                        : 'alchemy',
+                    provider: 'alchemy',
                     initiatedAt: new Date().toISOString(),
                 },
             },
@@ -204,9 +203,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                 metadata: {
                     destination: destinationAddress,
                     blockchain: this.hdWallet.chainForCurrency(currency),
-                    provider: this.hdWallet.chainForCurrency(currency) === 'BTC'
-                        ? 'quicknode'
-                        : 'alchemy',
+                    provider: 'alchemy',
                     sweep: true,
                     feeWallet: true,
                     initiatedAt: new Date().toISOString(),

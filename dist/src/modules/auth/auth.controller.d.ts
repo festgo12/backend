@@ -168,10 +168,8 @@ export declare class AuthController {
     sendEmailVerification(req: any): Promise<{
         success: boolean;
         message: string;
-        code?: undefined;
     } | {
         success: boolean;
-        code: string;
         message?: undefined;
     }>;
     verifyEmail(req: any, dto: VerifyEmailDto): Promise<{

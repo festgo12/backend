@@ -17,8 +17,8 @@ interface ErrorLike {
  * Hybrid withdrawal confirmation queue.
  *
  * Primary path: WebhookProcessorService receives a push notification from
- * Alchemy (EVM) or QuickNode (BTC) when the outgoing tx is mined, and calls
- * confirmFromWebhook() for instant finalization.
+ * Alchemy (EVM) or BtcAlchemyWebSocketService (BTC) when the outgoing tx
+ * is mined, and calls confirmFromWebhook() for instant finalization.
  *
  * Fallback path: A 30-second cron polls the chain directly for any pending
  * jobs that were not confirmed via webhook within the expected window.
@@ -242,6 +242,15 @@ export class WithdrawalTrackerService {
         transactionStatus,
         extraMetadata,
       );
+
+      // Set resolvedAt when withdrawal is confirmed on-chain
+      if (status === 'CONFIRMED') {
+        await this.prisma.walletTransaction.update({
+          where: { id: transaction.id },
+          data: { resolvedAt: new Date() },
+        });
+      }
+
       const via =
         typeof extraMetadata.confirmedVia === 'string'
           ? extraMetadata.confirmedVia

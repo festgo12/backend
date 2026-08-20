@@ -77,6 +77,12 @@ let AdminController = class AdminController {
     getChainBalances() {
         return this.adminService.getChainBalances();
     }
+    reconcileAll() {
+        return this.adminService.reconcileAll();
+    }
+    reconcileCurrency(currency) {
+        return this.adminService.reconcileCurrency(currency);
+    }
     getFeeWallets() {
         return this.adminService.getFeeWallets();
     }
@@ -280,6 +286,25 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getChainBalances", null);
+__decorate([
+    (0, common_1.Post)('crypto/reconcile'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_RECONCILE', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({ summary: 'Run full on-chain reconciliation (all chains)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "reconcileAll", null);
+__decorate([
+    (0, common_1.Post)('crypto/reconcile/:currency'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_RECONCILE_CURRENCY', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Run on-chain reconciliation for a specific currency',
+    }),
+    __param(0, (0, common_1.Param)('currency')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "reconcileCurrency", null);
 __decorate([
     (0, common_1.Get)('fee-wallets'),
     (0, swagger_1.ApiOperation)({ summary: 'List platform fee wallets with ledger balances' }),

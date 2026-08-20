@@ -41,9 +41,6 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         if (!this.alchemySigningKey) {
             this.logger.warn('ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.');
         }
-        if (!this.quicknodeStreamsSecret) {
-            this.logger.warn('QN_STREAM_SECRET is not set; QuickNode webhook signature verification will fail.');
-        }
     }
     get provider() {
         return 'alchemy';
@@ -93,21 +90,11 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
     get alchemyWebhookId() {
         return this.configService.get('ALCHEMY_WEBHOOK_ID') || null;
     }
-    get quicknodeApiKey() {
-        return this.configService.get('QUICKNODE_API_KEY') || null;
+    get alchemyBtcHttpUrl() {
+        return this.configService.get('ALCHEMY_BTC_HTTP_URL') || null;
     }
-    get quicknodeStreamsId() {
-        return this.configService.get('QUICKNODE_STREAMS_ID') || null;
-    }
-    get quicknodeStreamsSecret() {
-        return this.configService.get('QN_STREAM_SECRET') || null;
-    }
-    get quicknodeRpcUrl() {
-        return this.configService.get('QUICKNODE_RPC_URL') || null;
-    }
-    get quicknodeKvListName() {
-        return (this.configService.get('QN_STREAMS_KV_LIST') ||
-            'p2n_btc_addresses');
+    get alchemyBtcWsUrl() {
+        return this.configService.get('ALCHEMY_BTC_WS_URL') || null;
     }
     get evmConfirmations() {
         return Number(this.configService.get('BLOCK_CONFIRMATIONS_ETH', '12'));
@@ -117,6 +104,9 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
     }
     get depositSweepThreshold() {
         return Number(this.configService.get('DEPOSIT_SWEEP_THRESHOLD', '0'));
+    }
+    get reconciliationCron() {
+        return (this.configService.get('RECONCILIATION_CRON') || '0 */8 * * *');
     }
     getStablecoinContract(currency) {
         const override = this.configService.get(`ALCHEMY_${currency}_CONTRACT`);

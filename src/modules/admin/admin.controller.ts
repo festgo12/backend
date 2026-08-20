@@ -178,6 +178,24 @@ export class AdminController {
     return this.adminService.getChainBalances();
   }
 
+  // ─── Reconciliation ────────────────────────────────────────────────────
+
+  @Post('crypto/reconcile')
+  @AuditLog('ADMIN_CRYPTO_RECONCILE', 'SYSTEM')
+  @ApiOperation({ summary: 'Run full on-chain reconciliation (all chains)' })
+  reconcileAll() {
+    return this.adminService.reconcileAll();
+  }
+
+  @Post('crypto/reconcile/:currency')
+  @AuditLog('ADMIN_CRYPTO_RECONCILE_CURRENCY', 'SYSTEM')
+  @ApiOperation({
+    summary: 'Run on-chain reconciliation for a specific currency',
+  })
+  reconcileCurrency(@Param('currency') currency: Currency) {
+    return this.adminService.reconcileCurrency(currency);
+  }
+
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────
 
   @Get('fee-wallets')

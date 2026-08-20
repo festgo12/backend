@@ -13,7 +13,7 @@ interface ErrorLike {
  * Manages address registration with external webhook providers.
  *
  * - EVM: Alchemy Notify API (PATCH /api/update-webhook-addresses)
- * - BTC: QuickNode KV Store (POST /key-value-store/rest/v1/lists/{name}/items)
+ * - BTC: Alchemy WebSocket subscribeAddresses (managed by BtcAlchemyWebSocketService)
  *
  * Called by DepositAddressRegistry when a new address is derived.
  */
@@ -116,63 +116,22 @@ export class AddressRegistrationService {
     );
   }
 
-  // ─── BTC (QuickNode KV Store) ──────────────────────────────────────────
-
-  /**
-   * Registers a BTC address with QuickNode's KV Store for the Streams filter.
-   */
-  async registerBtcAddress(address: string): Promise<void> {
-    const apiKey = this.config.quicknodeApiKey;
-    const listName = this.config.quicknodeKvListName;
-    if (!apiKey) {
-      this.logger.warn(
-        'QUICKNODE_API_KEY not configured; skipping BTC address registration',
-      );
-      return;
-    }
-
-    try {
-      await lastValueFrom(
-        this.httpService.post(
-          `https://api.quicknode.com/key-value-store/rest/v1/lists/${listName}/items`,
-          { item: address },
-          {
-            headers: {
-              'x-api-key': apiKey,
-              'Content-Type': 'application/json',
-            },
-            timeout: 15_000,
-          },
-        ),
-      );
-      this.logger.debug(
-        `Registered BTC address ${address} with QuickNode KV store`,
-      );
-    } catch (error) {
-      const err = error as ErrorLike;
-      // 409 = already exists, which is fine
-      if (err.response?.status === 409) {
-        this.logger.debug(
-          `BTC address ${address} already registered in QuickNode KV store`,
-        );
-        return;
-      }
-      this.logger.error(
-        `Failed to register BTC address ${address} with QuickNode: ${err.message}`,
-      );
-    }
-  }
+  // ─── BTC (Alchemy WebSocket) ───────────────────────────────────────────
+  //
+  // BTC address registration is handled by BtcAlchemyWebSocketService.addAddress().
+  // The registerAddress() method below triggers a WebSocket re-subscribe.
 
   // ─── Convenience ────────────────────────────────────────────────────────
 
   /**
    * Registers a deposit address with the appropriate provider based on chain.
+   * For BTC, this triggers a WebSocket re-subscribe (handled externally by
+   * DepositAddressRegistry calling BtcWebSocketService.addAddress()).
    */
-  async registerAddress(address: string, chain: ChainKind): Promise<void> {
+  registerAddress(address: string, chain: ChainKind): void {
     if (chain === 'EVM') {
       this.queueEvmAddress(address);
-    } else if (chain === 'BTC') {
-      await this.registerBtcAddress(address);
     }
+    // BTC registration is handled by BtcAlchemyWebSocketService
   }
 }

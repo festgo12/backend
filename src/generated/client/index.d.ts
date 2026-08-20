@@ -7450,6 +7450,7 @@ export namespace Prisma {
     address: string | null
     derivationIndex: number | null
     chain: string | null
+    isFrozen: boolean | null
     updatedAt: Date | null
     version: number | null
   }
@@ -7463,6 +7464,7 @@ export namespace Prisma {
     address: string | null
     derivationIndex: number | null
     chain: string | null
+    isFrozen: boolean | null
     updatedAt: Date | null
     version: number | null
   }
@@ -7476,6 +7478,7 @@ export namespace Prisma {
     address: number
     derivationIndex: number
     chain: number
+    isFrozen: number
     updatedAt: number
     version: number
     _all: number
@@ -7505,6 +7508,7 @@ export namespace Prisma {
     address?: true
     derivationIndex?: true
     chain?: true
+    isFrozen?: true
     updatedAt?: true
     version?: true
   }
@@ -7518,6 +7522,7 @@ export namespace Prisma {
     address?: true
     derivationIndex?: true
     chain?: true
+    isFrozen?: true
     updatedAt?: true
     version?: true
   }
@@ -7531,6 +7536,7 @@ export namespace Prisma {
     address?: true
     derivationIndex?: true
     chain?: true
+    isFrozen?: true
     updatedAt?: true
     version?: true
     _all?: true
@@ -7631,6 +7637,7 @@ export namespace Prisma {
     address: string | null
     derivationIndex: number | null
     chain: string | null
+    isFrozen: boolean
     updatedAt: Date
     version: number
     _count: WalletCountAggregateOutputType | null
@@ -7663,6 +7670,7 @@ export namespace Prisma {
     address?: boolean
     derivationIndex?: boolean
     chain?: boolean
+    isFrozen?: boolean
     updatedAt?: boolean
     version?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7682,6 +7690,7 @@ export namespace Prisma {
     address?: boolean
     derivationIndex?: boolean
     chain?: boolean
+    isFrozen?: boolean
     updatedAt?: boolean
     version?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7696,6 +7705,7 @@ export namespace Prisma {
     address?: boolean
     derivationIndex?: boolean
     chain?: boolean
+    isFrozen?: boolean
     updatedAt?: boolean
     version?: boolean
   }
@@ -7730,6 +7740,7 @@ export namespace Prisma {
       address: string | null
       derivationIndex: number | null
       chain: string | null
+      isFrozen: boolean
       updatedAt: Date
       version: number
     }, ExtArgs["result"]["wallet"]>
@@ -8138,6 +8149,7 @@ export namespace Prisma {
     readonly address: FieldRef<"Wallet", 'String'>
     readonly derivationIndex: FieldRef<"Wallet", 'Int'>
     readonly chain: FieldRef<"Wallet", 'String'>
+    readonly isFrozen: FieldRef<"Wallet", 'Boolean'>
     readonly updatedAt: FieldRef<"Wallet", 'DateTime'>
     readonly version: FieldRef<"Wallet", 'Int'>
   }
@@ -9651,6 +9663,7 @@ export namespace Prisma {
     amount: Decimal | null
     fee: Decimal | null
     reference: string | null
+    resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9663,6 +9676,7 @@ export namespace Prisma {
     amount: Decimal | null
     fee: Decimal | null
     reference: string | null
+    resolvedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9676,6 +9690,7 @@ export namespace Prisma {
     fee: number
     reference: number
     metadata: number
+    resolvedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -9700,6 +9715,7 @@ export namespace Prisma {
     amount?: true
     fee?: true
     reference?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9712,6 +9728,7 @@ export namespace Prisma {
     amount?: true
     fee?: true
     reference?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9725,6 +9742,7 @@ export namespace Prisma {
     fee?: true
     reference?: true
     metadata?: true
+    resolvedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -9825,6 +9843,7 @@ export namespace Prisma {
     fee: Decimal
     reference: string
     metadata: JsonValue | null
+    resolvedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: WalletTransactionCountAggregateOutputType | null
@@ -9857,6 +9876,7 @@ export namespace Prisma {
     fee?: boolean
     reference?: boolean
     metadata?: boolean
+    resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     wallet?: boolean | WalletDefaultArgs<ExtArgs>
@@ -9873,6 +9893,7 @@ export namespace Prisma {
     fee?: boolean
     reference?: boolean
     metadata?: boolean
+    resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     wallet?: boolean | WalletDefaultArgs<ExtArgs>
@@ -9887,6 +9908,7 @@ export namespace Prisma {
     fee?: boolean
     reference?: boolean
     metadata?: boolean
+    resolvedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -9915,6 +9937,7 @@ export namespace Prisma {
       fee: Prisma.Decimal
       reference: string
       metadata: Prisma.JsonValue | null
+      resolvedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["walletTransaction"]>
@@ -10320,6 +10343,7 @@ export namespace Prisma {
     readonly fee: FieldRef<"WalletTransaction", 'Decimal'>
     readonly reference: FieldRef<"WalletTransaction", 'String'>
     readonly metadata: FieldRef<"WalletTransaction", 'Json'>
+    readonly resolvedAt: FieldRef<"WalletTransaction", 'DateTime'>
     readonly createdAt: FieldRef<"WalletTransaction", 'DateTime'>
     readonly updatedAt: FieldRef<"WalletTransaction", 'DateTime'>
   }
@@ -34059,6 +34083,7 @@ export namespace Prisma {
     address: 'address',
     derivationIndex: 'derivationIndex',
     chain: 'chain',
+    isFrozen: 'isFrozen',
     updatedAt: 'updatedAt',
     version: 'version'
   };
@@ -34091,6 +34116,7 @@ export namespace Prisma {
     fee: 'fee',
     reference: 'reference',
     metadata: 'metadata',
+    resolvedAt: 'resolvedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -35121,6 +35147,7 @@ export namespace Prisma {
     address?: StringNullableFilter<"Wallet"> | string | null
     derivationIndex?: IntNullableFilter<"Wallet"> | number | null
     chain?: StringNullableFilter<"Wallet"> | string | null
+    isFrozen?: BoolFilter<"Wallet"> | boolean
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -35139,6 +35166,7 @@ export namespace Prisma {
     address?: SortOrderInput | SortOrder
     derivationIndex?: SortOrderInput | SortOrder
     chain?: SortOrderInput | SortOrder
+    isFrozen?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -35161,6 +35189,7 @@ export namespace Prisma {
     address?: StringNullableFilter<"Wallet"> | string | null
     derivationIndex?: IntNullableFilter<"Wallet"> | number | null
     chain?: StringNullableFilter<"Wallet"> | string | null
+    isFrozen?: BoolFilter<"Wallet"> | boolean
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -35179,6 +35208,7 @@ export namespace Prisma {
     address?: SortOrderInput | SortOrder
     derivationIndex?: SortOrderInput | SortOrder
     chain?: SortOrderInput | SortOrder
+    isFrozen?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
     _count?: WalletCountOrderByAggregateInput
@@ -35200,6 +35230,7 @@ export namespace Prisma {
     address?: StringNullableWithAggregatesFilter<"Wallet"> | string | null
     derivationIndex?: IntNullableWithAggregatesFilter<"Wallet"> | number | null
     chain?: StringNullableWithAggregatesFilter<"Wallet"> | string | null
+    isFrozen?: BoolWithAggregatesFilter<"Wallet"> | boolean
     updatedAt?: DateTimeWithAggregatesFilter<"Wallet"> | Date | string
     version?: IntWithAggregatesFilter<"Wallet"> | number
   }
@@ -35304,6 +35335,7 @@ export namespace Prisma {
     fee?: DecimalFilter<"WalletTransaction"> | Decimal | DecimalJsLike | number | string
     reference?: StringFilter<"WalletTransaction"> | string
     metadata?: JsonNullableFilter<"WalletTransaction">
+    resolvedAt?: DateTimeNullableFilter<"WalletTransaction"> | Date | string | null
     createdAt?: DateTimeFilter<"WalletTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"WalletTransaction"> | Date | string
     wallet?: XOR<WalletRelationFilter, WalletWhereInput>
@@ -35319,6 +35351,7 @@ export namespace Prisma {
     fee?: SortOrder
     reference?: SortOrder
     metadata?: SortOrderInput | SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     wallet?: WalletOrderByWithRelationInput
@@ -35337,6 +35370,7 @@ export namespace Prisma {
     amount?: DecimalFilter<"WalletTransaction"> | Decimal | DecimalJsLike | number | string
     fee?: DecimalFilter<"WalletTransaction"> | Decimal | DecimalJsLike | number | string
     metadata?: JsonNullableFilter<"WalletTransaction">
+    resolvedAt?: DateTimeNullableFilter<"WalletTransaction"> | Date | string | null
     createdAt?: DateTimeFilter<"WalletTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"WalletTransaction"> | Date | string
     wallet?: XOR<WalletRelationFilter, WalletWhereInput>
@@ -35352,6 +35386,7 @@ export namespace Prisma {
     fee?: SortOrder
     reference?: SortOrder
     metadata?: SortOrderInput | SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: WalletTransactionCountOrderByAggregateInput
@@ -35373,6 +35408,7 @@ export namespace Prisma {
     fee?: DecimalWithAggregatesFilter<"WalletTransaction"> | Decimal | DecimalJsLike | number | string
     reference?: StringWithAggregatesFilter<"WalletTransaction"> | string
     metadata?: JsonNullableWithAggregatesFilter<"WalletTransaction">
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"WalletTransaction"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"WalletTransaction"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WalletTransaction"> | Date | string
   }
@@ -37715,6 +37751,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
@@ -37733,6 +37770,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
@@ -37749,6 +37787,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -37767,6 +37806,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
@@ -37784,6 +37824,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
   }
@@ -37796,6 +37837,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -37809,6 +37851,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -37909,6 +37952,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     wallet: WalletCreateNestedOneWithoutTransactionsInput
@@ -37924,6 +37968,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
@@ -37937,6 +37982,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     wallet?: WalletUpdateOneRequiredWithoutTransactionsNestedInput
@@ -37952,6 +37998,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
@@ -37966,6 +38013,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37978,6 +38026,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37991,6 +38040,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40750,6 +40800,7 @@ export namespace Prisma {
     address?: SortOrder
     derivationIndex?: SortOrder
     chain?: SortOrder
+    isFrozen?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -40770,6 +40821,7 @@ export namespace Prisma {
     address?: SortOrder
     derivationIndex?: SortOrder
     chain?: SortOrder
+    isFrozen?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -40783,6 +40835,7 @@ export namespace Prisma {
     address?: SortOrder
     derivationIndex?: SortOrder
     chain?: SortOrder
+    isFrozen?: SortOrder
     updatedAt?: SortOrder
     version?: SortOrder
   }
@@ -40998,6 +41051,7 @@ export namespace Prisma {
     fee?: SortOrder
     reference?: SortOrder
     metadata?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -41015,6 +41069,7 @@ export namespace Prisma {
     amount?: SortOrder
     fee?: SortOrder
     reference?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -41027,6 +41082,7 @@ export namespace Prisma {
     amount?: SortOrder
     fee?: SortOrder
     reference?: SortOrder
+    resolvedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44659,6 +44715,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutWalletInput
@@ -44675,6 +44732,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
@@ -45439,6 +45497,7 @@ export namespace Prisma {
     address?: StringNullableFilter<"Wallet"> | string | null
     derivationIndex?: IntNullableFilter<"Wallet"> | number | null
     chain?: StringNullableFilter<"Wallet"> | string | null
+    isFrozen?: BoolFilter<"Wallet"> | boolean
     updatedAt?: DateTimeFilter<"Wallet"> | Date | string
     version?: IntFilter<"Wallet"> | number
   }
@@ -46469,6 +46528,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     ledgerEntries?: LedgerEntryCreateNestedManyWithoutTransactionInput
@@ -46482,6 +46542,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutTransactionInput
@@ -46720,6 +46781,7 @@ export namespace Prisma {
     fee?: DecimalFilter<"WalletTransaction"> | Decimal | DecimalJsLike | number | string
     reference?: StringFilter<"WalletTransaction"> | string
     metadata?: JsonNullableFilter<"WalletTransaction">
+    resolvedAt?: DateTimeNullableFilter<"WalletTransaction"> | Date | string | null
     createdAt?: DateTimeFilter<"WalletTransaction"> | Date | string
     updatedAt?: DateTimeFilter<"WalletTransaction"> | Date | string
   }
@@ -46793,6 +46855,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
@@ -46810,6 +46873,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     transactions?: WalletTransactionUncheckedCreateNestedManyWithoutWalletInput
@@ -46830,6 +46894,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     wallet: WalletCreateNestedOneWithoutTransactionsInput
@@ -46844,6 +46909,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46911,6 +46977,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -46928,6 +46995,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     transactions?: WalletTransactionUncheckedUpdateManyWithoutWalletNestedInput
@@ -46954,6 +47022,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     wallet?: WalletUpdateOneRequiredWithoutTransactionsNestedInput
@@ -46968,6 +47037,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47025,6 +47095,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
@@ -47042,6 +47113,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
@@ -47107,6 +47179,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -47124,6 +47197,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
@@ -47155,6 +47229,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
@@ -47172,6 +47247,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
@@ -47203,6 +47279,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -47220,6 +47297,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
@@ -51303,6 +51381,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutWalletsInput
@@ -51320,6 +51399,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
     ledgerEntries?: LedgerEntryUncheckedCreateNestedManyWithoutWalletInput
@@ -51351,6 +51431,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutWalletsNestedInput
@@ -51368,6 +51449,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
@@ -51383,6 +51465,7 @@ export namespace Prisma {
     address?: string | null
     derivationIndex?: number | null
     chain?: string | null
+    isFrozen?: boolean
     updatedAt?: Date | string
     version?: number
   }
@@ -51629,6 +51712,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUpdateManyWithoutWalletNestedInput
@@ -51645,6 +51729,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutWalletNestedInput
@@ -51661,6 +51746,7 @@ export namespace Prisma {
     address?: NullableStringFieldUpdateOperationsInput | string | null
     derivationIndex?: NullableIntFieldUpdateOperationsInput | number | null
     chain?: NullableStringFieldUpdateOperationsInput | string | null
+    isFrozen?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
   }
@@ -52409,6 +52495,7 @@ export namespace Prisma {
     fee?: Decimal | DecimalJsLike | number | string
     reference: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52478,6 +52565,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ledgerEntries?: LedgerEntryUpdateManyWithoutTransactionNestedInput
@@ -52491,6 +52579,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutTransactionNestedInput
@@ -52504,6 +52593,7 @@ export namespace Prisma {
     fee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     reference?: StringFieldUpdateOperationsInput | string
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -25,13 +25,11 @@ export declare class CryptoConfigService implements OnModuleInit {
     get alchemySigningKey(): string | null;
     get alchemyAuthToken(): string | null;
     get alchemyWebhookId(): string | null;
-    get quicknodeApiKey(): string | null;
-    get quicknodeStreamsId(): string | null;
-    get quicknodeStreamsSecret(): string | null;
-    get quicknodeRpcUrl(): string | null;
-    get quicknodeKvListName(): string;
+    get alchemyBtcHttpUrl(): string | null;
+    get alchemyBtcWsUrl(): string | null;
     get evmConfirmations(): number;
     get btcConfirmations(): number;
     get depositSweepThreshold(): number;
+    get reconciliationCron(): string;
     getStablecoinContract(currency: string): string | null;
 }
