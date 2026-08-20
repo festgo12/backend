@@ -2,6 +2,7 @@ import { Controller, Get, Patch, Body, UseGuards, Delete, Param, UseInterceptors
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
+import { unlink } from 'fs/promises';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
@@ -35,12 +36,21 @@ export class UsersController {
   }))
   @AuditLog('USER_PROFILE_UPDATE', 'USER')
   @ApiOperation({ summary: 'Update user profile' })
-  updateProfile(
+  async updateProfile(
     @GetUser('id') userId: string,
     @Body() dto: UpdateProfileDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (file) {
+      // Delete old avatar file before saving new one
+      try {
+        const currentProfile = await this.usersService.findMe(userId);
+        const oldAvatar = (currentProfile as any)?.profile?.avatarUrl;
+        if (oldAvatar && oldAvatar.startsWith('/uploads/avatars/')) {
+          const oldPath = join(__dirname, '..', '..', '..', oldAvatar);
+          await unlink(oldPath).catch(() => {});
+        }
+      } catch (_) {}
       dto.avatarUrl = `/uploads/avatars/${file.filename}`;
     }
     return this.usersService.updateProfile(userId, dto);
