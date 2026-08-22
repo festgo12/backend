@@ -102,7 +102,7 @@ export declare class OrdersService {
             maxLimit: Decimal;
             isSponsored: boolean;
         };
-        seller: {
+        buyer: {
             id: string;
             email: string | null;
             phone: string | null;
@@ -127,7 +127,7 @@ export declare class OrdersService {
             createdAt: Date;
             updatedAt: Date;
         };
-        buyer: {
+        seller: {
             id: string;
             email: string | null;
             phone: string | null;

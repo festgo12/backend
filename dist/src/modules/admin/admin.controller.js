@@ -32,6 +32,9 @@ let AdminController = class AdminController {
         this.exchangeRateService = exchangeRateService;
         this.platformService = platformService;
     }
+    getDashboardStats() {
+        return this.adminService.getDashboardStats();
+    }
     getUsers(page = '1', limit = '10', search) {
         return this.adminService.getUsers(parseInt(page), parseInt(limit), search);
     }
@@ -55,6 +58,18 @@ let AdminController = class AdminController {
     }
     getOrderDetail(orderId) {
         return this.adminService.getOrderDetail(orderId);
+    }
+    flagOrder(orderId) {
+        return this.adminService.flagOrder(orderId);
+    }
+    releaseOrder(orderId) {
+        return this.adminService.releaseOrder(orderId);
+    }
+    adminUpdateAd(adId, body) {
+        return this.adminService.adminUpdateAd(adId, body);
+    }
+    adminDeleteAd(adId) {
+        return this.adminService.adminDeleteAd(adId);
     }
     getBlockchainStats() {
         return this.adminService.getBlockchainStats();
@@ -161,7 +176,13 @@ let AdminController = class AdminController {
 };
 exports.AdminController = AdminController;
 __decorate([
-    (0, common_1.Get)('users'),
+    (0, common_1.Get)('stats'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get aggregated dashboard stats' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getDashboardStats", null);
+__decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Get list of users with pagination' }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
@@ -233,6 +254,43 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getOrderDetail", null);
+__decorate([
+    (0, common_1.Patch)('orders/:id/flag'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_ORDER_FLAG', 'ORDER'),
+    (0, swagger_1.ApiOperation)({ summary: 'Flag order for fraud review' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "flagOrder", null);
+__decorate([
+    (0, common_1.Patch)('orders/:id/release'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_ORDER_RELEASE', 'ORDER'),
+    (0, swagger_1.ApiOperation)({ summary: 'Remove fraud flag from order' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "releaseOrder", null);
+__decorate([
+    (0, common_1.Patch)('ads/:id'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_AD_UPDATE', 'MARKETPLACE'),
+    (0, swagger_1.ApiOperation)({ summary: 'Admin update any ad (moderation)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "adminUpdateAd", null);
+__decorate([
+    (0, common_1.Delete)('ads/:id'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_AD_DELETE', 'MARKETPLACE'),
+    (0, swagger_1.ApiOperation)({ summary: 'Admin delete any ad (moderation)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "adminDeleteAd", null);
 __decorate([
     (0, common_1.Get)('blockchain/stats'),
     (0, swagger_1.ApiOperation)({ summary: 'Get blockchain monitoring stats' }),

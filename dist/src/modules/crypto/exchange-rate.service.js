@@ -21,7 +21,8 @@ let ExchangeRateService = ExchangeRateService_1 = class ExchangeRateService {
     httpService;
     logger = new common_1.Logger(ExchangeRateService_1.name);
     cache = {
-        rates: {},
+        ngn: {},
+        usd: {},
         lastUpdated: new Date(0),
     };
     FALLBACK_RATES = {
@@ -51,43 +52,63 @@ let ExchangeRateService = ExchangeRateService_1 = class ExchangeRateService {
     async refreshRates() {
         try {
             const coinIds = Object.values(this.COINGECKO_MAP).join(',');
-            const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=ngn`;
+            const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=ngn,usd`;
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
                 timeout: 10000,
                 headers: { Accept: 'application/json' },
             }));
             const data = response.data;
-            const rates = { NGN: 1.0 };
+            const ngn = { NGN: 1.0 };
+            const usd = { NGN: 1.0 };
             for (const [currency, coinId] of Object.entries(this.COINGECKO_MAP)) {
-                const price = data[coinId]?.ngn;
-                if (price && typeof price === 'number' && price > 0) {
-                    rates[currency] = price;
+                const ngnPrice = data[coinId]?.ngn;
+                const usdPrice = data[coinId]?.usd;
+                if (ngnPrice && typeof ngnPrice === 'number' && ngnPrice > 0) {
+                    ngn[currency] = ngnPrice;
                 }
                 else {
-                    rates[currency] = this.FALLBACK_RATES[currency] || 0;
-                    this.logger.warn(`Using fallback rate for ${currency}: ${rates[currency]}`);
+                    ngn[currency] = this.FALLBACK_RATES[currency] || 0;
+                    this.logger.warn(`Using fallback NGN rate for ${currency}: ${ngn[currency]}`);
+                }
+                if (usdPrice && typeof usdPrice === 'number' && usdPrice > 0) {
+                    usd[currency] = usdPrice;
+                }
+                else {
+                    usd[currency] = this.FALLBACK_RATES[currency]
+                        ? this.FALLBACK_RATES[currency] / 1550
+                        : 0;
+                    this.logger.warn(`Using fallback USD rate for ${currency}: ${usd[currency]}`);
                 }
             }
-            this.cache = { rates, lastUpdated: new Date() };
-            this.logger.log(`Exchange rates updated: BTC=${rates.BTC}, ETH=${rates.ETH}, USDT=${rates.USDT}, USDC=${rates.USDC}`);
-            return rates;
+            this.cache = { ngn, usd, lastUpdated: new Date() };
+            this.logger.log(`Exchange rates updated: BTC=$${usd.BTC} / ₦${ngn.BTC}, ETH=$${usd.ETH} / ₦${ngn.ETH}`);
+            return ngn;
         }
         catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             this.logger.error(`Failed to fetch exchange rates from CoinGecko: ${message}`);
-            const fallback = {};
+            const ngnFallback = {};
+            const usdFallback = {};
             for (const [currency, rate] of Object.entries(this.FALLBACK_RATES)) {
-                fallback[currency] = rate;
+                ngnFallback[currency] = rate;
+                usdFallback[currency] = rate / 1550;
             }
-            this.cache = { rates: fallback, lastUpdated: new Date() };
-            return fallback;
+            this.cache = {
+                ngn: ngnFallback,
+                usd: usdFallback,
+                lastUpdated: new Date(),
+            };
+            return ngnFallback;
         }
     }
     getRate(currency) {
-        return this.cache.rates[currency] || this.FALLBACK_RATES[currency] || 0;
+        return this.cache.ngn[currency] || this.FALLBACK_RATES[currency] || 0;
+    }
+    getUsdRate(currency) {
+        return this.cache.usd[currency] || 0;
     }
     getAllRates() {
-        return { ...this.cache.rates };
+        return { ...this.cache.ngn };
     }
     getLastUpdated() {
         return this.cache.lastUpdated;
@@ -96,10 +117,15 @@ let ExchangeRateService = ExchangeRateService_1 = class ExchangeRateService {
         const rate = this.getRate(currency);
         return amount * rate;
     }
+    convertToUsd(amount, currency) {
+        const rate = this.getUsdRate(currency);
+        return amount * rate;
+    }
     getRateInfo() {
         const ageMs = Date.now() - this.cache.lastUpdated.getTime();
         return {
             rates: this.getAllRates(),
+            usdRates: { ...this.cache.usd },
             lastUpdated: this.cache.lastUpdated,
             ageMinutes: Math.round(ageMs / 60000),
             source: ageMs < 300000 ? 'CoinGecko (live)' : 'CoinGecko (cached)',

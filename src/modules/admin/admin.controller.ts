@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -30,7 +31,15 @@ export class AdminController {
     private readonly platformService: PlatformService,
   ) {}
 
-  @Get('users')
+  // ─── Dashboard ──────────────────────────────────────────────────────
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get aggregated dashboard stats' })
+  getDashboardStats() {
+    return this.adminService.getDashboardStats();
+  }
+
+  // ─── Users ──────────────────────────────────────────────────────────
   @ApiOperation({ summary: 'Get list of users with pagination' })
   getUsers(
     @Query('page') page: string = '1',
@@ -106,6 +115,39 @@ export class AdminController {
   @ApiOperation({ summary: 'Get detailed order information' })
   getOrderDetail(@Param('id') orderId: string) {
     return this.adminService.getOrderDetail(orderId);
+  }
+
+  @Patch('orders/:id/flag')
+  @AuditLog('ADMIN_ORDER_FLAG', 'ORDER')
+  @ApiOperation({ summary: 'Flag order for fraud review' })
+  flagOrder(@Param('id') orderId: string) {
+    return this.adminService.flagOrder(orderId);
+  }
+
+  @Patch('orders/:id/release')
+  @AuditLog('ADMIN_ORDER_RELEASE', 'ORDER')
+  @ApiOperation({ summary: 'Remove fraud flag from order' })
+  releaseOrder(@Param('id') orderId: string) {
+    return this.adminService.releaseOrder(orderId);
+  }
+
+  // ─── Admin Ad Moderation ─────────────────────────────────────────────
+
+  @Patch('ads/:id')
+  @AuditLog('ADMIN_AD_UPDATE', 'MARKETPLACE')
+  @ApiOperation({ summary: 'Admin update any ad (moderation)' })
+  adminUpdateAd(
+    @Param('id') adId: string,
+    @Body() body: Record<string, unknown>,
+  ) {
+    return this.adminService.adminUpdateAd(adId, body);
+  }
+
+  @Delete('ads/:id')
+  @AuditLog('ADMIN_AD_DELETE', 'MARKETPLACE')
+  @ApiOperation({ summary: 'Admin delete any ad (moderation)' })
+  adminDeleteAd(@Param('id') adId: string) {
+    return this.adminService.adminDeleteAd(adId);
   }
 
   @Get('blockchain/stats')

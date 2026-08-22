@@ -224,7 +224,7 @@ export declare class AdminGiftCardController {
     }>;
     getAllOrders(dto: ListGiftCardOrdersDto): Promise<{
         data: ({
-            seller: {
+            buyer: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -259,7 +259,7 @@ export declare class AdminGiftCardController {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -353,7 +353,7 @@ export declare class AdminGiftCardController {
             moderatorNote: string | null;
             moderatorId: string | null;
         };
-        seller: {
+        buyer: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;
@@ -388,7 +388,7 @@ export declare class AdminGiftCardController {
             createdAt: Date;
             updatedAt: Date;
         };
-        buyer: {
+        seller: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;

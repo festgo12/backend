@@ -14,11 +14,14 @@ export declare class ExchangeRateService implements OnApplicationBootstrap {
     handleCronRefresh(): Promise<void>;
     refreshRates(): Promise<Record<string, number>>;
     getRate(currency: Currency): number;
+    getUsdRate(currency: Currency): number;
     getAllRates(): Record<string, number>;
     getLastUpdated(): Date;
     convertToNgn(amount: number, currency: Currency): number;
+    convertToUsd(amount: number, currency: Currency): number;
     getRateInfo(): {
         rates: Record<string, number>;
+        usdRates: Record<string, number>;
         lastUpdated: Date;
         ageMinutes: number;
         source: string;

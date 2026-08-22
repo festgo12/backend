@@ -50,6 +50,74 @@ let AdminService = class AdminService {
         this.reconciliationService = reconciliationService;
         this.sweepService = sweepService;
     }
+    async getDashboardStats() {
+        const [totalUsers, totalOrders, completedOrders, pendingDisputes, revenueAgg,] = await Promise.all([
+            this.prisma.user.count({ where: { isSystem: false } }),
+            this.prisma.order.count(),
+            this.prisma.order.count({ where: { status: 'COMPLETED' } }),
+            this.prisma.dispute.count({
+                where: {
+                    status: {
+                        in: ['OPEN', 'UNDER_REVIEW', 'WAITING_FOR_ADMIN', 'ESCALATED'],
+                    },
+                },
+            }),
+            this.prisma.ledgerEntry.aggregate({
+                _sum: { amount: true },
+                where: { type: client_1.LedgerType.FEE },
+            }),
+        ]);
+        const totalRevenue = Number(revenueAgg._sum.amount || 0);
+        const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
+        return {
+            totalUsers,
+            totalOrders,
+            completedOrders,
+            pendingDisputes,
+            totalRevenue,
+            completionRate,
+        };
+    }
+    async flagOrder(orderId) {
+        const order = await this.prisma.order.findUnique({
+            where: { id: orderId },
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        return this.prisma.order.update({
+            where: { id: orderId },
+            data: { fraudFlagged: true },
+        });
+    }
+    async releaseOrder(orderId) {
+        const order = await this.prisma.order.findUnique({
+            where: { id: orderId },
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (!order.fraudFlagged) {
+            throw new common_1.BadRequestException('Order is not flagged');
+        }
+        return this.prisma.order.update({
+            where: { id: orderId },
+            data: { fraudFlagged: false },
+        });
+    }
+    async adminUpdateAd(adId, data) {
+        const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
+        if (!ad)
+            throw new common_1.NotFoundException('Ad not found');
+        return this.prisma.ad.update({
+            where: { id: adId },
+            data,
+        });
+    }
+    async adminDeleteAd(adId) {
+        const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
+        if (!ad)
+            throw new common_1.NotFoundException('Ad not found');
+        return this.prisma.ad.delete({ where: { id: adId } });
+    }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
         const where = {

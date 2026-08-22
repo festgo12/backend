@@ -65,7 +65,7 @@ export declare class OrdersController {
             maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
         };
-        seller: {
+        buyer: {
             id: string;
             email: string | null;
             phone: string | null;
@@ -90,7 +90,7 @@ export declare class OrdersController {
             createdAt: Date;
             updatedAt: Date;
         };
-        buyer: {
+        seller: {
             id: string;
             email: string | null;
             phone: string | null;

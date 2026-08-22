@@ -7,6 +7,14 @@ export declare class AdminController {
     private readonly exchangeRateService;
     private readonly platformService;
     constructor(adminService: AdminService, exchangeRateService: ExchangeRateService, platformService: PlatformService);
+    getDashboardStats(): Promise<{
+        totalUsers: number;
+        totalOrders: number;
+        completedOrders: number;
+        pendingDisputes: number;
+        totalRevenue: number;
+        completionRate: number;
+    }>;
     getUsers(page?: string, limit?: string, search?: string): Promise<{
         users: ({
             profile: {
@@ -403,7 +411,7 @@ export declare class AdminController {
                 maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
             };
-            seller: {
+            buyer: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -438,7 +446,7 @@ export declare class AdminController {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -537,7 +545,7 @@ export declare class AdminController {
             reference: string;
             balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         })[];
-        seller: {
+        buyer: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;
@@ -585,7 +593,7 @@ export declare class AdminController {
             createdAt: Date;
             updatedAt: Date;
         };
-        buyer: {
+        seller: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;
@@ -647,6 +655,66 @@ export declare class AdminController {
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         adId: string;
+    }>;
+    flagOrder(orderId: string): Promise<{
+        id: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
+        version: number;
+        fiatAmount: import("@src/generated/client/runtime/library").Decimal;
+        cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
+        feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
+    }>;
+    releaseOrder(orderId: string): Promise<{
+        id: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
+        version: number;
+        fiatAmount: import("@src/generated/client/runtime/library").Decimal;
+        cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
+        feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        adId: string;
+    }>;
+    adminUpdateAd(adId: string, body: Record<string, unknown>): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        sellerId: string;
+        version: number;
+        asset: import("@src/generated/client").$Enums.Currency;
+        price: import("@src/generated/client/runtime/library").Decimal;
+        quantity: import("@src/generated/client/runtime/library").Decimal;
+        minLimit: import("@src/generated/client/runtime/library").Decimal;
+        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        isSponsored: boolean;
+    }>;
+    adminDeleteAd(adId: string): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        sellerId: string;
+        version: number;
+        asset: import("@src/generated/client").$Enums.Currency;
+        price: import("@src/generated/client/runtime/library").Decimal;
+        quantity: import("@src/generated/client/runtime/library").Decimal;
+        minLimit: import("@src/generated/client/runtime/library").Decimal;
+        maxLimit: import("@src/generated/client/runtime/library").Decimal;
+        isSponsored: boolean;
     }>;
     getBlockchainStats(): Promise<{
         balances: {
@@ -1131,6 +1199,7 @@ export declare class AdminController {
     }>;
     getExchangeRates(): {
         rates: Record<string, number>;
+        usdRates: Record<string, number>;
         lastUpdated: Date;
         ageMinutes: number;
         source: string;

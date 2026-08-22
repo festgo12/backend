@@ -20,6 +20,7 @@ const crypto_config_service_1 = require("./crypto-config.service");
 const hd_wallet_service_1 = require("./hd-wallet.service");
 const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
 const platform_service_1 = require("./platform.service");
+const exchange_rate_service_1 = require("./exchange-rate.service");
 const client_1 = require("../../generated/client/index.js");
 let SweepService = SweepService_1 = class SweepService {
     prisma;
@@ -29,9 +30,10 @@ let SweepService = SweepService_1 = class SweepService {
     hdWallet;
     tracker;
     platformService;
+    exchangeRate;
     logger = new common_1.Logger(SweepService_1.name);
     isRunning = false;
-    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker, platformService) {
+    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker, platformService, exchangeRate) {
         this.prisma = prisma;
         this.depositRegistry = depositRegistry;
         this.chainClient = chainClient;
@@ -39,6 +41,7 @@ let SweepService = SweepService_1 = class SweepService {
         this.hdWallet = hdWallet;
         this.tracker = tracker;
         this.platformService = platformService;
+        this.exchangeRate = exchangeRate;
     }
     async sweepAll() {
         if (this.isRunning)
@@ -80,7 +83,7 @@ let SweepService = SweepService_1 = class SweepService {
         const addresses = this.depositRegistry.addressesForChain('EVM');
         if (addresses.length === 0)
             return;
-        const threshold = this.config.depositSweepThreshold;
+        const thresholdUsd = this.config.depositSweepThreshold;
         for (const address of addresses) {
             const registrations = this.depositRegistry.lookup(address, 'EVM');
             const seen = new Set();
@@ -94,8 +97,10 @@ let SweepService = SweepService_1 = class SweepService {
                 if (wallet.derivationIndex === null)
                     continue;
                 const balance = await this.chainClient.getEvmBalance(address, wallet.currency);
-                if (balance < threshold)
+                const balanceUsd = this.exchangeRate.convertToUsd(balance, wallet.currency);
+                if (balanceUsd < thresholdUsd)
                     continue;
+                this.logger.log(`EVM sweep candidate: ${balance} ${wallet.currency} (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`);
                 await this.sweepEvmCurrency(wallet.currency, wallet.derivationIndex, address, balance);
             }
         }
@@ -104,7 +109,7 @@ let SweepService = SweepService_1 = class SweepService {
         const addresses = this.depositRegistry.addressesForChain('BTC');
         if (addresses.length === 0)
             return;
-        const threshold = this.config.depositSweepThreshold;
+        const thresholdUsd = this.config.depositSweepThreshold;
         for (const address of addresses) {
             const registrations = this.depositRegistry.lookup(address, 'BTC');
             const wallet = await this.prisma.wallet.findUnique({
@@ -114,8 +119,10 @@ let SweepService = SweepService_1 = class SweepService {
                 continue;
             const utxos = await this.chainClient.getBtcUtxos(address);
             const balance = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
-            if (balance < threshold)
+            const balanceUsd = this.exchangeRate.convertToUsd(balance, client_1.Currency.BTC);
+            if (balanceUsd < thresholdUsd)
                 continue;
+            this.logger.log(`BTC sweep candidate: ${balance} BTC (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`);
             try {
                 const feePerByte = await this.chainClient.getBtcRecommendedFee();
                 const txid = await this.chainClient.broadcastBtc(wallet.derivationIndex, this.hdWallet.getMasterAddress('BTC'), balance, feePerByte);
@@ -194,6 +201,7 @@ exports.SweepService = SweepService = SweepService_1 = __decorate([
         crypto_config_service_1.CryptoConfigService,
         hd_wallet_service_1.HdWalletService,
         withdrawal_tracker_service_1.WithdrawalTrackerService,
-        platform_service_1.PlatformService])
+        platform_service_1.PlatformService,
+        exchange_rate_service_1.ExchangeRateService])
 ], SweepService);
 //# sourceMappingURL=sweep.service.js.map

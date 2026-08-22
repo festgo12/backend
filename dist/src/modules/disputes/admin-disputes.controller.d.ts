@@ -121,7 +121,7 @@ export declare class AdminDisputesController {
                 maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
             };
-            seller: {
+            buyer: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -169,7 +169,7 @@ export declare class AdminDisputesController {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;

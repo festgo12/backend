@@ -93,7 +93,7 @@ export declare class DisputesService {
                 maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
             };
-            seller: {
+            buyer: {
                 id: string;
                 email: string | null;
                 phone: string | null;
@@ -118,7 +118,7 @@ export declare class DisputesService {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 id: string;
                 email: string | null;
                 phone: string | null;
@@ -381,7 +381,7 @@ export declare class DisputesService {
                 maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
             };
-            seller: {
+            buyer: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -429,7 +429,7 @@ export declare class DisputesService {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;

@@ -24,6 +24,74 @@ export declare class AdminService {
     private readonly reconciliationService;
     private readonly sweepService;
     constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService, sweepService: SweepService);
+    getDashboardStats(): Promise<{
+        totalUsers: number;
+        totalOrders: number;
+        completedOrders: number;
+        pendingDisputes: number;
+        totalRevenue: number;
+        completionRate: number;
+    }>;
+    flagOrder(orderId: string): Promise<{
+        id: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
+        version: number;
+        fiatAmount: Prisma.Decimal;
+        cryptoAmount: Prisma.Decimal;
+        feeAmount: Prisma.Decimal;
+        adId: string;
+    }>;
+    releaseOrder(orderId: string): Promise<{
+        id: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        expiresAt: Date;
+        fraudFlagged: boolean;
+        sellerId: string;
+        buyerId: string;
+        version: number;
+        fiatAmount: Prisma.Decimal;
+        cryptoAmount: Prisma.Decimal;
+        feeAmount: Prisma.Decimal;
+        adId: string;
+    }>;
+    adminUpdateAd(adId: string, data: Record<string, unknown>): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        sellerId: string;
+        version: number;
+        asset: import("@src/generated/client").$Enums.Currency;
+        price: Prisma.Decimal;
+        quantity: Prisma.Decimal;
+        minLimit: Prisma.Decimal;
+        maxLimit: Prisma.Decimal;
+        isSponsored: boolean;
+    }>;
+    adminDeleteAd(adId: string): Promise<{
+        type: import("@src/generated/client").$Enums.AdType;
+        id: string;
+        status: string;
+        createdAt: Date;
+        updatedAt: Date;
+        sellerId: string;
+        version: number;
+        asset: import("@src/generated/client").$Enums.Currency;
+        price: Prisma.Decimal;
+        quantity: Prisma.Decimal;
+        minLimit: Prisma.Decimal;
+        maxLimit: Prisma.Decimal;
+        isSponsored: boolean;
+    }>;
     getUsers(page: number, limit: number, search?: string): Promise<{
         users: ({
             profile: {
@@ -450,7 +518,7 @@ export declare class AdminService {
                 maxLimit: Prisma.Decimal;
                 isSponsored: boolean;
             };
-            seller: {
+            buyer: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -485,7 +553,7 @@ export declare class AdminService {
                 createdAt: Date;
                 updatedAt: Date;
             };
-            buyer: {
+            seller: {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
@@ -584,7 +652,7 @@ export declare class AdminService {
             reference: string;
             balanceAfter: Prisma.Decimal;
         })[];
-        seller: {
+        buyer: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;
@@ -632,7 +700,7 @@ export declare class AdminService {
             createdAt: Date;
             updatedAt: Date;
         };
-        buyer: {
+        seller: {
             profile: {
                 firstName: string | null;
                 lastName: string | null;
