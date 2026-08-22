@@ -884,6 +884,62 @@ export declare class AdminController {
     }>;
     reconcileAll(): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
     reconcileCurrency(currency: Currency): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
+    sweepAll(): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    getBtcHistory(page?: string, pageSize?: string): Promise<{
+        transactions: {
+            dbMatch: boolean;
+            dbTransaction: {
+                wallet: {
+                    user: {
+                        email: string | null;
+                    };
+                    currency: import("@src/generated/client").$Enums.Currency;
+                };
+                status: string;
+                amount: import("@src/generated/client/runtime/library").Decimal;
+                reference: string;
+            } | null;
+            txid: string;
+            amount: number;
+            confirmations: number;
+            blockHeight: number;
+            direction: string;
+            fromAddress: string;
+            toAddress: string;
+        }[];
+        total: number;
+        page: number;
+        pageSize: number;
+        totalPages: number;
+    }>;
+    getEvmHistory(address: string, page?: string): Promise<{
+        address: string;
+        transfers: {
+            hash: string;
+            amount: number;
+            asset: string;
+            category: string;
+            from: string;
+            to: string;
+            blockNum: number;
+            dbMatch: boolean;
+            dbTransaction: {
+                wallet: {
+                    user: {
+                        email: string | null;
+                    };
+                    currency: import("@src/generated/client").$Enums.Currency;
+                };
+                status: string;
+                amount: import("@src/generated/client/runtime/library").Decimal;
+                reference: string;
+            } | null;
+        }[];
+        page: number;
+    }>;
     getFeeWallets(): Promise<{
         wallets: {
             id: string;

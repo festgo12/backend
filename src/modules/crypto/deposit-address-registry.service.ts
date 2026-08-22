@@ -16,8 +16,9 @@ export interface AddressRegistration {
  * A single address may map to multiple wallets (defensive; collisions are
  * near-impossible with the deterministic index scheme).
  *
- * On register(), the address is also pushed to the appropriate webhook
- * provider (Alchemy for EVM, Alchemy WebSocket for BTC).
+ * On boot, all EVM addresses are pushed to Alchemy via PUT (replace list)
+ * to ensure even pre-existing addresses are tracked. New addresses on wallet
+ * init are added via PATCH (incremental).
  */
 @Injectable()
 export class DepositAddressRegistry implements OnApplicationBootstrap {
@@ -55,6 +56,20 @@ export class DepositAddressRegistry implements OnApplicationBootstrap {
     this.logger.log(
       `Deposit address registry loaded: ${this.addresses.size} unique addresses, ${wallets.length} wallets`,
     );
+
+    // Boot-sync: push all EVM addresses to Alchemy webhook (replace list)
+    const evmAddresses = this.addressesForChain('EVM');
+    if (evmAddresses.length > 0) {
+      this.logger.log(
+        `Boot-syncing ${evmAddresses.length} EVM addresses to Alchemy webhook...`,
+      );
+      // Fire-and-forget — don't block bootstrap on external API call
+      void this.addressRegistration
+        .replaceAllEvmAddresses(evmAddresses)
+        .catch(() => {
+          // Errors already logged inside replaceAllEvmAddresses
+        });
+    }
   }
 
   /**

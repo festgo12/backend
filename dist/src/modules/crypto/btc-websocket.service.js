@@ -38,7 +38,7 @@ let BtcAlchemyWebSocketService = class BtcAlchemyWebSocketService {
         this.webhookProcessor = webhookProcessor;
         this.depositRegistry = depositRegistry;
     }
-    onModuleInit() {
+    onApplicationBootstrap() {
         this.monitoredAddresses = this.depositRegistry.addressesForChain('BTC');
         this.logger.log(`BTC WebSocket: loaded ${this.monitoredAddresses.length} monitored addresses from registry`);
         if (this.monitoredAddresses.length > 0) {

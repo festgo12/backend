@@ -196,6 +196,48 @@ export class AdminController {
     return this.adminService.reconcileCurrency(currency);
   }
 
+  // ─── Sweep ──────────────────────────────────────────────────────────────
+
+  @Post('crypto/sweep-all')
+  @AuditLog('ADMIN_CRYPTO_SWEEP_ALL', 'SYSTEM')
+  @ApiOperation({
+    summary: 'Trigger manual sweep of all deposit addresses to master wallet',
+  })
+  sweepAll() {
+    return this.adminService.triggerSweepAll();
+  }
+
+  // ─── On-Chain History ──────────────────────────────────────────────────
+
+  @Get('crypto/btc-history')
+  @ApiOperation({
+    summary: 'Fetch BTC on-chain history (xpub) with DB match status',
+  })
+  getBtcHistory(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.adminService.getBtcHistory(
+      page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : 50,
+    );
+  }
+
+  @Get('crypto/evm-history/:address')
+  @ApiOperation({
+    summary:
+      'Fetch EVM on-chain history for a specific address with DB match status',
+  })
+  getEvmHistory(
+    @Param('address') address: string,
+    @Query('page') page?: string,
+  ) {
+    return this.adminService.getEvmHistory(
+      address,
+      page ? parseInt(page, 10) : 1,
+    );
+  }
+
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────
 
   @Get('fee-wallets')

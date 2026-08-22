@@ -14,5 +14,6 @@ export declare class AddressRegistrationService {
     private scheduleFlush;
     private flushEvmAddresses;
     private registerEvmAddressesWithAlchemy;
+    replaceAllEvmAddresses(addresses: string[]): Promise<void>;
     registerAddress(address: string, chain: ChainKind): void;
 }

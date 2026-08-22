@@ -73,7 +73,8 @@ export class CryptoWithdrawalService {
         'Wallet has no on-chain address yet. Please request a deposit address first.',
       );
     }
-    const fromIndex = wallet.derivationIndex;
+    // Always sign from master wallet (index 0) — all funds are swept here
+    const fromIndex = 0;
 
     // 3. Validate destination format
     this.validateAddress(currency, destinationAddress);
@@ -209,11 +210,7 @@ export class CryptoWithdrawalService {
     destinationAddress: string;
     amount?: number;
   }): Promise<{ txId: string; status: string }> {
-    const { currency, destinationAddress, amount } = params;
-
-    if (!amount || amount <= 0) {
-      throw new BadRequestException('Amount must be greater than 0');
-    }
+    const { currency, destinationAddress, amount: requestedAmount } = params;
 
     this.validateAddress(currency, destinationAddress);
 
@@ -253,6 +250,28 @@ export class CryptoWithdrawalService {
         },
       });
       fromIndex = info.derivationIndex;
+    }
+
+    // If no amount specified, fetch the full on-chain balance
+    let amount: number;
+    if (requestedAmount && requestedAmount > 0) {
+      amount = requestedAmount;
+    } else {
+      // Sweep full on-chain balance
+      if (currency === Currency.BTC) {
+        const utxos = await this.chainClient.getBtcUtxos(feeWallet.address);
+        amount = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
+      } else {
+        amount = await this.chainClient.getEvmBalance(
+          feeWallet.address,
+          currency,
+        );
+      }
+      if (amount <= 0) {
+        throw new BadRequestException(
+          `No on-chain balance available for ${currency} sweep`,
+        );
+      }
     }
 
     let txHash: string;

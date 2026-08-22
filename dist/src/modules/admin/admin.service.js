@@ -21,6 +21,7 @@ const deposit_address_registry_service_1 = require("../crypto/deposit-address-re
 const hd_wallet_service_1 = require("../crypto/hd-wallet.service");
 const chain_client_service_1 = require("../crypto/chain-client.service");
 const reconciliation_service_1 = require("../crypto/reconciliation.service");
+const sweep_service_1 = require("../crypto/sweep.service");
 const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const platform_service_1 = require("../crypto/platform.service");
@@ -35,7 +36,8 @@ let AdminService = class AdminService {
     paystackService;
     walletService;
     reconciliationService;
-    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService, reconciliationService) {
+    sweepService;
+    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService, reconciliationService, sweepService) {
         this.prisma = prisma;
         this.cryptoWithdrawal = cryptoWithdrawal;
         this.exchangeRateService = exchangeRateService;
@@ -46,6 +48,7 @@ let AdminService = class AdminService {
         this.paystackService = paystackService;
         this.walletService = walletService;
         this.reconciliationService = reconciliationService;
+        this.sweepService = sweepService;
     }
     async getUsers(page, limit, search) {
         const skip = (page - 1) * limit;
@@ -746,6 +749,118 @@ let AdminService = class AdminService {
     async reconcileCurrency(currency) {
         return this.reconciliationService.reconcileCurrency(currency);
     }
+    async triggerSweepAll() {
+        await this.sweepService.manualSweepAll();
+        return { success: true, message: 'Sweep completed' };
+    }
+    async getBtcHistory(page, pageSize) {
+        const xpub = this.cryptoConfig.btcMasterXpub;
+        if (!xpub) {
+            throw new common_1.BadRequestException('BTC master xpub not configured');
+        }
+        const baseUrl = this.cryptoConfig.alchemyBtcHttpUrl;
+        if (!baseUrl) {
+            throw new common_1.BadRequestException('ALCHEMY_BTC_HTTP_URL not configured');
+        }
+        const url = `${baseUrl}/api/v2/xpub/${encodeURIComponent(xpub)}?details=txs&pageSize=${pageSize}&page=${page}`;
+        const axios = await import('axios');
+        const response = await axios.default.get(url, { timeout: 30_000 });
+        const data = response.data;
+        const txList = (data.txs ?? []);
+        const masterBtcAddr = this.hdWallet.getMasterAddress('BTC');
+        const txs = txList.map((tx) => ({
+            txid: tx.txid,
+            amount: parseFloat(tx.value || '0'),
+            confirmations: tx.confirmations || 0,
+            blockHeight: tx.blockHeight || 0,
+            direction: (tx.vout ?? []).some((v) => v.addresses?.includes(masterBtcAddr))
+                ? 'INBOUND'
+                : 'OUTBOUND',
+            fromAddress: tx.vin?.[0]?.addresses?.[0] || '',
+            toAddress: tx.vout?.[0]?.addresses?.[0] || '',
+        }));
+        const references = txs.map((t) => t.txid);
+        const dbTransactions = await this.prisma.walletTransaction.findMany({
+            where: { reference: { in: references } },
+            select: {
+                reference: true,
+                status: true,
+                amount: true,
+                wallet: {
+                    select: { currency: true, user: { select: { email: true } } },
+                },
+            },
+        });
+        const dbMap = new Map(dbTransactions.map((t) => [t.reference, t]));
+        const enriched = txs.map((tx) => ({
+            ...tx,
+            dbMatch: dbMap.has(tx.txid),
+            dbTransaction: dbMap.get(tx.txid) || null,
+        }));
+        return {
+            transactions: enriched,
+            total: data.page * data.totalPages || enriched.length,
+            page,
+            pageSize,
+            totalPages: data.totalPages || 1,
+        };
+    }
+    async getEvmHistory(address, page) {
+        const rpcUrl = this.cryptoConfig.alchemyEthHttpUrl;
+        if (!rpcUrl) {
+            throw new common_1.BadRequestException('ALCHEMY_ETH_HTTP_URL not configured');
+        }
+        const axios = await import('axios');
+        const params = {
+            toAddress: address.toLowerCase(),
+            category: ['external', 'internal', 'erc20'],
+            fromBlock: '0x0',
+            toBlock: 'latest',
+            order: 'asc',
+            maxCount: '0x3e8',
+            withMetadata: true,
+        };
+        if (page > 1) {
+            params.pageKey = String(page);
+        }
+        const response = await axios.default.post(rpcUrl, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'alchemy_getAssetTransfers',
+            params: [params],
+        }, { timeout: 30_000 });
+        const result = response.data?.result;
+        const transfers = result?.transfers ?? [];
+        const enriched = await Promise.all(transfers.map(async (tx) => {
+            const dbTx = await this.prisma.walletTransaction.findUnique({
+                where: { reference: tx.hash },
+                select: {
+                    reference: true,
+                    status: true,
+                    amount: true,
+                    wallet: {
+                        select: { currency: true, user: { select: { email: true } } },
+                    },
+                },
+            });
+            return {
+                hash: tx.hash,
+                amount: parseFloat(String(tx.value || '0')),
+                asset: tx.asset,
+                category: tx.category,
+                from: tx.from,
+                to: tx.to,
+                blockNum: parseInt(tx.blockNum, 16),
+                dbMatch: !!dbTx,
+                dbTransaction: dbTx || null,
+            };
+        }));
+        return {
+            address,
+            transfers: enriched,
+            page,
+        };
+    }
 };
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([
@@ -759,6 +874,7 @@ exports.AdminService = AdminService = __decorate([
         chain_client_service_1.ChainClientService,
         paystack_service_1.PaystackService,
         wallet_service_1.WalletService,
-        reconciliation_service_1.ReconciliationService])
+        reconciliation_service_1.ReconciliationService,
+        sweep_service_1.SweepService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

@@ -19,6 +19,7 @@ const chain_client_service_1 = require("./chain-client.service");
 const crypto_config_service_1 = require("./crypto-config.service");
 const hd_wallet_service_1 = require("./hd-wallet.service");
 const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
+const platform_service_1 = require("./platform.service");
 const client_1 = require("../../generated/client/index.js");
 let SweepService = SweepService_1 = class SweepService {
     prisma;
@@ -27,15 +28,17 @@ let SweepService = SweepService_1 = class SweepService {
     config;
     hdWallet;
     tracker;
+    platformService;
     logger = new common_1.Logger(SweepService_1.name);
     isRunning = false;
-    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker) {
+    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker, platformService) {
         this.prisma = prisma;
         this.depositRegistry = depositRegistry;
         this.chainClient = chainClient;
         this.config = config;
         this.hdWallet = hdWallet;
         this.tracker = tracker;
+        this.platformService = platformService;
     }
     async sweepAll() {
         if (this.isRunning)
@@ -50,6 +53,24 @@ let SweepService = SweepService_1 = class SweepService {
         catch (error) {
             const err = error;
             this.logger.error(`Sweep run failed: ${err.message}`);
+        }
+        finally {
+            this.isRunning = false;
+        }
+    }
+    async manualSweepAll() {
+        if (this.isRunning) {
+            throw new Error('Sweep already in progress');
+        }
+        this.isRunning = true;
+        try {
+            await this.sweepEvm();
+            await this.sweepBtc();
+        }
+        catch (error) {
+            const err = error;
+            this.logger.error(`Manual sweep run failed: ${err.message}`);
+            throw error;
         }
         finally {
             this.isRunning = false;
@@ -98,7 +119,7 @@ let SweepService = SweepService_1 = class SweepService {
             try {
                 const feePerByte = await this.chainClient.getBtcRecommendedFee();
                 const txid = await this.chainClient.broadcastBtc(wallet.derivationIndex, this.hdWallet.getMasterAddress('BTC'), balance, feePerByte);
-                await this.recordSweep(wallet.id, client_1.Currency.BTC, balance, txid, address);
+                await this.recordSweep(client_1.Currency.BTC, balance, txid, address);
             }
             catch (error) {
                 const err = error;
@@ -116,7 +137,7 @@ let SweepService = SweepService_1 = class SweepService {
                 where: { address: fromAddress, currency, derivationIndex },
             });
             if (wallet) {
-                await this.recordSweep(wallet.id, currency, balance, txHash, fromAddress);
+                await this.recordSweep(currency, balance, txHash, fromAddress);
             }
         }
         catch (error) {
@@ -124,19 +145,24 @@ let SweepService = SweepService_1 = class SweepService {
             this.logger.error(`EVM sweep failed for ${fromAddress} (${currency}): ${err.message}`);
         }
     }
-    async recordSweep(walletId, currency, amount, txHash, fromAddress) {
-        const destination = this.hdWallet.getMasterAddress(currency === client_1.Currency.BTC ? 'BTC' : 'EVM');
+    async recordSweep(currency, amount, txHash, fromAddress) {
+        const chain = currency === client_1.Currency.BTC ? 'BTC' : 'EVM';
+        const destination = this.hdWallet.getMasterAddress(chain);
+        const platformWallet = await this.platformService.getPlatformFeeWallet(currency);
+        if (!platformWallet) {
+            throw new Error(`Platform fee wallet not found for ${currency}`);
+        }
         await this.prisma.walletTransaction.create({
             data: {
-                walletId,
-                type: client_1.LedgerType.WITHDRAWAL,
+                walletId: platformWallet.id,
+                type: client_1.LedgerType.DEPOSIT,
                 amount,
                 status: 'PENDING',
                 reference: txHash,
                 metadata: {
                     destination,
-                    blockchain: currency === client_1.Currency.BTC ? 'BTC' : 'EVM',
-                    provider: currency === client_1.Currency.BTC ? 'alchemy' : 'alchemy',
+                    blockchain: chain,
+                    provider: 'alchemy',
                     sweep: true,
                     fromAddress,
                     initiatedAt: new Date().toISOString(),
@@ -145,11 +171,11 @@ let SweepService = SweepService_1 = class SweepService {
         });
         await this.tracker.enqueue({
             txHash,
-            walletId,
+            walletId: platformWallet.id,
             currency,
             amount,
             destination,
-            metadata: { source: 'SWEEP' },
+            metadata: { source: 'DEPOSIT_SWEEP' },
         });
     }
 };
@@ -167,6 +193,7 @@ exports.SweepService = SweepService = SweepService_1 = __decorate([
         chain_client_service_1.ChainClientService,
         crypto_config_service_1.CryptoConfigService,
         hd_wallet_service_1.HdWalletService,
-        withdrawal_tracker_service_1.WithdrawalTrackerService])
+        withdrawal_tracker_service_1.WithdrawalTrackerService,
+        platform_service_1.PlatformService])
 ], SweepService);
 //# sourceMappingURL=sweep.service.js.map

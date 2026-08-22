@@ -15,6 +15,7 @@ import { DepositAddressRegistry } from '../crypto/deposit-address-registry.servi
 import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
 import { ReconciliationService } from '../crypto/reconciliation.service';
+import { SweepService } from '../crypto/sweep.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
@@ -36,6 +37,7 @@ export class AdminService {
     private readonly paystackService: PaystackService,
     private readonly walletService: WalletService,
     private readonly reconciliationService: ReconciliationService,
+    private readonly sweepService: SweepService,
   ) {}
 
   async getUsers(page: number, limit: number, search?: string) {
@@ -876,5 +878,163 @@ export class AdminService {
   /** Triggers reconciliation for a specific currency. */
   async reconcileCurrency(currency: Currency) {
     return this.reconciliationService.reconcileCurrency(currency);
+  }
+
+  // ─── Sweep ─────────────────────────────────────────────────────────────
+
+  async triggerSweepAll() {
+    await this.sweepService.manualSweepAll();
+    return { success: true, message: 'Sweep completed' };
+  }
+
+  // ─── On-Chain History ──────────────────────────────────────────────────
+
+  async getBtcHistory(page: number, pageSize: number) {
+    const xpub = this.cryptoConfig.btcMasterXpub;
+    if (!xpub) {
+      throw new BadRequestException('BTC master xpub not configured');
+    }
+    const baseUrl = this.cryptoConfig.alchemyBtcHttpUrl;
+    if (!baseUrl) {
+      throw new BadRequestException('ALCHEMY_BTC_HTTP_URL not configured');
+    }
+
+    const url = `${baseUrl}/api/v2/xpub/${encodeURIComponent(xpub)}?details=txs&pageSize=${pageSize}&page=${page}`;
+
+    const axios = await import('axios');
+    const response = await axios.default.get(url, { timeout: 30_000 });
+    const data = response.data as Record<string, unknown>;
+    const txList = (data.txs ?? []) as Array<{
+      txid: string;
+      value: string;
+      confirmations: number;
+      blockHeight: number;
+      vout: Array<{ addresses?: string[] }>;
+      vin: Array<{ addresses?: string[] }>;
+    }>;
+
+    const masterBtcAddr = this.hdWallet.getMasterAddress('BTC');
+    const txs = txList.map((tx) => ({
+      txid: tx.txid,
+      amount: parseFloat(tx.value || '0'),
+      confirmations: tx.confirmations || 0,
+      blockHeight: tx.blockHeight || 0,
+      direction: (tx.vout ?? []).some((v) =>
+        v.addresses?.includes(masterBtcAddr),
+      )
+        ? 'INBOUND'
+        : 'OUTBOUND',
+      fromAddress: tx.vin?.[0]?.addresses?.[0] || '',
+      toAddress: tx.vout?.[0]?.addresses?.[0] || '',
+    }));
+
+    // Check DB match for each tx
+    const references = txs.map((t) => t.txid);
+    const dbTransactions = await this.prisma.walletTransaction.findMany({
+      where: { reference: { in: references } },
+      select: {
+        reference: true,
+        status: true,
+        amount: true,
+        wallet: {
+          select: { currency: true, user: { select: { email: true } } },
+        },
+      },
+    });
+    const dbMap = new Map(dbTransactions.map((t) => [t.reference, t]));
+
+    const enriched = txs.map((tx) => ({
+      ...tx,
+      dbMatch: dbMap.has(tx.txid),
+      dbTransaction: dbMap.get(tx.txid) || null,
+    }));
+
+    return {
+      transactions: enriched,
+      total:
+        (data.page as number) * (data.totalPages as number) || enriched.length,
+      page,
+      pageSize,
+      totalPages: (data.totalPages as number) || 1,
+    };
+  }
+
+  async getEvmHistory(address: string, page: number) {
+    const rpcUrl = this.cryptoConfig.alchemyEthHttpUrl;
+    if (!rpcUrl) {
+      throw new BadRequestException('ALCHEMY_ETH_HTTP_URL not configured');
+    }
+
+    const axios = await import('axios');
+    const params: Record<string, unknown> = {
+      toAddress: address.toLowerCase(),
+      category: ['external', 'internal', 'erc20'],
+      fromBlock: '0x0',
+      toBlock: 'latest',
+      order: 'asc',
+      maxCount: '0x3e8',
+      withMetadata: true,
+    };
+    if (page > 1) {
+      params.pageKey = String(page);
+    }
+
+    const response = await axios.default.post(
+      rpcUrl,
+      {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_getAssetTransfers',
+        params: [params],
+      },
+      { timeout: 30_000 },
+    );
+
+    interface AlchemyTransfer {
+      hash: string;
+      value: number;
+      asset: string;
+      category: string;
+      from: string;
+      to: string;
+      blockNum: string;
+    }
+    const result = (response.data as Record<string, unknown>)?.result as
+      | { transfers?: AlchemyTransfer[] }
+      | undefined;
+    const transfers = result?.transfers ?? [];
+
+    const enriched = await Promise.all(
+      transfers.map(async (tx) => {
+        const dbTx = await this.prisma.walletTransaction.findUnique({
+          where: { reference: tx.hash },
+          select: {
+            reference: true,
+            status: true,
+            amount: true,
+            wallet: {
+              select: { currency: true, user: { select: { email: true } } },
+            },
+          },
+        });
+        return {
+          hash: tx.hash,
+          amount: parseFloat(String(tx.value || '0')),
+          asset: tx.asset,
+          category: tx.category,
+          from: tx.from,
+          to: tx.to,
+          blockNum: parseInt(tx.blockNum, 16),
+          dbMatch: !!dbTx,
+          dbTransaction: dbTx || null,
+        };
+      }),
+    );
+
+    return {
+      address,
+      transfers: enriched,
+      page,
+    };
   }
 }

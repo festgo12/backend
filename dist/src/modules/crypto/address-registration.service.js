@@ -79,6 +79,42 @@ let AddressRegistrationService = class AddressRegistrationService {
             timeout: 15_000,
         }));
     }
+    async replaceAllEvmAddresses(addresses) {
+        const authToken = this.config.alchemyAuthToken;
+        const webhookId = this.config.alchemyWebhookId;
+        if (!authToken || !webhookId) {
+            this.logger.warn('Alchemy AUTH_TOKEN or WEBHOOK_ID not configured; skipping boot-sync');
+            return;
+        }
+        if (addresses.length === 0) {
+            this.logger.debug('No EVM addresses to sync to Alchemy webhook');
+            return;
+        }
+        const unique = [...new Set(addresses.map((a) => a.toLowerCase()))];
+        for (let i = 0; i < unique.length; i += AddressRegistrationService_1.EVM_BATCH_SIZE) {
+            const batch = unique.slice(i, i + AddressRegistrationService_1.EVM_BATCH_SIZE);
+            const batchNum = Math.floor(i / AddressRegistrationService_1.EVM_BATCH_SIZE) + 1;
+            const totalBatches = Math.ceil(unique.length / AddressRegistrationService_1.EVM_BATCH_SIZE);
+            try {
+                await (0, rxjs_1.lastValueFrom)(this.httpService.put('https://dashboard.alchemy.com/api/update-webhook-addresses', {
+                    webhook_id: webhookId,
+                    addresses: batch,
+                }, {
+                    headers: {
+                        'X-Alchemy-Token': authToken,
+                        'Content-Type': 'application/json',
+                    },
+                    timeout: 30_000,
+                }));
+                this.logger.log(`Boot-synced EVM addresses to Alchemy webhook: batch ${batchNum}/${totalBatches} (${batch.length} addresses)`);
+            }
+            catch (error) {
+                const err = error;
+                this.logger.error(`Failed to boot-sync EVM addresses batch ${batchNum}/${totalBatches}: ${err.message}`);
+            }
+        }
+        this.logger.log(`Boot-sync complete: ${unique.length} EVM addresses registered with Alchemy webhook`);
+    }
     registerAddress(address, chain) {
         if (chain === 'EVM') {
             this.queueEvmAddress(address);

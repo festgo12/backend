@@ -8,6 +8,7 @@ import { DepositAddressRegistry } from '../crypto/deposit-address-registry.servi
 import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
 import { ReconciliationService } from '../crypto/reconciliation.service';
+import { SweepService } from '../crypto/sweep.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 export declare class AdminService {
@@ -21,7 +22,8 @@ export declare class AdminService {
     private readonly paystackService;
     private readonly walletService;
     private readonly reconciliationService;
-    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService);
+    private readonly sweepService;
+    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService, sweepService: SweepService);
     getUsers(page: number, limit: number, search?: string): Promise<{
         users: ({
             profile: {
@@ -1188,4 +1190,60 @@ export declare class AdminService {
     }>;
     reconcileAll(): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
     reconcileCurrency(currency: Currency): Promise<import("../crypto/reconciliation.service").ReconciliationResult>;
+    triggerSweepAll(): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    getBtcHistory(page: number, pageSize: number): Promise<{
+        transactions: {
+            dbMatch: boolean;
+            dbTransaction: {
+                wallet: {
+                    user: {
+                        email: string | null;
+                    };
+                    currency: import("@src/generated/client").$Enums.Currency;
+                };
+                status: string;
+                amount: Prisma.Decimal;
+                reference: string;
+            } | null;
+            txid: string;
+            amount: number;
+            confirmations: number;
+            blockHeight: number;
+            direction: string;
+            fromAddress: string;
+            toAddress: string;
+        }[];
+        total: number;
+        page: number;
+        pageSize: number;
+        totalPages: number;
+    }>;
+    getEvmHistory(address: string, page: number): Promise<{
+        address: string;
+        transfers: {
+            hash: string;
+            amount: number;
+            asset: string;
+            category: string;
+            from: string;
+            to: string;
+            blockNum: number;
+            dbMatch: boolean;
+            dbTransaction: {
+                wallet: {
+                    user: {
+                        email: string | null;
+                    };
+                    currency: import("@src/generated/client").$Enums.Currency;
+                };
+                status: string;
+                amount: Prisma.Decimal;
+                reference: string;
+            } | null;
+        }[];
+        page: number;
+    }>;
 }

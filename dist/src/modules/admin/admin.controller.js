@@ -83,6 +83,15 @@ let AdminController = class AdminController {
     reconcileCurrency(currency) {
         return this.adminService.reconcileCurrency(currency);
     }
+    sweepAll() {
+        return this.adminService.triggerSweepAll();
+    }
+    getBtcHistory(page, pageSize) {
+        return this.adminService.getBtcHistory(page ? parseInt(page, 10) : 1, pageSize ? parseInt(pageSize, 10) : 50);
+    }
+    getEvmHistory(address, page) {
+        return this.adminService.getEvmHistory(address, page ? parseInt(page, 10) : 1);
+    }
     getFeeWallets() {
         return this.adminService.getFeeWallets();
     }
@@ -305,6 +314,38 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "reconcileCurrency", null);
+__decorate([
+    (0, common_1.Post)('crypto/sweep-all'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_SWEEP_ALL', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Trigger manual sweep of all deposit addresses to master wallet',
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "sweepAll", null);
+__decorate([
+    (0, common_1.Get)('crypto/btc-history'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Fetch BTC on-chain history (xpub) with DB match status',
+    }),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('pageSize')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getBtcHistory", null);
+__decorate([
+    (0, common_1.Get)('crypto/evm-history/:address'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Fetch EVM on-chain history for a specific address with DB match status',
+    }),
+    __param(0, (0, common_1.Param)('address')),
+    __param(1, (0, common_1.Query)('page')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getEvmHistory", null);
 __decorate([
     (0, common_1.Get)('fee-wallets'),
     (0, swagger_1.ApiOperation)({ summary: 'List platform fee wallets with ledger balances' }),

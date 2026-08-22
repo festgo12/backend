@@ -50,7 +50,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         if (!wallet.address || wallet.derivationIndex === null) {
             throw new common_1.BadRequestException('Wallet has no on-chain address yet. Please request a deposit address first.');
         }
-        const fromIndex = wallet.derivationIndex;
+        const fromIndex = 0;
         this.validateAddress(currency, destinationAddress);
         let txHash;
         try {
@@ -136,10 +136,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         });
     }
     async sweepFeeWallet(params) {
-        const { currency, destinationAddress, amount } = params;
-        if (!amount || amount <= 0) {
-            throw new common_1.BadRequestException('Amount must be greater than 0');
-        }
+        const { currency, destinationAddress, amount: requestedAmount } = params;
         this.validateAddress(currency, destinationAddress);
         const feeWallet = await this.platformService.getPlatformFeeWallet(currency);
         if (!feeWallet) {
@@ -170,6 +167,22 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
                 },
             });
             fromIndex = info.derivationIndex;
+        }
+        let amount;
+        if (requestedAmount && requestedAmount > 0) {
+            amount = requestedAmount;
+        }
+        else {
+            if (currency === client_1.Currency.BTC) {
+                const utxos = await this.chainClient.getBtcUtxos(feeWallet.address);
+                amount = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
+            }
+            else {
+                amount = await this.chainClient.getEvmBalance(feeWallet.address, currency);
+            }
+            if (amount <= 0) {
+                throw new common_1.BadRequestException(`No on-chain balance available for ${currency} sweep`);
+            }
         }
         let txHash;
         try {

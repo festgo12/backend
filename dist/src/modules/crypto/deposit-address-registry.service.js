@@ -43,6 +43,14 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
             this.add(wallet.address, { chain, walletId: wallet.id }, false);
         }
         this.logger.log(`Deposit address registry loaded: ${this.addresses.size} unique addresses, ${wallets.length} wallets`);
+        const evmAddresses = this.addressesForChain('EVM');
+        if (evmAddresses.length > 0) {
+            this.logger.log(`Boot-syncing ${evmAddresses.length} EVM addresses to Alchemy webhook...`);
+            void this.addressRegistration
+                .replaceAllEvmAddresses(evmAddresses)
+                .catch(() => {
+            });
+        }
     }
     register(address, chain, walletId) {
         const isNew = this.add(address, { chain, walletId }, true);

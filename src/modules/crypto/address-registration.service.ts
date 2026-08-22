@@ -116,6 +116,83 @@ export class AddressRegistrationService {
     );
   }
 
+  // ─── Boot Sync (Replace All) ──────────────────────────────────────────
+
+  /**
+   * Replaces the ENTIRE address list on the Alchemy webhook via PUT.
+   * Called on boot to ensure all DB-known addresses are registered,
+   * even those derived before the webhook was set up.
+   *
+   * Alchemy's PUT endpoint replaces the previous list completely.
+   * Addresses are batched in groups of 500 (Alchemy API limit).
+   */
+  async replaceAllEvmAddresses(addresses: string[]): Promise<void> {
+    const authToken = this.config.alchemyAuthToken;
+    const webhookId = this.config.alchemyWebhookId;
+    if (!authToken || !webhookId) {
+      this.logger.warn(
+        'Alchemy AUTH_TOKEN or WEBHOOK_ID not configured; skipping boot-sync',
+      );
+      return;
+    }
+
+    if (addresses.length === 0) {
+      this.logger.debug('No EVM addresses to sync to Alchemy webhook');
+      return;
+    }
+
+    // De-duplicate and lowercase
+    const unique = [...new Set(addresses.map((a) => a.toLowerCase()))];
+
+    // Batch in groups of 500
+    for (
+      let i = 0;
+      i < unique.length;
+      i += AddressRegistrationService.EVM_BATCH_SIZE
+    ) {
+      const batch = unique.slice(
+        i,
+        i + AddressRegistrationService.EVM_BATCH_SIZE,
+      );
+      const batchNum =
+        Math.floor(i / AddressRegistrationService.EVM_BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(
+        unique.length / AddressRegistrationService.EVM_BATCH_SIZE,
+      );
+
+      try {
+        await lastValueFrom(
+          this.httpService.put(
+            'https://dashboard.alchemy.com/api/update-webhook-addresses',
+            {
+              webhook_id: webhookId,
+              addresses: batch,
+            },
+            {
+              headers: {
+                'X-Alchemy-Token': authToken,
+                'Content-Type': 'application/json',
+              },
+              timeout: 30_000,
+            },
+          ),
+        );
+        this.logger.log(
+          `Boot-synced EVM addresses to Alchemy webhook: batch ${batchNum}/${totalBatches} (${batch.length} addresses)`,
+        );
+      } catch (error) {
+        const err = error as ErrorLike;
+        this.logger.error(
+          `Failed to boot-sync EVM addresses batch ${batchNum}/${totalBatches}: ${err.message}`,
+        );
+      }
+    }
+
+    this.logger.log(
+      `Boot-sync complete: ${unique.length} EVM addresses registered with Alchemy webhook`,
+    );
+  }
+
   // ─── BTC (Alchemy WebSocket) ───────────────────────────────────────────
   //
   // BTC address registration is handled by BtcAlchemyWebSocketService.addAddress().

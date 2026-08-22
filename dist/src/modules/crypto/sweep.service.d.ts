@@ -4,6 +4,7 @@ import { ChainClientService } from './chain-client.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { HdWalletService } from './hd-wallet.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
+import { PlatformService } from './platform.service';
 export declare class SweepService {
     private readonly prisma;
     private readonly depositRegistry;
@@ -11,10 +12,12 @@ export declare class SweepService {
     private readonly config;
     private readonly hdWallet;
     private readonly tracker;
+    private readonly platformService;
     private readonly logger;
     private isRunning;
-    constructor(prisma: PrismaService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService, hdWallet: HdWalletService, tracker: WithdrawalTrackerService);
+    constructor(prisma: PrismaService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService, hdWallet: HdWalletService, tracker: WithdrawalTrackerService, platformService: PlatformService);
     sweepAll(): Promise<void>;
+    manualSweepAll(): Promise<void>;
     private sweepEvm;
     private sweepBtc;
     private sweepEvmCurrency;

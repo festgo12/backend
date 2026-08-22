@@ -1,7 +1,7 @@
 import {
   Injectable,
   Logger,
-  OnModuleInit,
+  OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
 import WebSocket from 'ws';
@@ -66,7 +66,7 @@ interface NormalizedBtcEvent {
  */
 @Injectable()
 export class BtcAlchemyWebSocketService
-  implements OnModuleInit, OnApplicationShutdown
+  implements OnApplicationBootstrap, OnApplicationShutdown
 {
   private readonly logger = new Logger(BtcAlchemyWebSocketService.name);
   private ws: WebSocket | null = null;
@@ -85,8 +85,10 @@ export class BtcAlchemyWebSocketService
     private readonly depositRegistry: DepositAddressRegistry,
   ) {}
 
-  onModuleInit() {
-    // Load all existing BTC addresses from the registry
+  onApplicationBootstrap() {
+    // Load all existing BTC addresses from the registry.
+    // OnApplicationBootstrap runs after OnApplicationBootstrap of dependencies
+    // (DepositAddressRegistry), so the registry is already populated.
     this.monitoredAddresses = this.depositRegistry.addressesForChain('BTC');
     this.logger.log(
       `BTC WebSocket: loaded ${this.monitoredAddresses.length} monitored addresses from registry`,

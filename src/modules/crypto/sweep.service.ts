@@ -6,20 +6,22 @@ import { ChainClientService } from './chain-client.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { HdWalletService } from './hd-wallet.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
+import { PlatformService } from './platform.service';
+import { ExchangeRateService } from './exchange-rate.service';
 import { Currency, LedgerType } from '@src/generated/client';
 
 interface ErrorLike {
-  message?: string;
+  message: string;
 }
 
 /**
  * Consolidates confirmed on-chain balances from user deposit addresses into
- * the platform master wallet once they reach DEPOSIT_SWEEP_THRESHOLD. Enabled
- * only when the threshold is > 0 (the default of 0 keeps funds at user
- * addresses so user-sourced withdrawals continue to work). Each sweep is
- * recorded as a WITHDRAWAL WalletTransaction and tracked by the withdrawal
- * queue. ERC-20 sweeps require ETH at the source address for gas; failures
- * are logged and retried on the next run.
+ * the platform master wallet once they reach DEPOSIT_SWEEP_THRESHOLD (in USD).
+ * Enabled only when the threshold is > 0 (the default of 0 keeps funds at
+ * user addresses so user-sourced withdrawals continue to work). Each sweep
+ * is recorded as a DEPOSIT on the platform wallet and tracked by the
+ * withdrawal queue. ERC-20 sweeps require ETH at the source address for gas;
+ * failures are logged and retried on the next run.
  */
 @Injectable()
 export class SweepService {
@@ -33,6 +35,8 @@ export class SweepService {
     private readonly config: CryptoConfigService,
     private readonly hdWallet: HdWalletService,
     private readonly tracker: WithdrawalTrackerService,
+    private readonly platformService: PlatformService,
+    private readonly exchangeRate: ExchangeRateService,
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -51,10 +55,31 @@ export class SweepService {
     }
   }
 
+  /**
+   * Manual sweep — triggered via admin endpoint.
+   * Respects DEPOSIT_SWEEP_THRESHOLD; sweeps all qualifying addresses.
+   */
+  async manualSweepAll() {
+    if (this.isRunning) {
+      throw new Error('Sweep already in progress');
+    }
+    this.isRunning = true;
+    try {
+      await this.sweepEvm();
+      await this.sweepBtc();
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.error(`Manual sweep run failed: ${err.message}`);
+      throw error;
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
   private async sweepEvm(): Promise<void> {
     const addresses = this.depositRegistry.addressesForChain('EVM');
     if (addresses.length === 0) return;
-    const threshold = this.config.depositSweepThreshold;
+    const thresholdUsd = this.config.depositSweepThreshold;
 
     for (const address of addresses) {
       const registrations = this.depositRegistry.lookup(address, 'EVM');
@@ -71,8 +96,15 @@ export class SweepService {
           address,
           wallet.currency,
         );
-        if (balance < threshold) continue;
+        const balanceUsd = this.exchangeRate.convertToUsd(
+          balance,
+          wallet.currency,
+        );
+        if (balanceUsd < thresholdUsd) continue;
 
+        this.logger.log(
+          `EVM sweep candidate: ${balance} ${wallet.currency} (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`,
+        );
         await this.sweepEvmCurrency(
           wallet.currency,
           wallet.derivationIndex,
@@ -86,7 +118,7 @@ export class SweepService {
   private async sweepBtc(): Promise<void> {
     const addresses = this.depositRegistry.addressesForChain('BTC');
     if (addresses.length === 0) return;
-    const threshold = this.config.depositSweepThreshold;
+    const thresholdUsd = this.config.depositSweepThreshold;
 
     for (const address of addresses) {
       const registrations = this.depositRegistry.lookup(address, 'BTC');
@@ -97,8 +129,12 @@ export class SweepService {
 
       const utxos = await this.chainClient.getBtcUtxos(address);
       const balance = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
-      if (balance < threshold) continue;
+      const balanceUsd = this.exchangeRate.convertToUsd(balance, Currency.BTC);
+      if (balanceUsd < thresholdUsd) continue;
 
+      this.logger.log(
+        `BTC sweep candidate: ${balance} BTC (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`,
+      );
       try {
         const feePerByte = await this.chainClient.getBtcRecommendedFee();
         const txid = await this.chainClient.broadcastBtc(
@@ -107,7 +143,7 @@ export class SweepService {
           balance,
           feePerByte,
         );
-        await this.recordSweep(wallet.id, Currency.BTC, balance, txid, address);
+        await this.recordSweep(Currency.BTC, balance, txid, address);
       } catch (error) {
         const err = error as ErrorLike;
         this.logger.error(`BTC sweep failed for ${address}: ${err.message}`);
@@ -141,13 +177,7 @@ export class SweepService {
         where: { address: fromAddress, currency, derivationIndex },
       });
       if (wallet) {
-        await this.recordSweep(
-          wallet.id,
-          currency,
-          balance,
-          txHash,
-          fromAddress,
-        );
+        await this.recordSweep(currency, balance, txHash, fromAddress);
       }
     } catch (error) {
       const err = error as ErrorLike;
@@ -158,26 +188,32 @@ export class SweepService {
   }
 
   private async recordSweep(
-    walletId: string,
     currency: Currency,
     amount: number,
     txHash: string,
     fromAddress: string,
   ): Promise<void> {
-    const destination = this.hdWallet.getMasterAddress(
-      currency === Currency.BTC ? 'BTC' : 'EVM',
-    );
+    const chain = currency === Currency.BTC ? 'BTC' : 'EVM';
+    const destination = this.hdWallet.getMasterAddress(chain);
+
+    // Credit the platform wallet (index 0) — sweep is a DEPOSIT to the master wallet
+    const platformWallet =
+      await this.platformService.getPlatformFeeWallet(currency);
+    if (!platformWallet) {
+      throw new Error(`Platform fee wallet not found for ${currency}`);
+    }
+
     await this.prisma.walletTransaction.create({
       data: {
-        walletId,
-        type: LedgerType.WITHDRAWAL,
+        walletId: platformWallet.id,
+        type: LedgerType.DEPOSIT,
         amount,
         status: 'PENDING',
         reference: txHash,
         metadata: {
           destination,
-          blockchain: currency === Currency.BTC ? 'BTC' : 'EVM',
-          provider: currency === Currency.BTC ? 'alchemy' : 'alchemy',
+          blockchain: chain,
+          provider: 'alchemy',
           sweep: true,
           fromAddress,
           initiatedAt: new Date().toISOString(),
@@ -186,11 +222,11 @@ export class SweepService {
     });
     await this.tracker.enqueue({
       txHash,
-      walletId,
+      walletId: platformWallet.id,
       currency,
       amount,
       destination,
-      metadata: { source: 'SWEEP' },
+      metadata: { source: 'DEPOSIT_SWEEP' },
     });
   }
 }

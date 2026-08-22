@@ -4,7 +4,6 @@ import { CronJob } from 'cron';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from '../../core/database/prisma.service';
-import { WalletService } from '../wallet/wallet.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { Currency, LedgerType, Prisma } from '@src/generated/client';
 
@@ -29,21 +28,6 @@ interface XpubResponse {
   txids: string[];
 }
 
-interface EvmTransfer {
-  hash: string;
-  from: string;
-  to: string;
-  value: number;
-  asset: string;
-  blockNum: string;
-  category: string;
-}
-
-interface EvmTransfersResponse {
-  transfers: EvmTransfer[];
-  pageKey?: string;
-}
-
 export interface ReconciliationResult {
   resolved: number;
   missed: number;
@@ -53,14 +37,17 @@ export interface ReconciliationResult {
 }
 
 /**
- * Automated and on-demand transaction reconciliation.
+ * Automated and on-demand BTC transaction reconciliation.
  *
- * Compares on-chain state (via Alchemy xpub/assetTransfers endpoints)
- * against DB WalletTransaction records to detect:
+ * Compares on-chain state (via Alchemy xpub endpoint) against DB
+ * WalletTransaction records to detect:
  *   - Fully Resolved: on-chain confirmed + DB processed + resolvedAt set
  *   - Missed Event: confirmed on-chain, no DB record → auto-credit
  *   - Rollback Alert: DB COMPLETED, missing/reverted on-chain → revert + freeze
  *   - Pending Mempool: DB PENDING, 0 confirmations → hold
+ *
+ * EVM deposits are handled exclusively via Alchemy webhooks (push) and
+ * do not require cron-based reconciliation.
  *
  * System testnet transactions (reference: testnet-credit-*) are ignored.
  */
@@ -73,7 +60,6 @@ export class ReconciliationService implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly walletService: WalletService,
     private readonly config: CryptoConfigService,
     private readonly httpService: HttpService,
     private readonly schedulerRegistry: SchedulerRegistry,
@@ -86,7 +72,7 @@ export class ReconciliationService implements OnModuleInit {
     });
     this.schedulerRegistry.addCronJob(ReconciliationService.JOB_NAME, job);
     job.start();
-    this.logger.log(`Reconciliation cron scheduled: ${cronExpression}`);
+    this.logger.log(`BTC reconciliation cron scheduled: ${cronExpression}`);
   }
 
   // ─── Automated Cron ────────────────────────────────────────────────────
@@ -98,14 +84,14 @@ export class ReconciliationService implements OnModuleInit {
     }
     this.isRunning = true;
     try {
-      this.logger.log('Starting automated reconciliation…');
+      this.logger.log('Starting automated BTC reconciliation…');
       const result = await this.reconcileAll();
       this.logger.log(
-        `Reconciliation complete: resolved=${result.resolved} missed=${result.missed} rollbacks=${result.rollbacks} pending=${result.pending} skippedTestnet=${result.skippedTestnet}`,
+        `BTC reconciliation complete: resolved=${result.resolved} missed=${result.missed} rollbacks=${result.rollbacks} pending=${result.pending} skippedTestnet=${result.skippedTestnet}`,
       );
     } catch (error) {
       const err = error as Error;
-      this.logger.error(`Reconciliation failed: ${err.message}`);
+      this.logger.error(`BTC reconciliation failed: ${err.message}`);
     } finally {
       this.isRunning = false;
     }
@@ -113,40 +99,20 @@ export class ReconciliationService implements OnModuleInit {
 
   // ─── Manual Trigger ────────────────────────────────────────────────────
 
-  /** Reconcile all chains (called by admin endpoint). */
+  /** BTC-only reconciliation. */
   async reconcileAll(): Promise<ReconciliationResult> {
-    const [btcResult, evmResult] = await Promise.allSettled([
-      this.reconcileBtc(),
-      this.reconcileEvm(),
-    ]);
-
-    const btc =
-      btcResult.status === 'fulfilled' ? btcResult.value : this.emptyResult();
-    const evm =
-      evmResult.status === 'fulfilled' ? evmResult.value : this.emptyResult();
-
-    if (btcResult.status === 'rejected') {
-      this.logger.error(
-        `BTC reconciliation failed: ${(btcResult.reason as Error).message}`,
-      );
-    }
-    if (evmResult.status === 'rejected') {
-      this.logger.error(
-        `EVM reconciliation failed: ${(evmResult.reason as Error).message}`,
-      );
-    }
-
-    return this.mergeResults(btc, evm);
+    return this.reconcileBtc();
   }
 
-  /** Reconcile a single currency (called by admin endpoint). */
+  /** Reconcile a single currency (BTC only). */
   async reconcileCurrency(currency: Currency): Promise<ReconciliationResult> {
-    const chain = currency === Currency.BTC ? 'BTC' : 'EVM';
-
-    if (chain === 'BTC') {
-      return this.reconcileBtc();
+    if (currency !== Currency.BTC) {
+      this.logger.warn(
+        `Reconciliation for ${currency} is not supported; only BTC is reconciled via cron`,
+      );
+      return this.emptyResult();
     }
-    return this.reconcileEvm();
+    return this.reconcileBtc();
   }
 
   // ─── BTC Reconciliation (xpub endpoint) ────────────────────────────────
@@ -338,250 +304,6 @@ export class ReconciliationService implements OnModuleInit {
     return false;
   }
 
-  // ─── EVM Reconciliation (alchemy_getAssetTransfers) ────────────────────
-
-  private async reconcileEvm(): Promise<ReconciliationResult> {
-    const result = this.emptyResult();
-    const ethUrl = this.config.alchemyEthHttpUrl;
-    if (!ethUrl) {
-      this.logger.warn(
-        'ALCHEMY_ETH_HTTP_URL not configured; skipping EVM reconciliation',
-      );
-      return result;
-    }
-
-    // 1. Fetch all EVM addresses from the registry
-    const evmWallets = await this.prisma.wallet.findMany({
-      where: {
-        currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
-        address: { not: null },
-      },
-      select: { id: true, address: true, currency: true, isFrozen: true },
-    });
-
-    const evmAddresses = [
-      ...new Set(evmWallets.map((w) => w.address!.toLowerCase())),
-    ];
-    if (evmAddresses.length === 0) {
-      this.logger.log('EVM reconciliation: no addresses found');
-      return result;
-    }
-
-    // 2. Fetch all on-chain EVM transfers
-    const onChainTxs = await this.fetchEvmTransfers(ethUrl, evmAddresses);
-    const onChainTxMap = new Map<string, EvmTransfer>();
-    for (const tx of onChainTxs) {
-      onChainTxMap.set(tx.hash, tx);
-    }
-    this.logger.log(
-      `EVM reconciliation: fetched ${onChainTxs.length} on-chain transfers`,
-    );
-
-    // 3. Fetch all unresolved EVM deposit transactions
-    const unresolved = await this.prisma.walletTransaction.findMany({
-      where: {
-        resolvedAt: null,
-        reference: { not: { startsWith: 'testnet-credit-' } },
-        wallet: {
-          currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
-        },
-      },
-      include: {
-        wallet: {
-          select: { id: true, currency: true, address: true, isFrozen: true },
-        },
-      },
-    });
-    this.logger.log(
-      `EVM reconciliation: ${unresolved.length} unresolved DB transactions`,
-    );
-
-    // 4. Classify each unresolved DB transaction
-    for (const tx of unresolved) {
-      const onChain = onChainTxMap.get(tx.reference);
-
-      if (onChain) {
-        await this.markResolved(tx.id);
-        result.resolved++;
-      } else if (tx.status === 'COMPLETED') {
-        await this.executeRollback(tx);
-        result.rollbacks++;
-      } else if (tx.status === 'PENDING') {
-        const age = Date.now() - tx.createdAt.getTime();
-        const staleThreshold = 30 * 60 * 1000; // 30 min for EVM (faster blocks)
-        if (age > staleThreshold) {
-          await this.executeRollback(tx);
-          result.rollbacks++;
-        } else {
-          result.pending++;
-        }
-      }
-    }
-
-    // 5. Check for missed events
-    const allEvmRefs = new Set(
-      (
-        await this.prisma.walletTransaction.findMany({
-          where: {
-            wallet: {
-              currency: { in: [Currency.ETH, Currency.USDT, Currency.USDC] },
-            },
-          },
-          select: { reference: true },
-        })
-      ).map((r) => r.reference),
-    );
-
-    for (const onChainTx of onChainTxs) {
-      if (allEvmRefs.has(onChainTx.hash)) continue;
-      if (onChainTx.hash.startsWith('testnet-credit-')) {
-        result.skippedTestnet++;
-        continue;
-      }
-
-      const credited = await this.autoCreditEvmDeposit(onChainTx, evmWallets);
-      if (credited) result.missed++;
-    }
-
-    return result;
-  }
-
-  private async fetchEvmTransfers(
-    rpcUrl: string,
-    addresses: string[],
-  ): Promise<EvmTransfer[]> {
-    const allTransfers: EvmTransfer[] = [];
-    const batchSize = 50;
-
-    for (let i = 0; i < addresses.length; i += batchSize) {
-      const batch = addresses.slice(i, i + batchSize);
-      let pageKey: string | undefined;
-
-      do {
-        try {
-          const params: Record<string, unknown> = {
-            toAddress: batch,
-            category: ['external', 'internal', 'erc20'],
-            fromBlock: '0x0',
-            toBlock: 'latest',
-            order: 'asc',
-            maxCount: '0x3e8',
-            withMetadata: false,
-          };
-          if (pageKey) params.pageKey = pageKey;
-
-          const res = await lastValueFrom(
-            this.httpService.post(
-              rpcUrl,
-              {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'alchemy_getAssetTransfers',
-                params: [params],
-              },
-              { timeout: 30_000 },
-            ),
-          );
-
-          const data = (res.data as Record<string, unknown>)?.result as
-            | EvmTransfersResponse
-            | undefined;
-          const transfers = data?.transfers || [];
-          allTransfers.push(...transfers);
-          pageKey = data?.pageKey;
-        } catch (error) {
-          const err = error as ErrorLike;
-          this.logger.error(`EVM transfer fetch failed: ${err.message}`);
-          break;
-        }
-      } while (pageKey);
-    }
-
-    return allTransfers;
-  }
-
-  private async autoCreditEvmDeposit(
-    tx: EvmTransfer,
-    wallets: Array<{
-      id: string;
-      address: string | null;
-      currency: Currency;
-      isFrozen: boolean;
-    }>,
-  ): Promise<boolean> {
-    const toAddr = (tx.to || '').toLowerCase();
-    const asset = (tx.asset || '').toUpperCase();
-
-    let currency: Currency;
-    if (
-      asset === 'ETH' ||
-      tx.category === 'external' ||
-      tx.category === 'internal'
-    ) {
-      currency = Currency.ETH;
-    } else if (asset === 'USDT') {
-      currency = Currency.USDT;
-    } else if (asset === 'USDC') {
-      currency = Currency.USDC;
-    } else {
-      return false;
-    }
-
-    const matchingWallet = wallets.find(
-      (w) => w.address?.toLowerCase() === toAddr && w.currency === currency,
-    );
-    if (!matchingWallet || matchingWallet.isFrozen) return false;
-
-    const amount = tx.value;
-    if (!Number.isFinite(amount) || amount <= 0) return false;
-
-    const blockNum = parseInt(tx.blockNum, 16);
-
-    try {
-      await this.prisma.$transaction(async (prismaTx) => {
-        await prismaTx.walletTransaction.create({
-          data: {
-            walletId: matchingWallet.id,
-            type: LedgerType.DEPOSIT,
-            status: 'COMPLETED',
-            amount,
-            reference: tx.hash,
-            resolvedAt: new Date(),
-            metadata: {
-              source: 'RECONCILIATION',
-              listener: 'EVM_RECONCILIATION',
-              blockTxId: tx.hash,
-              asset: currency,
-              address: toAddr,
-              sourceAddress: (tx.from || '').toLowerCase(),
-              blockNumber: blockNum,
-              missedEvent: true,
-              receivedAt: new Date().toISOString(),
-            },
-          },
-        });
-        await prismaTx.wallet.update({
-          where: { id: matchingWallet.id },
-          data: { balance: { increment: amount } },
-        });
-      });
-      this.logger.log(
-        `Missed EVM deposit auto-credited: ${amount} ${currency} to wallet ${matchingWallet.id} (TX: ${tx.hash})`,
-      );
-      return true;
-    } catch (error) {
-      const err = error as ErrorLike;
-      if (err.code === 'P2002') {
-        this.logger.debug(`EVM deposit ${tx.hash} already recorded; skipping`);
-      } else {
-        this.logger.error(
-          `Failed to auto-credit EVM deposit ${tx.hash}: ${err.message}`,
-        );
-      }
-    }
-    return false;
-  }
-
   // ─── Shared Helpers ────────────────────────────────────────────────────
 
   private async markResolved(transactionId: string): Promise<void> {
@@ -659,19 +381,6 @@ export class ReconciliationService implements OnModuleInit {
       rollbacks: 0,
       pending: 0,
       skippedTestnet: 0,
-    };
-  }
-
-  private mergeResults(
-    a: ReconciliationResult,
-    b: ReconciliationResult,
-  ): ReconciliationResult {
-    return {
-      resolved: a.resolved + b.resolved,
-      missed: a.missed + b.missed,
-      rollbacks: a.rollbacks + b.rollbacks,
-      pending: a.pending + b.pending,
-      skippedTestnet: a.skippedTestnet + b.skippedTestnet,
     };
   }
 }
