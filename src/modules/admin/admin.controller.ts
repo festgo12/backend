@@ -40,6 +40,7 @@ export class AdminController {
   }
 
   // ─── Users ──────────────────────────────────────────────────────────
+  @Get('users')
   @ApiOperation({ summary: 'Get list of users with pagination' })
   getUsers(
     @Query('page') page: string = '1',

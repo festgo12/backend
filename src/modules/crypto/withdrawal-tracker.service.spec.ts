@@ -36,6 +36,7 @@ describe('WithdrawalTrackerService', () => {
     },
     walletTransaction: {
       findUnique: jest.fn(),
+      update: jest.fn(),
     },
   };
 

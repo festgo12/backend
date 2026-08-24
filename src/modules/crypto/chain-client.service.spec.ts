@@ -261,10 +261,9 @@ describe('ChainClientService', () => {
 
   describe('broadcastBtc', () => {
     it('selects inputs, signs with the HD node and broadcasts via Alchemy RPC', async () => {
-      (http.post as jest.Mock).mockImplementation((url: string) => {
-        // listunspent call
-        if (!url.includes('alchemy')) {
-          return of({ data: {} });
+      (http.post as jest.Mock).mockImplementation((_url: string, body: { method: string }) => {
+        if (body.method === 'sendrawtransaction') {
+          return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
         }
         return of({
           data: {
@@ -303,9 +302,9 @@ describe('ChainClientService', () => {
     });
 
     it('throws when the confirmed balance is insufficient', async () => {
-      (http.post as jest.Mock).mockImplementation((url: string) => {
-        if (!url.includes('quiknode')) {
-          return of({ data: {} });
+      (http.post as jest.Mock).mockImplementation((_url: string, body: { method: string }) => {
+        if (body.method === 'sendrawtransaction') {
+          return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
         }
         return of({
           data: {

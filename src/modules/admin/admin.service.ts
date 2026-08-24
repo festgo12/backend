@@ -62,7 +62,7 @@ export class AdminService {
       }),
       this.prisma.ledgerEntry.aggregate({
         _sum: { amount: true },
-        where: { type: LedgerType.FEE },
+        where: { type: LedgerType.FEE, amount: { gt: 0 } },
       }),
     ]);
 
@@ -111,13 +111,34 @@ export class AdminService {
 
   // ─── Admin Ad Moderation ─────────────────────────────────────────────
 
+  private static readonly ALLOWED_AD_FIELDS = new Set([
+    'status',
+    'quantity',
+    'price',
+    'minLimit',
+    'maxLimit',
+    'paymentMethods',
+    'description',
+  ]);
+
   async adminUpdateAd(adId: string, data: Record<string, unknown>) {
     const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
     if (!ad) throw new NotFoundException('Ad not found');
 
+    const safeData: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (AdminService.ALLOWED_AD_FIELDS.has(key)) {
+        safeData[key] = value;
+      }
+    }
+
+    if (Object.keys(safeData).length === 0) {
+      throw new BadRequestException('No valid fields provided for update');
+    }
+
     return this.prisma.ad.update({
       where: { id: adId },
-      data,
+      data: safeData,
     });
   }
 

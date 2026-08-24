@@ -27,7 +27,11 @@ describe('OrdersService', () => {
       findUnique: jest.fn(),
     },
     ledgerEntry: {
+      create: jest.fn(),
       createMany: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
     },
   };
 
@@ -576,6 +580,7 @@ describe('OrdersService', () => {
 
       const buyerFiatWallet = {
         id: 'buyer-fiat-wallet-uuid',
+        balance: new Decimal('15000'),
         version: 1,
       };
 
@@ -587,7 +592,7 @@ describe('OrdersService', () => {
         status: OrderStatus.DECLINED,
       });
 
-      const result = await service.declineOrder('order-uuid', 'seller-uuid');
+      const result = await service.declineOrder('order-uuid', 'buyer-uuid');
 
       // SELL ad: fiat payer is the responder (buyerId)
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
@@ -615,6 +620,7 @@ describe('OrdersService', () => {
 
       const adOwnerNgnWallet = {
         id: 'adowner-ngn-wallet-uuid',
+        balance: new Decimal('15000'),
         version: 1,
       };
 
@@ -656,6 +662,7 @@ describe('OrdersService', () => {
 
       const buyerFiatWallet = {
         id: 'buyer-fiat-wallet-uuid',
+        balance: new Decimal('15000'),
         version: 1,
       };
 
@@ -703,11 +710,12 @@ describe('OrdersService', () => {
       status: OrderStatus.APPROVED,
     };
 
-    const buyerFiatWallet = { id: 'buyer-fiat-wallet-uuid', version: 1 };
-    const sellerCryptoWallet = { id: 'seller-crypto-wallet-uuid', version: 1 };
+    const buyerFiatWallet = { id: 'buyer-fiat-wallet-uuid', balance: new Decimal('5000'), version: 1 };
+    const sellerCryptoWallet = { id: 'seller-crypto-wallet-uuid', balance: new Decimal('50'), version: 1 };
 
     it('should refund the fiat payer and cancel order when state is PENDING_SELLER', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderPending);
+      mockTransactionClient.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
       mockTransactionClient.wallet.findUnique.mockResolvedValueOnce(buyerFiatWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.order.update.mockResolvedValue({
@@ -734,6 +742,7 @@ describe('OrdersService', () => {
 
     it('should refund fiat payer and refund cryptoSeller locked crypto when state is APPROVED', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderApproved);
+      mockTransactionClient.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
       mockTransactionClient.wallet.findUnique
         .mockResolvedValueOnce(buyerFiatWallet)
         .mockResolvedValueOnce(sellerCryptoWallet);

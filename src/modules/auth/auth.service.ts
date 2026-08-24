@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +17,8 @@ import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -244,15 +246,13 @@ export class AuthService {
       },
     });
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #E89E2D;">P2N Marketplace - Login Verification</h2>
-        <p>Your 6-digit verification code is:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px; margin: 20px 0;">${code}</div>
-        <p style="color: #666;">This code expires in 10 minutes. If you didn't request this, please ignore this email.</p>
-      </div>
+    const innerHtml = `
+      <p>Your 6-digit verification code is:</p>
+      <div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;color:#E89E2D;">${code}</div>
+      <p style="color:#666;">This code expires in 10 minutes. If you didn't request this, please ignore this email.</p>
     `;
 
+    const html = this.emailService.wrapEmailHtml(innerHtml, 'Login Verification');
     await this.emailService.sendEmail(user.email, 'Your P2N Login Code', html);
   }
 
@@ -477,8 +477,19 @@ export class AuthService {
       },
     });
 
-    // TODO: Send email via MailerModule (Implementation in future step)
-    return { resetToken }; // Returning for now so user can test
+    const resetUrl = `${this.configService.get('APP_URL', 'http://localhost:3000')}/reset-password?token=${resetToken}`;
+    const innerHtml = `<p>You requested a password reset for your P2N account.</p>
+<p style="text-align:center;margin:24px 0;">
+  <a href="${resetUrl}" style="display:inline-block;padding:12px 32px;background:#E89E2D;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:bold;">Reset Password</a>
+</p>
+<p style="color:#666;">This link expires in 1 hour. If you did not request this, please ignore this email.</p>`;
+
+    if (!user.email) return { message: 'If an account exists with that email, a reset link has been sent.' };
+
+    const html = this.emailService.wrapEmailHtml(innerHtml, 'Password Reset');
+    await this.emailService.sendEmail(user.email, 'P2N Password Reset', html);
+
+    return { message: 'If an account exists with that email, a reset link has been sent.' };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -540,14 +551,12 @@ export class AuthService {
       },
     });
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #E89E2D;">P2N Marketplace - Email Verification</h2>
-        <p>Your 6-digit verification code is:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px; margin: 20px 0;">${code}</div>
-        <p style="color: #666;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
-      </div>
+    const innerHtml = `
+      <p>Your 6-digit email verification code is:</p>
+      <div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;color:#E89E2D;">${code}</div>
+      <p style="color:#666;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
     `;
+    const html = this.emailService.wrapEmailHtml(innerHtml, 'Email Verification');
     await this.emailService.sendEmail(user.email, 'Your P2N Email Verification Code', html);
 
     return { success: true };
@@ -601,9 +610,19 @@ export class AuthService {
       },
     });
 
-    // TODO: Send via SMS service when configured
-    // For now, return the code for development/testing
-    return { success: true, code };
+    // Send via SMS service when configured
+    if (this.configService.get('NODE_ENV') === 'production') {
+      // TODO: Integrate SMS provider (Twilio, Termii, etc.)
+      this.logger.warn('SMS not configured — phone verification code not delivered');
+    }
+
+    return {
+      success: true,
+      ...(this.configService.get('NODE_ENV') !== 'production' ? { code } : {}),
+      message: this.configService.get('NODE_ENV') === 'production'
+        ? 'Verification code sent to your phone'
+        : 'Verification code returned (dev mode)',
+    };
   }
 
   async verifyPhone(userId: string, token: string) {

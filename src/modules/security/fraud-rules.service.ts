@@ -82,6 +82,8 @@ export class FraudRulesService {
         update: {
           severity: rule.severity,
           threshold: rule.threshold,
+          action: rule.action,
+          description: rule.description,
         },
         create: {
           name: rule.name,
@@ -114,6 +116,16 @@ export class FraudRulesService {
 
   async getRuleByCode(code: string) {
     return this.prisma.fraudRule.findUnique({ where: { code } });
+  }
+
+  private async enforceAction(userId: string, action: string) {
+    if (action === 'FREEZE') {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { status: 'FROZEN' },
+      });
+      this.logger.warn(`User ${userId} FROZEN by fraud rule action`);
+    }
   }
 
   // --- Rule Evaluation ---
@@ -154,6 +166,7 @@ export class FraudRulesService {
         message: `${uniqueUserIds.length} accounts have been logged into from this device. This may indicate fraudulent activity.`,
         metadata: { accountCount: uniqueUserIds.length, userIds: uniqueUserIds },
       });
+      await this.enforceAction(userId, rule.action);
     }
   }
 
@@ -180,6 +193,7 @@ export class FraudRulesService {
         message: `${recentWithdrawals} withdrawals have been made in the last hour. This is unusually high activity.`,
         metadata: { withdrawalCount: recentWithdrawals, windowMinutes: 60 },
       });
+      await this.enforceAction(userId, rule.action);
     }
   }
 
@@ -230,6 +244,7 @@ export class FraudRulesService {
         message: `Your recent trading volume (${recentOrders} orders today) significantly exceeds your daily average (${dailyAverage.toFixed(1)}).`,
         metadata: { recentOrders, dailyAverage: Math.round(dailyAverage * 10) / 10, historicalVolume },
       });
+      await this.enforceAction(userId, rule.action);
     }
   }
 
@@ -250,6 +265,7 @@ export class FraudRulesService {
         message: `A login was detected from a new device. If this wasn't you, please secure your account immediately.`,
         metadata: { deviceId, ipAddress },
       });
+      await this.enforceAction(userId, rule.action);
     }
   }
 
@@ -279,6 +295,7 @@ export class FraudRulesService {
           message: `${failedCount + 1} failed login attempts have been detected for your account in the last 15 minutes.`,
           metadata: { failedCount: failedCount + 1, ipAddress, email },
         });
+        await this.enforceAction(user.id, rule.action);
       }
     }
   }

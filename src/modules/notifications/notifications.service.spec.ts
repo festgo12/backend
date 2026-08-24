@@ -62,6 +62,9 @@ describe('NotificationsService', () => {
       if (!tpl) return '';
       return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => data[key] || match);
     }),
+    wrapEmailHtml: jest.fn().mockImplementation((innerHtml: string, title?: string) => {
+      return `<wrapped>${title ? `<h1>${title}</h1>` : ''}${innerHtml}</wrapped>`;
+    }),
   };
 
   const mockFcmService = {};
@@ -158,11 +161,13 @@ describe('NotificationsService', () => {
             channel: NotificationChannel.EMAIL,
             recipient: 'test@example.com',
             title: 'Secure login alert',
-            body: 'Dear john_doe, login detected at 12:00 PM.',
             status: NotificationStatus.PENDING,
           }),
         }),
       );
+      const emailLogCall = mockPrismaService.notificationLog.create.mock.calls[1][0];
+      expect(emailLogCall.data.body).toContain('<wrapped>');
+      expect(emailLogCall.data.body).toContain('Dear john_doe, login detected at 12:00 PM.');
     });
 
     it('should respect user notification preferences', async () => {

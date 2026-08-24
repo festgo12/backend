@@ -68,16 +68,20 @@ export class ExchangeRateService implements OnApplicationBootstrap {
    * Falls back to hardcoded rates if the API fails.
    */
   async refreshRates(): Promise<Record<string, number>> {
-    try {
-      const coinIds = Object.values(this.COINGECKO_MAP).join(',');
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=ngn,usd`;
+    const MAX_RETRIES = 3;
+    const BASE_TIMEOUT = 15000;
 
-      const response = await lastValueFrom(
-        this.httpService.get(url, {
-          timeout: 10000,
-          headers: { Accept: 'application/json' },
-        }),
-      );
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const coinIds = Object.values(this.COINGECKO_MAP).join(',');
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=ngn,usd`;
+
+        const response = await lastValueFrom(
+          this.httpService.get(url, {
+            timeout: BASE_TIMEOUT,
+            headers: { Accept: 'application/json' },
+          }),
+        );
 
       const data = response.data as Record<
         string,
@@ -116,30 +120,29 @@ export class ExchangeRateService implements OnApplicationBootstrap {
       return ngn;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(
-        `Failed to fetch exchange rates from CoinGecko: ${message}`,
+      this.logger.warn(
+        `CoinGecko fetch attempt ${attempt}/${MAX_RETRIES} failed: ${message}`,
       );
-      // Use fallback rates
-      const ngnFallback: Record<string, number> = {};
-      const usdFallback: Record<string, number> = {};
-      for (const [currency, rate] of Object.entries(this.FALLBACK_RATES)) {
-        ngnFallback[currency] = rate;
-        usdFallback[currency] = rate / 1550;
+      if (attempt < MAX_RETRIES) {
+        const delay = 2000 * attempt;
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-      this.cache = {
-        ngn: ngnFallback,
-        usd: usdFallback,
-        lastUpdated: new Date(),
-      };
-      return ngnFallback;
     }
-  }
+    }
 
-  /**
-   * Returns the cached NGN rate for a specific currency.
-   */
-  getRate(currency: Currency): number {
-    return this.cache.ngn[currency] || this.FALLBACK_RATES[currency] || 0;
+    this.logger.error('All CoinGecko retry attempts exhausted, using fallback rates');
+    const ngnFallback: Record<string, number> = {};
+    const usdFallback: Record<string, number> = {};
+    for (const [currency, rate] of Object.entries(this.FALLBACK_RATES)) {
+      ngnFallback[currency] = rate;
+      usdFallback[currency] = rate / 1550;
+    }
+    this.cache = {
+      ngn: ngnFallback,
+      usd: usdFallback,
+      lastUpdated: new Date(),
+    };
+    return ngnFallback;
   }
 
   /**
@@ -161,14 +164,6 @@ export class ExchangeRateService implements OnApplicationBootstrap {
    */
   getLastUpdated(): Date {
     return this.cache.lastUpdated;
-  }
-
-  /**
-   * Converts an amount from crypto to NGN.
-   */
-  convertToNgn(amount: number, currency: Currency): number {
-    const rate = this.getRate(currency);
-    return amount * rate;
   }
 
   /**

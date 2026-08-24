@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
-import { Currency, Role, LedgerType, Prisma } from '@src/generated/client';
+import { Currency, LedgerType, Prisma } from '@src/generated/client';
 
 @Injectable()
 export class WalletService {
@@ -38,23 +38,11 @@ export class WalletService {
    * Gets or creates a wallet for a specific currency for a user.
    */
   async getOrCreateWallet(userId: string, currency: Currency) {
-    let wallet = await this.prisma.wallet.findUnique({
-      where: {
-        userId_currency: { userId, currency },
-      },
+    return this.prisma.wallet.upsert({
+      where: { userId_currency: { userId, currency } },
+      create: { userId, currency, balance: 0 },
+      update: {},
     });
-
-    if (!wallet) {
-      wallet = await this.prisma.wallet.create({
-        data: {
-          userId,
-          currency,
-          balance: 0,
-        },
-      });
-    }
-
-    return wallet;
   }
 
   /**
@@ -225,6 +213,17 @@ export class WalletService {
   }
 
   /**
+   * Valid status transitions: maps current status to allowed next statuses.
+   */
+  private static readonly VALID_TRANSITIONS: Record<string, string[]> = {
+    PENDING: ['COMPLETED', 'FAILED', 'PROCESSING'],
+    PROCESSING: ['COMPLETED', 'FAILED'],
+    FAILED: ['PENDING'],
+    COMPLETED: ['REVERSED'],
+    REVERSED: [],
+  };
+
+  /**
    * Updates transaction status and creates ledger entry if completed.
    */
   async updateTransactionStatus(transactionId: string, status: string, metadata?: any) {
@@ -234,6 +233,16 @@ export class WalletService {
       });
 
       if (!current) throw new NotFoundException('Transaction not found');
+
+      const allowed = WalletService.VALID_TRANSITIONS[current.status];
+      if (!allowed || !allowed.includes(status)) {
+        throw new BadRequestException(
+          `Cannot transition from ${current.status} to ${status}`,
+        );
+      }
+
+      // Idempotent: no-op if already at the target status
+      if (current.status === status) return current;
 
       const updatedMetadata = {
         ...(current.metadata as any || {}),
@@ -276,6 +285,7 @@ export class WalletService {
 
   /**
    * Reverses a failed transaction by creating an offsetting ledger entry.
+   * Deposits are reversed by debiting; withdrawals are reversed by crediting.
    */
   async reverseTransaction(transactionId: string, reason: string) {
     return this.prisma.$transaction(async (tx) => {
@@ -296,10 +306,17 @@ export class WalletService {
         },
       });
 
+      // Reverse direction: deposits (positive amount) → debit; withdrawals (negative impact) → credit
+      const depositTypes: string[] = [LedgerType.DEPOSIT, LedgerType.GIFT_CARD_PURCHASE];
+      const isDeposit = depositTypes.includes(transaction.type);
+      const reverseAmount = isDeposit
+        ? -Math.abs(transaction.amount.toNumber())
+        : Math.abs(transaction.amount.toNumber());
+
       await this.ledger.createEntry(tx, {
         walletId: transaction.walletId,
         transactionId: transaction.id,
-        amount: Math.abs(transaction.amount.toNumber()),
+        amount: reverseAmount,
         type: LedgerType.TRADE_REFUND,
         reference: `${transaction.reference}-rev-${Date.now()}`,
         metadata: { reason },

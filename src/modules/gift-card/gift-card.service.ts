@@ -312,6 +312,24 @@ export class GiftCardService {
         },
       });
 
+      // Credit the seller's NGN wallet
+      const sellerWallet = await tx.wallet.findUnique({
+        where: { userId_currency: { userId: order.sellerId, currency: 'NGN' } },
+      });
+
+      if (!sellerWallet) {
+        throw new ConflictException('Seller NGN wallet not found — cannot release funds');
+      }
+
+      const sellerCreditRef = `GC-SELLER-CREDIT-${uuidv4()}`;
+      await this.ledgerService.createEntry(tx, {
+        walletId: sellerWallet.id,
+        amount: order.totalPaidNgn.toNumber(),
+        type: 'GIFT_CARD_SALE',
+        reference: sellerCreditRef,
+        metadata: { orderId, buyerId, listingId: order.listingId },
+      });
+
       // NOW reveal the card codes to the buyer
       const cardCode = this.encryption.decrypt(order.listing.cardCode);
       const cardPin = order.listing.cardPin

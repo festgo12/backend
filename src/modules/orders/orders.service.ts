@@ -134,7 +134,20 @@ export class OrdersService {
         },
       });
 
-      // 7. Transition order status immediately to PENDING_SELLER and start countdown
+      // 7. Ledger entry for the fiat reserve
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: buyerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount.negated(),
+          type: LedgerType.TRADE_RESERVE,
+          reference: `RESERVE-NGN-${order.id}`,
+          balanceAfter: new Decimal(buyerFiatWallet.balance.toString()).minus(fiatAmount),
+          metadata: { action: 'reserve', currency: 'NGN' },
+        },
+      });
+
+      // 8. Transition order status immediately to PENDING_SELLER and start countdown
       const finalOrder = await tx.order.update({
         where: { id: order.id },
         data: {
@@ -279,6 +292,8 @@ export class OrdersService {
       if (updateAdResult.count === 0) throw new InternalServerErrorException('Conflict updating ad quantity');
 
       // --- STAGE 6: Generate Audit Logs (LedgerEntries) ---
+      // Settlement entries post GROSS amounts (matching actual wallet deltas).
+      // FEE entries capture the platform's take as separate debits.
       const ledgerData: any[] = [
         {
           walletId: buyerFiatWallet.id,
@@ -291,10 +306,10 @@ export class OrdersService {
         {
           walletId: sellerFiatWallet.id,
           orderId: order.id,
-          amount: fiatAmount.minus(sellerFee),
+          amount: fiatAmount,
           type: LedgerType.TRADE_SETTLEMENT,
           reference: `SETTLE-NGN-RECEIVER-${order.id}`,
-          balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
+          balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount),
         },
         {
           walletId: sellerFiatWallet.id,
@@ -307,10 +322,10 @@ export class OrdersService {
         {
           walletId: buyerCryptoWallet.id,
           orderId: order.id,
-          amount: cryptoAmount.minus(buyerFee),
+          amount: cryptoAmount,
           type: LedgerType.TRADE_SETTLEMENT,
           reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
-          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount),
         },
         {
           walletId: buyerCryptoWallet.id,
@@ -330,7 +345,7 @@ export class OrdersService {
         },
       ];
 
-      // Platform fee wallet is the ledger home for the on-chain buyer fee leg.
+      // Platform fee wallet receives both buyer-side crypto fee and seller-side NGN fee
       if (feeWallet) {
         const feeWalletRow = await tx.wallet.findUnique({ where: { id: feeWallet.id } });
         if (feeWalletRow) {
@@ -340,7 +355,15 @@ export class OrdersService {
             amount: buyerFee,
             type: LedgerType.FEE,
             reference: `FEE-CRYPTO-PLATFORM-${order.id}`,
-            balanceAfter: new Decimal(feeWalletRow.balance.toString()).plus(buyerFee),
+            balanceAfter: new Decimal(feeWalletRow.balance.toString()).plus(buyerFee).plus(sellerFee),
+          });
+          ledgerData.push({
+            walletId: feeWallet.id,
+            orderId: order.id,
+            amount: sellerFee,
+            type: LedgerType.FEE,
+            reference: `FEE-NGN-PLATFORM-${order.id}`,
+            balanceAfter: new Decimal(feeWalletRow.balance.toString()).plus(buyerFee).plus(sellerFee),
           });
         }
       }
@@ -381,6 +404,11 @@ export class OrdersService {
         throw new BadRequestException(`Cannot decline/cancel order in ${order.status} state`);
       }
 
+      // Authorization: only buyer or seller may decline
+      if (order.buyerId !== initiatorId && order.sellerId !== initiatorId) {
+        throw new BadRequestException('Only a party to this order may decline it');
+      }
+
       const fiatAmount = new Decimal(order.fiatAmount.toString());
       const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
@@ -400,6 +428,19 @@ export class OrdersService {
       });
 
       if (refundResult.count === 0) throw new InternalServerErrorException('Conflict during refund. Please retry.');
+
+      // Ledger entry for the refund
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: buyerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount,
+          type: LedgerType.TRADE_REFUND,
+          reference: `REFUND-NGN-${order.id}`,
+          balanceAfter: new Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+          metadata: { action: 'refund', reason: 'declined' },
+        },
+      });
 
       const finalOrder = await tx.order.update({
         where: { id: order.id },
@@ -446,6 +487,19 @@ export class OrdersService {
 
       if (refundResult.count === 0) throw new InternalServerErrorException('Conflict during refund. Please retry.');
 
+      // Ledger entry for the refund
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: buyerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount,
+          type: LedgerType.TRADE_REFUND,
+          reference: `REFUND-NGN-${order.id}`,
+          balanceAfter: new Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+          metadata: { action: 'refund', reason: 'expired' },
+        },
+      });
+
       const finalOrder = await tx.order.update({
         where: { id: order.id },
         data: { 
@@ -469,6 +523,13 @@ export class OrdersService {
       if (!order) throw new NotFoundException('Order not found');
       if (order.fraudFlagged) {
         throw new BadRequestException('Order is already flagged as fraud');
+      }
+
+      // Authorization: only buyer, seller, or admin may flag
+      const isParty = order.buyerId === initiatorId || order.sellerId === initiatorId;
+      const isAdmin = (await tx.user.findUnique({ where: { id: initiatorId }, select: { role: true } }))?.role === 'ADMIN';
+      if (!isParty && !isAdmin) {
+        throw new BadRequestException('Only a party to this order or an admin may flag it');
       }
 
       if (
@@ -499,6 +560,19 @@ export class OrdersService {
       });
       if (refundFiatResult.count === 0) throw new InternalServerErrorException('Conflict refunding fiat payer');
 
+      // Ledger entry for fiat refund
+      await tx.ledgerEntry.create({
+        data: {
+          walletId: buyerFiatWallet.id,
+          orderId: order.id,
+          amount: fiatAmount,
+          type: LedgerType.TRADE_REFUND,
+          reference: `REFUND-NGN-FRAUD-${order.id}`,
+          balanceAfter: new Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+          metadata: { action: 'refund', reason: 'fraud_flagged' },
+        },
+      });
+
       // 2. Refund crypto seller's locked crypto if it was locked.
       if (order.status === OrderStatus.APPROVED) {
         const cryptoAmount = new Decimal(order.cryptoAmount.toString());
@@ -516,6 +590,19 @@ export class OrdersService {
           },
         });
         if (refundCryptoResult.count === 0) throw new InternalServerErrorException('Conflict refunding seller crypto');
+
+        // Ledger entry for crypto refund
+        await tx.ledgerEntry.create({
+          data: {
+            walletId: sellerCryptoWallet.id,
+            orderId: order.id,
+            amount: cryptoAmount,
+            type: LedgerType.TRADE_REFUND,
+            reference: `REFUND-CRYPTO-FRAUD-${order.id}`,
+            balanceAfter: new Decimal(sellerCryptoWallet.balance.toString()).plus(cryptoAmount),
+            metadata: { action: 'refund', reason: 'fraud_flagged' },
+          },
+        });
       }
 
       // 3. Flag as fraud and transition to CANCELLED

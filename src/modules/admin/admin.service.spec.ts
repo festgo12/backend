@@ -10,6 +10,8 @@ import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
+import { ReconciliationService } from '../crypto/reconciliation.service';
+import { SweepService } from '../crypto/sweep.service';
 import { Currency } from '@src/generated/client';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
 import { Decimal } from '@src/generated/client/runtime/library';
@@ -55,6 +57,13 @@ describe('AdminService', () => {
   const mockWalletService = {
     createTransaction: jest.fn(),
   };
+  const mockReconciliationService = {
+    reconcileAll: jest.fn(),
+    reconcileCurrency: jest.fn(),
+  };
+  const mockSweepService = {
+    manualSweepAll: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -69,6 +78,8 @@ describe('AdminService', () => {
         { provide: ChainClientService, useValue: mockChainClient },
         { provide: PaystackService, useValue: mockPaystackService },
         { provide: WalletService, useValue: mockWalletService },
+        { provide: ReconciliationService, useValue: mockReconciliationService },
+        { provide: SweepService, useValue: mockSweepService },
       ],
     }).compile();
 

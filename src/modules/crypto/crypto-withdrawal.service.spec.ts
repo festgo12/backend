@@ -25,6 +25,8 @@ describe('CryptoWithdrawalService', () => {
     broadcastEvmToken: jest.fn(),
     broadcastBtc: jest.fn(),
     getBtcRecommendedFee: jest.fn(),
+    getEvmBalance: jest.fn(),
+    getBtcUtxos: jest.fn(),
   };
 
   const mockTracker = { enqueue: jest.fn() };
@@ -79,7 +81,7 @@ describe('CryptoWithdrawalService', () => {
     });
 
     expect(chainClient.broadcastEvmNative).toHaveBeenCalledWith(
-      1042,
+      0,
       '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
       2,
     );
@@ -259,13 +261,20 @@ describe('CryptoWithdrawalService', () => {
     );
   });
 
-  it('rejects a fee wallet sweep without an amount', async () => {
+  it('rejects a fee wallet sweep when no on-chain balance is available', async () => {
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'w-fee',
+      address: '0xFrom',
+      derivationIndex: 0,
+      currency: Currency.ETH,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(0);
+
     await expect(
       service.sweepFeeWallet({
         currency: Currency.ETH,
         destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
-        amount: 0,
       }),
-    ).rejects.toThrow('Amount must be greater than 0');
+    ).rejects.toThrow('No on-chain balance available');
   });
 });

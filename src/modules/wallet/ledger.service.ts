@@ -1,7 +1,6 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerType, Prisma } from '@src/generated/client';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class LedgerService {
@@ -9,7 +8,7 @@ export class LedgerService {
 
   /**
    * Executes an atomic credit or debit on a wallet within a Prisma transaction.
-   * This is the ONLY way to change a wallet's balance.
+   * Uses atomic increment to prevent lost-update races.
    */
   async createEntry(
     tx: Prisma.TransactionClient,
@@ -25,7 +24,7 @@ export class LedgerService {
   ) {
     const { walletId, transactionId, orderId, amount, type, reference, metadata } = params;
 
-    // 1. Get current balance from Wallet (denormalized for the UI, but we check against it)
+    // 1. Check balance won't go negative
     const wallet = await tx.wallet.findUnique({
       where: { id: walletId },
       select: { balance: true },
@@ -56,11 +55,11 @@ export class LedgerService {
       },
     });
 
-    // 3. Update the Wallet balance
+    // 3. Update the Wallet balance atomically
     await tx.wallet.update({
       where: { id: walletId },
       data: {
-        balance: newBalance,
+        balance: { increment: new Prisma.Decimal(amount) },
       },
     });
 

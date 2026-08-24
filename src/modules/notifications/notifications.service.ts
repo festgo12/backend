@@ -112,6 +112,10 @@ export class NotificationsService {
 
     // 4. Enqueue Email (SMTP NodeMailer) if user has email & prefers it
     if (user.email && isEmailAllowed) {
+      const brandedEmailHtml = emailBody.startsWith('<!DOCTYPE') || emailBody.startsWith('<html')
+        ? emailBody
+        : this.emailService.wrapEmailHtml(emailBody, emailSubject);
+
       await this.prisma.notificationLog.create({
         data: {
           userId,
@@ -119,7 +123,7 @@ export class NotificationsService {
           channel: NotificationChannel.EMAIL,
           recipient: user.email,
           title: emailSubject,
-          body: emailBody,
+          body: brandedEmailHtml,
           status: NotificationStatus.PENDING,
           nextTryAt: new Date(),
         },

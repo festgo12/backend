@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class GiftCardEventsHandler {
   private readonly logger = new Logger(GiftCardEventsHandler.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   @OnEvent('gift_card.listing.created')
   async handleListingCreated(listing: any) {
@@ -30,13 +34,12 @@ export class GiftCardEventsHandler {
     const { listing, moderatorId } = payload;
     this.logger.log(`Gift card listing approved: ${listing.id} by ${moderatorId}`);
 
-    await this.prisma.notification.create({
-      data: {
-        userId: listing.sellerId,
-        title: 'Gift Card Listing Approved',
-        body: `Your ${listing.brand} gift card listing has been approved and is now live in the marketplace.`,
-        data: { listingId: listing.id, type: 'GIFT_CARD_LISTING_APPROVED' },
-      },
+    await this.notifications.notifyUser({
+      userId: listing.sellerId,
+      type: 'GIFT_CARD_LISTING_APPROVED',
+      customTitle: 'Gift Card Listing Approved',
+      customBody: `Your ${listing.brand} gift card listing has been approved and is now live in the marketplace.`,
+      data: { listingId: listing.id, brand: listing.brand },
     });
 
     await this.prisma.securityLog.create({
@@ -53,13 +56,14 @@ export class GiftCardEventsHandler {
     const { listing, moderatorId } = payload;
     this.logger.log(`Gift card listing rejected: ${listing.id} by ${moderatorId}`);
 
-    await this.prisma.notification.create({
-      data: {
-        userId: listing.sellerId,
-        title: 'Gift Card Listing Rejected',
-        body: `Your ${listing.brand} gift card listing was rejected.${listing.moderatorNote ? ` Reason: ${listing.moderatorNote}` : ''}`,
-        data: { listingId: listing.id, type: 'GIFT_CARD_LISTING_REJECTED' },
-      },
+    const reasonSuffix = listing.moderatorNote ? ` Reason: ${listing.moderatorNote}` : '';
+
+    await this.notifications.notifyUser({
+      userId: listing.sellerId,
+      type: 'GIFT_CARD_LISTING_REJECTED',
+      customTitle: 'Gift Card Listing Rejected',
+      customBody: `Your ${listing.brand} gift card listing was rejected.${reasonSuffix}`,
+      data: { listingId: listing.id, brand: listing.brand, reason: listing.moderatorNote },
     });
 
     await this.prisma.securityLog.create({
@@ -76,21 +80,20 @@ export class GiftCardEventsHandler {
     const { order, buyerId, sellerId } = payload;
     this.logger.log(`Gift card order created: ${order.id}`);
 
-    await this.prisma.notification.createMany({
-      data: [
-        {
-          userId: buyerId,
-          title: 'Gift Card Purchase Confirmed',
-          body: `Your gift card purchase has been confirmed. Please confirm receipt once you've received the card.`,
-          data: { orderId: order.id, type: 'GIFT_CARD_PURCHASE_CONFIRMED' },
-        },
-        {
-          userId: sellerId,
-          title: 'Gift Card Sold',
-          body: `Your gift card has been purchased! Funds will be released upon buyer confirmation.`,
-          data: { orderId: order.id, type: 'GIFT_CARD_SOLD' },
-        },
-      ],
+    await this.notifications.notifyUser({
+      userId: buyerId,
+      type: 'GIFT_CARD_PURCHASE',
+      customTitle: 'Gift Card Purchase Confirmed',
+      customBody: `Your gift card purchase has been confirmed. Please confirm receipt once you've received the card.`,
+      data: { orderId: order.id },
+    });
+
+    await this.notifications.notifyUser({
+      userId: sellerId,
+      type: 'GIFT_CARD_SOLD',
+      customTitle: 'Gift Card Sold',
+      customBody: `Your gift card has been purchased! Funds will be released upon buyer confirmation.`,
+      data: { orderId: order.id },
     });
 
     await this.prisma.securityLog.create({
@@ -111,21 +114,20 @@ export class GiftCardEventsHandler {
     const { order, buyerId, sellerId } = payload;
     this.logger.log(`Gift card order completed: ${order.id}`);
 
-    await this.prisma.notification.createMany({
-      data: [
-        {
-          userId: buyerId,
-          title: 'Gift Card Received',
-          body: `Your gift card code is now available. Thank you for your purchase!`,
-          data: { orderId: order.id, type: 'GIFT_CARD_COMPLETED' },
-        },
-        {
-          userId: sellerId,
-          title: 'Gift Card Sale Completed',
-          body: `The buyer has confirmed receipt. Your funds have been released.`,
-          data: { orderId: order.id, type: 'GIFT_CARD_SALE_COMPLETED' },
-        },
-      ],
+    await this.notifications.notifyUser({
+      userId: buyerId,
+      type: 'GIFT_CARD_COMPLETED',
+      customTitle: 'Gift Card Received',
+      customBody: `Your gift card code is now available. Thank you for your purchase!`,
+      data: { orderId: order.id },
+    });
+
+    await this.notifications.notifyUser({
+      userId: sellerId,
+      type: 'GIFT_CARD_SALE_COMPLETED',
+      customTitle: 'Gift Card Sale Completed',
+      customBody: `The buyer has confirmed receipt. Your funds have been released.`,
+      data: { orderId: order.id },
     });
 
     await this.prisma.securityLog.create({
@@ -145,25 +147,26 @@ export class GiftCardEventsHandler {
     const { order, cancelledBy } = payload;
     this.logger.log(`Gift card order cancelled: ${order.id} by ${cancelledBy}`);
 
-    const otherPartyId = cancelledBy === order.buyerId ? order.sellerId : order.buyerId;
+    const cancelledByBuyer = cancelledBy === order.buyerId;
 
-    await this.prisma.notification.createMany({
-      data: [
-        {
-          userId: order.buyerId,
-          title: 'Gift Card Order Cancelled',
-          body: cancelledBy === order.buyerId
-            ? 'You have cancelled your gift card order. Funds have been refunded.'
-            : 'The gift card order has been cancelled by the seller. Your funds have been refunded.',
-          data: { orderId: order.id, type: 'GIFT_CARD_ORDER_CANCELLED' },
-        },
-        {
-          userId: otherPartyId,
-          title: 'Gift Card Order Cancelled',
-          body: `The gift card order has been cancelled by ${cancelledBy === order.buyerId ? 'the buyer' : 'the seller'}.`,
-          data: { orderId: order.id, type: 'GIFT_CARD_ORDER_CANCELLED' },
-        },
-      ],
+    await this.notifications.notifyUser({
+      userId: order.buyerId,
+      type: 'GIFT_CARD_ORDER_CANCELLED',
+      customTitle: 'Gift Card Order Cancelled',
+      customBody: cancelledByBuyer
+        ? 'You have cancelled your gift card order. Funds have been refunded.'
+        : 'The gift card order has been cancelled by the seller. Your funds have been refunded.',
+      data: { orderId: order.id },
+    });
+
+    const otherPartyId = cancelledByBuyer ? order.sellerId : order.buyerId;
+
+    await this.notifications.notifyUser({
+      userId: otherPartyId,
+      type: 'GIFT_CARD_ORDER_CANCELLED',
+      customTitle: 'Gift Card Order Cancelled',
+      customBody: `The gift card order has been cancelled by ${cancelledByBuyer ? 'the buyer' : 'the seller'}.`,
+      data: { orderId: order.id },
     });
 
     await this.prisma.securityLog.create({
