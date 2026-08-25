@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsNumber, Min } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GiftCardBrand, GiftCardListingStatus, GiftCardOrderStatus } from '@src/generated/client';
 
@@ -19,12 +19,14 @@ export class ListGiftCardListingsDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 20;
 }
 
@@ -41,11 +43,13 @@ export class ListGiftCardOrdersDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 20;
 }

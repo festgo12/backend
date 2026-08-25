@@ -86,17 +86,40 @@ export interface BtcTxStatus {
  *   - BTC: Alchemy Bitcoin JSON-RPC for broadcast + confirmation checks.
  *     Deposit detection via Alchemy WebSocket subscribeAddresses (push).
  * All signing keys derive from the HD master seed.
+ *
+ * EVM nonces are serialized per derivation-index via an async mutex so that
+ * concurrent broadcasts from the same address never collide on the RPC node.
  */
 @Injectable()
 export class ChainClientService {
   private readonly logger = new Logger(ChainClientService.name);
   private providerInstance: JsonRpcProvider | null = null;
 
+  /** Per-index async locks ensuring one EVM broadcast at a time per signer. */
+  private readonly evmNonceLocks = new Map<number, Promise<void>>();
+
   constructor(
     private readonly httpService: HttpService,
     private readonly config: CryptoConfigService,
     private readonly hdWallet: HdWalletService,
   ) {}
+
+  /** Serialize EVM broadcasts per derivation index to prevent nonce races. */
+  private async withNonceLock<T>(index: number, fn: () => Promise<T>): Promise<T> {
+    // Wait for any pending broadcast on this index, then run ours.
+    const prev = this.evmNonceLocks.get(index);
+    const chain = (prev ?? Promise.resolve()).then(() => fn(), () => fn());
+    // Store our promise so the next caller waits for us.
+    this.evmNonceLocks.set(index, chain.then(() => {}, () => {}));
+    try {
+      return await chain;
+    } finally {
+      // Clean up if we're the last in line.
+      if (this.evmNonceLocks.get(index) === chain.then(() => {}, () => {})) {
+        this.evmNonceLocks.delete(index);
+      }
+    }
+  }
 
   // ─── EVM Provider ──────────────────────────────────────────────────────
 
@@ -257,12 +280,8 @@ export class ChainClientService {
         const blockNumber = parseInt(t.blockNum ?? '', 16);
         if (!Number.isFinite(blockNumber)) continue;
         const raw = BigInt(t.value ?? '0');
-        const amount =
-          category === 'external'
-            ? Number(raw) / 1e18
-            : Number(raw) /
-              10 **
-                (t.rawContract?.decimal ? Number(t.rawContract.decimal) : 6);
+        const decimals = t.rawContract?.decimal ? Number(t.rawContract.decimal) : (category === 'external' ? 18 : 6);
+        const amount = parseFloat(formatUnits(raw, decimals));
         transfers.push({
           category,
           from: (t.from ?? '').toLowerCase(),
@@ -359,7 +378,7 @@ export class ChainClientService {
       .map((u) => ({
         txid: u.txid,
         vout: u.vout,
-        value: Math.round(u.amount * 1e8),
+        value: Math.round(Number(u.amount.toFixed(8)) * 1e8),
         blockHeight: u.blockheight ?? 0,
       }));
   }
@@ -371,13 +390,15 @@ export class ChainClientService {
     to: string,
     amount: number,
   ): Promise<string> {
-    const signer = this.evmSigner(fromIndex);
-    const tx = await signer.sendTransaction({
-      to,
-      value: parseEther(Number(amount).toFixed(18)),
+    return this.withNonceLock(fromIndex, async () => {
+      const signer = this.evmSigner(fromIndex);
+      const tx = await signer.sendTransaction({
+        to,
+        value: parseEther(Number(amount).toFixed(18)),
+      });
+      this.logger.log(`ETH broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+      return tx.hash;
     });
-    this.logger.log(`ETH broadcast: ${amount} ${to} (TX: ${tx.hash})`);
-    return tx.hash;
   }
 
   async broadcastEvmToken(
@@ -393,14 +414,16 @@ export class ChainClientService {
       );
     }
     const decimals = this.decimalsFor(currency);
-    const signer = this.evmSigner(fromIndex);
-    const token = new Contract(contract, ERC20_ABI, signer);
-    const tx = (await token.transfer(
-      to,
-      parseUnits(Number(amount).toFixed(decimals), decimals),
-    )) as ContractTransactionResponse;
-    this.logger.log(`${currency} broadcast: ${amount} ${to} (TX: ${tx.hash})`);
-    return tx.hash;
+    return this.withNonceLock(fromIndex, async () => {
+      const signer = this.evmSigner(fromIndex);
+      const token = new Contract(contract, ERC20_ABI, signer);
+      const tx = (await token.transfer(
+        to,
+        parseUnits(Number(amount).toFixed(decimals), decimals),
+      )) as ContractTransactionResponse;
+      this.logger.log(`${currency} broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+      return tx.hash;
+    });
   }
 
   // ─── BTC Broadcast (Alchemy RPC) ──────────────────────────────────────

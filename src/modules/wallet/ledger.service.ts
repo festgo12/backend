@@ -8,7 +8,7 @@ export class LedgerService {
 
   /**
    * Executes an atomic credit or debit on a wallet within a Prisma transaction.
-   * Uses atomic increment to prevent lost-update races.
+   * Uses conditional updateMany to prevent TOCTOU races on balance checks.
    */
   async createEntry(
     tx: Prisma.TransactionClient,
@@ -24,42 +24,47 @@ export class LedgerService {
   ) {
     const { walletId, transactionId, orderId, amount, type, reference, metadata } = params;
 
-    // 1. Check balance won't go negative
+    const amountDecimal = new Prisma.Decimal(amount);
+
+    // For debits (negative amount), use conditional updateMany to atomically
+    // check + decrement. If 0 rows affected, balance was insufficient.
+    if (amount < 0) {
+      const absDebit = amountDecimal.abs();
+      const affected = await tx.$executeRaw`
+        UPDATE "Wallet"
+        SET "balance" = "balance" + ${amountDecimal}
+        WHERE "id" = ${walletId}
+          AND "balance" >= ${absDebit}
+      `;
+      if (affected === 0) {
+        throw new ConflictException('Insufficient funds for this operation');
+      }
+    } else {
+      // Credits are unconditional atomic increments
+      await tx.wallet.update({
+        where: { id: walletId },
+        data: { balance: { increment: amountDecimal } },
+      });
+    }
+
+    // Read back the updated balance for the ledger snapshot
     const wallet = await tx.wallet.findUnique({
       where: { id: walletId },
       select: { balance: true },
     });
+    if (!wallet) throw new Error(`Wallet ${walletId} not found`);
 
-    if (!wallet) {
-      throw new Error(`Wallet ${walletId} not found`);
-    }
-
-    const currentBalance = new Prisma.Decimal(wallet.balance);
-    const newBalance = currentBalance.plus(new Prisma.Decimal(amount));
-
-    if (newBalance.lessThan(0)) {
-      throw new ConflictException('Insufficient funds for this operation');
-    }
-
-    // 2. Create the LedgerEntry
+    // Create the LedgerEntry
     const entry = await tx.ledgerEntry.create({
       data: {
         walletId,
         transactionId,
         orderId,
-        amount: new Prisma.Decimal(amount),
+        amount: amountDecimal,
         type,
         reference,
-        balanceAfter: newBalance,
+        balanceAfter: wallet.balance,
         metadata: metadata || {},
-      },
-    });
-
-    // 3. Update the Wallet balance atomically
-    await tx.wallet.update({
-      where: { id: walletId },
-      data: {
-        balance: { increment: new Prisma.Decimal(amount) },
       },
     });
 

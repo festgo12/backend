@@ -18,6 +18,8 @@ import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Role, Currency } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
+import { AdminUpdateAdDto, SweepFeeWalletDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
+import { clampPagination } from '../../core/utils/pagination';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -47,7 +49,8 @@ export class AdminController {
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getUsers(parseInt(page), parseInt(limit), search);
+    const p = clampPagination(page, limit);
+    return this.adminService.getUsers(p.page, p.limit, search);
   }
 
   @Patch('users/:id/status')
@@ -73,11 +76,8 @@ export class AdminController {
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAllWallets(
-      parseInt(page),
-      parseInt(limit),
-      search,
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getAllWallets(p.page, p.limit, search);
   }
 
   @Get('wallets/:id')
@@ -92,10 +92,8 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getAllTransactions(
-      parseInt(page),
-      parseInt(limit),
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getAllTransactions(p.page, p.limit);
   }
 
   @Get('orders')
@@ -105,11 +103,8 @@ export class AdminController {
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAllOrders(
-      parseInt(page),
-      parseInt(limit),
-      search,
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getAllOrders(p.page, p.limit, search);
   }
 
   @Get('orders/:id')
@@ -139,9 +134,9 @@ export class AdminController {
   @ApiOperation({ summary: 'Admin update any ad (moderation)' })
   adminUpdateAd(
     @Param('id') adId: string,
-    @Body() body: Record<string, unknown>,
+    @Body() dto: AdminUpdateAdDto,
   ) {
-    return this.adminService.adminUpdateAd(adId, body);
+    return this.adminService.adminUpdateAd(adId, dto as Record<string, unknown>);
   }
 
   @Delete('ads/:id')
@@ -163,10 +158,8 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getBlockchainTransactions(
-      parseInt(page),
-      parseInt(limit),
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getBlockchainTransactions(p.page, p.limit);
   }
 
   @Get('blockchain/failed')
@@ -175,14 +168,13 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
   ) {
-    return this.adminService.getFailedTransactions(
-      parseInt(page),
-      parseInt(limit),
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getFailedTransactions(p.page, p.limit);
   }
 
   @Post('blockchain/failed/:id/retry')
   @AuditLog('ADMIN_RETRY_WITHDRAWAL', 'TRANSACTION')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Retry a failed withdrawal transaction' })
   retryFailedTransaction(@Param('id') transactionId: string) {
     return this.adminService.retryFailedTransaction(transactionId);
@@ -206,11 +198,8 @@ export class AdminController {
     @Query('limit') limit: string = '20',
     @Query('status') status?: string,
   ) {
-    return this.adminService.getWithdrawalJobs(
-      parseInt(page),
-      parseInt(limit),
-      status,
-    );
+    const p = clampPagination(page, limit, { maxLimit: 50 });
+    return this.adminService.getWithdrawalJobs(p.page, p.limit, status);
   }
 
   @Get('crypto/chain-balances')
@@ -260,10 +249,8 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.adminService.getBtcHistory(
-      page ? parseInt(page, 10) : 1,
-      pageSize ? parseInt(pageSize, 10) : 50,
-    );
+    const p = clampPagination(page, pageSize, { maxLimit: 100 });
+    return this.adminService.getBtcHistory(p.page, p.limit);
   }
 
   @Get('crypto/evm-history/:address')
@@ -275,10 +262,8 @@ export class AdminController {
     @Param('address') address: string,
     @Query('page') page?: string,
   ) {
-    return this.adminService.getEvmHistory(
-      address,
-      page ? parseInt(page, 10) : 1,
-    );
+    const p = clampPagination(page, '50');
+    return this.adminService.getEvmHistory(address, p.page);
   }
 
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────
@@ -305,28 +290,25 @@ export class AdminController {
 
   @Post('fee-wallets/:currency/sweep')
   @AuditLog('ADMIN_FEE_SWEEP', 'WALLET')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({
     summary: 'Sweep platform fee wallet balance to a treasury address',
   })
   sweepFeeWallet(
     @Param('currency') currency: Currency,
-    @Body('address') address: string,
-    @Body('amount') amount?: number,
+    @Body() dto: SweepFeeWalletDto,
   ) {
-    return this.adminService.sweepFeeWallet(currency, address, amount);
+    return this.adminService.sweepFeeWallet(currency, dto.address, dto.amount);
   }
 
   @Post('testnet/credit')
   @AuditLog('ADMIN_TESTNET_CREDIT', 'WALLET')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({
     summary: 'Credit a user wallet with test funds (testnet environments only)',
   })
-  creditTestFunds(
-    @Body('email') email: string,
-    @Body('currency') currency: Currency,
-    @Body('amount') amount: number,
-  ) {
-    return this.adminService.creditTestFunds(email, currency, amount);
+  creditTestFunds(@Body() dto: CreditTestFundsDto) {
+    return this.adminService.creditTestFunds(dto.email, dto.currency, dto.amount);
   }
 
   @Get('payments/stats')
@@ -346,17 +328,14 @@ export class AdminController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.adminService.getPaymentTransactions(
-      parseInt(page),
-      parseInt(limit),
-      {
-        search,
-        status,
-        type,
-        startDate,
-        endDate,
-      },
-    );
+    const p = clampPagination(page, limit);
+    return this.adminService.getPaymentTransactions(p.page, p.limit, {
+      search,
+      status,
+      type,
+      startDate,
+      endDate,
+    });
   }
 
   @Get('payments/transactions/:id')
@@ -396,7 +375,8 @@ export class AdminController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
-    return this.adminService.getAuditLogs(parseInt(page), parseInt(limit), {
+    const p = clampPagination(page, limit);
+    return this.adminService.getAuditLogs(p.page, p.limit, {
       action,
       resource,
       userId,
@@ -420,10 +400,11 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
   ) {
+    const p = clampPagination(page, limit);
     return this.adminService.getUserAuditTrail(
       userId,
-      parseInt(page),
-      parseInt(limit),
+      p.page,
+      p.limit,
     );
   }
 
@@ -437,8 +418,9 @@ export class AdminController {
 
   @Patch('fees/:key')
   @AuditLog('ADMIN_FEE_UPDATE', 'PLATFORM_CONFIG')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update a platform fee configuration' })
-  updateFeeConfig(@Param('key') key: string, @Body('value') value: number) {
-    return this.adminService.updateFeeConfig(key, value);
+  updateFeeConfig(@Param('key') key: string, @Body() dto: UpdateFeeConfigDto) {
+    return this.adminService.updateFeeConfig(key, dto.value);
   }
 }

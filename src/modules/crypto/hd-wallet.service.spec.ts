@@ -4,7 +4,7 @@ import { HdWalletService } from './hd-wallet.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Currency } from '@src/generated/client';
-import { USER_INDEX_BASE, USER_INDEX_SPACE } from './hd-wallet.service';
+import { USER_INDEX_BASE } from './hd-wallet.service';
 
 const TEST_MNEMONIC =
   'test test test test test test test test test test test junk';
@@ -22,10 +22,19 @@ describe('HdWalletService', () => {
 
   const mockPrisma = {
     wallet: { findFirst: jest.fn() },
+    platformSetting: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
     jest.resetAllMocks();
+
+    // Default $transaction mock: run callback directly
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma));
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HdWalletService,
@@ -51,18 +60,40 @@ describe('HdWalletService', () => {
   });
 
   describe('indexForUser', () => {
-    it('produces a stable index within the reserved user space', () => {
-      const a = service.indexForUser('user-1');
-      const b = service.indexForUser('user-1');
-      expect(a).toBe(b);
-      expect(a).toBeGreaterThanOrEqual(USER_INDEX_BASE);
-      expect(a).toBeLessThan(USER_INDEX_BASE + USER_INDEX_SPACE);
+    it('returns existing index when user already has one', async () => {
+      mockPrisma.wallet.findFirst.mockResolvedValue({
+        derivationIndex: 1042,
+      });
+
+      const index = await service.indexForUser('user-1');
+      expect(index).toBe(1042);
     });
 
-    it('produces distinct indexes for distinct users', () => {
-      expect(service.indexForUser('user-1')).not.toBe(
-        service.indexForUser('user-2'),
+    it('assigns a sequential DB index when user has none', async () => {
+      mockPrisma.wallet.findFirst.mockResolvedValue(null);
+      mockPrisma.platformSetting.findUnique.mockResolvedValue({
+        key: 'hd_next_derivation_index',
+        value: '1005',
+      });
+      mockPrisma.platformSetting.upsert.mockResolvedValue({});
+
+      const index = await service.indexForUser('user-1');
+      expect(index).toBe(1006);
+      expect(mockPrisma.platformSetting.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { key: 'hd_next_derivation_index' },
+          update: { value: '1006' },
+        }),
       );
+    });
+
+    it('starts at USER_INDEX_BASE when no counter exists yet', async () => {
+      mockPrisma.wallet.findFirst.mockResolvedValue(null);
+      mockPrisma.platformSetting.findUnique.mockResolvedValue(null);
+      mockPrisma.platformSetting.upsert.mockResolvedValue({});
+
+      const index = await service.indexForUser('user-1');
+      expect(index).toBe(USER_INDEX_BASE);
     });
   });
 
@@ -151,9 +182,15 @@ describe('HdWalletService', () => {
     });
 
     it('derives and returns a fresh address when none exists', async () => {
-      mockPrisma.wallet.findFirst.mockResolvedValue(null);
-      const index = service.indexForUser('user-1');
+      // First call: check existing wallet → null
+      // Second call (inside indexForUser): check existing index → null
+      mockPrisma.wallet.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null);
+      mockPrisma.platformSetting.findUnique.mockResolvedValue(null);
+      mockPrisma.platformSetting.upsert.mockResolvedValue({});
 
+      const index = await service.indexForUser('user-1');
       const info = await service.getOrAssignDepositInfo('user-1', Currency.ETH);
 
       expect(info.chain).toBe('EVM');

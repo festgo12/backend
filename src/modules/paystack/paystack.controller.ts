@@ -1,13 +1,14 @@
 import { Controller, Get, Post, Body, UseGuards, Query, Headers, BadRequestException, Logger, Param, Req } from '@nestjs/common';
 import { RolesGuard } from '../../core/security/guards/roles.guard';
 import { Roles } from '../../core/security/decorators/roles.decorator';
-import { Currency, LedgerType, Role } from '@src/generated/client';
+import { Currency, LedgerType, Prisma, Role } from '@src/generated/client';
 import type { User } from '@src/generated/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { PaystackService } from './paystack.service';
 import { WalletService } from '../wallet/wallet.service';
+import { PrismaService } from '../../core/database/prisma.service';
 import { AuditLog } from '../audit/audit.decorator';
 import { InitializeDepositDto } from './dto/initialize-deposit.dto';
 import { InitiateTransferDto } from './dto/initiate-transfer.dto';
@@ -23,6 +24,7 @@ export class PaystackController {
   constructor(
     private readonly paystackService: PaystackService,
     private readonly walletService: WalletService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @ApiBearerAuth()
@@ -107,7 +109,19 @@ export class PaystackController {
   async initiateTransfer(@GetUser() user: User, @Body() dto: InitiateTransferDto) {
     try {
       const wallet = await this.walletService.getOrCreateWallet(user.id, Currency.NGN);
-      if (wallet.balance.toNumber() < dto.amount) {
+      const amountDecimal = new Prisma.Decimal(dto.amount);
+
+      // Atomically reserve funds before initiating external transfer
+      const [reserved] = await this.prisma.$transaction([
+        this.prisma.$executeRaw`
+          UPDATE "Wallet"
+          SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
+          WHERE "id" = ${wallet.id}
+            AND ("balance" - "reservedBalance") >= ${amountDecimal}
+        `,
+      ]);
+
+      if (reserved === 0) {
         throw new BadRequestException('Insufficient balance');
       }
 
@@ -119,12 +133,23 @@ export class PaystackController {
       const recipientCode = recipientResult.data.recipient_code;
 
       const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const transferResult = await this.paystackService.initiateTransfer(
-        dto.amount,
-        recipientCode,
-        `P2N Withdrawal for ${user.email}`,
-        reference,
-      );
+      let transferResult;
+      try {
+        transferResult = await this.paystackService.initiateTransfer(
+          dto.amount,
+          recipientCode,
+          `P2N Withdrawal for ${user.email}`,
+          reference,
+        );
+      } catch (transferError) {
+        // Release reservation if Paystack transfer fails
+        await this.prisma.$executeRaw`
+          UPDATE "Wallet"
+          SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
+          WHERE "id" = ${wallet.id}
+        `;
+        throw transferError;
+      }
 
       await this.walletService.createTransaction({
         walletId: wallet.id,

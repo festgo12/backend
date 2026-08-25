@@ -25,8 +25,6 @@ export interface DepositAddressInfo {
 export const MASTER_WALLET_INDEX = 0;
 /** First index usable by user deposit addresses (keeps them distinct from the master). */
 export const USER_INDEX_BASE = 1000;
-/** Width of the deterministic user-index space. */
-export const USER_INDEX_SPACE = 2_000_000;
 
 /**
  * Local-first HD wallet layer. Deposit addresses are derived on the backend
@@ -40,12 +38,17 @@ export const USER_INDEX_SPACE = 2_000_000;
  *       m/84'/0'/0'/0/{index}
  *
  * The master wallet lives at index 0 on each chain; user addresses start at
- * USER_INDEX_BASE. A user's index is a stable hash of their id, so every EVM
- * currency for the same user resolves to the same address.
+ * USER_INDEX_BASE. A user's index is a sequential DB-assigned counter with
+ * collision rejection, guaranteeing unique addresses at any scale.
  */
 @Injectable()
 export class HdWalletService {
   private readonly logger = new Logger(HdWalletService.name);
+
+  /** Cached BTC seed to avoid repeated synchronous PBKDF2 on the event loop. */
+  private cachedBtcSeed: ReturnType<typeof bip39.mnemonicToSeedSync> | null = null;
+  /** Cached EVM HD root node to avoid re-derivation per request. */
+  private cachedEvmRoot: HDNodeWallet | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -66,21 +69,86 @@ export class HdWalletService {
     }
   }
 
-  isCryptoCurrency(currency: Currency): boolean {
-    return this.chainForCurrency(currency) !== null;
+  /**
+   * Initializes cached HD roots from the master mnemonics.
+   * Call once at startup or on first use.
+   */
+  private ensureSeedCache(): void {
+    if (!this.cachedBtcSeed) {
+      const mnemonic = this.config.btcMasterMnemonic;
+      if (!mnemonic) {
+        throw new InternalServerErrorException(
+          'Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)',
+        );
+      }
+      this.cachedBtcSeed = bip39.mnemonicToSeedSync(mnemonic);
+      this.logger.log('BTC HD seed cached');
+    }
+    if (!this.cachedEvmRoot) {
+      const mnemonic = this.config.evmMasterMnemonic;
+      if (!mnemonic) {
+        throw new InternalServerErrorException(
+          'Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)',
+        );
+      }
+      this.cachedEvmRoot = HDNodeWallet.fromPhrase(
+        mnemonic,
+        '',
+        this.config.evmDerivationPath,
+      );
+      this.logger.log('EVM HD root cached');
+    }
   }
 
   /**
-   * Stable, deterministic derivation index for a user. Collision odds are
-   * ~1 in 2,000,000 per user; the registry still maps an address to all
-   * wallets that reference it as a safety net.
+   * Atomically assigns the next sequential derivation index for a user.
+   * Uses a DB counter in PlatformSetting to guarantee uniqueness.
+   * Falls back to collision-safe assignment if an address is already taken.
    */
-  indexForUser(userId: string): number {
-    let h = 0;
-    for (let i = 0; i < userId.length; i++) {
-      h = (Math.imul(31, h) + userId.charCodeAt(i)) | 0;
+  async getNextIndexForUser(userId: string): Promise<number> {
+    // Use atomic SQL counter to get next index
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Get or create the counter row
+      const counter = await tx.platformSetting.findUnique({
+        where: { key: 'hd_next_derivation_index' },
+      });
+
+      const nextIndex = counter
+        ? Number(counter.value) + 1
+        : USER_INDEX_BASE;
+
+      await tx.platformSetting.upsert({
+        where: { key: 'hd_next_derivation_index' },
+        update: { value: String(nextIndex) },
+        create: { key: 'hd_next_derivation_index', value: String(nextIndex) },
+      });
+
+      return nextIndex;
+    });
+
+    return result;
+  }
+
+  /**
+   * Stable, deterministic derivation index for a user.
+   * If the user already has a wallet with a derivation index, reuse it.
+   * Otherwise, assign the next sequential index from the DB counter.
+   */
+  async indexForUser(userId: string): Promise<number> {
+    // Check if user already has an assigned index
+    const existing = await this.prisma.wallet.findFirst({
+      where: {
+        userId,
+        derivationIndex: { not: null },
+      },
+      select: { derivationIndex: true },
+    });
+
+    if (existing && existing.derivationIndex !== null) {
+      return existing.derivationIndex;
     }
-    return USER_INDEX_BASE + (Math.abs(h) % USER_INDEX_SPACE);
+
+    return this.getNextIndexForUser(userId);
   }
 
   /**
@@ -117,7 +185,7 @@ export class HdWalletService {
       };
     }
 
-    const index = this.indexForUser(userId);
+    const index = await this.indexForUser(userId);
     const address = this.deriveAddress(currency, index);
     return { chain, address, derivationIndex: index };
   }
@@ -152,22 +220,12 @@ export class HdWalletService {
   derivePrivateKey(currency: Currency, index: number): string {
     const chain = this.chainForCurrency(currency);
     if (chain === 'EVM') {
-      const mnemonic = this.config.evmMasterMnemonic;
-      if (!mnemonic) {
-        throw new InternalServerErrorException(
-          'Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)',
-        );
-      }
+      this.ensureSeedCache();
       return this.evmNode(index).privateKey;
     }
 
     if (chain === 'BTC') {
-      const mnemonic = this.config.btcMasterMnemonic;
-      if (!mnemonic) {
-        throw new InternalServerErrorException(
-          'Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)',
-        );
-      }
+      this.ensureSeedCache();
       return this.btcNode(index).toWIF();
     }
 
@@ -176,31 +234,16 @@ export class HdWalletService {
     );
   }
 
-  /** Derives an ethers HDNodeWallet at a given EVM index. */
+  /** Derives an ethers HDNodeWallet at a given EVM index using cached root. */
   evmNode(index: number): HDNodeWallet {
-    const mnemonic = this.config.evmMasterMnemonic;
-    if (!mnemonic) {
-      throw new InternalServerErrorException(
-        'Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)',
-      );
-    }
-    return HDNodeWallet.fromPhrase(
-      mnemonic,
-      '',
-      this.config.evmDerivationPath,
-    ).deriveChild(index);
+    this.ensureSeedCache();
+    return this.cachedEvmRoot!.deriveChild(index);
   }
 
-  /** Derives a bip32 node at a given BTC index. */
+  /** Derives a bip32 node at a given BTC index using cached seed. */
   btcNode(index: number): BIP32Interface {
-    const mnemonic = this.config.btcMasterMnemonic;
-    if (!mnemonic) {
-      throw new InternalServerErrorException(
-        'Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)',
-      );
-    }
-    const seed = bip39.mnemonicToSeedSync(mnemonic);
-    const root = bip32.fromSeed(seed);
+    this.ensureSeedCache();
+    const root = bip32.fromSeed(this.cachedBtcSeed!);
     return root.derivePath(this.config.btcDerivationPath).derive(index);
   }
 

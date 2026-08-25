@@ -84,10 +84,10 @@ export class WebhookController {
   ): boolean {
     const signingKey = this.config.alchemySigningKey;
     if (!signingKey) {
-      this.logger.warn(
-        'ALCHEMY_SIGNING_KEY not configured; skipping Alchemy signature verification',
+      this.logger.error(
+        'ALCHEMY_SIGNING_KEY not configured; rejecting Alchemy webhook (fail-closed)',
       );
-      return true;
+      return false;
     }
     if (!givenSignature) return false;
 

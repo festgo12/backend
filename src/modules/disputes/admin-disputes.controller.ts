@@ -18,6 +18,7 @@ import { DisputesService } from './disputes.service';
 import { UpdateDisputeStatusDto } from './dto/update-dispute-status.dto';
 import { ResolveDisputeDto } from './dto/resolve-dispute.dto';
 import { AssignDisputeDto } from './dto/assign-dispute.dto';
+import { clampPagination } from '../../core/utils/pagination';
 
 @ApiTags('Admin - Disputes')
 @ApiBearerAuth()
@@ -45,10 +46,11 @@ export class AdminDisputesController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
+    const p = clampPagination(page, limit);
     return this.disputesService.listAllDisputes(
       { status, assigneeId, startDate, endDate, search },
-      parseInt(page),
-      parseInt(limit),
+      p.page,
+      p.limit,
     );
   }
 

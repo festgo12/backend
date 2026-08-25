@@ -129,58 +129,6 @@ export class WalletService {
   }
 
   /**
-   * Calculates the real balance by summing ledger entries since the last snapshot.
-   */
-  async verifyAndSyncBalance(walletId: string) {
-    const wallet = await this.prisma.wallet.findUnique({
-      where: { id: walletId },
-      include: {
-        snapshots: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    });
-
-    if (!wallet) throw new NotFoundException('Wallet not found');
-
-    const lastSnapshot = wallet.snapshots[0];
-    const snapshotBalance = lastSnapshot ? lastSnapshot.balance : new Prisma.Decimal(0);
-    const snapshotDate = lastSnapshot ? lastSnapshot.createdAt : new Date(0);
-
-    const ledgerSum = await this.prisma.ledgerEntry.aggregate({
-      where: {
-        walletId,
-        createdAt: { gt: snapshotDate },
-      },
-      _sum: {
-        amount: true,
-      },
-    });
-
-    const calculatedBalance = snapshotBalance.plus(ledgerSum._sum.amount || 0);
-
-    if (!calculatedBalance.equals(wallet.balance)) {
-      await this.prisma.wallet.update({
-        where: { id: walletId },
-        data: { balance: calculatedBalance },
-      });
-    }
-
-    return calculatedBalance;
-  }
-
-  /**
-   * Updates the blockchain address for a wallet.
-   */
-  async updateWalletAddress(walletId: string, address: string) {
-    return this.prisma.wallet.update({
-      where: { id: walletId },
-      data: { address },
-    });
-  }
-
-  /**
    * Updates a wallet's local-first HD deposit info (address, derivation index
    * and chain kind). Used when the crypto provider is "alchemy".
    */
@@ -218,9 +166,10 @@ export class WalletService {
   private static readonly VALID_TRANSITIONS: Record<string, string[]> = {
     PENDING: ['COMPLETED', 'FAILED', 'PROCESSING'],
     PROCESSING: ['COMPLETED', 'FAILED'],
-    FAILED: ['PENDING'],
+    FAILED: ['CANCELLED'],
     COMPLETED: ['REVERSED'],
     REVERSED: [],
+    CANCELLED: [],
   };
 
   /**
@@ -238,6 +187,13 @@ export class WalletService {
       if (!allowed || !allowed.includes(status)) {
         throw new BadRequestException(
           `Cannot transition from ${current.status} to ${status}`,
+        );
+      }
+
+      // Block direct REVERSED transitions — must go through reverseTransaction()
+      if (status === 'REVERSED') {
+        throw new BadRequestException(
+          'Reversals must use reverseTransaction(); do not call updateTransactionStatus with REVERSED',
         );
       }
 
@@ -286,25 +242,27 @@ export class WalletService {
   /**
    * Reverses a failed transaction by creating an offsetting ledger entry.
    * Deposits are reversed by debiting; withdrawals are reversed by crediting.
+   * Uses conditional updateMany to prevent double-refund races.
    */
   async reverseTransaction(transactionId: string, reason: string) {
     return this.prisma.$transaction(async (tx) => {
+      // Conditional update: only transition to REVERSED if not already reversed.
+      // This prevents double-refund when Paystack sends both transfer.failed
+      // and transfer.reversed for the same event.
+      const affected = await tx.$executeRaw`
+        UPDATE "WalletTransaction"
+        SET "status" = 'REVERSED',
+            "metadata" = "metadata" || ${JSON.stringify({ reverse_reason: reason })}::jsonb
+        WHERE "id" = ${transactionId}
+          AND "status" != 'REVERSED'
+      `;
+
+      if (affected === 0) return;
+
       const transaction = await tx.walletTransaction.findUnique({
         where: { id: transactionId },
       });
-
-      if (!transaction || transaction.status === 'REVERSED') return;
-
-      await tx.walletTransaction.update({
-        where: { id: transactionId },
-        data: {
-          status: 'REVERSED',
-          metadata: {
-            ...(transaction.metadata as any || {}),
-            reverse_reason: reason,
-          },
-        },
-      });
+      if (!transaction) return;
 
       // Reverse direction: deposits (positive amount) → debit; withdrawals (negative impact) → credit
       const depositTypes: string[] = [LedgerType.DEPOSIT, LedgerType.GIFT_CARD_PURCHASE];
@@ -318,7 +276,7 @@ export class WalletService {
         transactionId: transaction.id,
         amount: reverseAmount,
         type: LedgerType.TRADE_REFUND,
-        reference: `${transaction.reference}-rev-${Date.now()}`,
+        reference: `${transaction.reference}-rev`,
         metadata: { reason },
       });
     });

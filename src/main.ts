@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { AuditService } from './modules/audit/audit.service';
@@ -8,6 +9,7 @@ import helmet from 'helmet';
 import { join } from 'path';
 import * as express from 'express';
 import rateLimit from 'express-rate-limit';
+import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
 
 /**
  * Extended Request type that carries the raw request body buffer.
@@ -40,7 +42,18 @@ async function bootstrap() {
 
   // Security
   app.use(helmet());
-  app.enableCors();
+
+  // H10: CORS — restrict origins by environment
+  const isProduction = process.env.NODE_ENV === 'production';
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : isProduction
+      ? [process.env.BACKEND_URL, process.env.ADMIN_URL, process.env.FRONTEND_URL].filter(Boolean) as string[]
+      : ['http://localhost:3000', 'http://localhost:3001'];
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+  });
 
   // Rate Limiting
   app.use(
@@ -98,19 +111,25 @@ async function bootstrap() {
   const reflector = app.get('Reflector');
   app.useGlobalInterceptors(new AuditInterceptor(reflector, auditService));
 
-  // Swagger Documentation
-  const config = new DocumentBuilder()
-    .setTitle('P2N Crypto Marketplace API')
-    .setDescription('The core API for the P2P Crypto Marketplace')
-    .setVersion('2.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  // H12: Global exception filter to sanitize error messages
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+
+  // H11: Swagger — hidden behind NODE_ENV !== 'production'
+  if (!isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('P2N Crypto Marketplace API')
+      .setDescription('The core API for the P2P Crypto Marketplace')
+      .setVersion('2.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+    logger.log(`Swagger docs available at: http://localhost:${process.env.PORT || 3000}/api/docs`);
+  }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}`);
-  logger.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();

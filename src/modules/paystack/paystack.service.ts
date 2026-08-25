@@ -219,10 +219,24 @@ export class PaystackService {
    * WEBHOOK: Verify Signature using raw body
    */
   verifySignature(rawBody: string, signature: string): boolean {
+    if (!this.webhookSecret) {
+      this.logger.error('PAYSTACK_WEBHOOK_SECRET not configured; rejecting webhook (fail-closed)');
+      return false;
+    }
+    if (!signature) return false;
+
     const hash = crypto
       .createHmac('sha512', this.webhookSecret)
       .update(rawBody)
       .digest('hex');
-    return hash === signature;
+
+    try {
+      return crypto.timingSafeEqual(
+        Buffer.from(hash, 'utf8'),
+        Buffer.from(signature, 'utf8'),
+      );
+    } catch {
+      return false;
+    }
   }
 }

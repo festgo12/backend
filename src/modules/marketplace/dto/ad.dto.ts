@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional, Min, Max } from 'class-validator';
 import { Currency, AdType } from '@src/generated/client';
 import { Type } from 'class-transformer';
 
@@ -84,12 +84,14 @@ export class SearchAdsDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 10;
 
   @IsOptional()

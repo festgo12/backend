@@ -17,7 +17,9 @@ describe('CryptoWithdrawalService', () => {
 
   const mockPrisma = {
     wallet: { findUnique: jest.fn(), update: jest.fn() },
-    walletTransaction: { create: jest.fn() },
+    walletTransaction: { create: jest.fn(), updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+    $executeRaw: jest.fn(),
+    $transaction: jest.fn(),
   };
 
   const mockChainClient = {
@@ -44,6 +46,31 @@ describe('CryptoWithdrawalService', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks();
+
+    // $transaction with interactive callback (ledger service style)
+    mockPrisma.$transaction.mockImplementation(async (fns: unknown[]) => {
+      if (Array.isArray(fns)) {
+        // Sequential array of promises — execute each in order
+        const results: unknown[] = [];
+        for (const fn of fns) {
+          if (typeof fn === 'function') {
+            results.push(await fn(mockPrisma));
+          } else {
+            results.push(await fn);
+          }
+        }
+        return results;
+      }
+      // Interactive transaction callback
+      return (fns as (tx: typeof mockPrisma) => Promise<unknown>)(mockPrisma);
+    });
+
+    // $executeRaw returns the number of affected rows (1 = success)
+    mockPrisma.$executeRaw.mockResolvedValue(1);
+
+    // Re-set mock implementations that resetAllMocks() clears
+    mockHdWallet.chainForCurrency.mockReturnValue('EVM');
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CryptoWithdrawalService,
@@ -68,21 +95,24 @@ describe('CryptoWithdrawalService', () => {
       address: '0xFrom',
       derivationIndex: 1042,
       currency: Currency.ETH,
+      isFrozen: false,
     });
+    mockPrisma.$executeRaw.mockResolvedValue(1);
     mockChainClient.broadcastEvmNative.mockResolvedValue('0xtxhash');
     mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'wt-1' });
+    mockPrisma.walletTransaction.updateMany = jest.fn().mockResolvedValue({ count: 1 });
     mockTracker.enqueue.mockResolvedValue({});
 
     const result = await service.processWithdrawal({
       walletId: 'w-1',
       amount: 2,
-      destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       currency: Currency.ETH,
     });
 
     expect(chainClient.broadcastEvmNative).toHaveBeenCalledWith(
       0,
-      '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
     );
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
@@ -91,7 +121,6 @@ describe('CryptoWithdrawalService', () => {
           walletId: 'w-1',
           type: LedgerType.WITHDRAWAL,
           status: 'PENDING',
-          reference: '0xtxhash',
         }),
       }),
     );
@@ -100,7 +129,7 @@ describe('CryptoWithdrawalService', () => {
         txHash: '0xtxhash',
         walletId: 'w-1',
         currency: Currency.ETH,
-        destination: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+        destination: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       }),
     );
     expect(result).toEqual({ txId: '0xtxhash', status: 'PENDING' });
@@ -114,20 +143,22 @@ describe('CryptoWithdrawalService', () => {
       address: '0xFrom',
       derivationIndex: 1042,
       currency: Currency.ETH,
+      isFrozen: false,
     });
+    // $executeRaw returns 0 → reservation failed → insufficient balance
+    mockPrisma.$executeRaw.mockResolvedValue(0);
 
     await expect(
       service.processWithdrawal({
         walletId: 'w-1',
         amount: 2,
-        destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+        destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
         currency: Currency.ETH,
       }),
     ).rejects.toThrow(BadRequestException);
-    expect(mockPrisma.walletTransaction.create).not.toHaveBeenCalled();
   });
 
-  it('records a FAILED transaction and rethrows on broadcast failure', async () => {
+  it('releases reservation and rethrows on broadcast failure', async () => {
     mockPrisma.wallet.findUnique.mockResolvedValue({
       id: 'w-1',
       balance: new Decimal('10'),
@@ -135,35 +166,37 @@ describe('CryptoWithdrawalService', () => {
       address: '0xFrom',
       derivationIndex: 1042,
       currency: Currency.ETH,
+      isFrozen: false,
     });
+    mockPrisma.$executeRaw.mockResolvedValue(1); // reservation succeeds
     mockChainClient.broadcastEvmNative.mockRejectedValue(
       new Error('gas estimation failed'),
     );
-    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'wt-failed' });
 
     await expect(
       service.processWithdrawal({
         walletId: 'w-1',
         amount: 2,
-        destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+        destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
         currency: Currency.ETH,
       }),
     ).rejects.toThrow('Withdrawal failed: gas estimation failed');
 
+    // Intent was created (pending)
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          status: 'FAILED',
-          metadata: expect.objectContaining({
-            lastError: 'gas estimation failed',
-          }),
+          status: 'PENDING',
+          metadata: expect.objectContaining({ intent: true }),
         }),
       }),
     );
+    // Reservation was released
+    expect(mockPrisma.$executeRaw).toHaveBeenCalledTimes(2);
     expect(mockTracker.enqueue).not.toHaveBeenCalled();
   });
 
-  it('rejects invalid destination addresses', async () => {
+  it('rejects invalid destination addresses before reserving funds', async () => {
     mockPrisma.wallet.findUnique.mockResolvedValue({
       id: 'w-1',
       balance: new Decimal('10'),
@@ -171,6 +204,7 @@ describe('CryptoWithdrawalService', () => {
       address: 'tb1from',
       derivationIndex: 1042,
       currency: Currency.BTC,
+      isFrozen: false,
     });
 
     await expect(
@@ -181,6 +215,8 @@ describe('CryptoWithdrawalService', () => {
         currency: Currency.BTC,
       }),
     ).rejects.toThrow('Invalid Bitcoin address format');
+    // Should NOT have reserved any funds
+    expect(mockPrisma.$executeRaw).not.toHaveBeenCalled();
   });
 
   it('sweeps a fee wallet and enqueues a FEE_WALLET_SWEEP job', async () => {
@@ -194,13 +230,13 @@ describe('CryptoWithdrawalService', () => {
 
     const result = await service.sweepFeeWallet({
       currency: Currency.ETH,
-      destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       amount: 2,
     });
 
     expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
       1042,
-      '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
     );
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
@@ -241,7 +277,7 @@ describe('CryptoWithdrawalService', () => {
 
     await service.sweepFeeWallet({
       currency: Currency.ETH,
-      destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       amount: 2,
     });
 
@@ -256,7 +292,7 @@ describe('CryptoWithdrawalService', () => {
     });
     expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
       0,
-      '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+      '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
     );
   });
@@ -273,7 +309,7 @@ describe('CryptoWithdrawalService', () => {
     await expect(
       service.sweepFeeWallet({
         currency: Currency.ETH,
-        destinationAddress: '0xAbCdEf1234567890abcdef1234567890AbCdEf12',
+        destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       }),
     ).rejects.toThrow('No on-chain balance available');
   });
