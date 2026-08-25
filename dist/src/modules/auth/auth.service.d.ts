@@ -19,6 +19,7 @@ export declare class AuthService {
     private securityService;
     private fraudRulesService;
     private emailService;
+    private readonly logger;
     constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService, emailService: EmailService);
     register(dto: RegisterDto): Promise<{
         accessToken: string;
@@ -172,7 +173,7 @@ export declare class AuthService {
         refreshToken: string;
     }>;
     forgotPassword(email: string): Promise<{
-        resetToken: string;
+        message: string;
     } | undefined>;
     resetPassword(token: string, newPassword: string): Promise<{
         success: boolean;
@@ -191,13 +192,9 @@ export declare class AuthService {
         success: boolean;
     }>;
     sendPhoneVerification(userId: string): Promise<{
-        success: boolean;
         message: string;
-        code?: undefined;
-    } | {
+        code?: string | undefined;
         success: boolean;
-        code: string;
-        message?: undefined;
     }>;
     verifyPhone(userId: string, token: string): Promise<{
         success: boolean;

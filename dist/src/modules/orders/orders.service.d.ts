@@ -96,8 +96,8 @@ export declare class OrdersService {
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: Decimal;
             quantity: Decimal;
+            price: Decimal;
             minLimit: Decimal;
             maxLimit: Decimal;
             isSponsored: boolean;
@@ -177,8 +177,8 @@ export declare class OrdersService {
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: Decimal;
             quantity: Decimal;
+            price: Decimal;
             minLimit: Decimal;
             maxLimit: Decimal;
             isSponsored: boolean;

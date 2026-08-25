@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const core_2 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const audit_interceptor_1 = require("./modules/audit/audit.interceptor");
 const audit_service_1 = require("./modules/audit/audit.service");
@@ -46,6 +47,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const path_1 = require("path");
 const express = __importStar(require("express"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const all_exceptions_filter_1 = require("./core/filters/all-exceptions.filter");
 async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     const app = await core_1.NestFactory.create(app_module_1.AppModule, { bodyParser: false });
@@ -56,7 +58,16 @@ async function bootstrap() {
     }));
     app.getHttpAdapter().getInstance().set('trust proxy', 1);
     app.use((0, helmet_1.default)());
-    app.enableCors();
+    const isProduction = process.env.NODE_ENV === 'production';
+    const corsOrigins = process.env.CORS_ORIGINS
+        ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+        : isProduction
+            ? [process.env.BACKEND_URL, process.env.ADMIN_URL, process.env.FRONTEND_URL].filter(Boolean)
+            : ['http://localhost:3000', 'http://localhost:3001'];
+    app.enableCors({
+        origin: corsOrigins,
+        credentials: true,
+    });
     app.use('/auth', (0, express_rate_limit_1.default)({
         windowMs: 15 * 60 * 1000,
         max: 20,
@@ -92,18 +103,22 @@ async function bootstrap() {
     const auditService = app.get(audit_service_1.AuditService);
     const reflector = app.get('Reflector');
     app.useGlobalInterceptors(new audit_interceptor_1.AuditInterceptor(reflector, auditService));
-    const config = new swagger_1.DocumentBuilder()
-        .setTitle('P2N Crypto Marketplace API')
-        .setDescription('The core API for the P2P Crypto Marketplace')
-        .setVersion('2.0')
-        .addBearerAuth()
-        .build();
-    const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('api/docs', app, document);
+    const { httpAdapter } = app.get(core_2.HttpAdapterHost);
+    app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter(httpAdapter));
+    if (!isProduction) {
+        const config = new swagger_1.DocumentBuilder()
+            .setTitle('P2N Crypto Marketplace API')
+            .setDescription('The core API for the P2P Crypto Marketplace')
+            .setVersion('2.0')
+            .addBearerAuth()
+            .build();
+        const document = swagger_1.SwaggerModule.createDocument(app, config);
+        swagger_1.SwaggerModule.setup('api/docs', app, document);
+        logger.log(`Swagger docs available at: http://localhost:${process.env.PORT || 3000}/api/docs`);
+    }
     const port = process.env.PORT || 3000;
     await app.listen(port);
     logger.log(`Application is running on: http://localhost:${port}`);
-    logger.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

@@ -83,6 +83,38 @@ let EmailService = EmailService_1 = class EmailService {
             return false;
         }
     }
+    wrapEmailHtml(innerHtml, title) {
+        const heading = title
+            ? `<h1 style="margin:0 0 8px;font-size:22px;color:#1a1a1a;">${title}</h1>`
+            : '';
+        return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f7;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;padding:32px 0;">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;">
+  <tr><td style="background:#E89E2D;padding:24px 32px;">
+    <span style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:0.5px;">P2N</span>
+  </td></tr>
+  <tr><td style="padding:32px;">
+    ${heading}
+    <div style="font-size:15px;line-height:1.6;color:#333333;">
+      ${innerHtml}
+    </div>
+  </td></tr>
+  <tr><td style="background:#fafafa;padding:20px 32px;border-top:1px solid #eeeeee;">
+    <p style="margin:0;font-size:12px;color:#999999;text-align:center;">
+      P2N Marketplace &mdash; Secure Peer-to-Peer Trading<br>
+      If you did not request this email, you can safely ignore it.
+    </p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+    }
     renderTemplate(template, data) {
         if (!template)
             return '';

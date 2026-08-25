@@ -62,10 +62,24 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
     hdWallet;
     logger = new common_1.Logger(ChainClientService_1.name);
     providerInstance = null;
+    evmNonceLocks = new Map();
     constructor(httpService, config, hdWallet) {
         this.httpService = httpService;
         this.config = config;
         this.hdWallet = hdWallet;
+    }
+    async withNonceLock(index, fn) {
+        const prev = this.evmNonceLocks.get(index);
+        const chain = (prev ?? Promise.resolve()).then(() => fn(), () => fn());
+        this.evmNonceLocks.set(index, chain.then(() => { }, () => { }));
+        try {
+            return await chain;
+        }
+        finally {
+            if (this.evmNonceLocks.get(index) === chain.then(() => { }, () => { })) {
+                this.evmNonceLocks.delete(index);
+            }
+        }
     }
     get provider() {
         const url = this.config.alchemyEthHttpUrl;
@@ -160,11 +174,8 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
                 if (!Number.isFinite(blockNumber))
                     continue;
                 const raw = BigInt(t.value ?? '0');
-                const amount = category === 'external'
-                    ? Number(raw) / 1e18
-                    : Number(raw) /
-                        10 **
-                            (t.rawContract?.decimal ? Number(t.rawContract.decimal) : 6);
+                const decimals = t.rawContract?.decimal ? Number(t.rawContract.decimal) : (category === 'external' ? 18 : 6);
+                const amount = parseFloat((0, ethers_1.formatUnits)(raw, decimals));
                 transfers.push({
                     category,
                     from: (t.from ?? '').toLowerCase(),
@@ -227,18 +238,20 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
             .map((u) => ({
             txid: u.txid,
             vout: u.vout,
-            value: Math.round(u.amount * 1e8),
+            value: Math.round(Number(u.amount.toFixed(8)) * 1e8),
             blockHeight: u.blockheight ?? 0,
         }));
     }
     async broadcastEvmNative(fromIndex, to, amount) {
-        const signer = this.evmSigner(fromIndex);
-        const tx = await signer.sendTransaction({
-            to,
-            value: (0, ethers_1.parseEther)(Number(amount).toFixed(18)),
+        return this.withNonceLock(fromIndex, async () => {
+            const signer = this.evmSigner(fromIndex);
+            const tx = await signer.sendTransaction({
+                to,
+                value: (0, ethers_1.parseEther)(Number(amount).toFixed(18)),
+            });
+            this.logger.log(`ETH broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+            return tx.hash;
         });
-        this.logger.log(`ETH broadcast: ${amount} ${to} (TX: ${tx.hash})`);
-        return tx.hash;
     }
     async broadcastEvmToken(currency, fromIndex, to, amount) {
         const contract = this.config.getStablecoinContract(currency);
@@ -246,11 +259,13 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
             throw new common_1.InternalServerErrorException(`No ${currency} contract configured for the active network`);
         }
         const decimals = this.decimalsFor(currency);
-        const signer = this.evmSigner(fromIndex);
-        const token = new ethers_1.Contract(contract, ERC20_ABI, signer);
-        const tx = (await token.transfer(to, (0, ethers_1.parseUnits)(Number(amount).toFixed(decimals), decimals)));
-        this.logger.log(`${currency} broadcast: ${amount} ${to} (TX: ${tx.hash})`);
-        return tx.hash;
+        return this.withNonceLock(fromIndex, async () => {
+            const signer = this.evmSigner(fromIndex);
+            const token = new ethers_1.Contract(contract, ERC20_ABI, signer);
+            const tx = (await token.transfer(to, (0, ethers_1.parseUnits)(Number(amount).toFixed(decimals), decimals)));
+            this.logger.log(`${currency} broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+            return tx.hash;
+        });
     }
     async broadcastBtc(fromIndex, to, amountBtc, feePerByte) {
         const valueSat = Math.floor(amountBtc * 1e8);

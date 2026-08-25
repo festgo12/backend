@@ -19,13 +19,13 @@ const alert_engine_service_1 = require("./alert-engine.service");
 const client_1 = require("../../generated/client/index.js");
 const SANCTIONED_ADDRESSES = {
     ethereum: new Set([
-        '0x722122dF12D4e14e13Ac3b6895a86e84145b6967',
-        '0xd90e2f925da72a612f2B6293a22BC604b0357ACF',
-        '0xba214c1c92C61C61C8B81A886C7Ea81Ca4F97Ee5',
-        '0xFD8610d20aA15b7B2E3Be39B396a1bC3516c7144',
-        '0x07687e702b410Fa43f4cB4Af7FA097918ffD2730',
-        '0x8589427373D6D84E98730D7795D8f6f8731FDA16',
-        '0x7F367cC41522cE07553e823bf3be79A889DEbe1B',
+        '0x722122df12d4e14e13ac3b6895a86e84145b6967',
+        '0xd90e2f925da72a612f2b6293a22bc604b0357acf',
+        '0xba214c1c92c61c61c8b81a886c7ea81ca4f97ee5',
+        '0xfd8610d20aa15b7b2e3be39b396a1bc3516c7144',
+        '0x07687e702b410fa43f4cb4af7fa097918ffd2730',
+        '0x8589427373d6d84e98730d7795d8f6f8731fda16',
+        '0x7f367cc41522ce07553e823bf3be79a889debe1b',
     ]),
     bitcoin: new Set([
         '1HQ3Go3ggs8pFnXuHVHRytPCq5fGG8Hbhx',
@@ -38,7 +38,6 @@ const DEFAULT_RISK_CONFIG = {
     withdrawalVelocityLimit: 5,
     dailyCumulativeMultiplier: 3,
     userRiskBlockLevel: 25,
-    enableDepositScreening: true,
 };
 let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
     prisma;
@@ -100,6 +99,22 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
             }
             if (this.isSanctioned(address, chain)) {
                 this.logger.warn(`SANCTIONED ADDRESS detected: ${address} on ${chain}`);
+                const wallet = await this.prisma.wallet.findFirst({ where: { address } });
+                if (wallet) {
+                    await this.alertEngine.createAlert({
+                        userId: wallet.userId,
+                        type: 'SUSPICIOUS_WALLET_ADDRESS',
+                        severity: 'CRITICAL',
+                        title: 'Sanctioned address interaction',
+                        message: `Address ${address.slice(0, 10)}... is on the OFAC sanctions list.`,
+                        metadata: { address, chain, context },
+                    });
+                    await this.prisma.user.update({
+                        where: { id: wallet.userId },
+                        data: { status: 'FROZEN' },
+                    });
+                    this.logger.warn(`User ${wallet.userId} FROZEN: sanctioned address ${address}`);
+                }
                 return {
                     isSafe: false,
                     riskScore: 100,
@@ -160,6 +175,14 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
                         message: `Address ${address.slice(0, 10)}...${address.slice(-6)} flagged: ${reasons.join('; ')}`,
                         metadata: { address, chain, riskScore, reasons, context },
                     });
+                    const rule = await this.fraudRules.getRuleByCode('SUSPICIOUS_WALLET_ADDRESS');
+                    if (rule && rule.action === 'FREEZE') {
+                        await this.prisma.user.update({
+                            where: { id: wallet.userId },
+                            data: { status: 'FROZEN' },
+                        });
+                        this.logger.warn(`User ${wallet.userId} FROZEN: suspicious ${context} address`);
+                    }
                 }
             }
             return { isSafe, riskScore, reasons };
@@ -242,51 +265,6 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
             this.logger.error(`Transaction screening failed: ${message}`);
             return { approved: false, reasons: ['Screening service error'] };
         }
-    }
-    async screenDeposit(params) {
-        const config = await this.getRiskConfig();
-        if (!config.enableDepositScreening) {
-            return { safe: true, riskScore: 0, reasons: [] };
-        }
-        const wallet = await this.prisma.wallet.findUnique({
-            where: { id: params.walletId },
-            include: { user: true },
-        });
-        if (!wallet) {
-            return { safe: true, riskScore: 0, reasons: [] };
-        }
-        const chain = params.currency === 'BTC' ? 'bitcoin' : 'ethereum';
-        const addressResult = await this.screenAddress(params.sourceAddress, chain, 'deposit');
-        const userRisk = await this.riskEngine.calculateUserRiskScore(wallet.userId);
-        const reasons = [
-            ...addressResult.reasons,
-            ...(userRisk.score < config.userRiskBlockLevel
-                ? [`User risk: ${userRisk.level} (${userRisk.score}/100)`]
-                : []),
-        ];
-        const safe = addressResult.isSafe && userRisk.score >= config.userRiskBlockLevel;
-        if (!safe) {
-            await this.alertEngine.createAlert({
-                userId: wallet.userId,
-                type: 'SUSPICIOUS_DEPOSIT',
-                severity: 'HIGH',
-                title: 'Suspicious deposit detected',
-                message: `Incoming deposit of ${params.amount} ${params.currency} from ${params.sourceAddress.slice(0, 10)}... flagged for review.`,
-                metadata: {
-                    walletId: params.walletId,
-                    amount: params.amount,
-                    sourceAddress: params.sourceAddress,
-                    riskScore: addressResult.riskScore,
-                    userRiskScore: userRisk.score,
-                    reasons,
-                },
-            });
-        }
-        return {
-            safe,
-            riskScore: addressResult.riskScore,
-            reasons,
-        };
     }
     isSanctioned(address, chain) {
         const sanctioned = SANCTIONED_ADDRESSES[chain];

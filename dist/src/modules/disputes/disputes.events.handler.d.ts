@@ -1,9 +1,11 @@
 import { PrismaService } from '../../core/database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { Dispute, Evidence, Order } from '@src/generated/client';
 export declare class DisputesEventsHandler {
     private prisma;
+    private readonly notifications;
     private readonly logger;
-    constructor(prisma: PrismaService);
+    constructor(prisma: PrismaService, notifications: NotificationsService);
     handleDisputeCreated(payload: {
         dispute: Dispute;
         order: Order;

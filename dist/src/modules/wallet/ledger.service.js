@@ -20,34 +20,41 @@ let LedgerService = class LedgerService {
     }
     async createEntry(tx, params) {
         const { walletId, transactionId, orderId, amount, type, reference, metadata } = params;
+        const amountDecimal = new client_1.Prisma.Decimal(amount);
+        if (amount < 0) {
+            const absDebit = amountDecimal.abs();
+            const affected = await tx.$executeRaw `
+        UPDATE "Wallet"
+        SET "balance" = "balance" + ${amountDecimal}
+        WHERE "id" = ${walletId}
+          AND "balance" >= ${absDebit}
+      `;
+            if (affected === 0) {
+                throw new common_1.ConflictException('Insufficient funds for this operation');
+            }
+        }
+        else {
+            await tx.wallet.update({
+                where: { id: walletId },
+                data: { balance: { increment: amountDecimal } },
+            });
+        }
         const wallet = await tx.wallet.findUnique({
             where: { id: walletId },
             select: { balance: true },
         });
-        if (!wallet) {
+        if (!wallet)
             throw new Error(`Wallet ${walletId} not found`);
-        }
-        const currentBalance = new client_1.Prisma.Decimal(wallet.balance);
-        const newBalance = currentBalance.plus(new client_1.Prisma.Decimal(amount));
-        if (newBalance.lessThan(0)) {
-            throw new common_1.ConflictException('Insufficient funds for this operation');
-        }
         const entry = await tx.ledgerEntry.create({
             data: {
                 walletId,
                 transactionId,
                 orderId,
-                amount: new client_1.Prisma.Decimal(amount),
+                amount: amountDecimal,
                 type,
                 reference,
-                balanceAfter: newBalance,
+                balanceAfter: wallet.balance,
                 metadata: metadata || {},
-            },
-        });
-        await tx.wallet.update({
-            where: { id: walletId },
-            data: {
-                balance: newBalance,
             },
         });
         return entry;

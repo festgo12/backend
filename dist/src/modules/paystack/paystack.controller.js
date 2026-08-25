@@ -23,6 +23,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 const paystack_service_1 = require("./paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
+const prisma_service_1 = require("../../core/database/prisma.service");
 const audit_decorator_1 = require("../audit/audit.decorator");
 const initialize_deposit_dto_1 = require("./dto/initialize-deposit.dto");
 const initiate_transfer_dto_1 = require("./dto/initiate-transfer.dto");
@@ -31,10 +32,12 @@ const initiate_refund_dto_1 = require("./dto/initiate-refund.dto");
 let PaystackController = PaystackController_1 = class PaystackController {
     paystackService;
     walletService;
+    prisma;
     logger = new common_1.Logger(PaystackController_1.name);
-    constructor(paystackService, walletService) {
+    constructor(paystackService, walletService, prisma) {
         this.paystackService = paystackService;
         this.walletService = walletService;
+        this.prisma = prisma;
     }
     async initialize(user, dto) {
         if (!user.email)
@@ -94,13 +97,33 @@ let PaystackController = PaystackController_1 = class PaystackController {
     async initiateTransfer(user, dto) {
         try {
             const wallet = await this.walletService.getOrCreateWallet(user.id, client_1.Currency.NGN);
-            if (wallet.balance.toNumber() < dto.amount) {
+            const amountDecimal = new client_1.Prisma.Decimal(dto.amount);
+            const [reserved] = await this.prisma.$transaction([
+                this.prisma.$executeRaw `
+          UPDATE "Wallet"
+          SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
+          WHERE "id" = ${wallet.id}
+            AND ("balance" - "reservedBalance") >= ${amountDecimal}
+        `,
+            ]);
+            if (reserved === 0) {
                 throw new common_1.BadRequestException('Insufficient balance');
             }
             const recipientResult = await this.paystackService.createTransferRecipient(dto.accountName, dto.accountNumber, dto.bankCode);
             const recipientCode = recipientResult.data.recipient_code;
             const reference = `WDL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            const transferResult = await this.paystackService.initiateTransfer(dto.amount, recipientCode, `P2N Withdrawal for ${user.email}`, reference);
+            let transferResult;
+            try {
+                transferResult = await this.paystackService.initiateTransfer(dto.amount, recipientCode, `P2N Withdrawal for ${user.email}`, reference);
+            }
+            catch (transferError) {
+                await this.prisma.$executeRaw `
+          UPDATE "Wallet"
+          SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
+          WHERE "id" = ${wallet.id}
+        `;
+                throw transferError;
+            }
             await this.walletService.createTransaction({
                 walletId: wallet.id,
                 type: client_1.LedgerType.WITHDRAWAL,
@@ -274,6 +297,7 @@ exports.PaystackController = PaystackController = PaystackController_1 = __decor
     (0, swagger_1.ApiTags)('Paystack Payment'),
     (0, common_1.Controller)('paystack'),
     __metadata("design:paramtypes", [paystack_service_1.PaystackService,
-        wallet_service_1.WalletService])
+        wallet_service_1.WalletService,
+        prisma_service_1.PrismaService])
 ], PaystackController);
 //# sourceMappingURL=paystack.controller.js.map

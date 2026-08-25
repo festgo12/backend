@@ -115,20 +115,6 @@ export declare class WalletService {
         reference: string;
         resolvedAt: Date | null;
     }>;
-    verifyAndSyncBalance(walletId: string): Promise<Prisma.Decimal>;
-    updateWalletAddress(walletId: string, address: string): Promise<{
-        id: string;
-        updatedAt: Date;
-        userId: string;
-        version: number;
-        currency: import("@src/generated/client").$Enums.Currency;
-        balance: Prisma.Decimal;
-        reservedBalance: Prisma.Decimal;
-        address: string | null;
-        derivationIndex: number | null;
-        chain: string | null;
-        isFrozen: boolean;
-    }>;
     updateWalletDepositInfo(walletId: string, params: {
         address: string;
         derivationIndex: number;
@@ -172,6 +158,7 @@ export declare class WalletService {
         reference: string;
         resolvedAt: Date | null;
     } | null>;
+    private static readonly VALID_TRANSITIONS;
     updateTransactionStatus(transactionId: string, status: string, metadata?: any): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
         id: string;

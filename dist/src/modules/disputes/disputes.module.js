@@ -13,12 +13,13 @@ const disputes_controller_1 = require("./disputes.controller");
 const admin_disputes_controller_1 = require("./admin-disputes.controller");
 const disputes_events_handler_1 = require("./disputes.events.handler");
 const upload_module_1 = require("../upload/upload.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 let DisputesModule = class DisputesModule {
 };
 exports.DisputesModule = DisputesModule;
 exports.DisputesModule = DisputesModule = __decorate([
     (0, common_1.Module)({
-        imports: [upload_module_1.UploadModule],
+        imports: [upload_module_1.UploadModule, notifications_module_1.NotificationsModule],
         controllers: [disputes_controller_1.DisputesController, admin_disputes_controller_1.AdminDisputesController],
         providers: [disputes_service_1.DisputesService, disputes_events_handler_1.DisputesEventsHandler],
         exports: [disputes_service_1.DisputesService],

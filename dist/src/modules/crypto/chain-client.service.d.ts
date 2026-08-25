@@ -43,7 +43,9 @@ export declare class ChainClientService {
     private readonly hdWallet;
     private readonly logger;
     private providerInstance;
+    private readonly evmNonceLocks;
     constructor(httpService: HttpService, config: CryptoConfigService, hdWallet: HdWalletService);
+    private withNonceLock;
     get provider(): JsonRpcProvider;
     private get btcRpcUrl();
     private get btcNetwork();

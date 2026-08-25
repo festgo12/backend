@@ -1,6 +1,7 @@
 import type { User } from '@src/generated/client';
 import { PaystackService } from './paystack.service';
 import { WalletService } from '../wallet/wallet.service';
+import { PrismaService } from '../../core/database/prisma.service';
 import { InitializeDepositDto } from './dto/initialize-deposit.dto';
 import { InitiateTransferDto } from './dto/initiate-transfer.dto';
 import { VerifyAccountDto } from './dto/verify-account.dto';
@@ -9,8 +10,9 @@ import type { Request } from 'express';
 export declare class PaystackController {
     private readonly paystackService;
     private readonly walletService;
+    private readonly prisma;
     private readonly logger;
-    constructor(paystackService: PaystackService, walletService: WalletService);
+    constructor(paystackService: PaystackService, walletService: WalletService, prisma: PrismaService);
     initialize(user: User, dto: InitializeDepositDto): Promise<any>;
     getBanks(): Promise<any>;
     verifyAccount(dto: VerifyAccountDto): Promise<any>;

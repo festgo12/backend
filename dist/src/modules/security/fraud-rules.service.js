@@ -82,6 +82,8 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                 update: {
                     severity: rule.severity,
                     threshold: rule.threshold,
+                    action: rule.action,
+                    description: rule.description,
                 },
                 create: {
                     name: rule.name,
@@ -111,6 +113,15 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
     }
     async getRuleByCode(code) {
         return this.prisma.fraudRule.findUnique({ where: { code } });
+    }
+    async enforceAction(userId, action) {
+        if (action === 'FREEZE') {
+            await this.prisma.user.update({
+                where: { id: userId },
+                data: { status: 'FROZEN' },
+            });
+            this.logger.warn(`User ${userId} FROZEN by fraud rule action`);
+        }
     }
     async evaluateMultipleAccountsSameDevice(userId, deviceId) {
         const rule = await this.getRuleByCode('MULTIPLE_ACCOUNTS_SAME_DEVICE');
@@ -145,6 +156,7 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                 message: `${uniqueUserIds.length} accounts have been logged into from this device. This may indicate fraudulent activity.`,
                 metadata: { accountCount: uniqueUserIds.length, userIds: uniqueUserIds },
             });
+            await this.enforceAction(userId, rule.action);
         }
     }
     async evaluateRapidWithdrawals(userId) {
@@ -168,6 +180,7 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                 message: `${recentWithdrawals} withdrawals have been made in the last hour. This is unusually high activity.`,
                 metadata: { withdrawalCount: recentWithdrawals, windowMinutes: 60 },
             });
+            await this.enforceAction(userId, rule.action);
         }
     }
     async evaluateUnusualVolume(userId) {
@@ -211,6 +224,7 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                 message: `Your recent trading volume (${recentOrders} orders today) significantly exceeds your daily average (${dailyAverage.toFixed(1)}).`,
                 metadata: { recentOrders, dailyAverage: Math.round(dailyAverage * 10) / 10, historicalVolume },
             });
+            await this.enforceAction(userId, rule.action);
         }
     }
     async evaluateNewDeviceLogin(userId, deviceId, ipAddress) {
@@ -229,6 +243,7 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                 message: `A login was detected from a new device. If this wasn't you, please secure your account immediately.`,
                 metadata: { deviceId, ipAddress },
             });
+            await this.enforceAction(userId, rule.action);
         }
     }
     async evaluateFailedLoginBurst(email, ipAddress) {
@@ -255,6 +270,7 @@ let FraudRulesService = FraudRulesService_1 = class FraudRulesService {
                     message: `${failedCount + 1} failed login attempts have been detected for your account in the last 15 minutes.`,
                     metadata: { failedCount: failedCount + 1, ipAddress, email },
                 });
+                await this.enforceAction(user.id, rule.action);
             }
         }
     }

@@ -5,5 +5,6 @@ export declare class EmailService {
     private transporter;
     constructor(configService: ConfigService);
     sendEmail(to: string, subject: string, html: string, text?: string): Promise<boolean>;
+    wrapEmailHtml(innerHtml: string, title?: string): string;
     renderTemplate(template: string, data: Record<string, any>): string;
 }

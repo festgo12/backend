@@ -2,6 +2,7 @@ import { AdminService } from './admin.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Currency } from '@src/generated/client';
+import { AdminUpdateAdDto, SweepFeeWalletDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
 export declare class AdminController {
     private readonly adminService;
     private readonly exchangeRateService;
@@ -405,8 +406,8 @@ export declare class AdminController {
                 sellerId: string;
                 version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
-                price: import("@src/generated/client/runtime/library").Decimal;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
+                price: import("@src/generated/client/runtime/library").Decimal;
                 minLimit: import("@src/generated/client/runtime/library").Decimal;
                 maxLimit: import("@src/generated/client/runtime/library").Decimal;
                 isSponsored: boolean;
@@ -513,8 +514,8 @@ export declare class AdminController {
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
+            price: import("@src/generated/client/runtime/library").Decimal;
             minLimit: import("@src/generated/client/runtime/library").Decimal;
             maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
@@ -686,7 +687,7 @@ export declare class AdminController {
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         adId: string;
     }>;
-    adminUpdateAd(adId: string, body: Record<string, unknown>): Promise<{
+    adminUpdateAd(adId: string, dto: AdminUpdateAdDto): Promise<{
         type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
@@ -695,8 +696,8 @@ export declare class AdminController {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
@@ -710,8 +711,8 @@ export declare class AdminController {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
@@ -1030,11 +1031,11 @@ export declare class AdminController {
             address: string | null;
         }[];
     }>;
-    sweepFeeWallet(currency: Currency, address: string, amount?: number): Promise<{
+    sweepFeeWallet(currency: Currency, dto: SweepFeeWalletDto): Promise<{
         txId: string;
         status: string;
     }>;
-    creditTestFunds(email: string, currency: Currency, amount: number): Promise<{
+    creditTestFunds(dto: CreditTestFundsDto): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
         status: string;
@@ -1296,7 +1297,7 @@ export declare class AdminController {
         value: import("@src/generated/client/runtime/library").Decimal;
         label: string;
     }[]>;
-    updateFeeConfig(key: string, value: number): Promise<{
+    updateFeeConfig(key: string, dto: UpdateFeeConfigDto): Promise<{
         id: string;
         updatedAt: Date;
         key: string;

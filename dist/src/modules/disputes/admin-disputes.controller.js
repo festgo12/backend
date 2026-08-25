@@ -24,13 +24,15 @@ const disputes_service_1 = require("./disputes.service");
 const update_dispute_status_dto_1 = require("./dto/update-dispute-status.dto");
 const resolve_dispute_dto_1 = require("./dto/resolve-dispute.dto");
 const assign_dispute_dto_1 = require("./dto/assign-dispute.dto");
+const pagination_1 = require("../../core/utils/pagination");
 let AdminDisputesController = class AdminDisputesController {
     disputesService;
     constructor(disputesService) {
         this.disputesService = disputesService;
     }
     findAll(page = '1', limit = '20', status, assigneeId, startDate, endDate, search) {
-        return this.disputesService.listAllDisputes({ status, assigneeId, startDate, endDate, search }, parseInt(page), parseInt(limit));
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.disputesService.listAllDisputes({ status, assigneeId, startDate, endDate, search }, p.page, p.limit);
     }
     getStats() {
         return this.disputesService.getDisputeStats();

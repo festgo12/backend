@@ -115,6 +115,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     expiresAt,
                 },
             });
+            await tx.ledgerEntry.create({
+                data: {
+                    walletId: buyerFiatWallet.id,
+                    orderId: order.id,
+                    amount: fiatAmount.negated(),
+                    type: client_1.LedgerType.TRADE_RESERVE,
+                    reference: `RESERVE-NGN-${order.id}`,
+                    balanceAfter: new library_1.Decimal(buyerFiatWallet.balance.toString()).minus(fiatAmount),
+                    metadata: { action: 'reserve', currency: 'NGN' },
+                },
+            });
             const finalOrder = await tx.order.update({
                 where: { id: order.id },
                 data: {
@@ -253,10 +264,10 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 {
                     walletId: sellerFiatWallet.id,
                     orderId: order.id,
-                    amount: fiatAmount.minus(sellerFee),
+                    amount: fiatAmount,
                     type: client_1.LedgerType.TRADE_SETTLEMENT,
                     reference: `SETTLE-NGN-RECEIVER-${order.id}`,
-                    balanceAfter: new library_1.Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
+                    balanceAfter: new library_1.Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount),
                 },
                 {
                     walletId: sellerFiatWallet.id,
@@ -269,10 +280,10 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 {
                     walletId: buyerCryptoWallet.id,
                     orderId: order.id,
-                    amount: cryptoAmount.minus(buyerFee),
+                    amount: cryptoAmount,
                     type: client_1.LedgerType.TRADE_SETTLEMENT,
                     reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
-                    balanceAfter: new library_1.Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+                    balanceAfter: new library_1.Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount),
                 },
                 {
                     walletId: buyerCryptoWallet.id,
@@ -300,7 +311,15 @@ let OrdersService = OrdersService_1 = class OrdersService {
                         amount: buyerFee,
                         type: client_1.LedgerType.FEE,
                         reference: `FEE-CRYPTO-PLATFORM-${order.id}`,
-                        balanceAfter: new library_1.Decimal(feeWalletRow.balance.toString()).plus(buyerFee),
+                        balanceAfter: new library_1.Decimal(feeWalletRow.balance.toString()).plus(buyerFee).plus(sellerFee),
+                    });
+                    ledgerData.push({
+                        walletId: feeWallet.id,
+                        orderId: order.id,
+                        amount: sellerFee,
+                        type: client_1.LedgerType.FEE,
+                        reference: `FEE-NGN-PLATFORM-${order.id}`,
+                        balanceAfter: new library_1.Decimal(feeWalletRow.balance.toString()).plus(buyerFee).plus(sellerFee),
                     });
                 }
             }
@@ -329,6 +348,9 @@ let OrdersService = OrdersService_1 = class OrdersService {
             if (order.status !== client_1.OrderStatus.PENDING_SELLER && order.status !== client_1.OrderStatus.CREATED) {
                 throw new common_1.BadRequestException(`Cannot decline/cancel order in ${order.status} state`);
             }
+            if (order.buyerId !== initiatorId && order.sellerId !== initiatorId) {
+                throw new common_1.BadRequestException('Only a party to this order may decline it');
+            }
             const fiatAmount = new library_1.Decimal(order.fiatAmount.toString());
             const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
             const buyerFiatWallet = await tx.wallet.findUnique({
@@ -346,6 +368,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (refundResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict during refund. Please retry.');
+            await tx.ledgerEntry.create({
+                data: {
+                    walletId: buyerFiatWallet.id,
+                    orderId: order.id,
+                    amount: fiatAmount,
+                    type: client_1.LedgerType.TRADE_REFUND,
+                    reference: `REFUND-NGN-${order.id}`,
+                    balanceAfter: new library_1.Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+                    metadata: { action: 'refund', reason: 'declined' },
+                },
+            });
             const finalOrder = await tx.order.update({
                 where: { id: order.id },
                 data: {
@@ -385,6 +418,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (refundResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict during refund. Please retry.');
+            await tx.ledgerEntry.create({
+                data: {
+                    walletId: buyerFiatWallet.id,
+                    orderId: order.id,
+                    amount: fiatAmount,
+                    type: client_1.LedgerType.TRADE_REFUND,
+                    reference: `REFUND-NGN-${order.id}`,
+                    balanceAfter: new library_1.Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+                    metadata: { action: 'refund', reason: 'expired' },
+                },
+            });
             const finalOrder = await tx.order.update({
                 where: { id: order.id },
                 data: {
@@ -406,6 +450,11 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 throw new common_1.NotFoundException('Order not found');
             if (order.fraudFlagged) {
                 throw new common_1.BadRequestException('Order is already flagged as fraud');
+            }
+            const isParty = order.buyerId === initiatorId || order.sellerId === initiatorId;
+            const isAdmin = (await tx.user.findUnique({ where: { id: initiatorId }, select: { role: true } }))?.role === 'ADMIN';
+            if (!isParty && !isAdmin) {
+                throw new common_1.BadRequestException('Only a party to this order or an admin may flag it');
             }
             if (order.status === client_1.OrderStatus.COMPLETED ||
                 order.status === client_1.OrderStatus.DECLINED ||
@@ -430,6 +479,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (refundFiatResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict refunding fiat payer');
+            await tx.ledgerEntry.create({
+                data: {
+                    walletId: buyerFiatWallet.id,
+                    orderId: order.id,
+                    amount: fiatAmount,
+                    type: client_1.LedgerType.TRADE_REFUND,
+                    reference: `REFUND-NGN-FRAUD-${order.id}`,
+                    balanceAfter: new library_1.Decimal(buyerFiatWallet.balance.toString()).plus(fiatAmount),
+                    metadata: { action: 'refund', reason: 'fraud_flagged' },
+                },
+            });
             if (order.status === client_1.OrderStatus.APPROVED) {
                 const cryptoAmount = new library_1.Decimal(order.cryptoAmount.toString());
                 const sellerCryptoWallet = await tx.wallet.findUnique({
@@ -447,6 +507,17 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 });
                 if (refundCryptoResult.count === 0)
                     throw new common_1.InternalServerErrorException('Conflict refunding seller crypto');
+                await tx.ledgerEntry.create({
+                    data: {
+                        walletId: sellerCryptoWallet.id,
+                        orderId: order.id,
+                        amount: cryptoAmount,
+                        type: client_1.LedgerType.TRADE_REFUND,
+                        reference: `REFUND-CRYPTO-FRAUD-${order.id}`,
+                        balanceAfter: new library_1.Decimal(sellerCryptoWallet.balance.toString()).plus(cryptoAmount),
+                        metadata: { action: 'refund', reason: 'fraud_flagged' },
+                    },
+                });
             }
             const finalOrder = await tx.order.update({
                 where: { id: order.id },

@@ -12,6 +12,7 @@ var CryptoWithdrawalService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CryptoWithdrawalService = void 0;
 const common_1 = require("@nestjs/common");
+const ethers_1 = require("ethers");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const chain_client_service_1 = require("./chain-client.service");
 const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
@@ -37,21 +38,43 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         this.logger.log(`Initiating local withdrawal: ${amount} ${currency} to ${destinationAddress}`);
         const wallet = await this.prisma.wallet.findUnique({
             where: { id: walletId },
+            select: { id: true, isFrozen: true, currency: true },
         });
         if (!wallet)
             throw new common_1.BadRequestException('Wallet not found');
         if (wallet.isFrozen) {
             throw new common_1.BadRequestException('Wallet is frozen due to rollback detection. Please contact support.');
         }
-        const available = wallet.balance.minus(wallet.reservedBalance);
-        if (available.lessThan(amount)) {
-            throw new common_1.BadRequestException(`Insufficient balance. Available: ${available.toString()} ${currency}`);
-        }
-        if (!wallet.address || wallet.derivationIndex === null) {
+        if (!wallet.currency || !this.hdWallet.chainForCurrency(wallet.currency)) {
             throw new common_1.BadRequestException('Wallet has no on-chain address yet. Please request a deposit address first.');
         }
-        const fromIndex = 0;
         this.validateAddress(currency, destinationAddress);
+        const amountDecimal = new client_1.Prisma.Decimal(amount);
+        const reserveResult = await this.prisma.$executeRaw `
+      UPDATE "Wallet"
+      SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
+      WHERE "id" = ${walletId}
+        AND ("balance" - "reservedBalance") >= ${amountDecimal}
+    `;
+        if (reserveResult === 0) {
+            throw new common_1.BadRequestException('Insufficient balance');
+        }
+        await this.prisma.walletTransaction.create({
+            data: {
+                walletId,
+                type: client_1.LedgerType.WITHDRAWAL,
+                amount,
+                status: 'PENDING',
+                reference: `intent-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                metadata: {
+                    destination: destinationAddress,
+                    blockchain: this.hdWallet.chainForCurrency(currency),
+                    provider: 'alchemy',
+                    intent: true,
+                },
+            },
+        });
+        const fromIndex = 0;
         let txHash;
         try {
             if (currency === client_1.Currency.BTC) {
@@ -72,30 +95,20 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
             const err = error;
             const message = err.response?.data?.message || err.message;
             this.logger.error(`Blockchain submission failed for ${currency}: ${message}`);
-            await this.prisma.walletTransaction.create({
-                data: {
-                    walletId,
-                    type: client_1.LedgerType.WITHDRAWAL,
-                    amount,
-                    status: 'FAILED',
-                    reference: `failed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                    metadata: {
-                        destination: destinationAddress,
-                        blockchain: this.hdWallet.chainForCurrency(currency),
-                        provider: 'alchemy',
-                        lastError: message,
-                        retryCount: 0,
-                    },
-                },
-            });
+            await this.prisma.$executeRaw `
+        UPDATE "Wallet"
+        SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
+        WHERE "id" = ${walletId}
+      `;
             throw new common_1.InternalServerErrorException(`Withdrawal failed: ${message}`);
         }
-        await this.prisma.walletTransaction.create({
-            data: {
+        await this.prisma.walletTransaction.updateMany({
+            where: {
                 walletId,
-                type: client_1.LedgerType.WITHDRAWAL,
-                amount,
                 status: 'PENDING',
+                reference: { startsWith: 'intent-' },
+            },
+            data: {
                 reference: txHash,
                 metadata: {
                     destination: destinationAddress,
@@ -125,8 +138,9 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
             throw new common_1.BadRequestException('Transaction not found or not in FAILED status');
         }
         const meta = (tx.metadata ?? {});
-        await this.prisma.walletTransaction.delete({
+        await this.prisma.walletTransaction.update({
             where: { id: transactionId },
+            data: { status: 'CANCELLED' },
         });
         return this.processWithdrawal({
             walletId: tx.walletId,
@@ -250,6 +264,12 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
             case client_1.Currency.USDC:
                 if (!/^0x[0-9a-fA-F]{40}$/.test(trimmed)) {
                     throw new common_1.BadRequestException('Invalid Ethereum address format');
+                }
+                try {
+                    (0, ethers_1.getAddress)(trimmed);
+                }
+                catch {
+                    throw new common_1.BadRequestException('Invalid Ethereum address checksum (EIP-55). Use a properly checksummed address.');
                 }
                 break;
             default:

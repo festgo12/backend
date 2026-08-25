@@ -26,16 +26,6 @@ export declare class CryptoRiskService {
         approved: boolean;
         reasons: string[];
     }>;
-    screenDeposit(params: {
-        walletId: string;
-        amount: number;
-        sourceAddress: string;
-        currency: string;
-    }): Promise<{
-        safe: boolean;
-        riskScore: number;
-        reasons: string[];
-    }>;
     private isSanctioned;
     private isValidAddressFormat;
 }

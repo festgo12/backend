@@ -16,8 +16,8 @@ export declare class FraudRulesService {
     onModuleInit(): Promise<void>;
     private seedDefaultRules;
     getAllRules(): Promise<{
-        name: string;
         description: string;
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -33,8 +33,8 @@ export declare class FraudRulesService {
         severity?: string;
         action?: string;
     }): Promise<{
-        name: string;
         description: string;
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -45,8 +45,8 @@ export declare class FraudRulesService {
         action: string;
     } | null>;
     getRuleByCode(code: string): Promise<{
-        name: string;
         description: string;
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -56,6 +56,7 @@ export declare class FraudRulesService {
         threshold: number;
         action: string;
     } | null>;
+    private enforceAction;
     evaluateMultipleAccountsSameDevice(userId: string, deviceId: string): Promise<void>;
     evaluateRapidWithdrawals(userId: string): Promise<void>;
     evaluateUnusualVolume(userId: string): Promise<void>;

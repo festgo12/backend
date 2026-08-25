@@ -14,31 +14,33 @@ exports.DisputesEventsHandler = void 0;
 const common_1 = require("@nestjs/common");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandler {
     prisma;
+    notifications;
     logger = new common_1.Logger(DisputesEventsHandler_1.name);
-    constructor(prisma) {
+    constructor(prisma, notifications) {
         this.prisma = prisma;
+        this.notifications = notifications;
     }
     async handleDisputeCreated(payload) {
         const { dispute, order } = payload;
         this.logger.log(`Dispute opened: ${dispute.id} for order: ${order.id}`);
-        await this.prisma.notification.create({
-            data: {
-                userId: dispute.initiatorId,
-                title: 'Dispute Opened',
-                body: `Your dispute for order #${order.id.slice(0, 8)} has been opened. Our team will review it shortly.`,
-                data: { disputeId: dispute.id, orderId: order.id },
-            },
+        const shortOrderId = order.id.slice(0, 8);
+        await this.notifications.notifyUser({
+            userId: dispute.initiatorId,
+            type: 'DISPUTE_OPENED',
+            customTitle: 'Dispute Opened',
+            customBody: `Your dispute for order #${shortOrderId} has been opened. Our team will review it shortly.`,
+            data: { disputeId: dispute.id, orderId: order.id },
         });
         const otherPartyId = order.buyerId === dispute.initiatorId ? order.sellerId : order.buyerId;
-        await this.prisma.notification.create({
-            data: {
-                userId: otherPartyId,
-                title: 'Dispute Opened Against Your Order',
-                body: `A dispute has been opened for order #${order.id.slice(0, 8)}. Please check the details.`,
-                data: { disputeId: dispute.id, orderId: order.id },
-            },
+        await this.notifications.notifyUser({
+            userId: otherPartyId,
+            type: 'DISPUTE_OPENED',
+            customTitle: 'Dispute Opened Against Your Order',
+            customBody: `A dispute has been opened for order #${shortOrderId}. Please check the details.`,
+            data: { disputeId: dispute.id, orderId: order.id },
         });
         await this.prisma.securityLog.create({
             data: {
@@ -53,13 +55,13 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
     async handleDisputeStatusChanged(payload) {
         const { dispute, previousStatus, adminId, reason } = payload;
         this.logger.log(`Dispute ${dispute.id} status: ${previousStatus} -> ${dispute.status}`);
-        await this.prisma.notification.create({
-            data: {
-                userId: dispute.initiatorId,
-                title: 'Dispute Status Updated',
-                body: `Your dispute status has changed from ${previousStatus} to ${dispute.status}.${reason ? ` Reason: ${reason}` : ''}`,
-                data: { disputeId: dispute.id, status: dispute.status },
-            },
+        const reasonSuffix = reason ? ` Reason: ${reason}` : '';
+        await this.notifications.notifyUser({
+            userId: dispute.initiatorId,
+            type: 'DISPUTE_STATUS_CHANGED',
+            customTitle: 'Dispute Status Updated',
+            customBody: `Your dispute status has changed from ${previousStatus} to ${dispute.status}.${reasonSuffix}`,
+            data: { disputeId: dispute.id, status: dispute.status, previousStatus },
         });
         await this.prisma.securityLog.create({
             data: {
@@ -76,13 +78,14 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
     async handleDisputeResolved(payload) {
         const { dispute, resolution, outcome, resolvedBy } = payload;
         this.logger.log(`Dispute ${dispute.id} resolved with outcome: ${outcome}`);
-        await this.prisma.notification.create({
-            data: {
-                userId: dispute.initiatorId,
-                title: `Dispute ${outcome === 'RESOLVED' ? 'Resolved' : 'Rejected'}`,
-                body: `Your dispute has been ${outcome.toLowerCase()}. Resolution: ${resolution}`,
-                data: { disputeId: dispute.id, outcome, resolution },
-            },
+        const isRejected = outcome !== 'RESOLVED';
+        const titleSuffix = isRejected ? 'Rejected' : 'Resolved';
+        await this.notifications.notifyUser({
+            userId: dispute.initiatorId,
+            type: 'DISPUTE_RESOLVED',
+            customTitle: `Dispute ${titleSuffix}`,
+            customBody: `Your dispute has been ${outcome.toLowerCase()}. Resolution: ${resolution}`,
+            data: { disputeId: dispute.id, outcome, resolution },
         });
         const order = await this.prisma.order.findUnique({
             where: { id: dispute.orderId },
@@ -91,13 +94,12 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
             const otherPartyId = order.buyerId === dispute.initiatorId
                 ? order.sellerId
                 : order.buyerId;
-            await this.prisma.notification.create({
-                data: {
-                    userId: otherPartyId,
-                    title: `Dispute ${outcome === 'RESOLVED' ? 'Resolved' : 'Rejected'}`,
-                    body: `The dispute for order #${order.id.slice(0, 8)} has been ${outcome.toLowerCase()}.`,
-                    data: { disputeId: dispute.id, orderId: order.id, outcome },
-                },
+            await this.notifications.notifyUser({
+                userId: otherPartyId,
+                type: 'DISPUTE_RESOLVED',
+                customTitle: `Dispute ${titleSuffix}`,
+                customBody: `The dispute for order #${order.id.slice(0, 8)} has been ${outcome.toLowerCase()}.`,
+                data: { disputeId: dispute.id, orderId: order.id, outcome },
             });
         }
         await this.prisma.securityLog.create({
@@ -121,13 +123,12 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
             const otherPartyId = order.buyerId === dispute.initiatorId
                 ? order.sellerId
                 : order.buyerId;
-            await this.prisma.notification.create({
-                data: {
-                    userId: otherPartyId,
-                    title: 'New Evidence Submitted',
-                    body: `New evidence has been submitted for dispute #${dispute.id.slice(0, 8)}.`,
-                    data: { disputeId: dispute.id, evidenceId: evidence.id },
-                },
+            await this.notifications.notifyUser({
+                userId: otherPartyId,
+                type: 'EVIDENCE_UPLOADED',
+                customTitle: 'New Evidence Submitted',
+                customBody: `New evidence has been submitted for dispute #${dispute.id.slice(0, 8)}.`,
+                data: { disputeId: dispute.id, evidenceId: evidence.id },
             });
         }
         await this.prisma.securityLog.create({
@@ -147,13 +148,12 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
     async handleDisputeAssigned(payload) {
         const { dispute, assigneeId } = payload;
         this.logger.log(`Dispute ${dispute.id} assigned to admin: ${assigneeId}`);
-        await this.prisma.notification.create({
-            data: {
-                userId: dispute.initiatorId,
-                title: 'Dispute Under Review',
-                body: `Your dispute has been assigned to a support agent and is now under review.`,
-                data: { disputeId: dispute.id },
-            },
+        await this.notifications.notifyUser({
+            userId: dispute.initiatorId,
+            type: 'DISPUTE_ASSIGNED',
+            customTitle: 'Dispute Under Review',
+            customBody: `Your dispute has been assigned to a support agent and is now under review.`,
+            data: { disputeId: dispute.id },
         });
         await this.prisma.securityLog.create({
             data: {
@@ -168,21 +168,20 @@ let DisputesEventsHandler = DisputesEventsHandler_1 = class DisputesEventsHandle
     async handleOrderFrozen(payload) {
         const { order, disputeId, adminId } = payload;
         this.logger.warn(`Order ${order.id} frozen by admin ${adminId}`);
-        await this.prisma.notification.createMany({
-            data: [
-                {
-                    userId: order.buyerId,
-                    title: 'Order Frozen',
-                    body: `Order #${order.id.slice(0, 8)} has been frozen due to an active dispute.`,
-                    data: { orderId: order.id, disputeId },
-                },
-                {
-                    userId: order.sellerId,
-                    title: 'Order Frozen',
-                    body: `Order #${order.id.slice(0, 8)} has been frozen due to an active dispute.`,
-                    data: { orderId: order.id, disputeId },
-                },
-            ],
+        const shortOrderId = order.id.slice(0, 8);
+        await this.notifications.notifyUser({
+            userId: order.buyerId,
+            type: 'ORDER_FROZEN',
+            customTitle: 'Order Frozen',
+            customBody: `Order #${shortOrderId} has been frozen due to an active dispute.`,
+            data: { orderId: order.id, disputeId },
+        });
+        await this.notifications.notifyUser({
+            userId: order.sellerId,
+            type: 'ORDER_FROZEN',
+            customTitle: 'Order Frozen',
+            customBody: `Order #${shortOrderId} has been frozen due to an active dispute.`,
+            data: { orderId: order.id, disputeId },
         });
         await this.prisma.securityLog.create({
             data: {
@@ -234,6 +233,7 @@ __decorate([
 ], DisputesEventsHandler.prototype, "handleOrderFrozen", null);
 exports.DisputesEventsHandler = DisputesEventsHandler = DisputesEventsHandler_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], DisputesEventsHandler);
 //# sourceMappingURL=disputes.events.handler.js.map

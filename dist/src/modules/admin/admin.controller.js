@@ -23,6 +23,8 @@ const exchange_rate_service_1 = require("../crypto/exchange-rate.service");
 const platform_service_1 = require("../crypto/platform.service");
 const client_1 = require("../../generated/client/index.js");
 const audit_decorator_1 = require("../audit/audit.decorator");
+const admin_operations_dto_1 = require("./dto/admin-operations.dto");
+const pagination_1 = require("../../core/utils/pagination");
 let AdminController = class AdminController {
     adminService;
     exchangeRateService;
@@ -36,7 +38,8 @@ let AdminController = class AdminController {
         return this.adminService.getDashboardStats();
     }
     getUsers(page = '1', limit = '10', search) {
-        return this.adminService.getUsers(parseInt(page), parseInt(limit), search);
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getUsers(p.page, p.limit, search);
     }
     updateUserStatus(userId, status) {
         return this.adminService.updateUserStatus(userId, status);
@@ -45,16 +48,19 @@ let AdminController = class AdminController {
         return this.adminService.getUserDetail(userId);
     }
     getAllWallets(page = '1', limit = '10', search) {
-        return this.adminService.getAllWallets(parseInt(page), parseInt(limit), search);
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getAllWallets(p.page, p.limit, search);
     }
     getWalletDetail(walletId) {
         return this.adminService.getWalletDetail(walletId);
     }
     getAllTransactions(page = '1', limit = '10') {
-        return this.adminService.getAllTransactions(parseInt(page), parseInt(limit));
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getAllTransactions(p.page, p.limit);
     }
     getAllOrders(page = '1', limit = '10', search) {
-        return this.adminService.getAllOrders(parseInt(page), parseInt(limit), search);
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getAllOrders(p.page, p.limit, search);
     }
     getOrderDetail(orderId) {
         return this.adminService.getOrderDetail(orderId);
@@ -65,8 +71,8 @@ let AdminController = class AdminController {
     releaseOrder(orderId) {
         return this.adminService.releaseOrder(orderId);
     }
-    adminUpdateAd(adId, body) {
-        return this.adminService.adminUpdateAd(adId, body);
+    adminUpdateAd(adId, dto) {
+        return this.adminService.adminUpdateAd(adId, dto);
     }
     adminDeleteAd(adId) {
         return this.adminService.adminDeleteAd(adId);
@@ -75,10 +81,12 @@ let AdminController = class AdminController {
         return this.adminService.getBlockchainStats();
     }
     getBlockchainTransactions(page = '1', limit = '10') {
-        return this.adminService.getBlockchainTransactions(parseInt(page), parseInt(limit));
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getBlockchainTransactions(p.page, p.limit);
     }
     getFailedTransactions(page = '1', limit = '10') {
-        return this.adminService.getFailedTransactions(parseInt(page), parseInt(limit));
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getFailedTransactions(p.page, p.limit);
     }
     retryFailedTransaction(transactionId) {
         return this.adminService.retryFailedTransaction(transactionId);
@@ -87,7 +95,8 @@ let AdminController = class AdminController {
         return this.adminService.getCryptoSystemStatus();
     }
     getWithdrawalJobs(page = '1', limit = '20', status) {
-        return this.adminService.getWithdrawalJobs(parseInt(page), parseInt(limit), status);
+        const p = (0, pagination_1.clampPagination)(page, limit, { maxLimit: 50 });
+        return this.adminService.getWithdrawalJobs(p.page, p.limit, status);
     }
     getChainBalances() {
         return this.adminService.getChainBalances();
@@ -102,10 +111,12 @@ let AdminController = class AdminController {
         return this.adminService.triggerSweepAll();
     }
     getBtcHistory(page, pageSize) {
-        return this.adminService.getBtcHistory(page ? parseInt(page, 10) : 1, pageSize ? parseInt(pageSize, 10) : 50);
+        const p = (0, pagination_1.clampPagination)(page, pageSize, { maxLimit: 100 });
+        return this.adminService.getBtcHistory(p.page, p.limit);
     }
     getEvmHistory(address, page) {
-        return this.adminService.getEvmHistory(address, page ? parseInt(page, 10) : 1);
+        const p = (0, pagination_1.clampPagination)(page, '50');
+        return this.adminService.getEvmHistory(address, p.page);
     }
     getFeeWallets() {
         return this.adminService.getFeeWallets();
@@ -118,17 +129,18 @@ let AdminController = class AdminController {
             wallets: result.wallets,
         };
     }
-    sweepFeeWallet(currency, address, amount) {
-        return this.adminService.sweepFeeWallet(currency, address, amount);
+    sweepFeeWallet(currency, dto) {
+        return this.adminService.sweepFeeWallet(currency, dto.address, dto.amount);
     }
-    creditTestFunds(email, currency, amount) {
-        return this.adminService.creditTestFunds(email, currency, amount);
+    creditTestFunds(dto) {
+        return this.adminService.creditTestFunds(dto.email, dto.currency, dto.amount);
     }
     getPaymentStats() {
         return this.adminService.getPaymentStats();
     }
     getPaymentTransactions(page = '1', limit = '10', search, status, type, startDate, endDate) {
-        return this.adminService.getPaymentTransactions(parseInt(page), parseInt(limit), {
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getPaymentTransactions(p.page, p.limit, {
             search,
             status,
             type,
@@ -151,7 +163,8 @@ let AdminController = class AdminController {
         };
     }
     getAuditLogs(page = '1', limit = '20', action, resource, userId, success, startDate, endDate, search) {
-        return this.adminService.getAuditLogs(parseInt(page), parseInt(limit), {
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getAuditLogs(p.page, p.limit, {
             action,
             resource,
             userId,
@@ -165,13 +178,14 @@ let AdminController = class AdminController {
         return this.adminService.getAuditStats();
     }
     getUserAuditTrail(userId, page = '1', limit = '20') {
-        return this.adminService.getUserAuditTrail(userId, parseInt(page), parseInt(limit));
+        const p = (0, pagination_1.clampPagination)(page, limit);
+        return this.adminService.getUserAuditTrail(userId, p.page, p.limit);
     }
     getFeeConfigs() {
         return this.adminService.getFeeConfigs();
     }
-    updateFeeConfig(key, value) {
-        return this.adminService.updateFeeConfig(key, value);
+    updateFeeConfig(key, dto) {
+        return this.adminService.updateFeeConfig(key, dto.value);
     }
 };
 exports.AdminController = AdminController;
@@ -183,6 +197,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getDashboardStats", null);
 __decorate([
+    (0, common_1.Get)('users'),
     (0, swagger_1.ApiOperation)({ summary: 'Get list of users with pagination' }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
@@ -279,7 +294,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, admin_operations_dto_1.AdminUpdateAdDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "adminUpdateAd", null);
 __decorate([
@@ -319,6 +334,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('blockchain/failed/:id/retry'),
     (0, audit_decorator_1.AuditLog)('ADMIN_RETRY_WITHDRAWAL', 'TRANSACTION'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Retry a failed withdrawal transaction' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
@@ -424,27 +440,26 @@ __decorate([
 __decorate([
     (0, common_1.Post)('fee-wallets/:currency/sweep'),
     (0, audit_decorator_1.AuditLog)('ADMIN_FEE_SWEEP', 'WALLET'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({
         summary: 'Sweep platform fee wallet balance to a treasury address',
     }),
     __param(0, (0, common_1.Param)('currency')),
-    __param(1, (0, common_1.Body)('address')),
-    __param(2, (0, common_1.Body)('amount')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Number]),
+    __metadata("design:paramtypes", [String, admin_operations_dto_1.SweepFeeWalletDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "sweepFeeWallet", null);
 __decorate([
     (0, common_1.Post)('testnet/credit'),
     (0, audit_decorator_1.AuditLog)('ADMIN_TESTNET_CREDIT', 'WALLET'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({
         summary: 'Credit a user wallet with test funds (testnet environments only)',
     }),
-    __param(0, (0, common_1.Body)('email')),
-    __param(1, (0, common_1.Body)('currency')),
-    __param(2, (0, common_1.Body)('amount')),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Number]),
+    __metadata("design:paramtypes", [admin_operations_dto_1.CreditTestFundsDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "creditTestFunds", null);
 __decorate([
@@ -534,11 +549,12 @@ __decorate([
 __decorate([
     (0, common_1.Patch)('fees/:key'),
     (0, audit_decorator_1.AuditLog)('ADMIN_FEE_UPDATE', 'PLATFORM_CONFIG'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Update a platform fee configuration' }),
     __param(0, (0, common_1.Param)('key')),
-    __param(1, (0, common_1.Body)('value')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number]),
+    __metadata("design:paramtypes", [String, admin_operations_dto_1.UpdateFeeConfigDto]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "updateFeeConfig", null);
 exports.AdminController = AdminController = __decorate([

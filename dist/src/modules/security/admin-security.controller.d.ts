@@ -10,8 +10,8 @@ export declare class AdminSecurityController {
     private readonly prisma;
     constructor(fraudRulesService: FraudRulesService, riskEngineService: RiskEngineService, alertEngineService: AlertEngineService, prisma: PrismaService);
     getFraudRules(): Promise<{
-        name: string;
         description: string;
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -22,8 +22,8 @@ export declare class AdminSecurityController {
         action: string;
     }[]>;
     updateFraudRule(ruleId: string, dto: UpdateFraudRuleDto): Promise<{
-        name: string;
         description: string;
+        name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;

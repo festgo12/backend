@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var AdminService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
@@ -26,6 +27,7 @@ const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const platform_service_1 = require("../crypto/platform.service");
 let AdminService = class AdminService {
+    static { AdminService_1 = this; }
     prisma;
     cryptoWithdrawal;
     exchangeRateService;
@@ -64,7 +66,7 @@ let AdminService = class AdminService {
             }),
             this.prisma.ledgerEntry.aggregate({
                 _sum: { amount: true },
-                where: { type: client_1.LedgerType.FEE },
+                where: { type: client_1.LedgerType.FEE, amount: { gt: 0 } },
             }),
         ]);
         const totalRevenue = Number(revenueAgg._sum.amount || 0);
@@ -103,13 +105,31 @@ let AdminService = class AdminService {
             data: { fraudFlagged: false },
         });
     }
+    static ALLOWED_AD_FIELDS = new Set([
+        'status',
+        'quantity',
+        'price',
+        'minLimit',
+        'maxLimit',
+        'paymentMethods',
+        'description',
+    ]);
     async adminUpdateAd(adId, data) {
         const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
         if (!ad)
             throw new common_1.NotFoundException('Ad not found');
+        const safeData = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (AdminService_1.ALLOWED_AD_FIELDS.has(key)) {
+                safeData[key] = value;
+            }
+        }
+        if (Object.keys(safeData).length === 0) {
+            throw new common_1.BadRequestException('No valid fields provided for update');
+        }
         return this.prisma.ad.update({
             where: { id: adId },
-            data,
+            data: safeData,
         });
     }
     async adminDeleteAd(adId) {
@@ -931,7 +951,7 @@ let AdminService = class AdminService {
     }
 };
 exports.AdminService = AdminService;
-exports.AdminService = AdminService = __decorate([
+exports.AdminService = AdminService = AdminService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         crypto_withdrawal_service_1.CryptoWithdrawalService,

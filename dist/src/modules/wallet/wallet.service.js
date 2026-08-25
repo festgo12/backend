@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var WalletService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletService = void 0;
 const common_1 = require("@nestjs/common");
@@ -16,6 +17,7 @@ const ledger_service_1 = require("./ledger.service");
 const exchange_rate_service_1 = require("../crypto/exchange-rate.service");
 const client_1 = require("../../generated/client/index.js");
 let WalletService = class WalletService {
+    static { WalletService_1 = this; }
     prisma;
     ledger;
     exchangeRateService;
@@ -40,21 +42,11 @@ let WalletService = class WalletService {
         }));
     }
     async getOrCreateWallet(userId, currency) {
-        let wallet = await this.prisma.wallet.findUnique({
-            where: {
-                userId_currency: { userId, currency },
-            },
+        return this.prisma.wallet.upsert({
+            where: { userId_currency: { userId, currency } },
+            create: { userId, currency, balance: 0 },
+            update: {},
         });
-        if (!wallet) {
-            wallet = await this.prisma.wallet.create({
-                data: {
-                    userId,
-                    currency,
-                    balance: 0,
-                },
-            });
-        }
-        return wallet;
     }
     async getWalletHistory(walletId, limit = 20, offset = 0) {
         return this.prisma.ledgerEntry.findMany({
@@ -115,45 +107,6 @@ let WalletService = class WalletService {
             return transaction;
         });
     }
-    async verifyAndSyncBalance(walletId) {
-        const wallet = await this.prisma.wallet.findUnique({
-            where: { id: walletId },
-            include: {
-                snapshots: {
-                    orderBy: { createdAt: 'desc' },
-                    take: 1,
-                },
-            },
-        });
-        if (!wallet)
-            throw new common_1.NotFoundException('Wallet not found');
-        const lastSnapshot = wallet.snapshots[0];
-        const snapshotBalance = lastSnapshot ? lastSnapshot.balance : new client_1.Prisma.Decimal(0);
-        const snapshotDate = lastSnapshot ? lastSnapshot.createdAt : new Date(0);
-        const ledgerSum = await this.prisma.ledgerEntry.aggregate({
-            where: {
-                walletId,
-                createdAt: { gt: snapshotDate },
-            },
-            _sum: {
-                amount: true,
-            },
-        });
-        const calculatedBalance = snapshotBalance.plus(ledgerSum._sum.amount || 0);
-        if (!calculatedBalance.equals(wallet.balance)) {
-            await this.prisma.wallet.update({
-                where: { id: walletId },
-                data: { balance: calculatedBalance },
-            });
-        }
-        return calculatedBalance;
-    }
-    async updateWalletAddress(walletId, address) {
-        return this.prisma.wallet.update({
-            where: { id: walletId },
-            data: { address },
-        });
-    }
     async updateWalletDepositInfo(walletId, params) {
         return this.prisma.wallet.update({
             where: { id: walletId },
@@ -170,6 +123,14 @@ let WalletService = class WalletService {
             where: { reference },
         });
     }
+    static VALID_TRANSITIONS = {
+        PENDING: ['COMPLETED', 'FAILED', 'PROCESSING'],
+        PROCESSING: ['COMPLETED', 'FAILED'],
+        FAILED: ['CANCELLED'],
+        COMPLETED: ['REVERSED'],
+        REVERSED: [],
+        CANCELLED: [],
+    };
     async updateTransactionStatus(transactionId, status, metadata) {
         return this.prisma.$transaction(async (tx) => {
             const current = await tx.walletTransaction.findUnique({
@@ -177,6 +138,15 @@ let WalletService = class WalletService {
             });
             if (!current)
                 throw new common_1.NotFoundException('Transaction not found');
+            const allowed = WalletService_1.VALID_TRANSITIONS[current.status];
+            if (!allowed || !allowed.includes(status)) {
+                throw new common_1.BadRequestException(`Cannot transition from ${current.status} to ${status}`);
+            }
+            if (status === 'REVERSED') {
+                throw new common_1.BadRequestException('Reversals must use reverseTransaction(); do not call updateTransactionStatus with REVERSED');
+            }
+            if (current.status === status)
+                return current;
             const updatedMetadata = {
                 ...(current.metadata || {}),
                 ...(metadata || {}),
@@ -210,34 +180,38 @@ let WalletService = class WalletService {
     }
     async reverseTransaction(transactionId, reason) {
         return this.prisma.$transaction(async (tx) => {
+            const affected = await tx.$executeRaw `
+        UPDATE "WalletTransaction"
+        SET "status" = 'REVERSED',
+            "metadata" = "metadata" || ${JSON.stringify({ reverse_reason: reason })}::jsonb
+        WHERE "id" = ${transactionId}
+          AND "status" != 'REVERSED'
+      `;
+            if (affected === 0)
+                return;
             const transaction = await tx.walletTransaction.findUnique({
                 where: { id: transactionId },
             });
-            if (!transaction || transaction.status === 'REVERSED')
+            if (!transaction)
                 return;
-            await tx.walletTransaction.update({
-                where: { id: transactionId },
-                data: {
-                    status: 'REVERSED',
-                    metadata: {
-                        ...(transaction.metadata || {}),
-                        reverse_reason: reason,
-                    },
-                },
-            });
+            const depositTypes = [client_1.LedgerType.DEPOSIT, client_1.LedgerType.GIFT_CARD_PURCHASE];
+            const isDeposit = depositTypes.includes(transaction.type);
+            const reverseAmount = isDeposit
+                ? -Math.abs(transaction.amount.toNumber())
+                : Math.abs(transaction.amount.toNumber());
             await this.ledger.createEntry(tx, {
                 walletId: transaction.walletId,
                 transactionId: transaction.id,
-                amount: Math.abs(transaction.amount.toNumber()),
+                amount: reverseAmount,
                 type: client_1.LedgerType.TRADE_REFUND,
-                reference: `${transaction.reference}-rev-${Date.now()}`,
+                reference: `${transaction.reference}-rev`,
                 metadata: { reason },
             });
         });
     }
 };
 exports.WalletService = WalletService;
-exports.WalletService = WalletService = __decorate([
+exports.WalletService = WalletService = WalletService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         ledger_service_1.LedgerService,

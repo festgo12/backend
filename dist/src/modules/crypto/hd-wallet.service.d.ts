@@ -10,15 +10,17 @@ export interface DepositAddressInfo {
 }
 export declare const MASTER_WALLET_INDEX = 0;
 export declare const USER_INDEX_BASE = 1000;
-export declare const USER_INDEX_SPACE = 2000000;
 export declare class HdWalletService {
     private readonly prisma;
     private readonly config;
     private readonly logger;
+    private cachedBtcSeed;
+    private cachedEvmRoot;
     constructor(prisma: PrismaService, config: CryptoConfigService);
     chainForCurrency(currency: Currency): ChainKind | null;
-    isCryptoCurrency(currency: Currency): boolean;
-    indexForUser(userId: string): number;
+    private ensureSeedCache;
+    getNextIndexForUser(userId: string): Promise<number>;
+    indexForUser(userId: string): Promise<number>;
     getOrAssignDepositInfo(userId: string, currency: Currency): Promise<DepositAddressInfo>;
     deriveAddress(currency: Currency, index: number): string;
     getMasterAddress(chain: ChainKind): string;

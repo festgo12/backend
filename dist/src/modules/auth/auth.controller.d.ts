@@ -157,7 +157,7 @@ export declare class AuthController {
         success: boolean;
     }>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
-        resetToken: string;
+        message: string;
     } | undefined>;
     resetPassword(dto: ResetPasswordDto): Promise<{
         success: boolean;
@@ -176,13 +176,9 @@ export declare class AuthController {
         success: boolean;
     }>;
     sendPhoneVerification(req: any): Promise<{
-        success: boolean;
         message: string;
-        code?: undefined;
-    } | {
+        code?: string | undefined;
         success: boolean;
-        code: string;
-        message?: undefined;
     }>;
     verifyPhone(req: any, dto: VerifyPhoneDto): Promise<{
         success: boolean;

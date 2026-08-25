@@ -62,6 +62,7 @@ export declare class AdminService {
         feeAmount: Prisma.Decimal;
         adId: string;
     }>;
+    private static readonly ALLOWED_AD_FIELDS;
     adminUpdateAd(adId: string, data: Record<string, unknown>): Promise<{
         type: import("@src/generated/client").$Enums.AdType;
         id: string;
@@ -71,8 +72,8 @@ export declare class AdminService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Prisma.Decimal;
         quantity: Prisma.Decimal;
+        price: Prisma.Decimal;
         minLimit: Prisma.Decimal;
         maxLimit: Prisma.Decimal;
         isSponsored: boolean;
@@ -86,8 +87,8 @@ export declare class AdminService {
         sellerId: string;
         version: number;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Prisma.Decimal;
         quantity: Prisma.Decimal;
+        price: Prisma.Decimal;
         minLimit: Prisma.Decimal;
         maxLimit: Prisma.Decimal;
         isSponsored: boolean;
@@ -512,8 +513,8 @@ export declare class AdminService {
                 sellerId: string;
                 version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
-                price: Prisma.Decimal;
                 quantity: Prisma.Decimal;
+                price: Prisma.Decimal;
                 minLimit: Prisma.Decimal;
                 maxLimit: Prisma.Decimal;
                 isSponsored: boolean;
@@ -620,8 +621,8 @@ export declare class AdminService {
             sellerId: string;
             version: number;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: Prisma.Decimal;
             quantity: Prisma.Decimal;
+            price: Prisma.Decimal;
             minLimit: Prisma.Decimal;
             maxLimit: Prisma.Decimal;
             isSponsored: boolean;

@@ -43,7 +43,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var HdWalletService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HdWalletService = exports.USER_INDEX_SPACE = exports.USER_INDEX_BASE = exports.MASTER_WALLET_INDEX = void 0;
+exports.HdWalletService = exports.USER_INDEX_BASE = exports.MASTER_WALLET_INDEX = void 0;
 const common_1 = require("@nestjs/common");
 const ethers_1 = require("ethers");
 const bip39 = __importStar(require("bip39"));
@@ -56,11 +56,12 @@ const prisma_service_1 = require("../../core/database/prisma.service");
 const crypto_config_service_1 = require("./crypto-config.service");
 exports.MASTER_WALLET_INDEX = 0;
 exports.USER_INDEX_BASE = 1000;
-exports.USER_INDEX_SPACE = 2_000_000;
 let HdWalletService = HdWalletService_1 = class HdWalletService {
     prisma;
     config;
     logger = new common_1.Logger(HdWalletService_1.name);
+    cachedBtcSeed = null;
+    cachedEvmRoot = null;
     constructor(prisma, config) {
         this.prisma = prisma;
         this.config = config;
@@ -77,15 +78,53 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
                 return null;
         }
     }
-    isCryptoCurrency(currency) {
-        return this.chainForCurrency(currency) !== null;
-    }
-    indexForUser(userId) {
-        let h = 0;
-        for (let i = 0; i < userId.length; i++) {
-            h = (Math.imul(31, h) + userId.charCodeAt(i)) | 0;
+    ensureSeedCache() {
+        if (!this.cachedBtcSeed) {
+            const mnemonic = this.config.btcMasterMnemonic;
+            if (!mnemonic) {
+                throw new common_1.InternalServerErrorException('Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)');
+            }
+            this.cachedBtcSeed = bip39.mnemonicToSeedSync(mnemonic);
+            this.logger.log('BTC HD seed cached');
         }
-        return exports.USER_INDEX_BASE + (Math.abs(h) % exports.USER_INDEX_SPACE);
+        if (!this.cachedEvmRoot) {
+            const mnemonic = this.config.evmMasterMnemonic;
+            if (!mnemonic) {
+                throw new common_1.InternalServerErrorException('Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)');
+            }
+            this.cachedEvmRoot = ethers_1.HDNodeWallet.fromPhrase(mnemonic, '', this.config.evmDerivationPath);
+            this.logger.log('EVM HD root cached');
+        }
+    }
+    async getNextIndexForUser(userId) {
+        const result = await this.prisma.$transaction(async (tx) => {
+            const counter = await tx.platformSetting.findUnique({
+                where: { key: 'hd_next_derivation_index' },
+            });
+            const nextIndex = counter
+                ? Number(counter.value) + 1
+                : exports.USER_INDEX_BASE;
+            await tx.platformSetting.upsert({
+                where: { key: 'hd_next_derivation_index' },
+                update: { value: String(nextIndex) },
+                create: { key: 'hd_next_derivation_index', value: String(nextIndex) },
+            });
+            return nextIndex;
+        });
+        return result;
+    }
+    async indexForUser(userId) {
+        const existing = await this.prisma.wallet.findFirst({
+            where: {
+                userId,
+                derivationIndex: { not: null },
+            },
+            select: { derivationIndex: true },
+        });
+        if (existing && existing.derivationIndex !== null) {
+            return existing.derivationIndex;
+        }
+        return this.getNextIndexForUser(userId);
     }
     async getOrAssignDepositInfo(userId, currency) {
         const chain = this.chainForCurrency(currency);
@@ -108,7 +147,7 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
                 derivationIndex: existing.derivationIndex,
             };
         }
-        const index = this.indexForUser(userId);
+        const index = await this.indexForUser(userId);
         const address = this.deriveAddress(currency, index);
         return { chain, address, derivationIndex: index };
     }
@@ -131,35 +170,22 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
     derivePrivateKey(currency, index) {
         const chain = this.chainForCurrency(currency);
         if (chain === 'EVM') {
-            const mnemonic = this.config.evmMasterMnemonic;
-            if (!mnemonic) {
-                throw new common_1.InternalServerErrorException('Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)');
-            }
+            this.ensureSeedCache();
             return this.evmNode(index).privateKey;
         }
         if (chain === 'BTC') {
-            const mnemonic = this.config.btcMasterMnemonic;
-            if (!mnemonic) {
-                throw new common_1.InternalServerErrorException('Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)');
-            }
+            this.ensureSeedCache();
             return this.btcNode(index).toWIF();
         }
         throw new common_1.BadRequestException(`Private key derivation not supported for ${currency}`);
     }
     evmNode(index) {
-        const mnemonic = this.config.evmMasterMnemonic;
-        if (!mnemonic) {
-            throw new common_1.InternalServerErrorException('Missing EVM master mnemonic (HD_EVM_MASTER_MNEMONIC)');
-        }
-        return ethers_1.HDNodeWallet.fromPhrase(mnemonic, '', this.config.evmDerivationPath).deriveChild(index);
+        this.ensureSeedCache();
+        return this.cachedEvmRoot.deriveChild(index);
     }
     btcNode(index) {
-        const mnemonic = this.config.btcMasterMnemonic;
-        if (!mnemonic) {
-            throw new common_1.InternalServerErrorException('Missing BTC master mnemonic (HD_BTC_MASTER_MNEMONIC)');
-        }
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
-        const root = bip32.fromSeed(seed);
+        this.ensureSeedCache();
+        const root = bip32.fromSeed(this.cachedBtcSeed);
         return root.derivePath(this.config.btcDerivationPath).derive(index);
     }
     deriveEvmAddress(index) {

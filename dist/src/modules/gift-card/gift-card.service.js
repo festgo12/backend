@@ -254,6 +254,20 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
                     seller: { include: { profile: true } },
                 },
             });
+            const sellerWallet = await tx.wallet.findUnique({
+                where: { userId_currency: { userId: order.sellerId, currency: 'NGN' } },
+            });
+            if (!sellerWallet) {
+                throw new common_1.ConflictException('Seller NGN wallet not found — cannot release funds');
+            }
+            const sellerCreditRef = `GC-SELLER-CREDIT-${(0, uuid_1.v4)()}`;
+            await this.ledgerService.createEntry(tx, {
+                walletId: sellerWallet.id,
+                amount: order.totalPaidNgn.toNumber(),
+                type: 'GIFT_CARD_SALE',
+                reference: sellerCreditRef,
+                metadata: { orderId, buyerId, listingId: order.listingId },
+            });
             const cardCode = this.encryption.decrypt(order.listing.cardCode);
             const cardPin = order.listing.cardPin
                 ? this.encryption.decrypt(order.listing.cardPin)

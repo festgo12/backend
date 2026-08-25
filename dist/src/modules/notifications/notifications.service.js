@@ -97,6 +97,9 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         const isEmailAllowed = user.preferences?.emailNotify ?? true;
         const isPushAllowed = user.preferences?.pushNotify ?? true;
         if (user.email && isEmailAllowed) {
+            const brandedEmailHtml = emailBody.startsWith('<!DOCTYPE') || emailBody.startsWith('<html')
+                ? emailBody
+                : this.emailService.wrapEmailHtml(emailBody, emailSubject);
             await this.prisma.notificationLog.create({
                 data: {
                     userId,
@@ -104,7 +107,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                     channel: client_1.NotificationChannel.EMAIL,
                     recipient: user.email,
                     title: emailSubject,
-                    body: emailBody,
+                    body: brandedEmailHtml,
                     status: client_1.NotificationStatus.PENDING,
                     nextTryAt: new Date(),
                 },
