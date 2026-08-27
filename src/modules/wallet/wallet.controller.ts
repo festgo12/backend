@@ -179,7 +179,7 @@ export class WalletController {
         `Withdrawal blocked by address screening: user=${user.id}, address=${address}, score=${addressResult.riskScore}`,
       );
       throw new BadRequestException(
-        'Destination address failed security screening. Contact support if you believe this is an error.',
+        `Destination address failed security screening: ${addressResult.reasons[0]}. Contact support if you believe this is an error.`,
       );
     }
 

@@ -7,6 +7,7 @@ import {
 import { getAddress } from 'ethers';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
+import { CryptoConfigService } from './crypto-config.service';
 import { ChainClientService } from './chain-client.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { HdWalletService } from './hd-wallet.service';
@@ -35,6 +36,7 @@ export class CryptoWithdrawalService {
     private readonly chainClient: ChainClientService,
     private readonly tracker: WithdrawalTrackerService,
     private readonly platformService: PlatformService,
+    private readonly cryptoConfig: CryptoConfigService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -378,7 +380,17 @@ export class CryptoWithdrawalService {
 
     switch (currency) {
       case Currency.BTC:
-        if (
+        if (this.cryptoConfig.isTestnet) {
+          if (
+            !(
+              /^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+              /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+              /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(trimmed)
+            )
+          ) {
+            throw new BadRequestException('Invalid Bitcoin address format');
+          }
+        } else if (
           !/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(
             trimmed,
           )

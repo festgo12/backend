@@ -4,6 +4,7 @@ import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { CryptoWithdrawalService } from './crypto-withdrawal.service';
+import { CryptoConfigService } from './crypto-config.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { ChainClientService } from './chain-client.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
@@ -47,6 +48,8 @@ describe('CryptoWithdrawalService', () => {
 
   const mockEventEmitter = { emit: jest.fn() };
 
+  const mockCryptoConfig = { isTestnet: false };
+
   beforeEach(async () => {
     jest.resetAllMocks();
 
@@ -82,6 +85,7 @@ describe('CryptoWithdrawalService', () => {
         { provide: WithdrawalTrackerService, useValue: mockTracker },
         { provide: HdWalletService, useValue: mockHdWallet },
         { provide: PlatformService, useValue: mockPlatformService },
+        { provide: CryptoConfigService, useValue: mockCryptoConfig },
         { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();

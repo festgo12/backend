@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { CryptoConfigService } from '../crypto/crypto-config.service';
 import { RiskEngineService } from './risk-engine.service';
 import { FraudRulesService } from './fraud-rules.service';
 import { AlertEngineService } from './alert-engine.service';
@@ -87,6 +88,7 @@ export class CryptoRiskService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly cryptoConfig: CryptoConfigService,
     private readonly riskEngine: RiskEngineService,
     private readonly fraudRules: FraudRulesService,
     private readonly alertEngine: AlertEngineService,
@@ -393,6 +395,13 @@ export class CryptoRiskService {
 
     switch (chain) {
       case 'bitcoin':
+        if (this.cryptoConfig.isTestnet) {
+          return (
+            /^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) ||
+            /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) ||
+            /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(address)
+          );
+        }
         return /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(
           address,
         );
