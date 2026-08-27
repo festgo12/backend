@@ -14,30 +14,32 @@ export class DisputesEventsHandler {
   ) {}
 
   @OnEvent('dispute.created')
-  async handleDisputeCreated(payload: { dispute: Dispute; order: Order }) {
+  async handleDisputeCreated(payload: { dispute: Dispute; order: Order | null }) {
     const { dispute, order } = payload;
-    this.logger.log(`Dispute opened: ${dispute.id} for order: ${order.id}`);
-
-    const shortOrderId = order.id.slice(0, 8);
+    this.logger.log(`Dispute opened: ${dispute.id}`);
 
     await this.notifications.notifyUser({
       userId: dispute.initiatorId,
       type: 'DISPUTE_OPENED',
       customTitle: 'Dispute Opened',
-      customBody: `Your dispute for order #${shortOrderId} has been opened. Our team will review it shortly.`,
-      data: { disputeId: dispute.id, orderId: order.id },
+      customBody: order
+        ? `Your dispute for order #${order.id.slice(0, 8)} has been opened. Our team will review it shortly.`
+        : `Your dispute has been opened. Our team will review it shortly.`,
+      data: { disputeId: dispute.id, orderId: order?.id },
     });
 
-    const otherPartyId =
-      order.buyerId === dispute.initiatorId ? order.sellerId : order.buyerId;
+    if (order) {
+      const otherPartyId =
+        order.buyerId === dispute.initiatorId ? order.sellerId : order.buyerId;
 
-    await this.notifications.notifyUser({
-      userId: otherPartyId,
-      type: 'DISPUTE_OPENED',
-      customTitle: 'Dispute Opened Against Your Order',
-      customBody: `A dispute has been opened for order #${shortOrderId}. Please check the details.`,
-      data: { disputeId: dispute.id, orderId: order.id },
-    });
+      await this.notifications.notifyUser({
+        userId: otherPartyId,
+        type: 'DISPUTE_OPENED',
+        customTitle: 'Dispute Opened Against Your Order',
+        customBody: `A dispute has been opened for order #${order.id.slice(0, 8)}. Please check the details.`,
+        data: { disputeId: dispute.id, orderId: order.id },
+      });
+    }
 
     await this.prisma.securityLog.create({
       data: {
@@ -45,7 +47,7 @@ export class DisputesEventsHandler {
         action: 'DISPUTE_OPENED',
         resource: 'DISPUTE',
         resourceId: dispute.id,
-        metadata: { orderId: order.id, reason: dispute.reason },
+        metadata: { orderId: order?.id, reason: dispute.reason },
       },
     });
   }
@@ -106,9 +108,11 @@ export class DisputesEventsHandler {
       data: { disputeId: dispute.id, outcome, resolution },
     });
 
-    const order = await this.prisma.order.findUnique({
-      where: { id: dispute.orderId },
-    });
+    const order = dispute.orderId
+      ? await this.prisma.order.findUnique({
+          where: { id: dispute.orderId },
+        })
+      : null;
 
     if (order) {
       const otherPartyId =
@@ -147,9 +151,11 @@ export class DisputesEventsHandler {
       `Evidence uploaded: ${evidence.id} for dispute: ${dispute.id}`,
     );
 
-    const order = await this.prisma.order.findUnique({
-      where: { id: dispute.orderId },
-    });
+    const order = dispute.orderId
+      ? await this.prisma.order.findUnique({
+          where: { id: dispute.orderId },
+        })
+      : null;
 
     if (order) {
       const otherPartyId =

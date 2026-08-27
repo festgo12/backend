@@ -68,6 +68,13 @@ enum DisputeStatus {
   ESCALATED
 }
 
+enum DisputeSubjectType {
+  ORDER
+  DEPOSIT
+  WITHDRAWAL
+  OTHER
+}
+
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   email         String?        @unique
@@ -257,24 +264,27 @@ model Order {
 }
 
 model Dispute {
-  id           String        @id @default(uuid()) @db.Uuid
-  orderId      String        @db.Uuid
-  order        Order         @relation(fields: [orderId], references: [id])
-  initiatorId  String        @db.Uuid
-  initiator    User          @relation("Initiator", fields: [initiatorId], references: [id])
-  reason       String        @db.Text
-  description  String?       @db.Text
-  status       DisputeStatus @default(OPEN)
-  assigneeId   String?       @db.Uuid
-  assignee     User?         @relation("Assignee", fields: [assigneeId], references: [id])
-  resolution   String?       @db.Text
+  id           String             @id @default(uuid()) @db.Uuid
+  orderId      String?            @db.Uuid
+  order        Order?             @relation(fields: [orderId], references: [id])
+  subjectType  DisputeSubjectType @default(ORDER)
+  reference    String?
+  initiatorId  String             @db.Uuid
+  initiator    User               @relation("Initiator", fields: [initiatorId], references: [id])
+  reason       String             @db.Text
+  description  String?            @db.Text
+  status       DisputeStatus      @default(OPEN)
+  assigneeId   String?            @db.Uuid
+  assignee     User?              @relation("Assignee", fields: [assigneeId], references: [id])
+  resolution   String?            @db.Text
   deadline     DateTime?
   evidence     Evidence[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   @@index([orderId])
   @@index([initiatorId])
+  @@index([subjectType])
   @@index([assigneeId])
   @@index([status])
 }

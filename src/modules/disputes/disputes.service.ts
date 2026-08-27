@@ -9,7 +9,11 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateDisputeDto } from './dto/create-dispute.dto';
-import { DisputeStatus, OrderStatus } from '@src/generated/client';
+import {
+  DisputeStatus,
+  DisputeSubjectType,
+  OrderStatus,
+} from '@src/generated/client';
 
 const VALID_TRANSITIONS: Record<DisputeStatus, DisputeStatus[]> = {
   [DisputeStatus.OPEN]: [
@@ -54,48 +58,56 @@ export class DisputesService {
   ) {}
 
   async createDispute(userId: string, dto: CreateDisputeDto) {
+    const subjectType = dto.subjectType ?? DisputeSubjectType.ORDER;
+
     return this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: dto.orderId },
-        include: { ad: true },
-      });
+      let order: any = null;
 
-      if (!order) {
-        throw new NotFoundException('Order not found');
-      }
+      if (dto.orderId) {
+        order = await tx.order.findUnique({
+          where: { id: dto.orderId },
+          include: { ad: true },
+        });
 
-      if (order.buyerId !== userId && order.sellerId !== userId) {
-        throw new ForbiddenException('You are not a participant in this order');
-      }
+        if (!order) {
+          throw new NotFoundException('Order not found');
+        }
 
-      const disputableStatuses: OrderStatus[] = [
-        OrderStatus.CREATED,
-        OrderStatus.PENDING_SELLER,
-        OrderStatus.APPROVED,
-      ];
+        if (order.buyerId !== userId && order.sellerId !== userId) {
+          throw new ForbiddenException('You are not a participant in this order');
+        }
 
-      if (!disputableStatuses.includes(order.status)) {
-        throw new BadRequestException(
-          `Cannot open dispute for order in ${order.status} status`,
-        );
-      }
+        const disputableStatuses: OrderStatus[] = [
+          OrderStatus.CREATED,
+          OrderStatus.PENDING_SELLER,
+          OrderStatus.APPROVED,
+        ];
 
-      const existingDispute = await tx.dispute.findFirst({
-        where: {
-          orderId: dto.orderId,
-          status: {
-            notIn: [DisputeStatus.RESOLVED, DisputeStatus.REJECTED],
+        if (!disputableStatuses.includes(order.status)) {
+          throw new BadRequestException(
+            `Cannot open dispute for order in ${order.status} status`,
+          );
+        }
+
+        const existingDispute = await tx.dispute.findFirst({
+          where: {
+            orderId: dto.orderId,
+            status: {
+              notIn: [DisputeStatus.RESOLVED, DisputeStatus.REJECTED],
+            },
           },
-        },
-      });
+        });
 
-      if (existingDispute) {
-        throw new ConflictException('An active dispute already exists for this order');
+        if (existingDispute) {
+          throw new ConflictException('An active dispute already exists for this order');
+        }
       }
 
       const dispute = await tx.dispute.create({
         data: {
-          orderId: dto.orderId,
+          orderId: dto.orderId ?? null,
+          subjectType,
+          reference: dto.reference,
           initiatorId: userId,
           reason: dto.reason,
           description: dto.description,
@@ -103,13 +115,15 @@ export class DisputesService {
         },
       });
 
-      await tx.order.update({
-        where: { id: dto.orderId },
-        data: {
-          status: OrderStatus.DISPUTED,
-          version: { increment: 1 },
-        },
-      });
+      if (order) {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: OrderStatus.DISPUTED,
+            version: { increment: 1 },
+          },
+        });
+      }
 
       this.eventEmitter.emit('dispute.created', { dispute, order });
 
@@ -268,6 +282,8 @@ export class DisputesService {
     if (filters?.search) {
       where.OR = [
         { reason: { contains: filters.search, mode: 'insensitive' } },
+        { reference: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
         { initiator: { email: { contains: filters.search, mode: 'insensitive' } } },
         { order: { id: { contains: filters.search, mode: 'insensitive' } } },
       ];
@@ -460,7 +476,7 @@ export class DisputesService {
         },
       });
 
-      if (outcome === DisputeStatus.RESOLVED) {
+      if (outcome === DisputeStatus.RESOLVED && dispute.orderId) {
         await tx.order.update({
           where: { id: dispute.orderId },
           data: {
@@ -468,7 +484,7 @@ export class DisputesService {
             version: { increment: 1 },
           },
         });
-      } else if (outcome === DisputeStatus.REJECTED) {
+      } else if (outcome === DisputeStatus.REJECTED && dispute.orderId) {
         await tx.order.update({
           where: { id: dispute.orderId },
           data: {
@@ -498,6 +514,12 @@ export class DisputesService {
 
       if (!dispute) {
         throw new NotFoundException('Dispute not found');
+      }
+
+      if (!dispute.orderId || !dispute.order) {
+        throw new BadRequestException(
+          'This dispute is not linked to an order and cannot be frozen',
+        );
       }
 
       const frozenStatuses: OrderStatus[] = [

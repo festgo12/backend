@@ -5,6 +5,7 @@ import { UploadService } from '../upload/upload.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BadRequestException, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { DisputeStatus, OrderStatus } from '@src/generated/client';
+import { DisputeSubjectType } from './dto/create-dispute.dto';
 
 const mockPrismaService = {
   $transaction: jest.fn(),
@@ -182,6 +183,53 @@ describe('DisputesService', () => {
           reason: 'Payment not received',
         }),
       ).rejects.toThrow(ConflictException);
+    });
+
+    it('should create a deposit/withdrawal dispute without an order', async () => {
+      const mockNonOrderDispute = {
+        id: 'dispute-2',
+        orderId: null,
+        subjectType: DisputeSubjectType.DEPOSIT,
+        reference: 'REF-12345',
+        initiatorId: 'user-1',
+        reason: 'Deposit not reflected in wallet',
+        description: 'I deposited but wallet balance did not update',
+        status: DisputeStatus.OPEN,
+      };
+
+      let createdData: any;
+      mockPrismaService.$transaction.mockImplementation(async (cb: any) => {
+        const tx = {
+          order: {
+            findUnique: jest.fn(),
+            update: jest.fn(),
+          },
+          dispute: {
+            findFirst: jest.fn(),
+            create: jest.fn().mockImplementation(({ data }) => {
+              createdData = data;
+              return mockNonOrderDispute;
+            }),
+          },
+        };
+        return cb(tx);
+      });
+
+      const result = await service.createDispute('user-1', {
+        subjectType: DisputeSubjectType.DEPOSIT,
+        reference: 'REF-12345',
+        reason: 'Deposit not reflected in wallet',
+        description: 'I deposited but wallet balance did not update',
+      });
+
+      expect(result).toEqual(mockNonOrderDispute);
+      expect(createdData.orderId).toBeNull();
+      expect(createdData.subjectType).toBe(DisputeSubjectType.DEPOSIT);
+      expect(createdData.reference).toBe('REF-12345');
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'dispute.created',
+        expect.objectContaining({ order: null }),
+      );
     });
   });
 
@@ -369,6 +417,45 @@ describe('DisputesService', () => {
         service.resolveDispute('dispute-1', 'resolution', DisputeStatus.RESOLVED, 'admin-1'),
       ).rejects.toThrow(BadRequestException);
     });
+
+    it('should resolve a non-order dispute without touching an order', async () => {
+      const orderUpdate = jest.fn();
+      mockPrismaService.$transaction.mockImplementation(async (cb: any) => {
+        const tx = {
+          dispute: {
+            findUnique: jest.fn().mockResolvedValue({
+              id: 'dispute-2',
+              status: DisputeStatus.UNDER_REVIEW,
+              orderId: null,
+              order: null,
+            }),
+            update: jest.fn().mockResolvedValue({
+              id: 'dispute-2',
+              status: DisputeStatus.RESOLVED,
+              resolution: 'Credited to wallet',
+              order: null,
+              initiator: {},
+              evidence: [],
+            }),
+          },
+          order: {
+            update: orderUpdate,
+          },
+        };
+        return cb(tx);
+      });
+
+      const result = await service.resolveDispute(
+        'dispute-2',
+        'Credited to wallet',
+        DisputeStatus.RESOLVED,
+        'admin-1',
+      );
+
+      expect(result.status).toBe(DisputeStatus.RESOLVED);
+      expect(orderUpdate).not.toHaveBeenCalled();
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('dispute.resolved', expect.any(Object));
+    });
   });
 
   describe('freezeOrder', () => {
@@ -378,6 +465,7 @@ describe('DisputesService', () => {
           dispute: {
             findUnique: jest.fn().mockResolvedValue({
               id: 'dispute-1',
+              orderId: 'order-1',
               order: { status: OrderStatus.APPROVED },
             }),
           },
@@ -409,6 +497,28 @@ describe('DisputesService', () => {
       });
 
       await expect(service.freezeOrder('dispute-1', 'admin-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException if dispute is not linked to an order', async () => {
+      mockPrismaService.$transaction.mockImplementation(async (cb: any) => {
+        const tx = {
+          dispute: {
+            findUnique: jest.fn().mockResolvedValue({
+              id: 'dispute-2',
+              orderId: null,
+              order: null,
+            }),
+          },
+          order: {
+            update: jest.fn(),
+          },
+        };
+        return cb(tx);
+      });
+
+      await expect(service.freezeOrder('dispute-2', 'admin-1')).rejects.toThrow(
         BadRequestException,
       );
     });
