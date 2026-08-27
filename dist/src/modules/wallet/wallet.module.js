@@ -12,16 +12,18 @@ const wallet_service_1 = require("./wallet.service");
 const ledger_service_1 = require("./ledger.service");
 const wallet_controller_1 = require("./wallet.controller");
 const wallet_events_handler_1 = require("./wallet_events.handler");
+const wallet_notifications_handler_1 = require("./wallet-notifications.handler");
 const paystack_module_1 = require("../paystack/paystack.module");
 const security_module_1 = require("../security/security.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 let WalletModule = class WalletModule {
 };
 exports.WalletModule = WalletModule;
 exports.WalletModule = WalletModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), security_module_1.SecurityModule],
+        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), security_module_1.SecurityModule, notifications_module_1.NotificationsModule],
         controllers: [wallet_controller_1.WalletController],
-        providers: [wallet_service_1.WalletService, ledger_service_1.LedgerService, wallet_events_handler_1.WalletEventsHandler],
+        providers: [wallet_service_1.WalletService, ledger_service_1.LedgerService, wallet_events_handler_1.WalletEventsHandler, wallet_notifications_handler_1.WalletNotificationsHandler],
         exports: [wallet_service_1.WalletService, ledger_service_1.LedgerService],
     })
 ], WalletModule);

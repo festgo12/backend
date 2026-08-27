@@ -8,15 +8,15 @@ export declare class AdminDisputesController {
     constructor(disputesService: DisputesService);
     findAll(page?: string, limit?: string, status?: DisputeStatus, assigneeId?: string, startDate?: string, endDate?: string, search?: string): Promise<{
         disputes: ({
-            order: {
+            order: ({
                 ad: {
                     type: import("@src/generated/client").$Enums.AdType;
                     id: string;
                     status: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    sellerId: string;
                     version: number;
+                    sellerId: string;
                     asset: import("@src/generated/client").$Enums.Currency;
                     quantity: import("@src/generated/client/runtime/library").Decimal;
                     price: import("@src/generated/client/runtime/library").Decimal;
@@ -29,16 +29,16 @@ export declare class AdminDisputesController {
                 status: import("@src/generated/client").$Enums.OrderStatus;
                 createdAt: Date;
                 updatedAt: Date;
+                version: number;
                 expiresAt: Date;
                 fraudFlagged: boolean;
                 sellerId: string;
                 buyerId: string;
-                version: number;
                 fiatAmount: import("@src/generated/client/runtime/library").Decimal;
                 cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
                 feeAmount: import("@src/generated/client/runtime/library").Decimal;
                 adId: string;
-            };
+            }) | null;
             evidence: {
                 id: string;
                 createdAt: Date;
@@ -82,8 +82,10 @@ export declare class AdminDisputesController {
             createdAt: Date;
             updatedAt: Date;
             initiatorId: string;
-            orderId: string;
+            orderId: string | null;
+            reference: string | null;
             reason: string;
+            subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
             resolution: string | null;
             deadline: Date | null;
             assigneeId: string | null;
@@ -105,15 +107,15 @@ export declare class AdminDisputesController {
         avgResolutionHours: number;
     }>;
     findOne(id: string): Promise<{
-        order: {
+        order: ({
             ad: {
                 type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
@@ -135,7 +137,6 @@ export declare class AdminDisputesController {
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -143,6 +144,7 @@ export declare class AdminDisputesController {
                     derivationIndex: number | null;
                     chain: string | null;
                     isFrozen: boolean;
+                    version: number;
                 }[];
             } & {
                 id: string;
@@ -183,7 +185,6 @@ export declare class AdminDisputesController {
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -191,6 +192,7 @@ export declare class AdminDisputesController {
                     derivationIndex: number | null;
                     chain: string | null;
                     isFrozen: boolean;
+                    version: number;
                 }[];
             } & {
                 id: string;
@@ -222,16 +224,16 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        }) | null;
         evidence: ({
             uploadedBy: {
                 profile: {
@@ -289,8 +291,10 @@ export declare class AdminDisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
@@ -301,16 +305,16 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        } | null;
         evidence: {
             id: string;
             createdAt: Date;
@@ -341,8 +345,10 @@ export declare class AdminDisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
@@ -353,16 +359,16 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        } | null;
         evidence: {
             id: string;
             createdAt: Date;
@@ -380,8 +386,10 @@ export declare class AdminDisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
@@ -392,16 +400,16 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        } | null;
         evidence: {
             id: string;
             createdAt: Date;
@@ -432,8 +440,10 @@ export declare class AdminDisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
@@ -443,11 +453,11 @@ export declare class AdminDisputesController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;

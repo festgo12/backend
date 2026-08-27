@@ -13,7 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CryptoWithdrawalService = void 0;
 const common_1 = require("@nestjs/common");
 const ethers_1 = require("ethers");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const crypto_config_service_1 = require("./crypto-config.service");
 const chain_client_service_1 = require("./chain-client.service");
 const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
 const hd_wallet_service_1 = require("./hd-wallet.service");
@@ -25,13 +27,17 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
     chainClient;
     tracker;
     platformService;
+    cryptoConfig;
+    eventEmitter;
     logger = new common_1.Logger(CryptoWithdrawalService_1.name);
-    constructor(prisma, hdWallet, chainClient, tracker, platformService) {
+    constructor(prisma, hdWallet, chainClient, tracker, platformService, cryptoConfig, eventEmitter) {
         this.prisma = prisma;
         this.hdWallet = hdWallet;
         this.chainClient = chainClient;
         this.tracker = tracker;
         this.platformService = platformService;
+        this.cryptoConfig = cryptoConfig;
+        this.eventEmitter = eventEmitter;
     }
     async processWithdrawal(params) {
         const { walletId, amount, destinationAddress, currency } = params;
@@ -53,7 +59,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         const reserveResult = await this.prisma.$executeRaw `
       UPDATE "Wallet"
       SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
-      WHERE "id" = ${walletId}
+      WHERE "id" = ${walletId}::uuid
         AND ("balance" - "reservedBalance") >= ${amountDecimal}
     `;
         if (reserveResult === 0) {
@@ -98,7 +104,7 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
             await this.prisma.$executeRaw `
         UPDATE "Wallet"
         SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
-        WHERE "id" = ${walletId}
+        WHERE "id" = ${walletId}::uuid
       `;
             throw new common_1.InternalServerErrorException(`Withdrawal failed: ${message}`);
         }
@@ -125,6 +131,14 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
             amount,
             destination: destinationAddress,
             metadata: { source: 'USER_WITHDRAWAL' },
+        });
+        this.eventEmitter.emit('wallet.withdrawal.initiated', {
+            transactionId: txHash,
+            walletId,
+            type: client_1.LedgerType.WITHDRAWAL,
+            reference: txHash,
+            amount,
+            status: 'PENDING',
         });
         this.logger.log(`Local withdrawal submitted: ${txHash} (${amount} ${currency})`);
         return { txId: txHash, status: 'PENDING' };
@@ -255,7 +269,14 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         const trimmed = address.trim();
         switch (currency) {
             case client_1.Currency.BTC:
-                if (!/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(trimmed)) {
+                if (this.cryptoConfig.isTestnet) {
+                    if (!(/^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+                        /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+                        /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(trimmed))) {
+                        throw new common_1.BadRequestException('Invalid Bitcoin address format');
+                    }
+                }
+                else if (!/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(trimmed)) {
                     throw new common_1.BadRequestException('Invalid Bitcoin address format');
                 }
                 break;
@@ -284,6 +305,8 @@ exports.CryptoWithdrawalService = CryptoWithdrawalService = CryptoWithdrawalServ
         hd_wallet_service_1.HdWalletService,
         chain_client_service_1.ChainClientService,
         withdrawal_tracker_service_1.WithdrawalTrackerService,
-        platform_service_1.PlatformService])
+        platform_service_1.PlatformService,
+        crypto_config_service_1.CryptoConfigService,
+        event_emitter_1.EventEmitter2])
 ], CryptoWithdrawalService);
 //# sourceMappingURL=crypto-withdrawal.service.js.map

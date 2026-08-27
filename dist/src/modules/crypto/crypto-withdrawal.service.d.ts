@@ -1,4 +1,6 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
+import { CryptoConfigService } from './crypto-config.service';
 import { ChainClientService } from './chain-client.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { HdWalletService } from './hd-wallet.service';
@@ -10,8 +12,10 @@ export declare class CryptoWithdrawalService {
     private readonly chainClient;
     private readonly tracker;
     private readonly platformService;
+    private readonly cryptoConfig;
+    private readonly eventEmitter;
     private readonly logger;
-    constructor(prisma: PrismaService, hdWallet: HdWalletService, chainClient: ChainClientService, tracker: WithdrawalTrackerService, platformService: PlatformService);
+    constructor(prisma: PrismaService, hdWallet: HdWalletService, chainClient: ChainClientService, tracker: WithdrawalTrackerService, platformService: PlatformService, cryptoConfig: CryptoConfigService, eventEmitter: EventEmitter2);
     processWithdrawal(params: {
         walletId: string;
         amount: number;

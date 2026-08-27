@@ -58,52 +58,60 @@ let DisputesService = class DisputesService {
         this.eventEmitter = eventEmitter;
     }
     async createDispute(userId, dto) {
+        const subjectType = dto.subjectType ?? client_1.DisputeSubjectType.ORDER;
         return this.prisma.$transaction(async (tx) => {
-            const order = await tx.order.findUnique({
-                where: { id: dto.orderId },
-                include: { ad: true },
-            });
-            if (!order) {
-                throw new common_1.NotFoundException('Order not found');
-            }
-            if (order.buyerId !== userId && order.sellerId !== userId) {
-                throw new common_1.ForbiddenException('You are not a participant in this order');
-            }
-            const disputableStatuses = [
-                client_1.OrderStatus.CREATED,
-                client_1.OrderStatus.PENDING_SELLER,
-                client_1.OrderStatus.APPROVED,
-            ];
-            if (!disputableStatuses.includes(order.status)) {
-                throw new common_1.BadRequestException(`Cannot open dispute for order in ${order.status} status`);
-            }
-            const existingDispute = await tx.dispute.findFirst({
-                where: {
-                    orderId: dto.orderId,
-                    status: {
-                        notIn: [client_1.DisputeStatus.RESOLVED, client_1.DisputeStatus.REJECTED],
+            let order = null;
+            if (dto.orderId) {
+                order = await tx.order.findUnique({
+                    where: { id: dto.orderId },
+                    include: { ad: true },
+                });
+                if (!order) {
+                    throw new common_1.NotFoundException('Order not found');
+                }
+                if (order.buyerId !== userId && order.sellerId !== userId) {
+                    throw new common_1.ForbiddenException('You are not a participant in this order');
+                }
+                const disputableStatuses = [
+                    client_1.OrderStatus.CREATED,
+                    client_1.OrderStatus.PENDING_SELLER,
+                    client_1.OrderStatus.APPROVED,
+                ];
+                if (!disputableStatuses.includes(order.status)) {
+                    throw new common_1.BadRequestException(`Cannot open dispute for order in ${order.status} status`);
+                }
+                const existingDispute = await tx.dispute.findFirst({
+                    where: {
+                        orderId: dto.orderId,
+                        status: {
+                            notIn: [client_1.DisputeStatus.RESOLVED, client_1.DisputeStatus.REJECTED],
+                        },
                     },
-                },
-            });
-            if (existingDispute) {
-                throw new common_1.ConflictException('An active dispute already exists for this order');
+                });
+                if (existingDispute) {
+                    throw new common_1.ConflictException('An active dispute already exists for this order');
+                }
             }
             const dispute = await tx.dispute.create({
                 data: {
-                    orderId: dto.orderId,
+                    orderId: dto.orderId ?? null,
+                    subjectType,
+                    reference: dto.reference,
                     initiatorId: userId,
                     reason: dto.reason,
                     description: dto.description,
                     status: client_1.DisputeStatus.OPEN,
                 },
             });
-            await tx.order.update({
-                where: { id: dto.orderId },
-                data: {
-                    status: client_1.OrderStatus.DISPUTED,
-                    version: { increment: 1 },
-                },
-            });
+            if (order) {
+                await tx.order.update({
+                    where: { id: order.id },
+                    data: {
+                        status: client_1.OrderStatus.DISPUTED,
+                        version: { increment: 1 },
+                    },
+                });
+            }
             this.eventEmitter.emit('dispute.created', { dispute, order });
             return dispute;
         });
@@ -230,6 +238,8 @@ let DisputesService = class DisputesService {
         if (filters?.search) {
             where.OR = [
                 { reason: { contains: filters.search, mode: 'insensitive' } },
+                { reference: { contains: filters.search, mode: 'insensitive' } },
+                { description: { contains: filters.search, mode: 'insensitive' } },
                 { initiator: { email: { contains: filters.search, mode: 'insensitive' } } },
                 { order: { id: { contains: filters.search, mode: 'insensitive' } } },
             ];
@@ -386,7 +396,7 @@ let DisputesService = class DisputesService {
                     evidence: true,
                 },
             });
-            if (outcome === client_1.DisputeStatus.RESOLVED) {
+            if (outcome === client_1.DisputeStatus.RESOLVED && dispute.orderId) {
                 await tx.order.update({
                     where: { id: dispute.orderId },
                     data: {
@@ -395,7 +405,7 @@ let DisputesService = class DisputesService {
                     },
                 });
             }
-            else if (outcome === client_1.DisputeStatus.REJECTED) {
+            else if (outcome === client_1.DisputeStatus.REJECTED && dispute.orderId) {
                 await tx.order.update({
                     where: { id: dispute.orderId },
                     data: {
@@ -421,6 +431,9 @@ let DisputesService = class DisputesService {
             });
             if (!dispute) {
                 throw new common_1.NotFoundException('Dispute not found');
+            }
+            if (!dispute.orderId || !dispute.order) {
+                throw new common_1.BadRequestException('This dispute is not linked to an order and cannot be frozen');
             }
             const frozenStatuses = [
                 client_1.OrderStatus.COMPLETED,

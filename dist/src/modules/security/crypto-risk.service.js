@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CryptoRiskService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const crypto_config_service_1 = require("../crypto/crypto-config.service");
 const risk_engine_service_1 = require("./risk-engine.service");
 const fraud_rules_service_1 = require("./fraud-rules.service");
 const alert_engine_service_1 = require("./alert-engine.service");
@@ -41,6 +42,7 @@ const DEFAULT_RISK_CONFIG = {
 };
 let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
     prisma;
+    cryptoConfig;
     riskEngine;
     fraudRules;
     alertEngine;
@@ -62,8 +64,9 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
         USDT: 100000,
         USDC: 100000,
     };
-    constructor(prisma, riskEngine, fraudRules, alertEngine) {
+    constructor(prisma, cryptoConfig, riskEngine, fraudRules, alertEngine) {
         this.prisma = prisma;
+        this.cryptoConfig = cryptoConfig;
         this.riskEngine = riskEngine;
         this.fraudRules = fraudRules;
         this.alertEngine = alertEngine;
@@ -277,6 +280,11 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
             return false;
         switch (chain) {
             case 'bitcoin':
+                if (this.cryptoConfig.isTestnet) {
+                    return (/^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) ||
+                        /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(address) ||
+                        /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(address));
+                }
                 return /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(address);
             case 'ethereum':
                 return /^0x[0-9a-fA-F]{40}$/.test(address);
@@ -289,6 +297,7 @@ exports.CryptoRiskService = CryptoRiskService;
 exports.CryptoRiskService = CryptoRiskService = CryptoRiskService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        crypto_config_service_1.CryptoConfigService,
         risk_engine_service_1.RiskEngineService,
         fraud_rules_service_1.FraudRulesService,
         alert_engine_service_1.AlertEngineService])

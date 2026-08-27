@@ -233,6 +233,16 @@ export const OrderStatus: {
 export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 
 
+export const DisputeSubjectType: {
+  ORDER: 'ORDER',
+  DEPOSIT: 'DEPOSIT',
+  WITHDRAWAL: 'WITHDRAWAL',
+  OTHER: 'OTHER'
+};
+
+export type DisputeSubjectType = (typeof DisputeSubjectType)[keyof typeof DisputeSubjectType]
+
+
 export const DisputeStatus: {
   OPEN: 'OPEN',
   UNDER_REVIEW: 'UNDER_REVIEW',
@@ -326,6 +336,10 @@ export const AdType: typeof $Enums.AdType
 export type OrderStatus = $Enums.OrderStatus
 
 export const OrderStatus: typeof $Enums.OrderStatus
+
+export type DisputeSubjectType = $Enums.DisputeSubjectType
+
+export const DisputeSubjectType: typeof $Enums.DisputeSubjectType
 
 export type DisputeStatus = $Enums.DisputeStatus
 
@@ -13920,6 +13934,8 @@ export namespace Prisma {
   export type DisputeMinAggregateOutputType = {
     id: string | null
     orderId: string | null
+    subjectType: $Enums.DisputeSubjectType | null
+    reference: string | null
     initiatorId: string | null
     reason: string | null
     description: string | null
@@ -13934,6 +13950,8 @@ export namespace Prisma {
   export type DisputeMaxAggregateOutputType = {
     id: string | null
     orderId: string | null
+    subjectType: $Enums.DisputeSubjectType | null
+    reference: string | null
     initiatorId: string | null
     reason: string | null
     description: string | null
@@ -13948,6 +13966,8 @@ export namespace Prisma {
   export type DisputeCountAggregateOutputType = {
     id: number
     orderId: number
+    subjectType: number
+    reference: number
     initiatorId: number
     reason: number
     description: number
@@ -13964,6 +13984,8 @@ export namespace Prisma {
   export type DisputeMinAggregateInputType = {
     id?: true
     orderId?: true
+    subjectType?: true
+    reference?: true
     initiatorId?: true
     reason?: true
     description?: true
@@ -13978,6 +14000,8 @@ export namespace Prisma {
   export type DisputeMaxAggregateInputType = {
     id?: true
     orderId?: true
+    subjectType?: true
+    reference?: true
     initiatorId?: true
     reason?: true
     description?: true
@@ -13992,6 +14016,8 @@ export namespace Prisma {
   export type DisputeCountAggregateInputType = {
     id?: true
     orderId?: true
+    subjectType?: true
+    reference?: true
     initiatorId?: true
     reason?: true
     description?: true
@@ -14078,7 +14104,9 @@ export namespace Prisma {
 
   export type DisputeGroupByOutputType = {
     id: string
-    orderId: string
+    orderId: string | null
+    subjectType: $Enums.DisputeSubjectType
+    reference: string | null
     initiatorId: string
     reason: string
     description: string | null
@@ -14110,6 +14138,8 @@ export namespace Prisma {
   export type DisputeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
+    subjectType?: boolean
+    reference?: boolean
     initiatorId?: boolean
     reason?: boolean
     description?: boolean
@@ -14119,7 +14149,7 @@ export namespace Prisma {
     deadline?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    order?: boolean | OrderDefaultArgs<ExtArgs>
+    order?: boolean | Dispute$orderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
     evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
@@ -14129,6 +14159,8 @@ export namespace Prisma {
   export type DisputeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
+    subjectType?: boolean
+    reference?: boolean
     initiatorId?: boolean
     reason?: boolean
     description?: boolean
@@ -14138,7 +14170,7 @@ export namespace Prisma {
     deadline?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    order?: boolean | OrderDefaultArgs<ExtArgs>
+    order?: boolean | Dispute$orderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }, ExtArgs["result"]["dispute"]>
@@ -14146,6 +14178,8 @@ export namespace Prisma {
   export type DisputeSelectScalar = {
     id?: boolean
     orderId?: boolean
+    subjectType?: boolean
+    reference?: boolean
     initiatorId?: boolean
     reason?: boolean
     description?: boolean
@@ -14158,14 +14192,14 @@ export namespace Prisma {
   }
 
   export type DisputeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    order?: boolean | OrderDefaultArgs<ExtArgs>
+    order?: boolean | Dispute$orderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
     evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
     _count?: boolean | DisputeCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DisputeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    order?: boolean | OrderDefaultArgs<ExtArgs>
+    order?: boolean | Dispute$orderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }
@@ -14173,14 +14207,16 @@ export namespace Prisma {
   export type $DisputePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Dispute"
     objects: {
-      order: Prisma.$OrderPayload<ExtArgs>
+      order: Prisma.$OrderPayload<ExtArgs> | null
       initiator: Prisma.$UserPayload<ExtArgs>
       assignee: Prisma.$UserPayload<ExtArgs> | null
       evidence: Prisma.$EvidencePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      orderId: string
+      orderId: string | null
+      subjectType: $Enums.DisputeSubjectType
+      reference: string | null
       initiatorId: string
       reason: string
       description: string | null
@@ -14554,7 +14590,7 @@ export namespace Prisma {
    */
   export interface Prisma__DisputeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    order<T extends Dispute$orderArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$orderArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     initiator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     assignee<T extends Dispute$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     evidence<T extends Dispute$evidenceArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$evidenceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
@@ -14589,6 +14625,8 @@ export namespace Prisma {
   interface DisputeFieldRefs {
     readonly id: FieldRef<"Dispute", 'String'>
     readonly orderId: FieldRef<"Dispute", 'String'>
+    readonly subjectType: FieldRef<"Dispute", 'DisputeSubjectType'>
+    readonly reference: FieldRef<"Dispute", 'String'>
     readonly initiatorId: FieldRef<"Dispute", 'String'>
     readonly reason: FieldRef<"Dispute", 'String'>
     readonly description: FieldRef<"Dispute", 'String'>
@@ -14913,6 +14951,21 @@ export namespace Prisma {
      * Filter which Disputes to delete
      */
     where?: DisputeWhereInput
+  }
+
+  /**
+   * Dispute.order
+   */
+  export type Dispute$orderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    where?: OrderWhereInput
   }
 
   /**
@@ -34176,6 +34229,8 @@ export namespace Prisma {
   export const DisputeScalarFieldEnum: {
     id: 'id',
     orderId: 'orderId',
+    subjectType: 'subjectType',
+    reference: 'reference',
     initiatorId: 'initiatorId',
     reason: 'reason',
     description: 'description',
@@ -34697,6 +34752,20 @@ export namespace Prisma {
    * Reference to a field of type 'OrderStatus[]'
    */
   export type ListEnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DisputeSubjectType'
+   */
+  export type EnumDisputeSubjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeSubjectType'>
+    
+
+
+  /**
+   * Reference to a field of type 'DisputeSubjectType[]'
+   */
+  export type ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeSubjectType[]'>
     
 
 
@@ -35684,7 +35753,9 @@ export namespace Prisma {
     OR?: DisputeWhereInput[]
     NOT?: DisputeWhereInput | DisputeWhereInput[]
     id?: UuidFilter<"Dispute"> | string
-    orderId?: UuidFilter<"Dispute"> | string
+    orderId?: UuidNullableFilter<"Dispute"> | string | null
+    subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
+    reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
     description?: StringNullableFilter<"Dispute"> | string | null
@@ -35694,7 +35765,7 @@ export namespace Prisma {
     deadline?: DateTimeNullableFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
-    order?: XOR<OrderRelationFilter, OrderWhereInput>
+    order?: XOR<OrderNullableRelationFilter, OrderWhereInput> | null
     initiator?: XOR<UserRelationFilter, UserWhereInput>
     assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     evidence?: EvidenceListRelationFilter
@@ -35702,7 +35773,9 @@ export namespace Prisma {
 
   export type DisputeOrderByWithRelationInput = {
     id?: SortOrder
-    orderId?: SortOrder
+    orderId?: SortOrderInput | SortOrder
+    subjectType?: SortOrder
+    reference?: SortOrderInput | SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -35723,7 +35796,9 @@ export namespace Prisma {
     AND?: DisputeWhereInput | DisputeWhereInput[]
     OR?: DisputeWhereInput[]
     NOT?: DisputeWhereInput | DisputeWhereInput[]
-    orderId?: UuidFilter<"Dispute"> | string
+    orderId?: UuidNullableFilter<"Dispute"> | string | null
+    subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
+    reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
     description?: StringNullableFilter<"Dispute"> | string | null
@@ -35733,7 +35808,7 @@ export namespace Prisma {
     deadline?: DateTimeNullableFilter<"Dispute"> | Date | string | null
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
-    order?: XOR<OrderRelationFilter, OrderWhereInput>
+    order?: XOR<OrderNullableRelationFilter, OrderWhereInput> | null
     initiator?: XOR<UserRelationFilter, UserWhereInput>
     assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     evidence?: EvidenceListRelationFilter
@@ -35741,7 +35816,9 @@ export namespace Prisma {
 
   export type DisputeOrderByWithAggregationInput = {
     id?: SortOrder
-    orderId?: SortOrder
+    orderId?: SortOrderInput | SortOrder
+    subjectType?: SortOrder
+    reference?: SortOrderInput | SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
     description?: SortOrderInput | SortOrder
@@ -35761,7 +35838,9 @@ export namespace Prisma {
     OR?: DisputeScalarWhereWithAggregatesInput[]
     NOT?: DisputeScalarWhereWithAggregatesInput | DisputeScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Dispute"> | string
-    orderId?: UuidWithAggregatesFilter<"Dispute"> | string
+    orderId?: UuidNullableWithAggregatesFilter<"Dispute"> | string | null
+    subjectType?: EnumDisputeSubjectTypeWithAggregatesFilter<"Dispute"> | $Enums.DisputeSubjectType
+    reference?: StringNullableWithAggregatesFilter<"Dispute"> | string | null
     initiatorId?: UuidWithAggregatesFilter<"Dispute"> | string
     reason?: StringWithAggregatesFilter<"Dispute"> | string
     description?: StringNullableWithAggregatesFilter<"Dispute"> | string | null
@@ -38334,6 +38413,8 @@ export namespace Prisma {
 
   export type DisputeCreateInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -38341,7 +38422,7 @@ export namespace Prisma {
     deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    order: OrderCreateNestedOneWithoutDisputesInput
+    order?: OrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
@@ -38349,7 +38430,9 @@ export namespace Prisma {
 
   export type DisputeUncheckedCreateInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -38364,6 +38447,8 @@ export namespace Prisma {
 
   export type DisputeUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -38371,7 +38456,7 @@ export namespace Prisma {
     deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    order?: OrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
@@ -38379,7 +38464,9 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38394,7 +38481,9 @@ export namespace Prisma {
 
   export type DisputeCreateManyInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -38408,6 +38497,8 @@ export namespace Prisma {
 
   export type DisputeUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -38419,7 +38510,9 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41289,16 +41382,18 @@ export namespace Prisma {
     _max?: NestedEnumOrderStatusFilter<$PrismaModel>
   }
 
+  export type EnumDisputeSubjectTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeSubjectType | EnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel> | $Enums.DisputeSubjectType
+  }
+
   export type EnumDisputeStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
     in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumDisputeStatusFilter<$PrismaModel> | $Enums.DisputeStatus
-  }
-
-  export type OrderRelationFilter = {
-    is?: OrderWhereInput
-    isNot?: OrderWhereInput
   }
 
   export type UserNullableRelationFilter = {
@@ -41309,6 +41404,8 @@ export namespace Prisma {
   export type DisputeCountOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    subjectType?: SortOrder
+    reference?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
     description?: SortOrder
@@ -41323,6 +41420,8 @@ export namespace Prisma {
   export type DisputeMaxOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    subjectType?: SortOrder
+    reference?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
     description?: SortOrder
@@ -41337,6 +41436,8 @@ export namespace Prisma {
   export type DisputeMinOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    subjectType?: SortOrder
+    reference?: SortOrder
     initiatorId?: SortOrder
     reason?: SortOrder
     description?: SortOrder
@@ -41346,6 +41447,16 @@ export namespace Prisma {
     deadline?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumDisputeSubjectTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeSubjectType | EnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeSubjectTypeWithAggregatesFilter<$PrismaModel> | $Enums.DisputeSubjectType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel>
+    _max?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel>
   }
 
   export type EnumDisputeStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -43769,14 +43880,20 @@ export namespace Prisma {
     connect?: EvidenceWhereUniqueInput | EvidenceWhereUniqueInput[]
   }
 
+  export type EnumDisputeSubjectTypeFieldUpdateOperationsInput = {
+    set?: $Enums.DisputeSubjectType
+  }
+
   export type EnumDisputeStatusFieldUpdateOperationsInput = {
     set?: $Enums.DisputeStatus
   }
 
-  export type OrderUpdateOneRequiredWithoutDisputesNestedInput = {
+  export type OrderUpdateOneWithoutDisputesNestedInput = {
     create?: XOR<OrderCreateWithoutDisputesInput, OrderUncheckedCreateWithoutDisputesInput>
     connectOrCreate?: OrderCreateOrConnectWithoutDisputesInput
     upsert?: OrderUpsertWithoutDisputesInput
+    disconnect?: OrderWhereInput | boolean
+    delete?: OrderWhereInput | boolean
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutDisputesInput, OrderUpdateWithoutDisputesInput>, OrderUncheckedUpdateWithoutDisputesInput>
   }
@@ -44559,11 +44676,28 @@ export namespace Prisma {
     _max?: NestedEnumOrderStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumDisputeSubjectTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeSubjectType | EnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel> | $Enums.DisputeSubjectType
+  }
+
   export type NestedEnumDisputeStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel>
     in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumDisputeStatusFilter<$PrismaModel> | $Enums.DisputeStatus
+  }
+
+  export type NestedEnumDisputeSubjectTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeSubjectType | EnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DisputeSubjectType[] | ListEnumDisputeSubjectTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDisputeSubjectTypeWithAggregatesFilter<$PrismaModel> | $Enums.DisputeSubjectType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel>
+    _max?: NestedEnumDisputeSubjectTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumDisputeStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -45027,6 +45161,8 @@ export namespace Prisma {
 
   export type DisputeCreateWithoutInitiatorInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -45034,14 +45170,16 @@ export namespace Prisma {
     deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    order: OrderCreateNestedOneWithoutDisputesInput
+    order?: OrderCreateNestedOneWithoutDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUncheckedCreateWithoutInitiatorInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -45065,6 +45203,8 @@ export namespace Prisma {
 
   export type DisputeCreateWithoutAssigneeInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -45072,14 +45212,16 @@ export namespace Prisma {
     deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    order: OrderCreateNestedOneWithoutDisputesInput
+    order?: OrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
 
   export type DisputeUncheckedCreateWithoutAssigneeInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -45741,7 +45883,9 @@ export namespace Prisma {
     OR?: DisputeScalarWhereInput[]
     NOT?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
     id?: UuidFilter<"Dispute"> | string
-    orderId?: UuidFilter<"Dispute"> | string
+    orderId?: UuidNullableFilter<"Dispute"> | string | null
+    subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
+    reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
     reason?: StringFilter<"Dispute"> | string
     description?: StringNullableFilter<"Dispute"> | string | null
@@ -47824,6 +47968,8 @@ export namespace Prisma {
 
   export type DisputeCreateWithoutOrderInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -47838,6 +47984,8 @@ export namespace Prisma {
 
   export type DisputeUncheckedCreateWithoutOrderInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -48661,6 +48809,8 @@ export namespace Prisma {
 
   export type DisputeCreateWithoutEvidenceInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -48668,14 +48818,16 @@ export namespace Prisma {
     deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    order: OrderCreateNestedOneWithoutDisputesInput
+    order?: OrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
   }
 
   export type DisputeUncheckedCreateWithoutEvidenceInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -48800,6 +48952,8 @@ export namespace Prisma {
 
   export type DisputeUpdateWithoutEvidenceInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -48807,14 +48961,16 @@ export namespace Prisma {
     deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    order?: OrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
   }
 
   export type DisputeUncheckedUpdateWithoutEvidenceInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51569,7 +51725,9 @@ export namespace Prisma {
 
   export type DisputeCreateManyInitiatorInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     reason: string
     description?: string | null
     status?: $Enums.DisputeStatus
@@ -51582,7 +51740,9 @@ export namespace Prisma {
 
   export type DisputeCreateManyAssigneeInput = {
     id?: string
-    orderId: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -52054,6 +52214,8 @@ export namespace Prisma {
 
   export type DisputeUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -52061,14 +52223,16 @@ export namespace Prisma {
     deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    order?: OrderUpdateOneWithoutDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -52082,7 +52246,9 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateManyWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -52095,6 +52261,8 @@ export namespace Prisma {
 
   export type DisputeUpdateWithoutAssigneeInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -52102,14 +52270,16 @@ export namespace Prisma {
     deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    order?: OrderUpdateOneRequiredWithoutDisputesNestedInput
+    order?: OrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
 
   export type DisputeUncheckedUpdateWithoutAssigneeInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52123,7 +52293,9 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateManyWithoutAssigneeInput = {
     id?: StringFieldUpdateOperationsInput | string
-    orderId?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52787,6 +52959,8 @@ export namespace Prisma {
 
   export type DisputeCreateManyOrderInput = {
     id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
     initiatorId: string
     reason: string
     description?: string | null
@@ -52836,6 +53010,8 @@ export namespace Prisma {
 
   export type DisputeUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
@@ -52850,6 +53026,8 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52864,6 +53042,8 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateManyWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null

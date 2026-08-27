@@ -14,8 +14,6 @@ export declare class GiftCardController {
             totalPages: number;
         };
     }>;
-    getListingById(id: string): Promise<any>;
-    createListing(req: any, dto: CreateGiftCardListingDto): Promise<any>;
     getMyListings(req: any, page?: number, limit?: number): Promise<{
         data: any[];
         meta: {
@@ -25,6 +23,8 @@ export declare class GiftCardController {
             totalPages: number;
         };
     }>;
+    getListingById(id: string): Promise<any>;
+    createListing(req: any, dto: CreateGiftCardListingDto): Promise<any>;
     deleteListing(req: any, id: string): Promise<{
         success: boolean;
     }>;
@@ -33,9 +33,9 @@ export declare class GiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
         sellerId: string;
         buyerId: string;
-        version: number;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;

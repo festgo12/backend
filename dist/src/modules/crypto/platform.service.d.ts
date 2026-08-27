@@ -27,7 +27,6 @@ export declare class PlatformService implements OnApplicationBootstrap {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -35,6 +34,7 @@ export declare class PlatformService implements OnApplicationBootstrap {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     } | null>;
     getPlatformUserId(): Promise<string>;
 }

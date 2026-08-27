@@ -25,8 +25,8 @@ export declare class MarketplaceController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             quantity: import("@src/generated/client/runtime/library").Decimal;
             price: import("@src/generated/client/runtime/library").Decimal;
@@ -47,8 +47,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
@@ -62,8 +62,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
@@ -77,8 +77,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
@@ -92,8 +92,8 @@ export declare class MarketplaceController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;

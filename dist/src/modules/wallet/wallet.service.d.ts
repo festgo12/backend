@@ -1,12 +1,22 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { Currency, LedgerType, Prisma } from '@src/generated/client';
+export interface WalletTransactionEvent {
+    transactionId: string;
+    walletId: string;
+    type: string;
+    reference: string;
+    amount: number;
+    status: string;
+}
 export declare class WalletService {
     private readonly prisma;
     private readonly ledger;
     private readonly exchangeRateService;
-    constructor(prisma: PrismaService, ledger: LedgerService, exchangeRateService: ExchangeRateService);
+    private readonly eventEmitter;
+    constructor(prisma: PrismaService, ledger: LedgerService, exchangeRateService: ExchangeRateService, eventEmitter: EventEmitter2);
     getUserWallets(userId: string): Promise<{
         balanceInNgn: Prisma.Decimal;
         _count: {
@@ -15,7 +25,6 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -23,12 +32,12 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }[]>;
     getOrCreateWallet(userId: string, currency: Currency): Promise<{
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -36,6 +45,7 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }>;
     getWalletHistory(walletId: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -115,6 +125,7 @@ export declare class WalletService {
         reference: string;
         resolvedAt: Date | null;
     }>;
+    private emitTransactionEvent;
     updateWalletDepositInfo(walletId: string, params: {
         address: string;
         derivationIndex: number;
@@ -123,7 +134,6 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -131,6 +141,7 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }>;
     findTransactionById(id: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;

@@ -12,6 +12,7 @@ var WalletService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletService = void 0;
 const common_1 = require("@nestjs/common");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const ledger_service_1 = require("./ledger.service");
 const exchange_rate_service_1 = require("../crypto/exchange-rate.service");
@@ -21,10 +22,12 @@ let WalletService = class WalletService {
     prisma;
     ledger;
     exchangeRateService;
-    constructor(prisma, ledger, exchangeRateService) {
+    eventEmitter;
+    constructor(prisma, ledger, exchangeRateService, eventEmitter) {
         this.prisma = prisma;
         this.ledger = ledger;
         this.exchangeRateService = exchangeRateService;
+        this.eventEmitter = eventEmitter;
     }
     async getUserWallets(userId) {
         const wallets = await this.prisma.wallet.findMany({
@@ -83,8 +86,8 @@ let WalletService = class WalletService {
         });
     }
     async createTransaction(params) {
-        return this.prisma.$transaction(async (tx) => {
-            const transaction = await tx.walletTransaction.create({
+        const transaction = await this.prisma.$transaction(async (tx) => {
+            const txRecord = await tx.walletTransaction.create({
                 data: {
                     walletId: params.walletId,
                     type: params.type,
@@ -97,15 +100,41 @@ let WalletService = class WalletService {
             if (params.status === 'COMPLETED') {
                 await this.ledger.createEntry(tx, {
                     walletId: params.walletId,
-                    transactionId: transaction.id,
+                    transactionId: txRecord.id,
                     amount: params.amount,
                     type: params.type,
                     reference: `${params.reference}-ledger`,
                     metadata: params.metadata,
                 });
             }
-            return transaction;
+            return txRecord;
         });
+        this.emitTransactionEvent(transaction, params.status || 'PENDING');
+        return transaction;
+    }
+    emitTransactionEvent(transaction, status) {
+        const payload = {
+            transactionId: transaction.id,
+            walletId: transaction.walletId,
+            type: transaction.type,
+            reference: transaction.reference,
+            amount: transaction.amount.toNumber(),
+            status,
+        };
+        if (transaction.type === client_1.LedgerType.WITHDRAWAL) {
+            if (status === 'COMPLETED') {
+                this.eventEmitter.emit('wallet.withdrawal.confirmed', payload);
+            }
+            else if (status === 'FAILED') {
+                this.eventEmitter.emit('wallet.withdrawal.failed', payload);
+            }
+            else {
+                this.eventEmitter.emit('wallet.withdrawal.initiated', payload);
+            }
+        }
+        else if (transaction.type === client_1.LedgerType.DEPOSIT && status === 'COMPLETED') {
+            this.eventEmitter.emit('wallet.deposit.confirmed', payload);
+        }
     }
     async updateWalletDepositInfo(walletId, params) {
         return this.prisma.wallet.update({
@@ -132,7 +161,8 @@ let WalletService = class WalletService {
         CANCELLED: [],
     };
     async updateTransactionStatus(transactionId, status, metadata) {
-        return this.prisma.$transaction(async (tx) => {
+        let changed = false;
+        const transaction = await this.prisma.$transaction(async (tx) => {
             const current = await tx.walletTransaction.findUnique({
                 where: { id: transactionId },
             });
@@ -147,6 +177,7 @@ let WalletService = class WalletService {
             }
             if (current.status === status)
                 return current;
+            changed = true;
             const updatedMetadata = {
                 ...(current.metadata || {}),
                 ...(metadata || {}),
@@ -177,23 +208,27 @@ let WalletService = class WalletService {
             }
             return transaction;
         });
+        if (changed) {
+            this.emitTransactionEvent(transaction, status);
+        }
+        return transaction;
     }
     async reverseTransaction(transactionId, reason) {
-        return this.prisma.$transaction(async (tx) => {
+        const reversedTransaction = await this.prisma.$transaction(async (tx) => {
             const affected = await tx.$executeRaw `
         UPDATE "WalletTransaction"
         SET "status" = 'REVERSED',
             "metadata" = "metadata" || ${JSON.stringify({ reverse_reason: reason })}::jsonb
-        WHERE "id" = ${transactionId}
+        WHERE "id" = ${transactionId}::uuid
           AND "status" != 'REVERSED'
       `;
             if (affected === 0)
-                return;
+                return null;
             const transaction = await tx.walletTransaction.findUnique({
                 where: { id: transactionId },
             });
             if (!transaction)
-                return;
+                return null;
             const depositTypes = [client_1.LedgerType.DEPOSIT, client_1.LedgerType.GIFT_CARD_PURCHASE];
             const isDeposit = depositTypes.includes(transaction.type);
             const reverseAmount = isDeposit
@@ -207,7 +242,11 @@ let WalletService = class WalletService {
                 reference: `${transaction.reference}-rev`,
                 metadata: { reason },
             });
+            return transaction;
         });
+        if (reversedTransaction?.type === client_1.LedgerType.WITHDRAWAL) {
+            this.emitTransactionEvent(reversedTransaction, 'FAILED');
+        }
     }
 };
 exports.WalletService = WalletService;
@@ -215,6 +254,7 @@ exports.WalletService = WalletService = WalletService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         ledger_service_1.LedgerService,
-        exchange_rate_service_1.ExchangeRateService])
+        exchange_rate_service_1.ExchangeRateService,
+        event_emitter_1.EventEmitter2])
 ], WalletService);
 //# sourceMappingURL=wallet.service.js.map

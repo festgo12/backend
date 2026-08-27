@@ -102,7 +102,7 @@ let PaystackController = PaystackController_1 = class PaystackController {
                 this.prisma.$executeRaw `
           UPDATE "Wallet"
           SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
-          WHERE "id" = ${wallet.id}
+          WHERE "id" = ${wallet.id}::uuid
             AND ("balance" - "reservedBalance") >= ${amountDecimal}
         `,
             ]);
@@ -120,7 +120,7 @@ let PaystackController = PaystackController_1 = class PaystackController {
                 await this.prisma.$executeRaw `
           UPDATE "Wallet"
           SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
-          WHERE "id" = ${wallet.id}
+          WHERE "id" = ${wallet.id}::uuid
         `;
                 throw transferError;
             }

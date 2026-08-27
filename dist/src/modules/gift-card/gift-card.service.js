@@ -130,7 +130,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
         return this.prisma.$transaction(async (tx) => {
             const listing = await tx.$queryRaw `SELECT id, "sellerId", status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
          FROM "GiftCardListing"
-         WHERE id = ${dto.listingId}
+         WHERE id = ${dto.listingId}::uuid
          FOR UPDATE`;
             if (!listing.length) {
                 throw new common_1.NotFoundException('Gift card listing not found');

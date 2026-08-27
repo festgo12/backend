@@ -6,6 +6,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { SecurityService } from '../security/security.service';
 import { FraudRulesService } from '../security/fraud-rules.service';
 import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -19,8 +20,9 @@ export declare class AuthService {
     private securityService;
     private fraudRulesService;
     private emailService;
+    private notifications;
     private readonly logger;
-    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService, emailService: EmailService);
+    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, eventEmitter: EventEmitter2, securityService: SecurityService, fraudRulesService: FraudRulesService, emailService: EmailService, notifications: NotificationsService);
     register(dto: RegisterDto): Promise<{
         accessToken: string;
         refreshToken: string;
@@ -74,6 +76,7 @@ export declare class AuthService {
         refreshToken: string;
     }>;
     logout(refreshToken: string): Promise<void>;
+    private notifyLogin;
     generateAndSend2faOtp(user: {
         id: string;
         email?: string | null;

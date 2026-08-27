@@ -252,6 +252,8 @@ exports.Prisma.OrderScalarFieldEnum = {
 exports.Prisma.DisputeScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
+  subjectType: 'subjectType',
+  reference: 'reference',
   initiatorId: 'initiatorId',
   reason: 'reason',
   description: 'description',
@@ -588,6 +590,13 @@ exports.OrderStatus = exports.$Enums.OrderStatus = {
   EXPIRED: 'EXPIRED',
   CANCELLED: 'CANCELLED',
   DISPUTED: 'DISPUTED'
+};
+
+exports.DisputeSubjectType = exports.$Enums.DisputeSubjectType = {
+  ORDER: 'ORDER',
+  DEPOSIT: 'DEPOSIT',
+  WITHDRAWAL: 'WITHDRAWAL',
+  OTHER: 'OTHER'
 };
 
 exports.DisputeStatus = exports.$Enums.DisputeStatus = {

@@ -28,14 +28,14 @@ let GiftCardController = class GiftCardController {
     getActiveListings(dto) {
         return this.giftCardService.getActiveListings(dto);
     }
+    getMyListings(req, page, limit) {
+        return this.giftCardService.getMyListings(req.user.id, page || 1, limit || 20);
+    }
     getListingById(id) {
         return this.giftCardService.getListingById(id);
     }
     createListing(req, dto) {
         return this.giftCardService.createListing(req.user.id, dto);
-    }
-    getMyListings(req, page, limit) {
-        return this.giftCardService.getMyListings(req.user.id, page || 1, limit || 20);
     }
     deleteListing(req, id) {
         return this.giftCardService.deleteListing(req.user.id, id);
@@ -66,6 +66,18 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], GiftCardController.prototype, "getActiveListings", null);
 __decorate([
+    (0, common_1.Get)('listings/my'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get my gift card listings' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number, Number]),
+    __metadata("design:returntype", void 0)
+], GiftCardController.prototype, "getMyListings", null);
+__decorate([
     (0, common_1.Get)('listings/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get gift card listing detail' }),
     __param(0, (0, common_1.Param)('id')),
@@ -84,18 +96,6 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_listing_dto_1.CreateGiftCardListingDto]),
     __metadata("design:returntype", void 0)
 ], GiftCardController.prototype, "createListing", null);
-__decorate([
-    (0, common_1.Get)('listings/my'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get my gift card listings' }),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Query)('page')),
-    __param(2, (0, common_1.Query)('limit')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Number, Number]),
-    __metadata("design:returntype", void 0)
-], GiftCardController.prototype, "getMyListings", null);
 __decorate([
     (0, common_1.Delete)('listings/:id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

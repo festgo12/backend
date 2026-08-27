@@ -53,6 +53,7 @@ const prisma_service_1 = require("../../core/database/prisma.service");
 const security_service_1 = require("../security/security.service");
 const fraud_rules_service_1 = require("../security/fraud-rules.service");
 const email_service_1 = require("../notifications/email.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 const bcrypt = __importStar(require("bcrypt"));
 const crypto = __importStar(require("crypto"));
 const client_1 = require("../../generated/client/index.js");
@@ -66,8 +67,9 @@ let AuthService = AuthService_1 = class AuthService {
     securityService;
     fraudRulesService;
     emailService;
+    notifications;
     logger = new common_1.Logger(AuthService_1.name);
-    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService, emailService) {
+    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService, emailService, notifications) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
@@ -76,6 +78,7 @@ let AuthService = AuthService_1 = class AuthService {
         this.securityService = securityService;
         this.fraudRulesService = fraudRulesService;
         this.emailService = emailService;
+        this.notifications = notifications;
     }
     async register(dto) {
         if (dto.email) {
@@ -182,6 +185,11 @@ let AuthService = AuthService_1 = class AuthService {
         }
         const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
         const userData = { ...token, user: userWithoutPassword };
+        this.notifyLogin(user.id, request, {
+            deviceName: parsedUA.deviceName,
+            browser: parsedUA.browser,
+            location,
+        }).catch(() => { });
         return userData;
     }
     async generateTokens(userId, role, userAgent, ipAddress) {
@@ -227,6 +235,25 @@ let AuthService = AuthService_1 = class AuthService {
     }
     async logout(refreshToken) {
         await this.prisma.authToken.deleteMany({ where: { token: refreshToken } });
+    }
+    async notifyLogin(userId, request, extra) {
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+            request?.ip ||
+            'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const parsedUA = this.securityService.parseUserAgent(userAgent);
+        const location = extra?.location ??
+            (await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown'));
+        await this.notifications.notifyUser({
+            userId,
+            type: 'LOGIN',
+            data: {
+                deviceName: extra?.deviceName || parsedUA.deviceName || 'Unknown device',
+                browser: extra?.browser || parsedUA.browser || 'Unknown browser',
+                location,
+                time: new Date().toLocaleString(),
+            },
+        });
     }
     async generateAndSend2faOtp(user) {
         if (!user.email)
@@ -315,6 +342,7 @@ let AuthService = AuthService_1 = class AuthService {
         const userAgent = request?.headers?.['user-agent'] || 'unknown';
         const { passwordHash, ...userWithoutPassword } = user;
         const tokens = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
+        this.notifyLogin(user.id, request).catch(() => { });
         return { ...tokens, user: userWithoutPassword };
     }
     async send2faOtp(twoFactorToken) {
@@ -595,6 +623,7 @@ exports.AuthService = AuthService = AuthService_1 = __decorate([
         event_emitter_1.EventEmitter2,
         security_service_1.SecurityService,
         fraud_rules_service_1.FraudRulesService,
-        email_service_1.EmailService])
+        email_service_1.EmailService,
+        notifications_service_1.NotificationsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

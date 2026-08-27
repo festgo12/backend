@@ -10,22 +10,24 @@ export declare class DisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
     }>;
     findAll(req: any): Promise<({
-        order: {
+        order: ({
             ad: {
                 type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
@@ -38,16 +40,16 @@ export declare class DisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        }) | null;
         evidence: {
             id: string;
             createdAt: Date;
@@ -65,22 +67,24 @@ export declare class DisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;
     })[]>;
     findOne(id: string, req: any): Promise<{
-        order: {
+        order: ({
             ad: {
                 type: import("@src/generated/client").$Enums.AdType;
                 id: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
@@ -143,16 +147,16 @@ export declare class DisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
             adId: string;
-        };
+        }) | null;
         evidence: ({
             uploadedBy: {
                 profile: {
@@ -210,8 +214,10 @@ export declare class DisputesController {
         createdAt: Date;
         updatedAt: Date;
         initiatorId: string;
-        orderId: string;
+        orderId: string | null;
+        reference: string | null;
         reason: string;
+        subjectType: import("@src/generated/client").$Enums.DisputeSubjectType;
         resolution: string | null;
         deadline: Date | null;
         assigneeId: string | null;

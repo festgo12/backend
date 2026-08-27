@@ -8,7 +8,7 @@ export declare class DisputesEventsHandler {
     constructor(prisma: PrismaService, notifications: NotificationsService);
     handleDisputeCreated(payload: {
         dispute: Dispute;
-        order: Order;
+        order: Order | null;
     }): Promise<void>;
     handleDisputeStatusChanged(payload: {
         dispute: Dispute & {

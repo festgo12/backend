@@ -112,7 +112,7 @@ let WalletController = WalletController_1 = class WalletController {
         const addressResult = await this.cryptoRisk.screenAddress(address.trim(), chain, 'withdrawal');
         if (!addressResult.isSafe) {
             this.logger.warn(`Withdrawal blocked by address screening: user=${user.id}, address=${address}, score=${addressResult.riskScore}`);
-            throw new common_1.BadRequestException('Destination address failed security screening. Contact support if you believe this is an error.');
+            throw new common_1.BadRequestException(`Destination address failed security screening: ${addressResult.reasons[0]}. Contact support if you believe this is an error.`);
         }
         const txResult = await this.cryptoRisk.screenTransaction({
             userId: user.id,

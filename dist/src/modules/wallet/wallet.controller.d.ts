@@ -23,7 +23,6 @@ export declare class WalletController {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -31,6 +30,7 @@ export declare class WalletController {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }[]>;
     getHistory(user: User, walletId?: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -71,7 +71,6 @@ export declare class WalletController {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -79,6 +78,7 @@ export declare class WalletController {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }>;
     withdrawCrypto(user: User, walletId: string, address: string, amount: number): Promise<{
         success: boolean;
