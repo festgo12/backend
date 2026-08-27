@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { CryptoWithdrawalService } from './crypto-withdrawal.service';
 import { PrismaService } from '../../core/database/prisma.service';
@@ -44,6 +45,8 @@ describe('CryptoWithdrawalService', () => {
     getPlatformUserId: jest.fn(),
   };
 
+  const mockEventEmitter = { emit: jest.fn() };
+
   beforeEach(async () => {
     jest.resetAllMocks();
 
@@ -79,6 +82,7 @@ describe('CryptoWithdrawalService', () => {
         { provide: WithdrawalTrackerService, useValue: mockTracker },
         { provide: HdWalletService, useValue: mockHdWallet },
         { provide: PlatformService, useValue: mockPlatformService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

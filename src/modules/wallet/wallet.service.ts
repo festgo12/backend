@@ -1,8 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { Currency, LedgerType, Prisma } from '@src/generated/client';
+
+export interface WalletTransactionEvent {
+  transactionId: string;
+  walletId: string;
+  type: string;
+  reference: string;
+  amount: number;
+  status: string;
+}
 
 @Injectable()
 export class WalletService {
@@ -10,6 +20,7 @@ export class WalletService {
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
     private readonly exchangeRateService: ExchangeRateService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -99,9 +110,9 @@ export class WalletService {
     status?: string;
     metadata?: any;
   }) {
-    return this.prisma.$transaction(async (tx) => {
+    const transaction = await this.prisma.$transaction(async (tx) => {
       // 1. Create WalletTransaction
-      const transaction = await tx.walletTransaction.create({
+      const txRecord = await tx.walletTransaction.create({
         data: {
           walletId: params.walletId,
           type: params.type,
@@ -116,7 +127,7 @@ export class WalletService {
       if (params.status === 'COMPLETED') {
         await this.ledger.createEntry(tx, {
           walletId: params.walletId,
-          transactionId: transaction.id,
+          transactionId: txRecord.id,
           amount: params.amount,
           type: params.type,
           reference: `${params.reference}-ledger`,
@@ -124,8 +135,42 @@ export class WalletService {
         });
       }
 
-      return transaction;
+      return txRecord;
     });
+
+    this.emitTransactionEvent(transaction, params.status || 'PENDING');
+
+    return transaction;
+  }
+
+  /**
+   * Emits domain events consumed by the notifications handler so users are
+   * alerted about deposits and withdrawals (crypto + Paystack unified).
+   */
+  private emitTransactionEvent(
+    transaction: { id: string; walletId: string; type: string; reference: string; amount: Prisma.Decimal; status: string },
+    status: string,
+  ): void {
+    const payload: WalletTransactionEvent = {
+      transactionId: transaction.id,
+      walletId: transaction.walletId,
+      type: transaction.type,
+      reference: transaction.reference,
+      amount: transaction.amount.toNumber(),
+      status,
+    };
+
+    if (transaction.type === LedgerType.WITHDRAWAL) {
+      if (status === 'COMPLETED') {
+        this.eventEmitter.emit('wallet.withdrawal.confirmed', payload);
+      } else if (status === 'FAILED') {
+        this.eventEmitter.emit('wallet.withdrawal.failed', payload);
+      } else {
+        this.eventEmitter.emit('wallet.withdrawal.initiated', payload);
+      }
+    } else if (transaction.type === LedgerType.DEPOSIT && status === 'COMPLETED') {
+      this.eventEmitter.emit('wallet.deposit.confirmed', payload);
+    }
   }
 
   /**
@@ -176,7 +221,9 @@ export class WalletService {
    * Updates transaction status and creates ledger entry if completed.
    */
   async updateTransactionStatus(transactionId: string, status: string, metadata?: any) {
-    return this.prisma.$transaction(async (tx) => {
+    let changed = false;
+
+    const transaction = await this.prisma.$transaction(async (tx) => {
       const current = await tx.walletTransaction.findUnique({
         where: { id: transactionId },
       });
@@ -199,6 +246,7 @@ export class WalletService {
 
       // Idempotent: no-op if already at the target status
       if (current.status === status) return current;
+      changed = true;
 
       const updatedMetadata = {
         ...(current.metadata as any || {}),
@@ -237,6 +285,12 @@ export class WalletService {
 
       return transaction;
     });
+
+    if (changed) {
+      this.emitTransactionEvent(transaction, status);
+    }
+
+    return transaction;
   }
 
   /**
@@ -245,7 +299,7 @@ export class WalletService {
    * Uses conditional updateMany to prevent double-refund races.
    */
   async reverseTransaction(transactionId: string, reason: string) {
-    return this.prisma.$transaction(async (tx) => {
+    const reversedTransaction = await this.prisma.$transaction(async (tx) => {
       // Conditional update: only transition to REVERSED if not already reversed.
       // This prevents double-refund when Paystack sends both transfer.failed
       // and transfer.reversed for the same event.
@@ -257,12 +311,12 @@ export class WalletService {
           AND "status" != 'REVERSED'
       `;
 
-      if (affected === 0) return;
+      if (affected === 0) return null;
 
       const transaction = await tx.walletTransaction.findUnique({
         where: { id: transactionId },
       });
-      if (!transaction) return;
+      if (!transaction) return null;
 
       // Reverse direction: deposits (positive amount) → debit; withdrawals (negative impact) → credit
       const depositTypes: string[] = [LedgerType.DEPOSIT, LedgerType.GIFT_CARD_PURCHASE];
@@ -279,6 +333,13 @@ export class WalletService {
         reference: `${transaction.reference}-rev`,
         metadata: { reason },
       });
+
+      return transaction;
     });
+
+    // A reversed withdrawal means the funds were refunded — alert the user.
+    if (reversedTransaction?.type === LedgerType.WITHDRAWAL) {
+      this.emitTransactionEvent(reversedTransaction, 'FAILED');
+    }
   }
 }

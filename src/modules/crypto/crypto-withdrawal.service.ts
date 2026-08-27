@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { getAddress } from 'ethers';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import { ChainClientService } from './chain-client.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
@@ -34,6 +35,7 @@ export class CryptoWithdrawalService {
     private readonly chainClient: ChainClientService,
     private readonly tracker: WithdrawalTrackerService,
     private readonly platformService: PlatformService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async processWithdrawal(params: {
@@ -174,6 +176,15 @@ export class CryptoWithdrawalService {
       amount,
       destination: destinationAddress,
       metadata: { source: 'USER_WITHDRAWAL' },
+    });
+
+    this.eventEmitter.emit('wallet.withdrawal.initiated', {
+      transactionId: txHash,
+      walletId,
+      type: LedgerType.WITHDRAWAL,
+      reference: txHash,
+      amount,
+      status: 'PENDING',
     });
 
     this.logger.log(

@@ -7,6 +7,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { SecurityService } from '../security/security.service';
 import { FraudRulesService } from '../security/fraud-rules.service';
 import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -28,6 +29,7 @@ export class AuthService {
     private securityService: SecurityService,
     private fraudRulesService: FraudRulesService,
     private emailService: EmailService,
+    private notifications: NotificationsService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -171,6 +173,13 @@ export class AuthService {
     const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
     const userData = { ...token, user: userWithoutPassword }
 
+    // Notify user of successful login (non-blocking)
+    this.notifyLogin(user.id, request, {
+      deviceName: parsedUA.deviceName,
+      browser: parsedUA.browser,
+      location,
+    }).catch(() => {});
+
     return userData;
   }
 
@@ -229,6 +238,37 @@ export class AuthService {
 
   async logout(refreshToken: string) {
     await this.prisma.authToken.deleteMany({ where: { token: refreshToken } });
+  }
+
+  /**
+   * Sends a LOGIN notification to the user after successful authentication.
+   * Non-blocking; failures are swallowed by the caller.
+   */
+  private async notifyLogin(
+    userId: string,
+    request?: any,
+    extra?: { deviceName?: string; browser?: string; location?: string },
+  ) {
+    const ipAddress =
+      request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+      request?.ip ||
+      'unknown';
+    const userAgent = request?.headers?.['user-agent'] || 'unknown';
+    const parsedUA = this.securityService.parseUserAgent(userAgent);
+    const location =
+      extra?.location ??
+      (await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown'));
+
+    await this.notifications.notifyUser({
+      userId,
+      type: 'LOGIN',
+      data: {
+        deviceName: extra?.deviceName || parsedUA.deviceName || 'Unknown device',
+        browser: extra?.browser || parsedUA.browser || 'Unknown browser',
+        location,
+        time: new Date().toLocaleString(),
+      },
+    });
   }
 
   // --- 2FA (Email OTP) ---
@@ -328,6 +368,10 @@ export class AuthService {
 
     const { passwordHash, ...userWithoutPassword } = user;
     const tokens = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
+
+    // Notify user of successful 2FA login (non-blocking)
+    this.notifyLogin(user.id, request).catch(() => {});
+
     return { ...tokens, user: userWithoutPassword };
   }
 
