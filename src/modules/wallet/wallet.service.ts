@@ -307,7 +307,7 @@ export class WalletService {
         UPDATE "WalletTransaction"
         SET "status" = 'REVERSED',
             "metadata" = "metadata" || ${JSON.stringify({ reverse_reason: reason })}::jsonb
-        WHERE "id" = ${transactionId}
+        WHERE "id" = ${transactionId}::uuid
           AND "status" != 'REVERSED'
       `;
 

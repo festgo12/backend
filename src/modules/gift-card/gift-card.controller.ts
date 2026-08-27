@@ -29,6 +29,19 @@ export class GiftCardController {
     return this.giftCardService.getActiveListings(dto);
   }
 
+  // ─── SELLER: My Listings ───────────────────────────────────────────────
+  @Get('listings/my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get my gift card listings' })
+  getMyListings(
+    @Request() req,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.giftCardService.getMyListings(req.user.id, page || 1, limit || 20);
+  }
+
   // ─── PUBLIC: Listing Detail ─────────────────────────────────────────────
   @Get('listings/:id')
   @ApiOperation({ summary: 'Get gift card listing detail' })
@@ -43,19 +56,6 @@ export class GiftCardController {
   @ApiOperation({ summary: 'Create a gift card listing (seller)' })
   createListing(@Request() req, @Body() dto: CreateGiftCardListingDto) {
     return this.giftCardService.createListing(req.user.id, dto);
-  }
-
-  // ─── SELLER: My Listings ───────────────────────────────────────────────
-  @Get('listings/my')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get my gift card listings' })
-  getMyListings(
-    @Request() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
-    return this.giftCardService.getMyListings(req.user.id, page || 1, limit || 20);
   }
 
   // ─── SELLER: Delete Listing (PENDING_REVIEW only) ─────────────────────

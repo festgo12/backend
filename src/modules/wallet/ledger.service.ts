@@ -33,7 +33,7 @@ export class LedgerService {
       const affected = await tx.$executeRaw`
         UPDATE "Wallet"
         SET "balance" = "balance" + ${amountDecimal}
-        WHERE "id" = ${walletId}
+        WHERE "id" = ${walletId}::uuid
           AND "balance" >= ${absDebit}
       `;
       if (affected === 0) {

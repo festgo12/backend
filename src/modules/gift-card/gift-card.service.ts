@@ -152,7 +152,7 @@ export class GiftCardService {
         Array<{ id: string; sellerId: string; status: string; askingPriceNgn: string; cardCurrency: string; denomination: string; version: number }>
       >`SELECT id, "sellerId", status, "askingPriceNgn"::text, "cardCurrency", denomination::text, version
          FROM "GiftCardListing"
-         WHERE id = ${dto.listingId}
+         WHERE id = ${dto.listingId}::uuid
          FOR UPDATE`;
 
       if (!listing.length) {

@@ -77,7 +77,7 @@ export class CryptoWithdrawalService {
     const reserveResult = await this.prisma.$executeRaw`
       UPDATE "Wallet"
       SET "reservedBalance" = "reservedBalance" + ${amountDecimal}
-      WHERE "id" = ${walletId}
+      WHERE "id" = ${walletId}::uuid
         AND ("balance" - "reservedBalance") >= ${amountDecimal}
     `;
 
@@ -145,7 +145,7 @@ export class CryptoWithdrawalService {
       await this.prisma.$executeRaw`
         UPDATE "Wallet"
         SET "reservedBalance" = "reservedBalance" - ${amountDecimal}
-        WHERE "id" = ${walletId}
+        WHERE "id" = ${walletId}::uuid
       `;
 
       throw new InternalServerErrorException(`Withdrawal failed: ${message}`);
