@@ -173,6 +173,14 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
         if (!feeWallet.address) {
             throw new common_1.BadRequestException(`Fee wallet for ${currency} has no on-chain address`);
         }
+        const masterAddress = this.hdWallet.getMasterAddress(currency === client_1.Currency.BTC ? 'BTC' : 'EVM');
+        const dest = destinationAddress.trim();
+        const sameAddress = currency === client_1.Currency.BTC
+            ? masterAddress === dest
+            : masterAddress.toLowerCase() === dest.toLowerCase();
+        if (sameAddress || feeWallet.address.toLowerCase() === dest.toLowerCase()) {
+            throw new common_1.BadRequestException(`Destination cannot be the platform address itself for ${currency}`);
+        }
         let fromIndex = feeWallet.derivationIndex;
         if (fromIndex === null) {
             const info = currency === client_1.Currency.BTC

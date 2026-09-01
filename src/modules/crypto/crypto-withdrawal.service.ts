@@ -253,6 +253,22 @@ export class CryptoWithdrawalService {
       );
     }
 
+    // Guard against self-sweeps: the platform fee wallet lives on the master
+    // address (index 0), so it can never be a valid sweep destination.
+    const masterAddress = this.hdWallet.getMasterAddress(
+      currency === Currency.BTC ? 'BTC' : 'EVM',
+    );
+    const dest = destinationAddress.trim();
+    const sameAddress =
+      currency === Currency.BTC
+        ? masterAddress === dest
+        : masterAddress.toLowerCase() === dest.toLowerCase();
+    if (sameAddress || feeWallet.address.toLowerCase() === dest.toLowerCase()) {
+      throw new BadRequestException(
+        `Destination cannot be the platform address itself for ${currency}`,
+      );
+    }
+
     let fromIndex = feeWallet.derivationIndex;
     if (fromIndex === null) {
       // Legacy fee wallet (pre-HD address, no derivation index): reassign the

@@ -956,6 +956,8 @@ export declare class AdminController {
     sweepAll(): Promise<{
         success: boolean;
         message: string;
+        summary: import("../crypto/sweep.service").SweepRunSummary;
+        swept: number;
     }>;
     getBtcHistory(page?: string, pageSize?: string): Promise<{
         transactions: {

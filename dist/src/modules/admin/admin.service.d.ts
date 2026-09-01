@@ -1262,6 +1262,8 @@ export declare class AdminService {
     triggerSweepAll(): Promise<{
         success: boolean;
         message: string;
+        summary: import("../crypto/sweep.service").SweepRunSummary;
+        swept: number;
     }>;
     getBtcHistory(page: number, pageSize: number): Promise<{
         transactions: {

@@ -4,7 +4,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { DepositAddressRegistry } from './deposit-address-registry.service';
 import { ChainClientService } from './chain-client.service';
 import { CryptoConfigService } from './crypto-config.service';
-import { HdWalletService } from './hd-wallet.service';
+import { HdWalletService, MASTER_WALLET_INDEX } from './hd-wallet.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { PlatformService } from './platform.service';
 import { ExchangeRateService } from './exchange-rate.service';
@@ -12,6 +12,14 @@ import { Currency, LedgerType } from '@src/generated/client';
 
 interface ErrorLike {
   message: string;
+}
+
+export interface SweepRunSummary {
+  evmSwept: number;
+  btcSwept: number;
+  evmSkipped: number;
+  btcSkipped: number;
+  errors: string[];
 }
 
 /**
@@ -43,42 +51,61 @@ export class SweepService {
   async sweepAll() {
     if (this.isRunning) return;
     if (this.config.depositSweepThreshold <= 0) return;
-    this.isRunning = true;
     try {
-      await this.sweepEvm();
-      await this.sweepBtc();
+      await this.runSweep();
     } catch (error) {
       const err = error as ErrorLike;
       this.logger.error(`Sweep run failed: ${err.message}`);
-    } finally {
-      this.isRunning = false;
     }
   }
 
   /**
    * Manual sweep — triggered via admin endpoint.
-   * Respects DEPOSIT_SWEEP_THRESHOLD; sweeps all qualifying addresses.
+   * Respects DEPOSIT_SWEEP_THRESHOLD; sweeps all qualifying deposit
+   * addresses into the platform master wallet. Returns a summary.
    */
-  async manualSweepAll() {
+  async manualSweepAll(): Promise<SweepRunSummary> {
+    if (this.isRunning) {
+      throw new Error('Sweep already in progress');
+    }
+    try {
+      return await this.runSweep();
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.error(`Manual sweep run failed: ${err.message}`);
+      throw error;
+    }
+  }
+
+  /** Shared sweep execution guarded by the running mutex. */
+  private async runSweep(): Promise<SweepRunSummary> {
     if (this.isRunning) {
       throw new Error('Sweep already in progress');
     }
     this.isRunning = true;
     try {
-      await this.sweepEvm();
-      await this.sweepBtc();
-    } catch (error) {
-      const err = error as ErrorLike;
-      this.logger.error(`Manual sweep run failed: ${err.message}`);
-      throw error;
+      const evm = await this.sweepEvm();
+      const btc = await this.sweepBtc();
+      return {
+        evmSwept: evm.swept,
+        btcSwept: btc.swept,
+        evmSkipped: evm.skipped,
+        btcSkipped: btc.skipped,
+        errors: [...evm.errors, ...btc.errors],
+      };
     } finally {
       this.isRunning = false;
     }
   }
 
-  private async sweepEvm(): Promise<void> {
+  private async sweepEvm(): Promise<{
+    swept: number;
+    skipped: number;
+    errors: string[];
+  }> {
+    const result = { swept: 0, skipped: 0, errors: [] as string[] };
     const addresses = this.depositRegistry.addressesForChain('EVM');
-    if (addresses.length === 0) return;
+    if (addresses.length === 0) return result;
     const thresholdUsd = this.config.depositSweepThreshold;
 
     for (const address of addresses) {
@@ -91,7 +118,14 @@ export class SweepService {
         if (!wallet || seen.has(wallet.currency)) continue;
         seen.add(wallet.currency);
 
-        if (wallet.derivationIndex === null) continue;
+        // Index 0 is the platform master/fee wallet — never sweep it to itself.
+        if (
+          wallet.derivationIndex === null ||
+          wallet.derivationIndex === MASTER_WALLET_INDEX
+        ) {
+          result.skipped += 1;
+          continue;
+        }
         const balance = await this.chainClient.getEvmBalance(
           address,
           wallet.currency,
@@ -110,14 +144,21 @@ export class SweepService {
           wallet.derivationIndex,
           address,
           balance,
+          result,
         );
       }
     }
+    return result;
   }
 
-  private async sweepBtc(): Promise<void> {
+  private async sweepBtc(): Promise<{
+    swept: number;
+    skipped: number;
+    errors: string[];
+  }> {
+    const result = { swept: 0, skipped: 0, errors: [] as string[] };
     const addresses = this.depositRegistry.addressesForChain('BTC');
-    if (addresses.length === 0) return;
+    if (addresses.length === 0) return result;
     const thresholdUsd = this.config.depositSweepThreshold;
 
     for (const address of addresses) {
@@ -125,7 +166,16 @@ export class SweepService {
       const wallet = await this.prisma.wallet.findUnique({
         where: { id: registrations[0]?.walletId || '' },
       });
-      if (!wallet || wallet.derivationIndex === null) continue;
+
+      // Index 0 is the platform master/fee wallet — never sweep it to itself.
+      if (
+        !wallet ||
+        wallet.derivationIndex === null ||
+        wallet.derivationIndex === MASTER_WALLET_INDEX
+      ) {
+        result.skipped += 1;
+        continue;
+      }
 
       const utxos = await this.chainClient.getBtcUtxos(address);
       const balance = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
@@ -144,11 +194,14 @@ export class SweepService {
           feePerByte,
         );
         await this.recordSweep(Currency.BTC, balance, txid, address);
+        result.swept += 1;
       } catch (error) {
         const err = error as ErrorLike;
+        result.errors.push(`BTC ${address}: ${err.message}`);
         this.logger.error(`BTC sweep failed for ${address}: ${err.message}`);
       }
     }
+    return result;
   }
 
   private async sweepEvmCurrency(
@@ -156,6 +209,7 @@ export class SweepService {
     derivationIndex: number,
     fromAddress: string,
     balance: number,
+    result: { swept: number; skipped: number; errors: string[] },
   ): Promise<void> {
     const to = this.hdWallet.getMasterAddress('EVM');
     try {
@@ -178,9 +232,15 @@ export class SweepService {
       });
       if (wallet) {
         await this.recordSweep(currency, balance, txHash, fromAddress);
+        result.swept += 1;
+      } else {
+        result.errors.push(
+          `EVM ${currency} ${fromAddress}: source wallet not found; sweep not recorded`,
+        );
       }
     } catch (error) {
       const err = error as ErrorLike;
+      result.errors.push(`EVM ${currency} ${fromAddress}: ${err.message}`);
       this.logger.error(
         `EVM sweep failed for ${fromAddress} (${currency}): ${err.message}`,
       );
@@ -228,5 +288,57 @@ export class SweepService {
       destination,
       metadata: { source: 'DEPOSIT_SWEEP' },
     });
+
+    // Mark matching user deposit transactions as swept and link the sweep tx.
+    await this.markMatchedDepositsSwept(currency, fromAddress, txHash);
+  }
+
+  /**
+   * Flags the user DEPOSIT transactions that funded a swept address as swept,
+   * linking the sweep transaction hash. This is how depositors know their funds
+   * were consolidated to the platform master wallet.
+   */
+  private async markMatchedDepositsSwept(
+    currency: Currency,
+    fromAddress: string,
+    sweepTxHash: string,
+  ): Promise<void> {
+    if (!fromAddress) return;
+
+    const normalized =
+      currency === Currency.BTC ? fromAddress : fromAddress.toLowerCase();
+    const deposits = await this.prisma.walletTransaction.findMany({
+      where: {
+        type: LedgerType.DEPOSIT,
+        wallet: { currency },
+      },
+      take: 500,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const sweptAt = new Date().toISOString();
+    for (const tx of deposits) {
+      const meta = (tx.metadata ?? {}) as Record<string, unknown>;
+      if (meta.swept === true) continue;
+      const txAddress = meta.address as string | undefined;
+      if (!txAddress) continue;
+      const match =
+        currency === Currency.BTC
+          ? txAddress === normalized
+          : txAddress.toLowerCase() === normalized;
+      if (!match) continue;
+
+      await this.prisma.walletTransaction.update({
+        where: { id: tx.id },
+        data: {
+          metadata: {
+            ...meta,
+            swept: true,
+            sweepTxHash,
+            sweptAt,
+          },
+        },
+      });
+    }
   }
 }

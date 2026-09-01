@@ -992,8 +992,13 @@ export class AdminService {
   // ─── Sweep ─────────────────────────────────────────────────────────────
 
   async triggerSweepAll() {
-    await this.sweepService.manualSweepAll();
-    return { success: true, message: 'Sweep completed' };
+    const summary = await this.sweepService.manualSweepAll();
+    return {
+      success: true,
+      message: 'Sweep completed',
+      summary,
+      swept: summary.evmSwept + summary.btcSwept,
+    };
   }
 
   // ─── On-Chain History ──────────────────────────────────────────────────

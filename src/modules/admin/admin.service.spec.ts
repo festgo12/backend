@@ -173,6 +173,34 @@ describe('AdminService', () => {
     });
   });
 
+  describe('triggerSweepAll', () => {
+    it('delegates to the sweep service and returns the summary', async () => {
+      mockSweepService.manualSweepAll.mockResolvedValue({
+        evmSwept: 2,
+        btcSwept: 1,
+        evmSkipped: 0,
+        btcSkipped: 0,
+        errors: [],
+      });
+
+      const result = await service.triggerSweepAll();
+
+      expect(mockSweepService.manualSweepAll).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'Sweep completed',
+        swept: 3,
+        summary: {
+          evmSwept: 2,
+          btcSwept: 1,
+          evmSkipped: 0,
+          btcSkipped: 0,
+          errors: [],
+        },
+      });
+    });
+  });
+
   describe('getCryptoSystemStatus', () => {
     it('reports provider config, registry size and webhook providers', async () => {
       mockPrismaService.walletTransaction.findMany.mockResolvedValue([

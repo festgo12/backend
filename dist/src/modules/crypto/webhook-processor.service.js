@@ -167,6 +167,7 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
                 blockNumber: event.blockNumber,
                 confirmations: canCreditImmediately ? requiredConfirmations : 0,
                 receivedAt: new Date().toISOString(),
+                swept: false,
             };
             try {
                 await this.walletService.createTransaction({

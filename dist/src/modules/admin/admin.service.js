@@ -838,8 +838,13 @@ let AdminService = class AdminService {
         return this.reconciliationService.reconcileCurrency(currency);
     }
     async triggerSweepAll() {
-        await this.sweepService.manualSweepAll();
-        return { success: true, message: 'Sweep completed' };
+        const summary = await this.sweepService.manualSweepAll();
+        return {
+            success: true,
+            message: 'Sweep completed',
+            summary,
+            swept: summary.evmSwept + summary.btcSwept,
+        };
     }
     async getBtcHistory(page, pageSize) {
         const xpub = this.cryptoConfig.btcMasterXpub;

@@ -48,41 +48,52 @@ let SweepService = SweepService_1 = class SweepService {
             return;
         if (this.config.depositSweepThreshold <= 0)
             return;
-        this.isRunning = true;
         try {
-            await this.sweepEvm();
-            await this.sweepBtc();
+            await this.runSweep();
         }
         catch (error) {
             const err = error;
             this.logger.error(`Sweep run failed: ${err.message}`);
-        }
-        finally {
-            this.isRunning = false;
         }
     }
     async manualSweepAll() {
         if (this.isRunning) {
             throw new Error('Sweep already in progress');
         }
-        this.isRunning = true;
         try {
-            await this.sweepEvm();
-            await this.sweepBtc();
+            return await this.runSweep();
         }
         catch (error) {
             const err = error;
             this.logger.error(`Manual sweep run failed: ${err.message}`);
             throw error;
         }
+    }
+    async runSweep() {
+        if (this.isRunning) {
+            throw new Error('Sweep already in progress');
+        }
+        this.isRunning = true;
+        try {
+            const evm = await this.sweepEvm();
+            const btc = await this.sweepBtc();
+            return {
+                evmSwept: evm.swept,
+                btcSwept: btc.swept,
+                evmSkipped: evm.skipped,
+                btcSkipped: btc.skipped,
+                errors: [...evm.errors, ...btc.errors],
+            };
+        }
         finally {
             this.isRunning = false;
         }
     }
     async sweepEvm() {
+        const result = { swept: 0, skipped: 0, errors: [] };
         const addresses = this.depositRegistry.addressesForChain('EVM');
         if (addresses.length === 0)
-            return;
+            return result;
         const thresholdUsd = this.config.depositSweepThreshold;
         for (const address of addresses) {
             const registrations = this.depositRegistry.lookup(address, 'EVM');
@@ -94,29 +105,38 @@ let SweepService = SweepService_1 = class SweepService {
                 if (!wallet || seen.has(wallet.currency))
                     continue;
                 seen.add(wallet.currency);
-                if (wallet.derivationIndex === null)
+                if (wallet.derivationIndex === null ||
+                    wallet.derivationIndex === hd_wallet_service_1.MASTER_WALLET_INDEX) {
+                    result.skipped += 1;
                     continue;
+                }
                 const balance = await this.chainClient.getEvmBalance(address, wallet.currency);
                 const balanceUsd = this.exchangeRate.convertToUsd(balance, wallet.currency);
                 if (balanceUsd < thresholdUsd)
                     continue;
                 this.logger.log(`EVM sweep candidate: ${balance} ${wallet.currency} (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`);
-                await this.sweepEvmCurrency(wallet.currency, wallet.derivationIndex, address, balance);
+                await this.sweepEvmCurrency(wallet.currency, wallet.derivationIndex, address, balance, result);
             }
         }
+        return result;
     }
     async sweepBtc() {
+        const result = { swept: 0, skipped: 0, errors: [] };
         const addresses = this.depositRegistry.addressesForChain('BTC');
         if (addresses.length === 0)
-            return;
+            return result;
         const thresholdUsd = this.config.depositSweepThreshold;
         for (const address of addresses) {
             const registrations = this.depositRegistry.lookup(address, 'BTC');
             const wallet = await this.prisma.wallet.findUnique({
                 where: { id: registrations[0]?.walletId || '' },
             });
-            if (!wallet || wallet.derivationIndex === null)
+            if (!wallet ||
+                wallet.derivationIndex === null ||
+                wallet.derivationIndex === hd_wallet_service_1.MASTER_WALLET_INDEX) {
+                result.skipped += 1;
                 continue;
+            }
             const utxos = await this.chainClient.getBtcUtxos(address);
             const balance = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
             const balanceUsd = this.exchangeRate.convertToUsd(balance, client_1.Currency.BTC);
@@ -127,14 +147,17 @@ let SweepService = SweepService_1 = class SweepService {
                 const feePerByte = await this.chainClient.getBtcRecommendedFee();
                 const txid = await this.chainClient.broadcastBtc(wallet.derivationIndex, this.hdWallet.getMasterAddress('BTC'), balance, feePerByte);
                 await this.recordSweep(client_1.Currency.BTC, balance, txid, address);
+                result.swept += 1;
             }
             catch (error) {
                 const err = error;
+                result.errors.push(`BTC ${address}: ${err.message}`);
                 this.logger.error(`BTC sweep failed for ${address}: ${err.message}`);
             }
         }
+        return result;
     }
-    async sweepEvmCurrency(currency, derivationIndex, fromAddress, balance) {
+    async sweepEvmCurrency(currency, derivationIndex, fromAddress, balance, result) {
         const to = this.hdWallet.getMasterAddress('EVM');
         try {
             const txHash = currency === client_1.Currency.ETH
@@ -145,10 +168,15 @@ let SweepService = SweepService_1 = class SweepService {
             });
             if (wallet) {
                 await this.recordSweep(currency, balance, txHash, fromAddress);
+                result.swept += 1;
+            }
+            else {
+                result.errors.push(`EVM ${currency} ${fromAddress}: source wallet not found; sweep not recorded`);
             }
         }
         catch (error) {
             const err = error;
+            result.errors.push(`EVM ${currency} ${fromAddress}: ${err.message}`);
             this.logger.error(`EVM sweep failed for ${fromAddress} (${currency}): ${err.message}`);
         }
     }
@@ -184,6 +212,45 @@ let SweepService = SweepService_1 = class SweepService {
             destination,
             metadata: { source: 'DEPOSIT_SWEEP' },
         });
+        await this.markMatchedDepositsSwept(currency, fromAddress, txHash);
+    }
+    async markMatchedDepositsSwept(currency, fromAddress, sweepTxHash) {
+        if (!fromAddress)
+            return;
+        const normalized = currency === client_1.Currency.BTC ? fromAddress : fromAddress.toLowerCase();
+        const deposits = await this.prisma.walletTransaction.findMany({
+            where: {
+                type: client_1.LedgerType.DEPOSIT,
+                wallet: { currency },
+            },
+            take: 500,
+            orderBy: { createdAt: 'desc' },
+        });
+        const sweptAt = new Date().toISOString();
+        for (const tx of deposits) {
+            const meta = (tx.metadata ?? {});
+            if (meta.swept === true)
+                continue;
+            const txAddress = meta.address;
+            if (!txAddress)
+                continue;
+            const match = currency === client_1.Currency.BTC
+                ? txAddress === normalized
+                : txAddress.toLowerCase() === normalized;
+            if (!match)
+                continue;
+            await this.prisma.walletTransaction.update({
+                where: { id: tx.id },
+                data: {
+                    metadata: {
+                        ...meta,
+                        swept: true,
+                        sweepTxHash,
+                        sweptAt,
+                    },
+                },
+            });
+        }
     }
 };
 exports.SweepService = SweepService;

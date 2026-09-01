@@ -6,6 +6,13 @@ import { HdWalletService } from './hd-wallet.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { PlatformService } from './platform.service';
 import { ExchangeRateService } from './exchange-rate.service';
+export interface SweepRunSummary {
+    evmSwept: number;
+    btcSwept: number;
+    evmSkipped: number;
+    btcSkipped: number;
+    errors: string[];
+}
 export declare class SweepService {
     private readonly prisma;
     private readonly depositRegistry;
@@ -19,9 +26,11 @@ export declare class SweepService {
     private isRunning;
     constructor(prisma: PrismaService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService, hdWallet: HdWalletService, tracker: WithdrawalTrackerService, platformService: PlatformService, exchangeRate: ExchangeRateService);
     sweepAll(): Promise<void>;
-    manualSweepAll(): Promise<void>;
+    manualSweepAll(): Promise<SweepRunSummary>;
+    private runSweep;
     private sweepEvm;
     private sweepBtc;
     private sweepEvmCurrency;
     private recordSweep;
+    private markMatchedDepositsSwept;
 }

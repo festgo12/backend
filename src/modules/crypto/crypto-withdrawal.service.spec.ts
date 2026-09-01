@@ -76,6 +76,7 @@ describe('CryptoWithdrawalService', () => {
 
     // Re-set mock implementations that resetAllMocks() clears
     mockHdWallet.chainForCurrency.mockReturnValue('EVM');
+    mockHdWallet.getMasterAddress.mockReturnValue('0xMaster');
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -320,5 +321,25 @@ describe('CryptoWithdrawalService', () => {
         destinationAddress: '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       }),
     ).rejects.toThrow('No on-chain balance available');
+  });
+
+  it('rejects a fee wallet sweep to the platform master address itself', async () => {
+    const master = '0x5AEDA56215b167893e80B4fE645BA6d5Bab767DE';
+    mockHdWallet.getMasterAddress.mockReturnValue(master);
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'w-fee',
+      address: master,
+      derivationIndex: 0,
+      currency: Currency.ETH,
+    });
+
+    await expect(
+      service.sweepFeeWallet({
+        currency: Currency.ETH,
+        destinationAddress: master,
+      }),
+    ).rejects.toThrow('platform address itself');
+
+    expect(mockChainClient.broadcastEvmNative).not.toHaveBeenCalled();
   });
 });

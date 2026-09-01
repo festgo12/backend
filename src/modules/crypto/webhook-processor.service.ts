@@ -218,6 +218,7 @@ export class WebhookProcessorService {
         blockNumber: event.blockNumber,
         confirmations: canCreditImmediately ? requiredConfirmations : 0,
         receivedAt: new Date().toISOString(),
+        swept: false,
       };
 
       try {
