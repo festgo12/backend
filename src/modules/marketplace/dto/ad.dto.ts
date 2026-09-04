@@ -1,6 +1,9 @@
-import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional, Min, Max } from 'class-validator';
+import { IsEnum, IsNumber, IsPositive, IsBoolean, IsOptional, Min, Max, IsIn } from 'class-validator';
 import { Currency, AdType } from '@src/generated/client';
 import { Type } from 'class-transformer';
+
+/** Canonical chains available for multi-chain USDT/USDC ads. */
+export const AD_CHAINS = ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'] as const;
 
 export class CreateAdDto {
   @IsEnum(Currency)
@@ -8,6 +11,10 @@ export class CreateAdDto {
 
   @IsEnum(AdType)
   type: AdType;
+
+  @IsOptional()
+  @IsIn(AD_CHAINS)
+  chain?: string;
 
   @IsNumber()
   @IsPositive()
@@ -79,6 +86,10 @@ export class SearchAdsDto {
   @IsOptional()
   @IsBoolean()
   isSponsored?: boolean;
+
+  @IsOptional()
+  @IsIn(AD_CHAINS)
+  chain?: string;
 
   @IsOptional()
   @Type(() => Number)

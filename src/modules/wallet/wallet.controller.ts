@@ -87,57 +87,83 @@ export class WalletController {
 
   @Post('init')
   @AuditLog('WALLET_CREATION', 'WALLET')
-  @ApiOperation({ summary: 'Initialize a wallet for a specific currency' })
+  @ApiOperation({ summary: 'Initialize a wallet for a specific currency (optionally per-chain)' })
   async initWallet(
     @GetUser() user: User,
     @Body('currency') currency: Currency,
+    @Body('chain') chain?: string,
   ) {
-    const wallet = await this.walletService.getOrCreateWallet(
-      user.id,
-      currency,
-    );
-
-    if (currency !== Currency.NGN && !wallet.address) {
-      try {
-        // Local-first path: derive the deposit address from the platform HD
-        // wallet with zero external API calls (alchemy provider).
-        const info = await this.hdWallet.getOrAssignDepositInfo(
-          user.id,
-          currency,
-        );
-        const updatedWallet = await this.walletService.updateWalletDepositInfo(
-          wallet.id,
-          {
-            address: info.address,
-            derivationIndex: info.derivationIndex,
-            chain: info.chain,
-          },
-        );
-        this.depositRegistry.register(info.address, info.chain, wallet.id);
-
-        // Multichain: USDT/USDC are available on Solana (SPL) and TRON
-        // (TRC-20) in addition to the EVM chains, so auto-derive and register
-        // distinct deposit addresses for those chains too. ETH stays
-        // Ethereum-only (its primary EVM wallet above).
-        if (currency === Currency.USDT || currency === Currency.USDC) {
-          await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
-          await this.ensureMultichainWallet(user.id, currency, 'TRON');
-        }
-
-        return updatedWallet;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(
-          `Failed to execute wallet initialization sequence for user ${user.id} (${currency}): ${message}`,
-        );
-        throw new InternalServerErrorException(
-          message ||
-            `Could not complete blockchain generation layer for ${currency}.`,
-        );
-      }
+    if (currency === Currency.NGN) {
+      return this.walletService.getOrCreateWallet(user.id, currency);
     }
 
-    return wallet;
+    const isEvmChain = chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON';
+    const isNonEvmChain = chain === 'SOLANA' || chain === 'TRON';
+
+    try {
+      if (chain && isEvmChain) {
+        // EVM families share a single 0x address; derive/return the shared
+        // EVM wallet regardless of which EVM chain is requested.
+        return await this.ensurePrimaryEvmDeposit(user.id, currency);
+      }
+
+      if (chain && isNonEvmChain) {
+        // Solana (SPL) and TRON (TRC-20) USDT/USDC only.
+        if (currency !== Currency.USDT && currency !== Currency.USDC) {
+          throw new BadRequestException(
+            `Chain ${chain} is only supported for USDT/USDC wallets`,
+          );
+        }
+        await this.ensureMultichainWallet(user.id, currency, chain);
+        return this.walletService.getOrCreateWallet(user.id, currency, chain);
+      }
+
+      if (chain) {
+        throw new BadRequestException(
+          `Unsupported chain "${chain}". Expected ETH/BSC/POLYGON/SOLANA/TRON.`,
+        );
+      }
+
+      // No chain requested: existing behavior (shared EVM + auto SOLANA/TRON).
+      const wallet = await this.walletService.getOrCreateWallet(user.id, currency);
+      const primary = await this.ensurePrimaryEvmDeposit(user.id, currency);
+      if (currency === Currency.USDT || currency === Currency.USDC) {
+        await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
+        await this.ensureMultichainWallet(user.id, currency, 'TRON');
+      }
+      return primary ?? wallet;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to execute wallet initialization sequence for user ${user.id} (${currency}${chain ? `/${chain}` : ''}): ${message}`,
+      );
+      throw new InternalServerErrorException(
+        message ||
+          `Could not complete blockchain generation layer for ${currency}.`,
+      );
+    }
+  }
+
+  /**
+   * Derives (if needed) and persists the shared EVM deposit address for a user
+   * wallet, registering it with the provider, and returns the updated/primary
+   * wallet. Works for any crypto currency on the EVM family (ETH, USDT, USDC).
+   */
+  private async ensurePrimaryEvmDeposit(userId: string, currency: Currency) {
+    const wallet = await this.walletService.getOrCreateWallet(userId, currency);
+    if (wallet.address) return wallet;
+
+    const info = await this.hdWallet.getOrAssignDepositInfo(userId, currency);
+    const updatedWallet = await this.walletService.updateWalletDepositInfo(
+      wallet.id,
+      {
+        address: info.address,
+        derivationIndex: info.derivationIndex,
+        chain: info.chain,
+      },
+    );
+    this.depositRegistry.register(info.address, info.chain, wallet.id);
+    return updatedWallet;
   }
 
   /**

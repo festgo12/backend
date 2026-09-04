@@ -237,6 +237,7 @@ model Ad {
   seller      User     @relation(fields: [sellerId], references: [id])
   asset       Currency
   type        AdType
+  chain       String? // ETH | BSC | POLYGON | SOLANA | TRON (null = single-chain asset: BTC/ETH)
   price       Decimal  @db.Decimal(20, 8)
   quantity    Decimal  @db.Decimal(20, 8)
   minLimit    Decimal  @db.Decimal(20, 8)
@@ -248,7 +249,7 @@ model Ad {
   updatedAt   DateTime @updatedAt
   version     Int      @default(0)
 
-  @@index([sellerId, asset, type])
+  @@index([sellerId, asset, chain, type])
 }
 
 model Order {
@@ -260,6 +261,7 @@ model Order {
   sellerId      String        @db.Uuid
   seller        User          @relation("SellerOrders", fields: [sellerId], references: [id])
   status        OrderStatus   @default(CREATED)
+  chain         String? // settlement chain (denormalized from the ad)
   fiatAmount    Decimal       @db.Decimal(20, 2)
   cryptoAmount  Decimal       @db.Decimal(20, 8)
   feeAmount     Decimal       @db.Decimal(20, 8)

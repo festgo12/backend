@@ -11712,6 +11712,7 @@ export namespace Prisma {
     sellerId: string | null
     asset: $Enums.Currency | null
     type: $Enums.AdType | null
+    chain: string | null
     price: Decimal | null
     quantity: Decimal | null
     minLimit: Decimal | null
@@ -11728,6 +11729,7 @@ export namespace Prisma {
     sellerId: string | null
     asset: $Enums.Currency | null
     type: $Enums.AdType | null
+    chain: string | null
     price: Decimal | null
     quantity: Decimal | null
     minLimit: Decimal | null
@@ -11744,6 +11746,7 @@ export namespace Prisma {
     sellerId: number
     asset: number
     type: number
+    chain: number
     price: number
     quantity: number
     minLimit: number
@@ -11778,6 +11781,7 @@ export namespace Prisma {
     sellerId?: true
     asset?: true
     type?: true
+    chain?: true
     price?: true
     quantity?: true
     minLimit?: true
@@ -11794,6 +11798,7 @@ export namespace Prisma {
     sellerId?: true
     asset?: true
     type?: true
+    chain?: true
     price?: true
     quantity?: true
     minLimit?: true
@@ -11810,6 +11815,7 @@ export namespace Prisma {
     sellerId?: true
     asset?: true
     type?: true
+    chain?: true
     price?: true
     quantity?: true
     minLimit?: true
@@ -11913,6 +11919,7 @@ export namespace Prisma {
     sellerId: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain: string | null
     price: Decimal
     quantity: Decimal
     minLimit: Decimal
@@ -11948,6 +11955,7 @@ export namespace Prisma {
     sellerId?: boolean
     asset?: boolean
     type?: boolean
+    chain?: boolean
     price?: boolean
     quantity?: boolean
     minLimit?: boolean
@@ -11967,6 +11975,7 @@ export namespace Prisma {
     sellerId?: boolean
     asset?: boolean
     type?: boolean
+    chain?: boolean
     price?: boolean
     quantity?: boolean
     minLimit?: boolean
@@ -11984,6 +11993,7 @@ export namespace Prisma {
     sellerId?: boolean
     asset?: boolean
     type?: boolean
+    chain?: boolean
     price?: boolean
     quantity?: boolean
     minLimit?: boolean
@@ -12015,6 +12025,7 @@ export namespace Prisma {
       sellerId: string
       asset: $Enums.Currency
       type: $Enums.AdType
+      chain: string | null
       price: Prisma.Decimal
       quantity: Prisma.Decimal
       minLimit: Prisma.Decimal
@@ -12423,6 +12434,7 @@ export namespace Prisma {
     readonly sellerId: FieldRef<"Ad", 'String'>
     readonly asset: FieldRef<"Ad", 'Currency'>
     readonly type: FieldRef<"Ad", 'AdType'>
+    readonly chain: FieldRef<"Ad", 'String'>
     readonly price: FieldRef<"Ad", 'Decimal'>
     readonly quantity: FieldRef<"Ad", 'Decimal'>
     readonly minLimit: FieldRef<"Ad", 'Decimal'>
@@ -12816,6 +12828,7 @@ export namespace Prisma {
     buyerId: string | null
     sellerId: string | null
     status: $Enums.OrderStatus | null
+    chain: string | null
     fiatAmount: Decimal | null
     cryptoAmount: Decimal | null
     feeAmount: Decimal | null
@@ -12832,6 +12845,7 @@ export namespace Prisma {
     buyerId: string | null
     sellerId: string | null
     status: $Enums.OrderStatus | null
+    chain: string | null
     fiatAmount: Decimal | null
     cryptoAmount: Decimal | null
     feeAmount: Decimal | null
@@ -12848,6 +12862,7 @@ export namespace Prisma {
     buyerId: number
     sellerId: number
     status: number
+    chain: number
     fiatAmount: number
     cryptoAmount: number
     feeAmount: number
@@ -12880,6 +12895,7 @@ export namespace Prisma {
     buyerId?: true
     sellerId?: true
     status?: true
+    chain?: true
     fiatAmount?: true
     cryptoAmount?: true
     feeAmount?: true
@@ -12896,6 +12912,7 @@ export namespace Prisma {
     buyerId?: true
     sellerId?: true
     status?: true
+    chain?: true
     fiatAmount?: true
     cryptoAmount?: true
     feeAmount?: true
@@ -12912,6 +12929,7 @@ export namespace Prisma {
     buyerId?: true
     sellerId?: true
     status?: true
+    chain?: true
     fiatAmount?: true
     cryptoAmount?: true
     feeAmount?: true
@@ -13015,6 +13033,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status: $Enums.OrderStatus
+    chain: string | null
     fiatAmount: Decimal
     cryptoAmount: Decimal
     feeAmount: Decimal
@@ -13050,6 +13069,7 @@ export namespace Prisma {
     buyerId?: boolean
     sellerId?: boolean
     status?: boolean
+    chain?: boolean
     fiatAmount?: boolean
     cryptoAmount?: boolean
     feeAmount?: boolean
@@ -13072,6 +13092,7 @@ export namespace Prisma {
     buyerId?: boolean
     sellerId?: boolean
     status?: boolean
+    chain?: boolean
     fiatAmount?: boolean
     cryptoAmount?: boolean
     feeAmount?: boolean
@@ -13091,6 +13112,7 @@ export namespace Prisma {
     buyerId?: boolean
     sellerId?: boolean
     status?: boolean
+    chain?: boolean
     fiatAmount?: boolean
     cryptoAmount?: boolean
     feeAmount?: boolean
@@ -13130,6 +13152,7 @@ export namespace Prisma {
       buyerId: string
       sellerId: string
       status: $Enums.OrderStatus
+      chain: string | null
       fiatAmount: Prisma.Decimal
       cryptoAmount: Prisma.Decimal
       feeAmount: Prisma.Decimal
@@ -13541,6 +13564,7 @@ export namespace Prisma {
     readonly buyerId: FieldRef<"Order", 'String'>
     readonly sellerId: FieldRef<"Order", 'String'>
     readonly status: FieldRef<"Order", 'OrderStatus'>
+    readonly chain: FieldRef<"Order", 'String'>
     readonly fiatAmount: FieldRef<"Order", 'Decimal'>
     readonly cryptoAmount: FieldRef<"Order", 'Decimal'>
     readonly feeAmount: FieldRef<"Order", 'Decimal'>
@@ -34205,6 +34229,7 @@ export namespace Prisma {
     sellerId: 'sellerId',
     asset: 'asset',
     type: 'type',
+    chain: 'chain',
     price: 'price',
     quantity: 'quantity',
     minLimit: 'minLimit',
@@ -34225,6 +34250,7 @@ export namespace Prisma {
     buyerId: 'buyerId',
     sellerId: 'sellerId',
     status: 'status',
+    chain: 'chain',
     fiatAmount: 'fiatAmount',
     cryptoAmount: 'cryptoAmount',
     feeAmount: 'feeAmount',
@@ -35560,6 +35586,7 @@ export namespace Prisma {
     sellerId?: UuidFilter<"Ad"> | string
     asset?: EnumCurrencyFilter<"Ad"> | $Enums.Currency
     type?: EnumAdTypeFilter<"Ad"> | $Enums.AdType
+    chain?: StringNullableFilter<"Ad"> | string | null
     price?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
@@ -35578,6 +35605,7 @@ export namespace Prisma {
     sellerId?: SortOrder
     asset?: SortOrder
     type?: SortOrder
+    chain?: SortOrderInput | SortOrder
     price?: SortOrder
     quantity?: SortOrder
     minLimit?: SortOrder
@@ -35599,6 +35627,7 @@ export namespace Prisma {
     sellerId?: UuidFilter<"Ad"> | string
     asset?: EnumCurrencyFilter<"Ad"> | $Enums.Currency
     type?: EnumAdTypeFilter<"Ad"> | $Enums.AdType
+    chain?: StringNullableFilter<"Ad"> | string | null
     price?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
@@ -35617,6 +35646,7 @@ export namespace Prisma {
     sellerId?: SortOrder
     asset?: SortOrder
     type?: SortOrder
+    chain?: SortOrderInput | SortOrder
     price?: SortOrder
     quantity?: SortOrder
     minLimit?: SortOrder
@@ -35641,6 +35671,7 @@ export namespace Prisma {
     sellerId?: UuidWithAggregatesFilter<"Ad"> | string
     asset?: EnumCurrencyWithAggregatesFilter<"Ad"> | $Enums.Currency
     type?: EnumAdTypeWithAggregatesFilter<"Ad"> | $Enums.AdType
+    chain?: StringNullableWithAggregatesFilter<"Ad"> | string | null
     price?: DecimalWithAggregatesFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     quantity?: DecimalWithAggregatesFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalWithAggregatesFilter<"Ad"> | Decimal | DecimalJsLike | number | string
@@ -35661,6 +35692,7 @@ export namespace Prisma {
     buyerId?: UuidFilter<"Order"> | string
     sellerId?: UuidFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    chain?: StringNullableFilter<"Order"> | string | null
     fiatAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
@@ -35682,6 +35714,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     sellerId?: SortOrder
     status?: SortOrder
+    chain?: SortOrderInput | SortOrder
     fiatAmount?: SortOrder
     cryptoAmount?: SortOrder
     feeAmount?: SortOrder
@@ -35706,6 +35739,7 @@ export namespace Prisma {
     buyerId?: UuidFilter<"Order"> | string
     sellerId?: UuidFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    chain?: StringNullableFilter<"Order"> | string | null
     fiatAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
@@ -35727,6 +35761,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     sellerId?: SortOrder
     status?: SortOrder
+    chain?: SortOrderInput | SortOrder
     fiatAmount?: SortOrder
     cryptoAmount?: SortOrder
     feeAmount?: SortOrder
@@ -35751,6 +35786,7 @@ export namespace Prisma {
     buyerId?: UuidWithAggregatesFilter<"Order"> | string
     sellerId?: UuidWithAggregatesFilter<"Order"> | string
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
+    chain?: StringNullableWithAggregatesFilter<"Order"> | string | null
     fiatAmount?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
@@ -38201,6 +38237,7 @@ export namespace Prisma {
     id?: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -38219,6 +38256,7 @@ export namespace Prisma {
     sellerId: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -38235,6 +38273,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38253,6 +38292,7 @@ export namespace Prisma {
     sellerId?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38270,6 +38310,7 @@ export namespace Prisma {
     sellerId: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -38285,6 +38326,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38301,6 +38343,7 @@ export namespace Prisma {
     sellerId?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38315,6 +38358,7 @@ export namespace Prisma {
   export type OrderCreateInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -38336,6 +38380,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -38351,6 +38396,7 @@ export namespace Prisma {
   export type OrderUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38372,6 +38418,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38390,6 +38437,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -38403,6 +38451,7 @@ export namespace Prisma {
   export type OrderUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -38419,6 +38468,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -41255,6 +41305,7 @@ export namespace Prisma {
     sellerId?: SortOrder
     asset?: SortOrder
     type?: SortOrder
+    chain?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
     minLimit?: SortOrder
@@ -41279,6 +41330,7 @@ export namespace Prisma {
     sellerId?: SortOrder
     asset?: SortOrder
     type?: SortOrder
+    chain?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
     minLimit?: SortOrder
@@ -41295,6 +41347,7 @@ export namespace Prisma {
     sellerId?: SortOrder
     asset?: SortOrder
     type?: SortOrder
+    chain?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
     minLimit?: SortOrder
@@ -41342,6 +41395,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     sellerId?: SortOrder
     status?: SortOrder
+    chain?: SortOrder
     fiatAmount?: SortOrder
     cryptoAmount?: SortOrder
     feeAmount?: SortOrder
@@ -41365,6 +41419,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     sellerId?: SortOrder
     status?: SortOrder
+    chain?: SortOrder
     fiatAmount?: SortOrder
     cryptoAmount?: SortOrder
     feeAmount?: SortOrder
@@ -41381,6 +41436,7 @@ export namespace Prisma {
     buyerId?: SortOrder
     sellerId?: SortOrder
     status?: SortOrder
+    chain?: SortOrder
     fiatAmount?: SortOrder
     cryptoAmount?: SortOrder
     feeAmount?: SortOrder
@@ -44918,6 +44974,7 @@ export namespace Prisma {
     id?: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -44934,6 +44991,7 @@ export namespace Prisma {
     id?: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -44959,6 +45017,7 @@ export namespace Prisma {
   export type OrderCreateWithoutBuyerInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -44978,6 +45037,7 @@ export namespace Prisma {
     adId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -45003,6 +45063,7 @@ export namespace Prisma {
   export type OrderCreateWithoutSellerInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -45022,6 +45083,7 @@ export namespace Prisma {
     adId: string
     buyerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -45697,6 +45759,7 @@ export namespace Prisma {
     sellerId?: UuidFilter<"Ad"> | string
     asset?: EnumCurrencyFilter<"Ad"> | $Enums.Currency
     type?: EnumAdTypeFilter<"Ad"> | $Enums.AdType
+    chain?: StringNullableFilter<"Ad"> | string | null
     price?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFilter<"Ad"> | Decimal | DecimalJsLike | number | string
@@ -45733,6 +45796,7 @@ export namespace Prisma {
     buyerId?: UuidFilter<"Order"> | string
     sellerId?: UuidFilter<"Order"> | string
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
+    chain?: StringNullableFilter<"Order"> | string | null
     fiatAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
@@ -47098,6 +47162,7 @@ export namespace Prisma {
   export type OrderCreateWithoutLedgerEntriesInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -47118,6 +47183,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -47232,6 +47298,7 @@ export namespace Prisma {
   export type OrderUpdateWithoutLedgerEntriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -47252,6 +47319,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -47579,6 +47647,7 @@ export namespace Prisma {
   export type OrderCreateWithoutAdInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -47598,6 +47667,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -47741,6 +47811,7 @@ export namespace Prisma {
     id?: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -47758,6 +47829,7 @@ export namespace Prisma {
     sellerId: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -48055,6 +48127,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -48072,6 +48145,7 @@ export namespace Prisma {
     sellerId?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -48320,6 +48394,7 @@ export namespace Prisma {
   export type OrderCreateWithoutDisputesInput = {
     id?: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -48340,6 +48415,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -48590,6 +48666,7 @@ export namespace Prisma {
   export type OrderUpdateWithoutDisputesInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -48610,6 +48687,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -51662,6 +51740,7 @@ export namespace Prisma {
     id?: string
     asset: $Enums.Currency
     type: $Enums.AdType
+    chain?: string | null
     price: Decimal | DecimalJsLike | number | string
     quantity: Decimal | DecimalJsLike | number | string
     minLimit: Decimal | DecimalJsLike | number | string
@@ -51678,6 +51757,7 @@ export namespace Prisma {
     adId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -51693,6 +51773,7 @@ export namespace Prisma {
     adId: string
     buyerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -51947,6 +52028,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -51963,6 +52045,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -51979,6 +52062,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     asset?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
     type?: EnumAdTypeFieldUpdateOperationsInput | $Enums.AdType
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minLimit?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -51993,6 +52077,7 @@ export namespace Prisma {
   export type OrderUpdateWithoutBuyerInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52012,6 +52097,7 @@ export namespace Prisma {
     adId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52029,6 +52115,7 @@ export namespace Prisma {
     adId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52042,6 +52129,7 @@ export namespace Prisma {
   export type OrderUpdateWithoutSellerInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52061,6 +52149,7 @@ export namespace Prisma {
     adId?: StringFieldUpdateOperationsInput | string
     buyerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52078,6 +52167,7 @@ export namespace Prisma {
     adId?: StringFieldUpdateOperationsInput | string
     buyerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52922,6 +53012,7 @@ export namespace Prisma {
     buyerId: string
     sellerId: string
     status?: $Enums.OrderStatus
+    chain?: string | null
     fiatAmount: Decimal | DecimalJsLike | number | string
     cryptoAmount: Decimal | DecimalJsLike | number | string
     feeAmount: Decimal | DecimalJsLike | number | string
@@ -52935,6 +53026,7 @@ export namespace Prisma {
   export type OrderUpdateWithoutAdInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52954,6 +53046,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -52971,6 +53064,7 @@ export namespace Prisma {
     buyerId?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     fiatAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     cryptoAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string

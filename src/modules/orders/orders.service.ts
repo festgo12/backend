@@ -5,7 +5,7 @@ import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { PlatformService } from '../crypto/platform.service';
-import { primaryWalletWhere } from '../wallet/wallet-query.util';
+import { primaryWalletWhere, resolveChainWallet } from '../wallet/wallet-query.util';
 
 @Injectable()
 export class OrdersService {
@@ -98,11 +98,17 @@ export class OrdersService {
         throw new BadRequestException('Insufficient fiat balance to initiate this trade');
       }
 
-      const sellerCryptoWallet = await tx.wallet.findFirst({
-        where: primaryWalletWhere(cryptoSellerId, ad.asset),
-      });
+      const sellerCryptoRow = await resolveChainWallet(
+        (where) => tx.wallet.findFirst({ where }),
+        cryptoSellerId,
+        ad.asset,
+        ad.chain,
+      );
 
-      if (!sellerCryptoWallet || new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
+      if (!sellerCryptoRow) {
+        throw new BadRequestException('Seller does not have a wallet for this network');
+      }
+      if (sellerCryptoRow && new Decimal(sellerCryptoRow.balance.toString()).lessThan(cryptoAmount)) {
         throw new BadRequestException('Seller does not have enough crypto to fulfill this order');
       }
 
@@ -128,6 +134,7 @@ export class OrdersService {
           buyerId,
           sellerId: ad.sellerId,
           status: OrderStatus.CREATED,
+          chain: ad.chain,
           fiatAmount,
           cryptoAmount,
           feeAmount: 0,
@@ -206,16 +213,19 @@ export class OrdersService {
       });
 
       // --- STAGE 2: Lock crypto from the crypto seller (Optimistic Lock) ---
-      const sellerCryptoWallet = await tx.wallet.findFirst({
-        where: primaryWalletWhere(cryptoSellerId, order.ad.asset),
-      });
-      if (!sellerCryptoWallet) throw new InternalServerErrorException('Crypto seller wallet not found');
-      if (new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
+      const sellerCryptoRow = await resolveChainWallet(
+        (where) => tx.wallet.findFirst({ where }),
+        cryptoSellerId,
+        order.ad.asset,
+        order.chain,
+      );
+      if (!sellerCryptoRow) throw new InternalServerErrorException('Crypto seller wallet not found');
+      if (sellerCryptoRow && new Decimal(sellerCryptoRow.balance.toString()).lessThan(cryptoAmount)) {
         throw new BadRequestException('Seller has insufficient crypto balance to lock');
       }
 
       const lockCryptoResult = await tx.wallet.updateMany({
-        where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },
+        where: { id: sellerCryptoRow.id, version: sellerCryptoRow.version },
         data: {
           balance: { decrement: cryptoAmount },
           reservedBalance: { increment: cryptoAmount },
@@ -226,7 +236,7 @@ export class OrdersService {
 
       // --- STAGE 3: Transfer Crypto (Debit seller escrow, Credit buyer available) ---
       const transferCryptoResult = await tx.wallet.updateMany({
-        where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version + 1 }, // we incremented once
+        where: { id: sellerCryptoRow.id, version: sellerCryptoRow.version + 1 }, // we incremented once
         data: {
           reservedBalance: { decrement: cryptoAmount },
           version: { increment: 1 },
@@ -234,13 +244,16 @@ export class OrdersService {
       });
       if (transferCryptoResult.count === 0) throw new InternalServerErrorException('Conflict transferring seller crypto');
 
-      const buyerCryptoWallet = await tx.wallet.findFirst({
-        where: primaryWalletWhere(cryptoBuyerId, order.ad.asset),
-      });
-      if (!buyerCryptoWallet) throw new InternalServerErrorException('Crypto buyer wallet not found');
+      const buyerCryptoRow = await resolveChainWallet(
+        (where) => tx.wallet.findFirst({ where }),
+        cryptoBuyerId,
+        order.ad.asset,
+        order.chain,
+      );
+      if (!buyerCryptoRow) throw new InternalServerErrorException('Crypto buyer wallet not found');
 
       const creditBuyerCryptoResult = await tx.wallet.updateMany({
-        where: { id: buyerCryptoWallet.id, version: buyerCryptoWallet.version },
+        where: { id: buyerCryptoRow.id, version: buyerCryptoRow.version },
         data: {
           balance: { increment: cryptoAmount.minus(buyerFee) },
           version: { increment: 1 },
@@ -321,28 +334,28 @@ export class OrdersService {
           balanceAfter: new Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
         },
         {
-          walletId: buyerCryptoWallet.id,
+          walletId: buyerCryptoRow.id,
           orderId: order.id,
           amount: cryptoAmount,
           type: LedgerType.TRADE_SETTLEMENT,
           reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
-          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount),
+          balanceAfter: new Decimal(buyerCryptoRow.balance.toString()).plus(cryptoAmount),
         },
         {
-          walletId: buyerCryptoWallet.id,
+          walletId: buyerCryptoRow.id,
           orderId: order.id,
           amount: buyerFee.negated(),
           type: LedgerType.FEE,
           reference: `FEE-CRYPTO-BUYER-${order.id}`,
-          balanceAfter: new Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+          balanceAfter: new Decimal(buyerCryptoRow.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
         },
         {
-          walletId: sellerCryptoWallet.id,
+          walletId: sellerCryptoRow.id,
           orderId: order.id,
           amount: cryptoAmount.negated(),
           type: LedgerType.TRADE_SETTLEMENT,
           reference: `SETTLE-CRYPTO-SELLER-${order.id}`,
-          balanceAfter: new Decimal(sellerCryptoWallet.balance.toString()).minus(cryptoAmount),
+          balanceAfter: new Decimal(sellerCryptoRow.balance.toString()).minus(cryptoAmount),
         },
       ];
 
@@ -384,7 +397,7 @@ export class OrdersService {
       // 8. Emit Event
       this.eventEmitter.emit('order.completed', finalOrder);
 
-      return { finalOrder, sellerCryptoWallet, buyerCryptoWallet };
+      return { finalOrder, sellerCryptoWallet: sellerCryptoRow, buyerCryptoWallet: buyerCryptoRow };
     });
 
     // Trades are settled purely on the internal ledger. On-chain movement
