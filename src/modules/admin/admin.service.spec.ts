@@ -27,7 +27,7 @@ describe('AdminService', () => {
 
   const mockPrismaService = {
     user: { findUnique: jest.fn() },
-    wallet: { findMany: jest.fn(), findUnique: jest.fn() },
+    wallet: { findMany: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
     walletTransaction: { findMany: jest.fn() },
     withdrawalJob: { findMany: jest.fn(), count: jest.fn() },
   };
@@ -44,14 +44,20 @@ describe('AdminService', () => {
     evmConfirmations: 12,
     btcConfirmations: 2,
     depositSweepThreshold: 0,
+    confirmationsFor: (chain: string) =>
+      chain === 'SOLANA' ? 32 : chain === 'TRON' ? 19 : 0,
+    getStablecoinContractFor: jest.fn(),
   };
   const mockDepositRegistry = { size: 3 };
   const mockHdWallet = {
     getMasterAddress: jest.fn(),
+    getMasterAddressForChain: jest.fn(),
   };
   const mockChainClient = {
     getBtcUtxos: jest.fn(),
     getEvmBalance: jest.fn(),
+    getSolanaTokenBalance: jest.fn(),
+    getTronTokenBalance: jest.fn(),
   };
   const mockPaystackService = {};
   const mockWalletService = {
@@ -108,6 +114,7 @@ describe('AdminService', () => {
         {
           id: 'fee-wallet-uuid',
           currency: Currency.USDT,
+          chain: 'ETH',
           address: '0x1111111111111111111111111111111111111111',
           balance: new Decimal('10'),
           reservedBalance: new Decimal('2'),
@@ -124,6 +131,7 @@ describe('AdminService', () => {
       expect(result.wallets).toEqual([
         expect.objectContaining({
           currency: Currency.USDT,
+          chain: 'ETH',
           address: '0x1111111111111111111111111111111111111111',
           balance: 10,
           reservedBalance: 2,
@@ -168,6 +176,7 @@ describe('AdminService', () => {
         currency: Currency.USDT,
         destinationAddress: destination,
         amount: 25,
+        chain: undefined,
       });
       expect(result).toEqual({ txId: 'sweep-tx', status: 'PENDING' });
     });
@@ -178,8 +187,14 @@ describe('AdminService', () => {
       mockSweepService.manualSweepAll.mockResolvedValue({
         evmSwept: 2,
         btcSwept: 1,
+        solSwept: 0,
+        tronSwept: 0,
         evmSkipped: 0,
         btcSkipped: 0,
+        solSkipped: 0,
+        tronSkipped: 0,
+        sweptByChain: {},
+        skippedByChain: {},
         errors: [],
       });
 
@@ -193,8 +208,14 @@ describe('AdminService', () => {
         summary: {
           evmSwept: 2,
           btcSwept: 1,
+          solSwept: 0,
+          tronSwept: 0,
           evmSkipped: 0,
           btcSkipped: 0,
+          solSkipped: 0,
+          tronSkipped: 0,
+          sweptByChain: {},
+          skippedByChain: {},
           errors: [],
         },
       });
@@ -214,6 +235,9 @@ describe('AdminService', () => {
         },
       ]);
       mockHdWallet.getMasterAddress.mockReturnValue('0xMaster');
+      mockHdWallet.getMasterAddressForChain.mockImplementation((chain: string) =>
+        chain === 'SOLANA' ? 'SolMaster' : 'TronMaster',
+      );
 
       const result = await service.getCryptoSystemStatus();
 
@@ -222,8 +246,13 @@ describe('AdminService', () => {
       expect(result.isTestnet).toBe(true);
       expect(result.webhookProviders.evm).toBe('alchemy');
       expect(result.webhookProviders.btc).toBe('alchemy');
+      expect(result.webhookProviders.tron).toBe('tron_poller');
+      expect(result.confirmations.sol).toBe(32);
+      expect(result.confirmations.tron).toBe(19);
       expect(result.registrySize).toBe(3);
       expect(result.masterWallets.evm).toBe('0xMaster');
+      expect(result.masterWallets.sol).toBe('SolMaster');
+      expect(result.masterWallets.tron).toBe('TronMaster');
       expect(result.recentSweeps).toHaveLength(1);
     });
   });
@@ -250,22 +279,40 @@ describe('AdminService', () => {
   });
 
   describe('getChainBalances', () => {
-    it('aggregates master wallet balances across currencies', async () => {
+    it('aggregates master wallet balances across every chain', async () => {
       mockHdWallet.getMasterAddress
         .mockReturnValueOnce('0xEvmMaster')
         .mockReturnValueOnce('bc1btcmaster');
+      mockHdWallet.getMasterAddressForChain.mockImplementation((chain: string) =>
+        chain === 'SOLANA' ? 'SolMaster' : 'TronMaster',
+      );
       mockChainClient.getBtcUtxos.mockResolvedValue([
         { txid: 'a', vout: 0, value: 5000, blockHeight: 1 },
       ]);
       mockChainClient.getEvmBalance.mockResolvedValue(2.5);
+      mockChainClient.getSolanaTokenBalance.mockResolvedValue(7);
+      mockChainClient.getTronTokenBalance.mockResolvedValue(9);
+      mockCryptoConfig.getStablecoinContractFor.mockReturnValue(
+        '0xContractOrMint',
+      );
 
       const result = await service.getChainBalances();
 
+      expect(result.masterWallets).toEqual({
+        evm: '0xEvmMaster',
+        btc: 'bc1btcmaster',
+        sol: 'SolMaster',
+        tron: 'TronMaster',
+      });
       expect(result.balances).toEqual([
-        { currency: Currency.BTC, address: 'bc1btcmaster', balance: 0.00005 },
-        { currency: Currency.ETH, address: '0xEvmMaster', balance: 2.5 },
-        { currency: Currency.USDT, address: '0xEvmMaster', balance: 2.5 },
-        { currency: Currency.USDC, address: '0xEvmMaster', balance: 2.5 },
+        { chain: 'BTC', currency: Currency.BTC, address: 'bc1btcmaster', balance: 0.00005 },
+        { chain: 'ETH', currency: Currency.ETH, address: '0xEvmMaster', balance: 2.5 },
+        { chain: 'ETH', currency: Currency.USDT, address: '0xEvmMaster', balance: 2.5 },
+        { chain: 'ETH', currency: Currency.USDC, address: '0xEvmMaster', balance: 2.5 },
+        { chain: 'SOLANA', currency: Currency.USDT, address: 'SolMaster', balance: 7 },
+        { chain: 'SOLANA', currency: Currency.USDC, address: 'SolMaster', balance: 7 },
+        { chain: 'TRON', currency: Currency.USDT, address: 'TronMaster', balance: 9 },
+        { chain: 'TRON', currency: Currency.USDC, address: 'TronMaster', balance: 9 },
       ]);
     });
   });
@@ -306,7 +353,7 @@ describe('AdminService', () => {
         id: 'user-uuid',
         email: 'user@example.com',
       });
-      mockPrismaService.wallet.findUnique.mockResolvedValue(null);
+      mockPrismaService.wallet.findFirst.mockResolvedValue(null);
 
       await expect(
         service.creditTestFunds('user@example.com', Currency.BTC, 0.1),
@@ -318,7 +365,7 @@ describe('AdminService', () => {
         id: 'user-uuid',
         email: 'user@example.com',
       });
-      mockPrismaService.wallet.findUnique.mockResolvedValue({
+      mockPrismaService.wallet.findFirst.mockResolvedValue({
         id: 'wallet-uuid',
         userId: 'user-uuid',
         currency: Currency.USDT,

@@ -10,12 +10,13 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { EncryptionService } from '../../core/utils/encryption';
 import { LedgerService } from '../wallet/ledger.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Prisma, GiftCardListingStatus, GiftCardOrderStatus } from '@src/generated/client';
+import { Prisma, GiftCardListingStatus, GiftCardOrderStatus, Currency } from '@src/generated/client';
 import { CreateGiftCardListingDto } from './dto/create-listing.dto';
 import { ModerateGiftCardListingDto } from './dto/moderate-listing.dto';
 import { PurchaseGiftCardDto } from './dto/purchase-listing.dto';
 import { ListGiftCardListingsDto, ListGiftCardOrdersDto } from './dto/list-listings.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { primaryWalletWhere } from '../wallet/wallet-query.util';
 
 @Injectable()
 export class GiftCardService {
@@ -170,8 +171,8 @@ export class GiftCardService {
       }
 
       // 2. Get buyer's NGN wallet
-      const wallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: buyerId, currency: 'NGN' } },
+      const wallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(buyerId, Currency.NGN),
       });
 
       if (!wallet) {
@@ -313,8 +314,8 @@ export class GiftCardService {
       });
 
       // Credit the seller's NGN wallet
-      const sellerWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.sellerId, currency: 'NGN' } },
+      const sellerWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(order.sellerId, Currency.NGN),
       });
 
       if (!sellerWallet) {
@@ -373,8 +374,8 @@ export class GiftCardService {
       }
 
       // Refund buyer
-      const wallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: order.buyerId, currency: 'NGN' } },
+      const wallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(order.buyerId, Currency.NGN),
       });
 
       if (wallet) {

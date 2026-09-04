@@ -25,6 +25,7 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -32,12 +33,12 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
-        version: number;
     }[]>;
-    getOrCreateWallet(userId: string, currency: Currency): Promise<{
+    getOrCreateWallet(userId: string, currency: Currency, chain?: string): Promise<{
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -45,8 +46,8 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
-        version: number;
     }>;
+    private defaultChainValueForCurrency;
     getWalletHistory(walletId: string, limit?: number, offset?: number): Promise<({
         wallet: {
             currency: import("@src/generated/client").$Enums.Currency;
@@ -134,6 +135,7 @@ export declare class WalletService {
         id: string;
         updatedAt: Date;
         userId: string;
+        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: Prisma.Decimal;
         reservedBalance: Prisma.Decimal;
@@ -141,7 +143,6 @@ export declare class WalletService {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
-        version: number;
     }>;
     findTransactionById(id: string): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;

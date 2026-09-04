@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const client_1 = require("../../generated/client/index.js");
 const library_1 = require("../../generated/client/runtime/library");
+const wallet_query_util_1 = require("../wallet/wallet-query.util");
 let MarketplaceService = class MarketplaceService {
     prisma;
     constructor(prisma) {
@@ -21,8 +22,8 @@ let MarketplaceService = class MarketplaceService {
     }
     async createAd(userId, dto) {
         if (dto.type === client_1.AdType.SELL) {
-            const wallet = await this.prisma.wallet.findUnique({
-                where: { userId_currency: { userId, currency: dto.asset } },
+            const wallet = await this.prisma.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(userId, dto.asset),
             });
             const available = wallet?.balance?.toString() || '0';
             if (!wallet || wallet.balance.lessThan(dto.quantity)) {
@@ -30,8 +31,8 @@ let MarketplaceService = class MarketplaceService {
             }
         }
         if (dto.type === client_1.AdType.BUY) {
-            const wallet = await this.prisma.wallet.findUnique({
-                where: { userId_currency: { userId, currency: 'NGN' } },
+            const wallet = await this.prisma.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(userId, client_1.Currency.NGN),
             });
             const requiredNgn = new library_1.Decimal(dto.quantity.toString()).times(dto.price.toString());
             const available = wallet?.balance?.toString() || '0';

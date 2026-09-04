@@ -261,26 +261,28 @@ describe('ChainClientService', () => {
 
   describe('broadcastBtc', () => {
     it('selects inputs, signs with the HD node and broadcasts via Alchemy RPC', async () => {
-      (http.post as jest.Mock).mockImplementation((_url: string, body: { method: string }) => {
-        if (body.method === 'sendrawtransaction') {
-          return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
-        }
-        return of({
-          data: {
-            jsonrpc: '2.0',
-            id: 1,
-            result: [
-              {
-                txid: 'cc'.repeat(32),
-                vout: 0,
-                amount: 0.001,
-                confirmations: 10,
-                blockheight: 100,
-              },
-            ],
-          },
-        });
-      });
+      (http.post as jest.Mock).mockImplementation(
+        (_url: string, body: { method: string }) => {
+          if (body.method === 'sendrawtransaction') {
+            return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
+          }
+          return of({
+            data: {
+              jsonrpc: '2.0',
+              id: 1,
+              result: [
+                {
+                  txid: 'cc'.repeat(32),
+                  vout: 0,
+                  amount: 0.001,
+                  confirmations: 10,
+                  blockheight: 100,
+                },
+              ],
+            },
+          });
+        },
+      );
 
       const txid = await service.broadcastBtc(
         1000,
@@ -302,26 +304,28 @@ describe('ChainClientService', () => {
     });
 
     it('throws when the confirmed balance is insufficient', async () => {
-      (http.post as jest.Mock).mockImplementation((_url: string, body: { method: string }) => {
-        if (body.method === 'sendrawtransaction') {
-          return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
-        }
-        return of({
-          data: {
-            jsonrpc: '2.0',
-            id: 1,
-            result: [
-              {
-                txid: 'cc'.repeat(32),
-                vout: 0,
-                amount: 0.00001,
-                confirmations: 10,
-                blockheight: 100,
-              },
-            ],
-          },
-        });
-      });
+      (http.post as jest.Mock).mockImplementation(
+        (_url: string, body: { method: string }) => {
+          if (body.method === 'sendrawtransaction') {
+            return of({ data: { jsonrpc: '2.0', id: 1, result: 'deadbeef' } });
+          }
+          return of({
+            data: {
+              jsonrpc: '2.0',
+              id: 1,
+              result: [
+                {
+                  txid: 'cc'.repeat(32),
+                  vout: 0,
+                  amount: 0.00001,
+                  confirmations: 10,
+                  blockheight: 100,
+                },
+              ],
+            },
+          });
+        },
+      );
 
       await expect(
         service.broadcastBtc(
@@ -340,9 +344,9 @@ describe('ChainClientService', () => {
         getBalance: jest.fn().mockResolvedValue(123000000000000000n),
       };
       const testService = service as unknown as {
-        providerInstance: { getBalance: jest.Mock };
+        evmProviders: Map<string, unknown>;
       };
-      testService.providerInstance = fakeProvider;
+      testService.evmProviders.set('ETH', fakeProvider);
 
       const balance = await service.getEvmBalance('0xabc', Currency.ETH);
 

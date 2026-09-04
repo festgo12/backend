@@ -3,17 +3,61 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { Currency, Role } from '@src/generated/client';
 import { HdWalletService } from './hd-wallet.service';
 import { DepositAddressRegistry } from './deposit-address-registry.service';
-import { CryptoConfigService } from './crypto-config.service';
+import {
+  Chain,
+  CryptoConfigService,
+  EVM_CHAINS,
+} from './crypto-config.service';
 import { MASTER_WALLET_INDEX } from './hd-wallet.service';
 import * as crypto from 'crypto';
 
 export const PLATFORM_EMAIL = 'platform@p2n.app';
 
+/** Primary stored chain for a fee wallet, mirroring WalletService defaults. */
+function feeWalletChain(currency: Currency): string {
+  return currency === Currency.BTC ? 'BTC' : 'ETH';
+}
+
 /**
- * Internal platform user + per-currency fee wallets. Fee wallets hold the
- * buyerFee leg of every settled trade on-chain and are the ledger home for
- * platform fee revenue. Addresses are derived locally from the HD master seed
- * (unified EVM address across ETH/USDT/USDC) with zero external API calls.
+ * All (configuredChain, currency) pairs a platform fee wallet is created for.
+ * BTC lives on its own chain; ETH is Ethereum-only (single EVM fee wallet);
+ * USDT/USDC are multichain — one EVM fee wallet (shared 0x across ETH/BSC/
+ * POLYGON) plus a Solana (SPL) and a TRON (TRC-20) fee wallet.
+ */
+function feeWalletPairs(
+  cryptoCurrencies: Currency[],
+  supportedChains: readonly Chain[],
+): { currency: Currency; chain: string }[] {
+  const pairs: { currency: Currency; chain: string }[] = [];
+  const evmChains = supportedChains.filter((c) => EVM_CHAINS.includes(c));
+  for (const currency of cryptoCurrencies) {
+    if (currency === Currency.BTC) {
+      pairs.push({ currency, chain: 'BTC' });
+      continue;
+    }
+    if (currency === Currency.ETH) {
+      // ETH is Ethereum-only — a single EVM fee wallet, not one per EVM chain.
+      if (evmChains.includes('ETH')) pairs.push({ currency, chain: 'ETH' });
+      continue;
+    }
+    // USDT / USDC — one EVM fee wallet (canonical EVM) + Solana + TRON.
+    if (evmChains.includes('ETH')) pairs.push({ currency, chain: 'ETH' });
+    if (supportedChains.includes('SOLANA')) {
+      pairs.push({ currency, chain: 'SOLANA' });
+    }
+    if (supportedChains.includes('TRON')) {
+      pairs.push({ currency, chain: 'TRON' });
+    }
+  }
+  return pairs;
+}
+
+/**
+ * Internal platform user + per-currency/per-chain fee wallets. Fee wallets
+ * hold the buyerFee leg of every settled trade on-chain and are the ledger
+ * home for platform fee revenue. Addresses are derived locally from the HD
+ * master seed (unified EVM address across ETH/BSC/POLYGON; distinct Solana
+ * and TRON addresses) with zero external API calls.
  *
  * Every platform fee wallet is pinned to MASTER_WALLET_INDEX (index 0) so the
  * address is a pure function of the HD mnemonic in .env and stays IDENTICAL
@@ -31,12 +75,20 @@ export class PlatformService implements OnApplicationBootstrap {
     Currency.USDC,
   ];
 
+  /** Fee wallet (chain, currency) pairs derived from the supported chains. */
+  private readonly pairs: { currency: Currency; chain: string }[];
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly hdWallet: HdWalletService,
     private readonly depositRegistry: DepositAddressRegistry,
     private readonly cryptoConfig: CryptoConfigService,
-  ) {}
+  ) {
+    this.pairs = feeWalletPairs(
+      this.cryptoCurrencies,
+      this.cryptoConfig.supportedChains,
+    );
+  }
 
   async onApplicationBootstrap() {
     try {
@@ -53,7 +105,7 @@ export class PlatformService implements OnApplicationBootstrap {
    */
   async ensurePlatformWallets(): Promise<{
     userId: string;
-    wallets: { currency: Currency; id: string; address: string | null }[];
+    wallets: { currency: Currency; chain: string; id: string; address: string | null }[];
   }> {
     const platformUser = await this.prisma.user.upsert({
       where: { email: PLATFORM_EMAIL },
@@ -70,39 +122,34 @@ export class PlatformService implements OnApplicationBootstrap {
 
     const wallets: {
       currency: Currency;
+      chain: string;
       id: string;
       address: string | null;
     }[] = [];
 
-    for (const currency of this.cryptoCurrencies) {
+    for (const { currency, chain } of this.pairs) {
       let wallet = await this.prisma.wallet.findUnique({
-        where: { userId_currency: { userId: platformUser.id, currency } },
+        where: {
+          userId_currency_chain: {
+            userId: platformUser.id,
+            currency,
+            chain,
+          },
+        },
       });
 
       if (!wallet) {
         wallet = await this.prisma.wallet.create({
-          data: { userId: platformUser.id, currency, balance: 0 },
+          data: { userId: platformUser.id, currency, chain, balance: 0 },
         });
       }
 
       // Assign a locally-derived address if missing so on-chain fees have a
       // home. Pinned to MASTER_WALLET_INDEX (index 0) so the address is a
       // deterministic function of the HD mnemonic and survives DB resets.
-      // EVM currencies (ETH/USDT/USDC) all share the single master EVM address.
       if (!wallet.address) {
         try {
-          const info =
-            currency === Currency.BTC
-              ? {
-                  chain: 'BTC' as const,
-                  address: this.hdWallet.getMasterAddress('BTC'),
-                  derivationIndex: MASTER_WALLET_INDEX,
-                }
-              : {
-                  chain: 'EVM' as const,
-                  address: this.hdWallet.getMasterAddress('EVM'),
-                  derivationIndex: MASTER_WALLET_INDEX,
-                };
+          const info = this.feeAddressForChain(chain);
           wallet = await this.prisma.wallet.update({
             where: { id: wallet.id },
             data: {
@@ -116,27 +163,76 @@ export class PlatformService implements OnApplicationBootstrap {
           const message =
             error instanceof Error ? error.message : String(error);
           this.logger.error(
-            `Failed to assign fee address for ${currency}: ${message}`,
+            `Failed to assign fee address for ${currency}/${chain}: ${message}`,
           );
         }
       }
 
-      wallets.push({ currency, id: wallet.id, address: wallet.address });
+      wallets.push({ currency, chain, id: wallet.id, address: wallet.address });
     }
 
     this.logger.log(`Platform wallets ready for user ${platformUser.id}`);
     return { userId: platformUser.id, wallets };
   }
 
+  /** Derive the local address for a fee wallet on a specific chain (index 0). */
+  private feeAddressForChain(chain: string): {
+    chain: string;
+    address: string;
+    derivationIndex: number;
+  } {
+    if (chain === 'BTC') {
+      return {
+        chain: 'BTC',
+        address: this.hdWallet.getMasterAddress('BTC'),
+        derivationIndex: MASTER_WALLET_INDEX,
+      };
+    }
+    if (chain === 'SOLANA') {
+      return {
+        chain: 'SOLANA',
+        address: this.hdWallet.getMasterAddressForChain('SOLANA'),
+        derivationIndex: MASTER_WALLET_INDEX,
+      };
+    }
+    if (chain === 'TRON') {
+      return {
+        chain: 'TRON',
+        address: this.hdWallet.getMasterAddressForChain('TRON'),
+        derivationIndex: MASTER_WALLET_INDEX,
+      };
+    }
+    // EVM-family chains (ETH/BSC/POLYGON) all share the single master EVM
+    // address, but are stored as distinct per-chain wallet rows.
+    return {
+      chain,
+      address: this.hdWallet.getMasterAddress('EVM'),
+      derivationIndex: MASTER_WALLET_INDEX,
+    };
+  }
+
   /**
    * Mirrors the configured HD master xpubs into PlatformSetting so non-secret
    * (public) key material is available to tools that should not touch the
-   * master mnemonic. Keys are master_xpub_evm and master_xpub_btc.
+   * master mnemonic. Keys: master_xpub_evm / master_xpub_btc /
+   * master_xpub_sol / master_xpub_tron.
    */
   private async persistMasterXpubs(): Promise<void> {
+    // Solana uses Ed25519 (SLIP-0010), which has no BIP-32 "xpub". When the
+    // optional env xpub is unset, expose the derived master public key (the
+    // base58 master address) so the setting is populated with a real value.
+    const solPubkey =
+      this.cryptoConfig.solMasterXpub ||
+      this.hdWallet.getMasterAddressForChain('SOLANA');
+    const tronPubkey =
+      this.cryptoConfig.tronMasterXpub ||
+      this.hdWallet.getMasterAddressForChain('TRON');
+
     const xpubs: { key: string; value: string | null }[] = [
       { key: 'master_xpub_evm', value: this.cryptoConfig.evmMasterXpub },
       { key: 'master_xpub_btc', value: this.cryptoConfig.btcMasterXpub },
+      { key: 'master_xpub_sol', value: solPubkey },
+      { key: 'master_xpub_tron', value: tronPubkey },
     ];
 
     for (const entry of xpubs) {
@@ -150,13 +246,20 @@ export class PlatformService implements OnApplicationBootstrap {
   }
 
   /**
-   * Returns the internal platform fee wallet for a currency, creating it on demand.
+   * Returns the internal platform fee wallet for a currency on a chain,
+   * creating them on demand. `chain` defaults to the currency's primary
+   * chain (BTC → 'BTC', otherwise 'ETH').
    */
-  async getPlatformFeeWallet(currency: Currency) {
+  async getPlatformFeeWallet(currency: Currency, chain?: string) {
     await this.ensurePlatformWallets();
+    const chainValue = chain ?? feeWalletChain(currency);
     return this.prisma.wallet.findUnique({
       where: {
-        userId_currency: { userId: await this.getPlatformUserId(), currency },
+        userId_currency_chain: {
+          userId: await this.getPlatformUserId(),
+          currency,
+          chain: chainValue,
+        },
       },
     });
   }

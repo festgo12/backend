@@ -154,6 +154,9 @@ model Wallet {
   reservedBalance Decimal             @default(0) @db.Decimal(20, 8)
   address         String?
   derivationIndex Int?
+  // Chain identifier for crypto wallets. Value set: ETH | BSC | POLYGON |
+  // SOLANA | TRON (crypto) or EVM | BTC (legacy/back-compat). NULL for fiat
+  // (NGN) wallets which have no on-chain address.
   chain           String?
   ledgerEntries   LedgerEntry[]
   transactions    WalletTransaction[]
@@ -163,8 +166,16 @@ model Wallet {
   updatedAt       DateTime            @updatedAt
   version         Int                 @default(0)
 
-  @@unique([userId, currency])
+  // A user can hold the SAME currency on multiple chains (USDT on
+  // ETH/BSC/POLYGON/SOLANA/TRON, USDC, ETH) with distinct addresses and
+  // balances. Prisma treats NULLs as distinct, so crypto rows (chain != NULL)
+  // are unique per (userId, currency, chain). Fiat (NGN) wallets have
+  // chain = NULL; their single-wallet integrity is enforced at the
+  // application layer (see WalletService.getOrCreateWallet), since a null-
+  // chain unique would permit duplicate NGN rows.
+  @@unique([userId, currency, chain])
   @@index([userId])
+  @@index([userId, currency, chain])
   @@index([chain])
   @@index([address])
   @@index([isFrozen])
@@ -584,7 +595,7 @@ model Reconciliation {
 /// last processed block and to run catch-up scans after downtime.
 model ChainCursor {
   id           String   @id @default(uuid()) @db.Uuid
-  chain        String   @unique // EVM | BTC
+  chain        String   @unique // ETH | BSC | POLYGON | SOLANA | TRON | BTC
   lastBlock    Int      @default(0)
   lastBlockHash String? // used to detect re-orgs on EVM
   updatedAt    DateTime @updatedAt
@@ -601,6 +612,8 @@ model WithdrawalJob {
   walletId    String   @db.Uuid
   wallet      Wallet   @relation(fields: [walletId], references: [id])
   currency    Currency
+  // Chain identifier for crypto withdrawals: ETH | BSC | POLYGON | SOLANA | TRON | BTC.
+  chain       String?
   amount      Decimal  @db.Decimal(20, 8)
   destination String
   status      String   @default("PENDING") // PENDING | CONFIRMED | FAILED | REFUNDED

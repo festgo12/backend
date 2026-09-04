@@ -18,6 +18,12 @@ describe('HdWalletService', () => {
     btcMasterMnemonic: TEST_MNEMONIC,
     evmDerivationPath: "m/44'/60'/0'/0",
     btcDerivationPath: "m/84'/0'/0'/0",
+    isEvmChain: (chain: string) => ['ETH', 'BSC', 'POLYGON'].includes(chain),
+    chainFamily: (chain: string) =>
+      ['ETH', 'BSC', 'POLYGON'].includes(chain) ? 'EVM' : chain,
+    solMasterMnemonic: TEST_MNEMONIC,
+    tronMasterMnemonic: TEST_MNEMONIC,
+    solAccountIndex: 0,
   };
 
   const mockPrisma = {
@@ -33,7 +39,9 @@ describe('HdWalletService', () => {
     jest.resetAllMocks();
 
     // Default $transaction mock: run callback directly
-    mockPrisma.$transaction.mockImplementation(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma));
+    mockPrisma.$transaction.mockImplementation(
+      async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma),
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

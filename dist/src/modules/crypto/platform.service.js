@@ -53,6 +53,33 @@ const crypto_config_service_1 = require("./crypto-config.service");
 const hd_wallet_service_2 = require("./hd-wallet.service");
 const crypto = __importStar(require("crypto"));
 exports.PLATFORM_EMAIL = 'platform@p2n.app';
+function feeWalletChain(currency) {
+    return currency === client_1.Currency.BTC ? 'BTC' : 'ETH';
+}
+function feeWalletPairs(cryptoCurrencies, supportedChains) {
+    const pairs = [];
+    const evmChains = supportedChains.filter((c) => crypto_config_service_1.EVM_CHAINS.includes(c));
+    for (const currency of cryptoCurrencies) {
+        if (currency === client_1.Currency.BTC) {
+            pairs.push({ currency, chain: 'BTC' });
+            continue;
+        }
+        if (currency === client_1.Currency.ETH) {
+            if (evmChains.includes('ETH'))
+                pairs.push({ currency, chain: 'ETH' });
+            continue;
+        }
+        if (evmChains.includes('ETH'))
+            pairs.push({ currency, chain: 'ETH' });
+        if (supportedChains.includes('SOLANA')) {
+            pairs.push({ currency, chain: 'SOLANA' });
+        }
+        if (supportedChains.includes('TRON')) {
+            pairs.push({ currency, chain: 'TRON' });
+        }
+    }
+    return pairs;
+}
 let PlatformService = PlatformService_1 = class PlatformService {
     prisma;
     hdWallet;
@@ -65,11 +92,13 @@ let PlatformService = PlatformService_1 = class PlatformService {
         client_1.Currency.USDT,
         client_1.Currency.USDC,
     ];
+    pairs;
     constructor(prisma, hdWallet, depositRegistry, cryptoConfig) {
         this.prisma = prisma;
         this.hdWallet = hdWallet;
         this.depositRegistry = depositRegistry;
         this.cryptoConfig = cryptoConfig;
+        this.pairs = feeWalletPairs(this.cryptoCurrencies, this.cryptoConfig.supportedChains);
     }
     async onApplicationBootstrap() {
         try {
@@ -93,28 +122,24 @@ let PlatformService = PlatformService_1 = class PlatformService {
         });
         await this.persistMasterXpubs();
         const wallets = [];
-        for (const currency of this.cryptoCurrencies) {
+        for (const { currency, chain } of this.pairs) {
             let wallet = await this.prisma.wallet.findUnique({
-                where: { userId_currency: { userId: platformUser.id, currency } },
+                where: {
+                    userId_currency_chain: {
+                        userId: platformUser.id,
+                        currency,
+                        chain,
+                    },
+                },
             });
             if (!wallet) {
                 wallet = await this.prisma.wallet.create({
-                    data: { userId: platformUser.id, currency, balance: 0 },
+                    data: { userId: platformUser.id, currency, chain, balance: 0 },
                 });
             }
             if (!wallet.address) {
                 try {
-                    const info = currency === client_1.Currency.BTC
-                        ? {
-                            chain: 'BTC',
-                            address: this.hdWallet.getMasterAddress('BTC'),
-                            derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
-                        }
-                        : {
-                            chain: 'EVM',
-                            address: this.hdWallet.getMasterAddress('EVM'),
-                            derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
-                        };
+                    const info = this.feeAddressForChain(chain);
                     wallet = await this.prisma.wallet.update({
                         where: { id: wallet.id },
                         data: {
@@ -127,18 +152,52 @@ let PlatformService = PlatformService_1 = class PlatformService {
                 }
                 catch (error) {
                     const message = error instanceof Error ? error.message : String(error);
-                    this.logger.error(`Failed to assign fee address for ${currency}: ${message}`);
+                    this.logger.error(`Failed to assign fee address for ${currency}/${chain}: ${message}`);
                 }
             }
-            wallets.push({ currency, id: wallet.id, address: wallet.address });
+            wallets.push({ currency, chain, id: wallet.id, address: wallet.address });
         }
         this.logger.log(`Platform wallets ready for user ${platformUser.id}`);
         return { userId: platformUser.id, wallets };
     }
+    feeAddressForChain(chain) {
+        if (chain === 'BTC') {
+            return {
+                chain: 'BTC',
+                address: this.hdWallet.getMasterAddress('BTC'),
+                derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+            };
+        }
+        if (chain === 'SOLANA') {
+            return {
+                chain: 'SOLANA',
+                address: this.hdWallet.getMasterAddressForChain('SOLANA'),
+                derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+            };
+        }
+        if (chain === 'TRON') {
+            return {
+                chain: 'TRON',
+                address: this.hdWallet.getMasterAddressForChain('TRON'),
+                derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+            };
+        }
+        return {
+            chain,
+            address: this.hdWallet.getMasterAddress('EVM'),
+            derivationIndex: hd_wallet_service_2.MASTER_WALLET_INDEX,
+        };
+    }
     async persistMasterXpubs() {
+        const solPubkey = this.cryptoConfig.solMasterXpub ||
+            this.hdWallet.getMasterAddressForChain('SOLANA');
+        const tronPubkey = this.cryptoConfig.tronMasterXpub ||
+            this.hdWallet.getMasterAddressForChain('TRON');
         const xpubs = [
             { key: 'master_xpub_evm', value: this.cryptoConfig.evmMasterXpub },
             { key: 'master_xpub_btc', value: this.cryptoConfig.btcMasterXpub },
+            { key: 'master_xpub_sol', value: solPubkey },
+            { key: 'master_xpub_tron', value: tronPubkey },
         ];
         for (const entry of xpubs) {
             if (!entry.value)
@@ -150,11 +209,16 @@ let PlatformService = PlatformService_1 = class PlatformService {
             });
         }
     }
-    async getPlatformFeeWallet(currency) {
+    async getPlatformFeeWallet(currency, chain) {
         await this.ensurePlatformWallets();
+        const chainValue = chain ?? feeWalletChain(currency);
         return this.prisma.wallet.findUnique({
             where: {
-                userId_currency: { userId: await this.getPlatformUserId(), currency },
+                userId_currency_chain: {
+                    userId: await this.getPlatformUserId(),
+                    currency,
+                    chain: chainValue,
+                },
             },
         });
     }

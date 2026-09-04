@@ -50,10 +50,16 @@ const bip39 = __importStar(require("bip39"));
 const bip32_1 = require("bip32");
 const ecc = __importStar(require("tiny-secp256k1"));
 const bitcoin = __importStar(require("bitcoinjs-lib"));
+const bs58_1 = require("bs58");
+const web3_js_1 = require("@solana/web3.js");
+const ed25519_hd_key_1 = require("ed25519-hd-key");
 const client_1 = require("../../generated/client/index.js");
+const crypto = __importStar(require("crypto"));
 const bip32 = (0, bip32_1.BIP32Factory)(ecc);
 const prisma_service_1 = require("../../core/database/prisma.service");
 const crypto_config_service_1 = require("./crypto-config.service");
+const TRON_ADDRESS_PREFIX = 0x41;
+const SOL_DERIVATION_PREFIX = "m/44'/501'";
 exports.MASTER_WALLET_INDEX = 0;
 exports.USER_INDEX_BASE = 1000;
 let HdWalletService = HdWalletService_1 = class HdWalletService {
@@ -62,6 +68,8 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
     logger = new common_1.Logger(HdWalletService_1.name);
     cachedBtcSeed = null;
     cachedEvmRoot = null;
+    cachedTronRoot = null;
+    cachedSolSeed = null;
     constructor(prisma, config) {
         this.prisma = prisma;
         this.config = config;
@@ -74,6 +82,28 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
             case client_1.Currency.USDT:
             case client_1.Currency.USDC:
                 return 'EVM';
+            default:
+                return null;
+        }
+    }
+    familyForCurrency(currency) {
+        switch (currency) {
+            case client_1.Currency.BTC:
+                return 'BTC';
+            case client_1.Currency.ETH:
+            case client_1.Currency.USDT:
+            case client_1.Currency.USDC:
+                return 'EVM';
+            default:
+                return null;
+        }
+    }
+    defaultChainForCurrency(currency) {
+        switch (currency) {
+            case client_1.Currency.ETH:
+            case client_1.Currency.USDT:
+            case client_1.Currency.USDC:
+                return 'ETH';
             default:
                 return null;
         }
@@ -95,15 +125,29 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
             this.cachedEvmRoot = ethers_1.HDNodeWallet.fromPhrase(mnemonic, '', this.config.evmDerivationPath);
             this.logger.log('EVM HD root cached');
         }
+        if (!this.cachedTronRoot) {
+            const mnemonic = this.config.tronMasterMnemonic;
+            if (!mnemonic) {
+                throw new common_1.InternalServerErrorException('Missing TRON master mnemonic (HD_TRON_MASTER_MNEMONIC)');
+            }
+            this.cachedTronRoot = ethers_1.HDNodeWallet.fromPhrase(mnemonic, '', this.config.tronDerivationPath);
+            this.logger.log('TRON HD root cached');
+        }
+        if (!this.cachedSolSeed) {
+            const mnemonic = this.config.solMasterMnemonic;
+            if (!mnemonic) {
+                throw new common_1.InternalServerErrorException('Missing Solana master mnemonic (HD_SOL_MASTER_MNEMONIC)');
+            }
+            this.cachedSolSeed = bip39.mnemonicToSeedSync(mnemonic);
+            this.logger.log('Solana HD seed cached');
+        }
     }
-    async getNextIndexForUser(userId) {
+    async getNextIndexForUser() {
         const result = await this.prisma.$transaction(async (tx) => {
             const counter = await tx.platformSetting.findUnique({
                 where: { key: 'hd_next_derivation_index' },
             });
-            const nextIndex = counter
-                ? Number(counter.value) + 1
-                : exports.USER_INDEX_BASE;
+            const nextIndex = counter ? Number(counter.value) + 1 : exports.USER_INDEX_BASE;
             await tx.platformSetting.upsert({
                 where: { key: 'hd_next_derivation_index' },
                 update: { value: String(nextIndex) },
@@ -113,10 +157,11 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         });
         return result;
     }
-    async indexForUser(userId) {
+    async indexForUser(userId, chain) {
         const existing = await this.prisma.wallet.findFirst({
             where: {
                 userId,
+                ...(chain ? { chain } : {}),
                 derivationIndex: { not: null },
             },
             select: { derivationIndex: true },
@@ -124,17 +169,27 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         if (existing && existing.derivationIndex !== null) {
             return existing.derivationIndex;
         }
-        return this.getNextIndexForUser(userId);
+        return this.getNextIndexForUser();
     }
-    async getOrAssignDepositInfo(userId, currency) {
-        const chain = this.chainForCurrency(currency);
-        if (!chain) {
+    async getOrAssignDepositInfo(userId, currency, chain) {
+        const family = this.familyForCurrency(currency);
+        if (!family) {
             throw new common_1.BadRequestException(`No on-chain deposit address for ${currency}`);
         }
+        if (family === 'BTC') {
+            return this.getOrAssignBtcDepositInfo(userId);
+        }
+        const targetChain = chain ?? this.defaultChainForCurrency(currency);
+        if (!targetChain) {
+            throw new common_1.BadRequestException(`No on-chain deposit address for ${currency}`);
+        }
+        const chainValue = this.config.isEvmChain(targetChain)
+            ? 'EVM'
+            : targetChain;
         const existing = await this.prisma.wallet.findFirst({
             where: {
                 userId,
-                chain,
+                chain: chainValue,
                 address: { not: null },
                 derivationIndex: { not: null },
             },
@@ -142,14 +197,35 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         });
         if (existing) {
             return {
-                chain,
+                chain: chainValue,
                 address: existing.address,
                 derivationIndex: existing.derivationIndex,
             };
         }
-        const index = await this.indexForUser(userId);
-        const address = this.deriveAddress(currency, index);
-        return { chain, address, derivationIndex: index };
+        const index = await this.indexForUser(userId, chainValue);
+        const address = this.deriveAddressForChain(targetChain, index);
+        return { chain: chainValue, address, derivationIndex: index };
+    }
+    async getOrAssignBtcDepositInfo(userId) {
+        const existing = await this.prisma.wallet.findFirst({
+            where: {
+                userId,
+                chain: 'BTC',
+                address: { not: null },
+                derivationIndex: { not: null },
+            },
+            select: { address: true, derivationIndex: true },
+        });
+        if (existing) {
+            return {
+                chain: 'BTC',
+                address: existing.address,
+                derivationIndex: existing.derivationIndex,
+            };
+        }
+        const index = await this.indexForUser(userId, 'BTC');
+        const address = this.deriveBtcAddress(index);
+        return { chain: 'BTC', address, derivationIndex: index };
     }
     deriveAddress(currency, index) {
         const chain = this.chainForCurrency(currency);
@@ -162,10 +238,30 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
                 throw new common_1.BadRequestException(`Unsupported currency for address derivation: ${currency}`);
         }
     }
+    deriveAddressForChain(chain, index) {
+        switch (this.config.chainFamily(chain)) {
+            case 'EVM':
+                return this.deriveEvmAddress(index);
+            case 'SOLANA':
+                return this.deriveSolanaAddress(index);
+            case 'TRON':
+                return this.deriveTronAddress(index);
+            case 'BTC':
+                return this.deriveBtcAddress(index);
+        }
+    }
     getMasterAddress(chain) {
-        return chain === 'EVM'
-            ? this.deriveEvmAddress(exports.MASTER_WALLET_INDEX)
-            : this.deriveBtcAddress(exports.MASTER_WALLET_INDEX);
+        switch (chain) {
+            case 'EVM':
+                return this.deriveEvmAddress(exports.MASTER_WALLET_INDEX);
+            case 'BTC':
+                return this.deriveBtcAddress(exports.MASTER_WALLET_INDEX);
+            default:
+                throw new common_1.BadRequestException('Unknown chain kind');
+        }
+    }
+    getMasterAddressForChain(chain) {
+        return this.deriveAddressForChain(chain, exports.MASTER_WALLET_INDEX);
     }
     derivePrivateKey(currency, index) {
         const chain = this.chainForCurrency(currency);
@@ -179,17 +275,62 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         }
         throw new common_1.BadRequestException(`Private key derivation not supported for ${currency}`);
     }
+    derivePrivateKeyForChain(chain, index) {
+        switch (this.config.chainFamily(chain)) {
+            case 'EVM':
+                this.ensureSeedCache();
+                return this.evmNode(index).privateKey;
+            case 'TRON':
+                this.ensureSeedCache();
+                return this.tronNode(index).privateKey;
+            case 'SOLANA':
+                this.ensureSeedCache();
+                return this.solSeedFor(index).toString('hex');
+            case 'BTC':
+                this.ensureSeedCache();
+                return this.btcNode(index).toWIF();
+        }
+    }
     evmNode(index) {
         this.ensureSeedCache();
         return this.cachedEvmRoot.deriveChild(index);
+    }
+    tronNode(index) {
+        this.ensureSeedCache();
+        return this.cachedTronRoot.deriveChild(index);
     }
     btcNode(index) {
         this.ensureSeedCache();
         const root = bip32.fromSeed(this.cachedBtcSeed);
         return root.derivePath(this.config.btcDerivationPath).derive(index);
     }
+    solSeedFor(index) {
+        this.ensureSeedCache();
+        const derivedPath = `${SOL_DERIVATION_PREFIX}/${this.config.solAccountIndex}'/0'/${index}'`;
+        return Buffer.from((0, ed25519_hd_key_1.derivePath)(derivedPath, this.cachedSolSeed.toString('hex')).key);
+    }
+    solKeypair(index) {
+        return web3_js_1.Keypair.fromSeed(this.solSeedFor(index));
+    }
     deriveEvmAddress(index) {
         return this.evmNode(index).address;
+    }
+    deriveSolanaAddress(index) {
+        return this.solKeypair(index).publicKey.toBase58();
+    }
+    deriveTronAddress(index) {
+        const evmAddress = this.tronNode(index).address.toLowerCase();
+        const body = Buffer.concat([
+            Buffer.from([TRON_ADDRESS_PREFIX]),
+            Buffer.from(evmAddress.replace(/^0x/, ''), 'hex'),
+        ]);
+        return this.base58Check(body);
+    }
+    base58Check(payload) {
+        const hash1 = crypto.createHash('sha256').update(payload).digest();
+        const hash2 = crypto.createHash('sha256').update(hash1).digest();
+        const checksum = hash2.subarray(0, 4);
+        return (0, bs58_1.encode)(Buffer.concat([payload, checksum]));
     }
     deriveBtcAddress(index) {
         const node = this.btcNode(index);

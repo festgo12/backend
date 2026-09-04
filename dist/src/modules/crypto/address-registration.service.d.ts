@@ -1,19 +1,20 @@
 import { HttpService } from '@nestjs/axios';
-import { CryptoConfigService } from './crypto-config.service';
-import { ChainKind } from './crypto-config.service';
+import { Chain, CryptoConfigService } from './crypto-config.service';
 export declare class AddressRegistrationService {
     private readonly httpService;
     private readonly config;
     private readonly logger;
-    private pendingEvmAddresses;
-    private evmFlushTimer;
-    private static readonly EVM_BATCH_SIZE;
-    private static readonly EVM_FLUSH_DELAY_MS;
+    private readonly queues;
+    private static readonly BATCH_SIZE;
+    private static readonly FLUSH_DELAY_MS;
     constructor(httpService: HttpService, config: CryptoConfigService);
-    queueEvmAddress(address: string): void;
+    private queueFor;
+    queueChainAddress(chain: Chain, address: string): void;
     private scheduleFlush;
-    private flushEvmAddresses;
-    private registerEvmAddressesWithAlchemy;
+    private flushChainAddresses;
+    private registerChainAddressesWithAlchemy;
+    replaceAllChainAddresses(chain: Chain, addresses: string[], authToken?: string | null, webhookId?: string | null): Promise<void>;
+    registerAddress(address: string, chain: Chain | 'BTC'): void;
+    queueEvmAddress(address: string): void;
     replaceAllEvmAddresses(addresses: string[]): Promise<void>;
-    registerAddress(address: string, chain: ChainKind): void;
 }

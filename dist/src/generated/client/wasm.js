@@ -474,6 +474,7 @@ exports.Prisma.WithdrawalJobScalarFieldEnum = {
   txHash: 'txHash',
   walletId: 'walletId',
   currency: 'currency',
+  chain: 'chain',
   amount: 'amount',
   destination: 'destination',
   status: 'status',

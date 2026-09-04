@@ -5,29 +5,29 @@ export declare class OrdersController {
     constructor(ordersService: OrdersService);
     create(req: any, createOrderDto: CreateOrderDto): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     findAll(req: any): Promise<({
         ad: {
-            type: import("@src/generated/client").$Enums.AdType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
-            sellerId: string;
+            type: import("@src/generated/client").$Enums.AdType;
+            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
+            sellerId: string;
             quantity: import("@src/generated/client/runtime/library").Decimal;
             price: import("@src/generated/client/runtime/library").Decimal;
             minLimit: import("@src/generated/client/runtime/library").Decimal;
@@ -36,29 +36,29 @@ export declare class OrdersController {
         };
     } & {
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     })[]>;
     findOne(id: string, req: any): Promise<{
         ad: {
-            type: import("@src/generated/client").$Enums.AdType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
-            sellerId: string;
+            type: import("@src/generated/client").$Enums.AdType;
+            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
+            sellerId: string;
             quantity: import("@src/generated/client/runtime/library").Decimal;
             price: import("@src/generated/client/runtime/library").Decimal;
             minLimit: import("@src/generated/client/runtime/library").Decimal;
@@ -67,6 +67,8 @@ export declare class OrdersController {
         };
         buyer: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -87,11 +89,11 @@ export declare class OrdersController {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         seller: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -112,67 +114,65 @@ export declare class OrdersController {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     approve(id: string, req: any): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     decline(id: string, req: any): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     flagFraud(id: string, req: any): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
 }

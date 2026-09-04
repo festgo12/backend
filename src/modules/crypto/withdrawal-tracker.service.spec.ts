@@ -12,6 +12,7 @@ const BASE_JOB = {
   txHash: '0xtxhash',
   walletId: 'w-1',
   currency: Currency.USDT,
+  chain: 'ETH',
   amount: { toNumber: () => 5 },
   destination: '0xDest',
   attempts: 0,
@@ -26,6 +27,9 @@ describe('WithdrawalTrackerService', () => {
   const mockConfig = {
     evmConfirmations: 12,
     btcConfirmations: 2,
+    isEvmChain: (chain: string) =>
+      chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON',
+    confirmationsFor: (chain: string) => (chain === 'ETH' ? 12 : 2),
   };
 
   const mockPrisma = {
@@ -138,7 +142,7 @@ describe('WithdrawalTrackerService', () => {
   });
 
   it('confirms BTC jobs via polling using getBtcTxStatus', async () => {
-    const btcJob = { ...BASE_JOB, currency: Currency.BTC };
+    const btcJob = { ...BASE_JOB, currency: Currency.BTC, chain: 'BTC' };
     mockPrisma.withdrawalJob.findMany.mockResolvedValue([btcJob]);
     mockChainClient.getBtcTipHeight.mockResolvedValue(100);
     mockChainClient.getBtcTxStatus.mockResolvedValue({

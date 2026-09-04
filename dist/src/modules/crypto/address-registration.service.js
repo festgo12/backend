@@ -20,51 +20,63 @@ let AddressRegistrationService = class AddressRegistrationService {
     httpService;
     config;
     logger = new common_1.Logger(AddressRegistrationService_1.name);
-    pendingEvmAddresses = [];
-    evmFlushTimer = null;
-    static EVM_BATCH_SIZE = 500;
-    static EVM_FLUSH_DELAY_MS = 5_000;
+    queues = new Map();
+    static BATCH_SIZE = 500;
+    static FLUSH_DELAY_MS = 5_000;
     constructor(httpService, config) {
         this.httpService = httpService;
         this.config = config;
     }
-    queueEvmAddress(address) {
-        const lower = address.toLowerCase();
-        if (!this.pendingEvmAddresses.includes(lower)) {
-            this.pendingEvmAddresses.push(lower);
+    queueFor(chain) {
+        let q = this.queues.get(chain);
+        if (!q) {
+            q = { pending: [], flushTimer: null };
+            this.queues.set(chain, q);
         }
-        this.scheduleFlush();
+        return q;
     }
-    scheduleFlush() {
-        if (this.evmFlushTimer)
-            return;
-        this.evmFlushTimer = setTimeout(() => {
-            this.evmFlushTimer = null;
-            void this.flushEvmAddresses();
-        }, AddressRegistrationService_1.EVM_FLUSH_DELAY_MS);
+    queueChainAddress(chain, address) {
+        const normalized = this.config.isEvmChain(chain) || chain === 'TRON'
+            ? address.toLowerCase()
+            : address;
+        const queue = this.queueFor(chain);
+        if (!queue.pending.includes(normalized)) {
+            queue.pending.push(normalized);
+        }
+        this.scheduleFlush(chain);
     }
-    async flushEvmAddresses() {
-        if (this.pendingEvmAddresses.length === 0)
+    scheduleFlush(chain) {
+        const queue = this.queueFor(chain);
+        if (queue.flushTimer)
             return;
-        const batch = this.pendingEvmAddresses.splice(0, AddressRegistrationService_1.EVM_BATCH_SIZE);
+        queue.flushTimer = setTimeout(() => {
+            queue.flushTimer = null;
+            void this.flushChainAddresses(chain);
+        }, AddressRegistrationService_1.FLUSH_DELAY_MS);
+    }
+    async flushChainAddresses(chain) {
+        const queue = this.queueFor(chain);
+        if (queue.pending.length === 0)
+            return;
+        const batch = queue.pending.splice(0, AddressRegistrationService_1.BATCH_SIZE);
         try {
-            await this.registerEvmAddressesWithAlchemy(batch);
-            this.logger.log(`Registered ${batch.length} EVM addresses with Alchemy webhook`);
+            await this.registerChainAddressesWithAlchemy(chain, batch);
+            this.logger.log(`Registered ${batch.length} ${chain} addresses with Alchemy webhook`);
         }
         catch (error) {
             const err = error;
-            this.logger.error(`Failed to register EVM addresses with Alchemy: ${err.message}`);
-            this.pendingEvmAddresses.unshift(...batch);
+            this.logger.error(`Failed to register ${chain} addresses with Alchemy: ${err.message}`);
+            queue.pending.unshift(...batch);
         }
-        if (this.pendingEvmAddresses.length > 0) {
-            this.scheduleFlush();
+        if (queue.pending.length > 0) {
+            this.scheduleFlush(chain);
         }
     }
-    async registerEvmAddressesWithAlchemy(addresses) {
-        const authToken = this.config.alchemyAuthToken;
-        const webhookId = this.config.alchemyWebhookId;
+    async registerChainAddressesWithAlchemy(chain, addresses) {
+        const authToken = this.config.authTokenForChain(chain);
+        const webhookId = this.config.webhookIdForChain(chain);
         if (!authToken || !webhookId) {
-            this.logger.warn('Alchemy AUTH_TOKEN or WEBHOOK_ID not configured; skipping address registration');
+            this.logger.warn(`Alchemy AUTH_TOKEN or WEBHOOK_ID not configured for ${chain}; skipping address registration`);
             return;
         }
         await (0, rxjs_1.lastValueFrom)(this.httpService.patch('https://dashboard.alchemy.com/api/update-webhook-addresses', {
@@ -79,46 +91,53 @@ let AddressRegistrationService = class AddressRegistrationService {
             timeout: 15_000,
         }));
     }
-    async replaceAllEvmAddresses(addresses) {
-        const authToken = this.config.alchemyAuthToken;
-        const webhookId = this.config.alchemyWebhookId;
-        if (!authToken || !webhookId) {
-            this.logger.warn('Alchemy AUTH_TOKEN or WEBHOOK_ID not configured; skipping boot-sync');
+    async replaceAllChainAddresses(chain, addresses, authToken, webhookId) {
+        const token = authToken ?? this.config.authTokenForChain(chain);
+        const id = webhookId ?? this.config.webhookIdForChain(chain);
+        if (!token || !id) {
+            this.logger.warn(`Alchemy AUTH_TOKEN or WEBHOOK_ID not configured for ${chain}; skipping boot-sync`);
             return;
         }
         if (addresses.length === 0) {
-            this.logger.debug('No EVM addresses to sync to Alchemy webhook');
+            this.logger.debug(`No ${chain} addresses to sync to Alchemy webhook`);
             return;
         }
-        const unique = [...new Set(addresses.map((a) => a.toLowerCase()))];
-        for (let i = 0; i < unique.length; i += AddressRegistrationService_1.EVM_BATCH_SIZE) {
-            const batch = unique.slice(i, i + AddressRegistrationService_1.EVM_BATCH_SIZE);
-            const batchNum = Math.floor(i / AddressRegistrationService_1.EVM_BATCH_SIZE) + 1;
-            const totalBatches = Math.ceil(unique.length / AddressRegistrationService_1.EVM_BATCH_SIZE);
+        const normalized = addresses.map((a) => this.config.isEvmChain(chain) || chain === 'TRON' ? a.toLowerCase() : a);
+        const unique = [...new Set(normalized)];
+        for (let i = 0; i < unique.length; i += AddressRegistrationService_1.BATCH_SIZE) {
+            const batch = unique.slice(i, i + AddressRegistrationService_1.BATCH_SIZE);
+            const batchNum = Math.floor(i / AddressRegistrationService_1.BATCH_SIZE) + 1;
+            const totalBatches = Math.ceil(unique.length / AddressRegistrationService_1.BATCH_SIZE);
             try {
                 await (0, rxjs_1.lastValueFrom)(this.httpService.put('https://dashboard.alchemy.com/api/update-webhook-addresses', {
-                    webhook_id: webhookId,
+                    webhook_id: id,
                     addresses: batch,
                 }, {
                     headers: {
-                        'X-Alchemy-Token': authToken,
+                        'X-Alchemy-Token': token,
                         'Content-Type': 'application/json',
                     },
                     timeout: 30_000,
                 }));
-                this.logger.log(`Boot-synced EVM addresses to Alchemy webhook: batch ${batchNum}/${totalBatches} (${batch.length} addresses)`);
+                this.logger.log(`Boot-synced ${chain} addresses to Alchemy webhook: batch ${batchNum}/${totalBatches} (${batch.length} addresses)`);
             }
             catch (error) {
                 const err = error;
-                this.logger.error(`Failed to boot-sync EVM addresses batch ${batchNum}/${totalBatches}: ${err.message}`);
+                this.logger.error(`Failed to boot-sync ${chain} addresses batch ${batchNum}/${totalBatches}: ${err.message}`);
             }
         }
-        this.logger.log(`Boot-sync complete: ${unique.length} EVM addresses registered with Alchemy webhook`);
+        this.logger.log(`Boot-sync complete: ${unique.length} ${chain} addresses registered with Alchemy webhook`);
     }
     registerAddress(address, chain) {
-        if (chain === 'EVM') {
-            this.queueEvmAddress(address);
-        }
+        if (chain === 'BTC')
+            return;
+        this.queueChainAddress(chain, address);
+    }
+    queueEvmAddress(address) {
+        this.queueChainAddress('ETH', address);
+    }
+    replaceAllEvmAddresses(addresses) {
+        return this.replaceAllChainAddresses('ETH', addresses);
     }
 };
 exports.AddressRegistrationService = AddressRegistrationService;

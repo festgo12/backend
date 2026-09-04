@@ -11,6 +11,7 @@ export declare class AdminUpdateAdDto {
 export declare class SweepFeeWalletDto {
     address: string;
     amount?: number;
+    chain?: string;
 }
 export declare class CreditTestFundsDto {
     email: string;

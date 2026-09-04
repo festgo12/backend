@@ -48,7 +48,12 @@ describe('CryptoWithdrawalService', () => {
 
   const mockEventEmitter = { emit: jest.fn() };
 
-  const mockCryptoConfig = { isTestnet: false };
+  const mockCryptoConfig = {
+    isTestnet: false,
+    isEvmChain: (chain: string) =>
+      chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON',
+    getStablecoinContractFor: () => null,
+  };
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -123,6 +128,7 @@ describe('CryptoWithdrawalService', () => {
       0,
       '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
+      'ETH',
     );
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -247,12 +253,12 @@ describe('CryptoWithdrawalService', () => {
       1042,
       '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
+      'ETH',
     );
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          walletId: 'w-fee',
-          type: LedgerType.WITHDRAWAL,
+          walletId: 'w-fee',          type: LedgerType.WITHDRAWAL,
           status: 'PENDING',
           reference: '0xsweephash',
           metadata: expect.objectContaining({
@@ -296,13 +302,14 @@ describe('CryptoWithdrawalService', () => {
       data: {
         address: '0xNewFrom',
         derivationIndex: 0,
-        chain: 'EVM',
+        chain: 'ETH',
       },
     });
     expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
       0,
       '0xabCDEF1234567890ABcDEF1234567890aBCDeF12',
       2,
+      'ETH',
     );
   });
 

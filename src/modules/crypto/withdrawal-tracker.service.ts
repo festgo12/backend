@@ -5,12 +5,18 @@ import { WalletService } from '../wallet/wallet.service';
 import { ChainClientService } from './chain-client.service';
 import { CryptoConfigService } from './crypto-config.service';
 import { Currency, Prisma, WithdrawalJob } from '@src/generated/client';
+import { Chain } from './crypto-config.service';
 
 const MAX_ATTEMPTS = 60;
 const MAX_BACKOFF_SEC = 600;
 
 interface ErrorLike {
   message?: string;
+}
+
+/** Narrow a stored chain string to the config `Chain` type (non-BTC). */
+function asChain(chain: string): Chain {
+  return chain as Chain;
 }
 
 /**
@@ -39,17 +45,26 @@ export class WithdrawalTrackerService {
     txHash: string;
     walletId: string;
     currency: Currency;
+    chain: string;
     amount: number;
     destination: string;
     metadata?: Record<string, unknown>;
   }) {
-    const { txHash, walletId, currency, amount, destination, metadata } =
-      params;
+    const {
+      txHash,
+      walletId,
+      currency,
+      chain,
+      amount,
+      destination,
+      metadata,
+    } = params;
     return this.prisma.withdrawalJob.create({
       data: {
         txHash,
         walletId,
         currency,
+        chain,
         amount,
         destination,
         metadata: (metadata ?? {}) as Prisma.InputJsonValue,
@@ -73,16 +88,29 @@ export class WithdrawalTrackerService {
     });
     if (!job || job.status !== 'PENDING') return;
 
-    // For EVM, we can check the receipt for success/failure
-    if (job.currency !== Currency.BTC) {
-      const receipt = await this.chainClient.getEvmReceipt(txHash);
-      if (receipt && receipt.status === 0) {
-        await this.finalize(job, 'FAILED', {
-          lastError: 'Transaction reverted on-chain',
-          confirmedVia: 'webhook',
-          failedAt: new Date().toISOString(),
-        });
-        return;
+    // Detect on-chain failure/revert for EVM-family and TRON chains.
+    const chain = job.chain as string | null;
+    if (chain && chain !== 'BTC') {
+      if (this.config.isEvmChain(asChain(chain))) {
+        const receipt = await this.chainClient.getEvmReceipt(txHash);
+        if (receipt && receipt.status === 0) {
+          await this.finalize(job, 'FAILED', {
+            lastError: 'Transaction reverted on-chain',
+            confirmedVia: 'webhook',
+            failedAt: new Date().toISOString(),
+          });
+          return;
+        }
+      } else if (chain === 'TRON') {
+        const receipt = await this.chainClient.getTronReceipt(txHash);
+        if (receipt && !receipt.confirmed) {
+          await this.finalize(job, 'FAILED', {
+            lastError: 'Transaction reverted on-chain',
+            confirmedVia: 'webhook',
+            failedAt: new Date().toISOString(),
+          });
+          return;
+        }
       }
     }
 
@@ -145,14 +173,14 @@ export class WithdrawalTrackerService {
    * is marked COMPLETED; on FAILED it is marked FAILED for admin retry.
    */
   private async poll(job: WithdrawalJob) {
-    const currency = job.currency;
+    const chain = (job.chain as string) || 'BTC';
 
     let confirmed = false;
     let failed = false;
     let confirmations = 0;
     let pollError: string | null = null;
 
-    if (currency === Currency.BTC) {
+    if (chain === 'BTC') {
       const tip = await this.chainClient.getBtcTipHeight();
       const status = await this.chainClient.getBtcTxStatus(job.txHash);
       if (status.error) {
@@ -162,17 +190,42 @@ export class WithdrawalTrackerService {
         confirmed = confirmations >= this.config.btcConfirmations;
       }
     } else {
-      const receipt = await this.chainClient.getEvmReceipt(job.txHash);
-      if (receipt) {
-        if (receipt.status === 0) {
-          failed = true;
+      const chainConfirmations = this.config.confirmationsFor(asChain(chain));
+      if (this.config.isEvmChain(asChain(chain))) {
+        const receipt = await this.chainClient.getEvmReceipt(job.txHash);
+        if (receipt) {
+          if (receipt.status === 0) {
+            failed = true;
+          } else {
+            const latest = await this.chainClient.getLatestEvmBlock();
+            confirmations = latest - receipt.blockNumber + 1;
+            confirmed = confirmations >= chainConfirmations;
+          }
         } else {
-          const latest = await this.chainClient.getLatestEvmBlock();
-          confirmations = latest - receipt.blockNumber + 1;
-          confirmed = confirmations >= this.config.evmConfirmations;
+          pollError = 'transaction not found yet';
+        }
+      } else if (chain === 'SOLANA') {
+        const sigs = await this.chainClient.getSolanaSignatureStatuses(job.txHash);
+        if (sigs !== null) {
+          confirmations = sigs;
+          confirmed = confirmations >= chainConfirmations;
+        } else {
+          pollError = 'transaction not found yet';
+        }
+      } else if (chain === 'TRON') {
+        const receipt = await this.chainClient.getTronReceipt(job.txHash);
+        if (receipt) {
+          if (receipt.confirmed) {
+            confirmations = 1;
+            confirmed = confirmations >= chainConfirmations;
+          } else {
+            failed = true;
+          }
+        } else {
+          pollError = 'transaction not found yet';
         }
       } else {
-        pollError = 'transaction not found yet';
+        pollError = `unsupported chain for polling: ${chain}`;
       }
     }
 

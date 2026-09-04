@@ -12,18 +12,21 @@ export declare class PlatformService implements OnApplicationBootstrap {
     private readonly cryptoConfig;
     private readonly logger;
     private readonly cryptoCurrencies;
+    private readonly pairs;
     constructor(prisma: PrismaService, hdWallet: HdWalletService, depositRegistry: DepositAddressRegistry, cryptoConfig: CryptoConfigService);
     onApplicationBootstrap(): Promise<void>;
     ensurePlatformWallets(): Promise<{
         userId: string;
         wallets: {
             currency: Currency;
+            chain: string;
             id: string;
             address: string | null;
         }[];
     }>;
+    private feeAddressForChain;
     private persistMasterXpubs;
-    getPlatformFeeWallet(currency: Currency): Promise<{
+    getPlatformFeeWallet(currency: Currency, chain?: string): Promise<{
         id: string;
         updatedAt: Date;
         userId: string;

@@ -19,6 +19,7 @@ describe('PlatformService', () => {
   const mockHdWallet = {
     getOrAssignDepositInfo: jest.fn(),
     getMasterAddress: jest.fn(),
+    getMasterAddressForChain: jest.fn(),
   };
 
   const mockDepositRegistry = {
@@ -28,9 +29,15 @@ describe('PlatformService', () => {
   const mockCryptoConfig: {
     evmMasterXpub: string | null;
     btcMasterXpub: string | null;
+    solMasterXpub: string | null;
+    tronMasterXpub: string | null;
+    supportedChains: readonly string[];
   } = {
     evmMasterXpub: null,
     btcMasterXpub: null,
+    solMasterXpub: null,
+    tronMasterXpub: null,
+    supportedChains: ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'],
   };
 
   beforeEach(async () => {
@@ -69,6 +76,9 @@ describe('PlatformService', () => {
         }),
       );
       mockHdWallet.getMasterAddress.mockReturnValue('0xDerivedFeeAddress');
+      mockHdWallet.getMasterAddressForChain.mockReturnValue(
+        '0xDerivedFeeAddress',
+      );
 
       const result = await service.ensurePlatformWallets();
 
@@ -83,15 +93,25 @@ describe('PlatformService', () => {
       });
 
       expect(mockHdWallet.getOrAssignDepositInfo).not.toHaveBeenCalled();
-      // BTC once plus EVM once per EVM currency (ETH/USDT/USDC).
+      // BTC once + EVM once per EVM fee wallet (ETH, USDT/ETH, USDC/ETH).
       expect(mockHdWallet.getMasterAddress).toHaveBeenCalledTimes(4);
       expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('BTC');
       expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('EVM');
+      // getMasterAddressForChain: 2 from persistMasterXpubs fallback
+      // (SOLANA/TRON) + 2 for USDT + 2 for USDC fee wallets.
+      expect(mockHdWallet.getMasterAddressForChain).toHaveBeenCalledTimes(6);
+      expect(mockHdWallet.getMasterAddressForChain).toHaveBeenCalledWith(
+        'SOLANA',
+      );
+      expect(mockHdWallet.getMasterAddressForChain).toHaveBeenCalledWith(
+        'TRON',
+      );
 
-      expect(mockPrismaService.wallet.create).toHaveBeenCalledTimes(4);
-      expect(mockPrismaService.wallet.update).toHaveBeenCalledTimes(4);
-      expect(mockDepositRegistry.register).toHaveBeenCalledTimes(4);
-      expect(result.wallets).toHaveLength(4);
+      // 8 pairs: BTC(1) + ETH(1) + USDT(ETH/SOLANA/TRON = 3) + USDC(3).
+      expect(mockPrismaService.wallet.create).toHaveBeenCalledTimes(8);
+      expect(mockPrismaService.wallet.update).toHaveBeenCalledTimes(8);
+      expect(mockDepositRegistry.register).toHaveBeenCalledTimes(8);
+      expect(result.wallets).toHaveLength(8);
       expect(
         result.wallets.every((w) => w.address === '0xDerivedFeeAddress'),
       ).toBe(true);
@@ -112,7 +132,7 @@ describe('PlatformService', () => {
       expect(mockHdWallet.getOrAssignDepositInfo).not.toHaveBeenCalled();
       expect(mockPrismaService.wallet.update).not.toHaveBeenCalled();
       expect(mockDepositRegistry.register).not.toHaveBeenCalled();
-      expect(result.wallets).toHaveLength(4);
+      expect(result.wallets).toHaveLength(8);
       expect(result.wallets[0].address).toBe('0xExistingFeeAddress');
     });
 
@@ -182,9 +202,10 @@ describe('PlatformService', () => {
       expect(service.ensurePlatformWallets).toHaveBeenCalled();
       expect(mockPrismaService.wallet.findUnique).toHaveBeenCalledWith({
         where: {
-          userId_currency: {
+          userId_currency_chain: {
             userId: 'platform-user-uuid',
             currency: Currency.USDT,
+            chain: 'ETH',
           },
         },
       });

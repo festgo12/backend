@@ -24,6 +24,7 @@ const webhook_controller_1 = require("./webhook.controller");
 const webhook_processor_service_1 = require("./webhook-processor.service");
 const address_registration_service_1 = require("./address-registration.service");
 const reconciliation_service_1 = require("./reconciliation.service");
+const tron_deposit_poller_service_1 = require("./tron-deposit-poller.service");
 const wallet_module_1 = require("../wallet/wallet.module");
 let CryptoModule = class CryptoModule {
 };
@@ -48,6 +49,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             webhook_processor_service_1.WebhookProcessorService,
             address_registration_service_1.AddressRegistrationService,
             reconciliation_service_1.ReconciliationService,
+            tron_deposit_poller_service_1.TronDepositPollerService,
         ],
         exports: [
             crypto_config_service_1.CryptoConfigService,
@@ -64,6 +66,7 @@ exports.CryptoModule = CryptoModule = __decorate([
             webhook_processor_service_1.WebhookProcessorService,
             address_registration_service_1.AddressRegistrationService,
             reconciliation_service_1.ReconciliationService,
+            tron_deposit_poller_service_1.TronDepositPollerService,
         ],
     })
 ], CryptoModule);

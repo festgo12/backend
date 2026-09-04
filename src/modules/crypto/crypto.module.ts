@@ -15,6 +15,7 @@ import { WebhookController } from './webhook.controller';
 import { WebhookProcessorService } from './webhook-processor.service';
 import { AddressRegistrationService } from './address-registration.service';
 import { ReconciliationService } from './reconciliation.service';
+import { TronDepositPollerService } from './tron-deposit-poller.service';
 import { WalletModule } from '../wallet/wallet.module';
 
 /**
@@ -42,6 +43,7 @@ import { WalletModule } from '../wallet/wallet.module';
     WebhookProcessorService,
     AddressRegistrationService,
     ReconciliationService,
+    TronDepositPollerService,
   ],
   exports: [
     CryptoConfigService,
@@ -58,6 +60,7 @@ import { WalletModule } from '../wallet/wallet.module';
     WebhookProcessorService,
     AddressRegistrationService,
     ReconciliationService,
+    TronDepositPollerService,
   ],
 })
 export class CryptoModule {}

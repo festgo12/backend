@@ -42,21 +42,29 @@ export class WebhookController {
       return;
     }
 
-    // 1. Verify HMAC-SHA256 signature
-    const signature = req.headers['x-alchemy-signature'] as string | undefined;
-    if (!this.verifyAlchemySignature(rawBody, signature)) {
-      this.logger.warn('Alchemy webhook signature verification failed');
-      res.status(HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
-      return;
-    }
-
-    // 2. Parse payload
+    // 1. Parse payload (needed to route the webhook to its chain so we can
+    //    pick the correct per-webhook signing key for verification).
     let payload: Record<string, unknown>;
     try {
       payload = JSON.parse(rawBody.toString('utf8')) as Record<string, unknown>;
     } catch {
       this.logger.warn('Alchemy webhook: invalid JSON payload');
       res.status(HttpStatus.BAD_REQUEST).json({ error: 'Invalid JSON' });
+      return;
+    }
+
+    // 2. Verify HMAC-SHA256 signature. Each Alchemy webhook signs with its own
+    //    key, and Alchemy's per-chain `network` enum values vary, so we try the
+    //    matched-chain key first (when resolvable) then fall back to every
+    //    configured per-chain / global signing key.
+    const signature = req.headers['x-alchemy-signature'] as string | undefined;
+    const chain = this.processor.chainFromPayload(payload);
+    if (!this.verifyAlchemySignature(rawBody, signature, chain)) {
+      const network = this.processor.networkFromPayload(payload);
+      this.logger.warn(
+        `Alchemy webhook signature verification failed (chain=${chain ?? 'unknown'}, network=${network ?? 'unknown'})`,
+      );
+      res.status(HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
       return;
     }
 
@@ -77,32 +85,54 @@ export class WebhookController {
   /**
    * Alchemy: HMAC-SHA256(signingKey, rawBody) → compare to X-Alchemy-Signature.
    * The signature is a plain hex digest (no prefix).
+   *
+   * Each Alchemy webhook signs with its own key, and the exact per-chain
+   * `network` enum can vary. To stay correct regardless of chain resolution,
+   * we try the matched chain's key first (when resolvable), then fall back to
+   * every configured per-chain / global signing key. Fail-closed when none is
+   * configured.
    */
   private verifyAlchemySignature(
     rawBody: Buffer,
     givenSignature: string | undefined,
+    chain: string | null,
   ): boolean {
-    const signingKey = this.config.alchemySigningKey;
-    if (!signingKey) {
-      this.logger.error(
-        'ALCHEMY_SIGNING_KEY not configured; rejecting Alchemy webhook (fail-closed)',
-      );
-      return false;
-    }
     if (!givenSignature) return false;
 
-    const digest = crypto
-      .createHmac('sha256', signingKey)
-      .update(rawBody)
-      .digest('hex');
+    const candidates = new Set<string>();
+    if (chain) {
+      const chainKey = this.config.signingKeyForChain(chain);
+      if (chainKey) candidates.add(chainKey);
+    }
+    for (const key of this.config.allSigningKeys()) {
+      if (key) candidates.add(key);
+    }
 
-    try {
-      return crypto.timingSafeEqual(
-        Buffer.from(givenSignature, 'utf8'),
-        Buffer.from(digest, 'utf8'),
+    if (candidates.size === 0) {
+      this.logger.error(
+        'No Alchemy webhook signing key configured; rejecting webhook (fail-closed)',
       );
-    } catch {
       return false;
     }
+
+    for (const signingKey of candidates) {
+      const digest = crypto
+        .createHmac('sha256', signingKey)
+        .update(rawBody)
+        .digest('hex');
+      try {
+        if (
+          crypto.timingSafeEqual(
+            Buffer.from(givenSignature, 'utf8'),
+            Buffer.from(digest, 'utf8'),
+          )
+        ) {
+          return true;
+        }
+      } catch {
+        // fall through to next candidate key
+      }
+    }
+    return false;
   }
 }

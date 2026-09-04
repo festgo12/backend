@@ -3,6 +3,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { CreateAdDto, UpdateAdDto, SearchAdsDto } from './dto/ad.dto';
 import { AdType, Currency } from '@src/generated/client';
 import { Decimal } from '@src/generated/client/runtime/library';
+import { primaryWalletWhere } from '../wallet/wallet-query.util';
 
 @Injectable()
 export class MarketplaceService {
@@ -10,8 +11,8 @@ export class MarketplaceService {
 
   async createAd(userId: string, dto: CreateAdDto) {
     if (dto.type === AdType.SELL) {
-      const wallet = await this.prisma.wallet.findUnique({
-        where: { userId_currency: { userId, currency: dto.asset } },
+      const wallet = await this.prisma.wallet.findFirst({
+        where: primaryWalletWhere(userId, dto.asset),
       });
 
       const available = wallet?.balance?.toString() || '0';
@@ -23,8 +24,8 @@ export class MarketplaceService {
     }
 
     if (dto.type === AdType.BUY) {
-      const wallet = await this.prisma.wallet.findUnique({
-        where: { userId_currency: { userId, currency: 'NGN' } },
+      const wallet = await this.prisma.wallet.findFirst({
+        where: primaryWalletWhere(userId, Currency.NGN),
       });
 
       const requiredNgn = new Decimal(dto.quantity.toString()).times(dto.price.toString());

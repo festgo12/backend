@@ -18,6 +18,7 @@ const ledger_service_1 = require("../wallet/ledger.service");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const client_1 = require("../../generated/client/index.js");
 const uuid_1 = require("uuid");
+const wallet_query_util_1 = require("../wallet/wallet-query.util");
 let GiftCardService = GiftCardService_1 = class GiftCardService {
     prisma;
     encryption;
@@ -142,8 +143,8 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
             if (row.sellerId === buyerId) {
                 throw new common_1.BadRequestException('You cannot purchase your own listing');
             }
-            const wallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: buyerId, currency: 'NGN' } },
+            const wallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(buyerId, client_1.Currency.NGN),
             });
             if (!wallet) {
                 throw new common_1.BadRequestException('NGN wallet not found. Please fund your wallet first.');
@@ -254,8 +255,8 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
                     seller: { include: { profile: true } },
                 },
             });
-            const sellerWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: order.sellerId, currency: 'NGN' } },
+            const sellerWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(order.sellerId, client_1.Currency.NGN),
             });
             if (!sellerWallet) {
                 throw new common_1.ConflictException('Seller NGN wallet not found — cannot release funds');
@@ -300,8 +301,8 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
             if (!['CREATED', 'PENDING_DELIVERY'].includes(order.status)) {
                 throw new common_1.ConflictException(`Order cannot be cancelled in "${order.status}" status`);
             }
-            const wallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: order.buyerId, currency: 'NGN' } },
+            const wallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(order.buyerId, client_1.Currency.NGN),
             });
             if (wallet) {
                 const refundRef = `GC-REFUND-${(0, uuid_1.v4)()}`;

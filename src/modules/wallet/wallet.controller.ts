@@ -114,6 +114,16 @@ export class WalletController {
           },
         );
         this.depositRegistry.register(info.address, info.chain, wallet.id);
+
+        // Multichain: USDT/USDC are available on Solana (SPL) and TRON
+        // (TRC-20) in addition to the EVM chains, so auto-derive and register
+        // distinct deposit addresses for those chains too. ETH stays
+        // Ethereum-only (its primary EVM wallet above).
+        if (currency === Currency.USDT || currency === Currency.USDC) {
+          await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
+          await this.ensureMultichainWallet(user.id, currency, 'TRON');
+        }
+
         return updatedWallet;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -128,6 +138,43 @@ export class WalletController {
     }
 
     return wallet;
+  }
+
+  /**
+   * Creates (if absent) and derives a deposit address for a user wallet on a
+   * specific non-EVM chain, then registers the address with the webhook/poller
+   * provider. Used to give USDT/USDC wallets multichain deposit addresses
+   * (SOLANA, TRON) alongside their shared EVM address.
+   */
+  private async ensureMultichainWallet(
+    userId: string,
+    currency: Currency,
+    chain: 'SOLANA' | 'TRON',
+  ) {
+    const chainWallet = await this.walletService.getOrCreateWallet(
+      userId,
+      currency,
+      chain,
+    );
+    if (chainWallet.address) return;
+
+    const info = await this.hdWallet.getOrAssignDepositInfo(
+      userId,
+      currency,
+      chain,
+    );
+    const updated = await this.walletService.updateWalletDepositInfo(
+      chainWallet.id,
+      {
+        address: info.address,
+        derivationIndex: info.derivationIndex,
+        chain: info.chain,
+      },
+    );
+    this.depositRegistry.register(info.address, info.chain, chainWallet.id);
+    this.logger.log(
+      `Derived ${currency} ${chain} deposit address for user ${userId}`,
+    );
   }
 
   @Post('withdraw')

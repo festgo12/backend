@@ -298,7 +298,12 @@ export class AdminController {
     @Param('currency') currency: Currency,
     @Body() dto: SweepFeeWalletDto,
   ) {
-    return this.adminService.sweepFeeWallet(currency, dto.address, dto.amount);
+    return this.adminService.sweepFeeWallet(
+      currency,
+      dto.address,
+      dto.amount,
+      dto.chain,
+    );
   }
 
   @Post('testnet/credit')

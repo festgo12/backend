@@ -34,44 +34,44 @@ export declare class AdminService {
     }>;
     flagOrder(orderId: string): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: Prisma.Decimal;
         cryptoAmount: Prisma.Decimal;
         feeAmount: Prisma.Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     releaseOrder(orderId: string): Promise<{
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: Prisma.Decimal;
         cryptoAmount: Prisma.Decimal;
         feeAmount: Prisma.Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     private static readonly ALLOWED_AD_FIELDS;
     adminUpdateAd(adId: string, data: Record<string, unknown>): Promise<{
-        type: import("@src/generated/client").$Enums.AdType;
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        sellerId: string;
+        type: import("@src/generated/client").$Enums.AdType;
+        status: string;
         asset: import("@src/generated/client").$Enums.Currency;
+        sellerId: string;
         quantity: Prisma.Decimal;
         price: Prisma.Decimal;
         minLimit: Prisma.Decimal;
@@ -79,14 +79,14 @@ export declare class AdminService {
         isSponsored: boolean;
     }>;
     adminDeleteAd(adId: string): Promise<{
-        type: import("@src/generated/client").$Enums.AdType;
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        sellerId: string;
+        type: import("@src/generated/client").$Enums.AdType;
+        status: string;
         asset: import("@src/generated/client").$Enums.Currency;
+        sellerId: string;
         quantity: Prisma.Decimal;
         price: Prisma.Decimal;
         minLimit: Prisma.Decimal;
@@ -96,13 +96,13 @@ export declare class AdminService {
     getUsers(page: number, limit: number, search?: string): Promise<{
         users: ({
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
@@ -119,6 +119,8 @@ export declare class AdminService {
             }[];
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -139,8 +141,6 @@ export declare class AdminService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -151,16 +151,18 @@ export declare class AdminService {
     }>;
     updateUserStatus(userId: string, status: UserStatus): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            lastName: string | null;
+            firstName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string | null;
         phone: string | null;
         resetToken: string | null;
@@ -181,18 +183,16 @@ export declare class AdminService {
         failedLoginAttempts: number;
         lockedUntil: Date | null;
         isSystem: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getUserDetail(userId: string): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            lastName: string | null;
+            firstName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
         wallets: {
             id: string;
@@ -211,28 +211,28 @@ export declare class AdminService {
             id: string;
             createdAt: Date;
             userId: string;
+            ipAddress: string | null;
             deviceId: string;
             fingerprint: string;
             deviceName: string | null;
             browser: string | null;
             osVersion: string | null;
             location: string | null;
-            ipAddress: string | null;
             userAgent: string | null;
             fcmToken: string | null;
             lastLogin: Date;
             lastActivity: Date | null;
         }[];
         securityLogs: {
-            device: string | null;
             id: string;
+            action: string;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
             metadata: Prisma.JsonValue | null;
-            success: boolean;
+            device: string | null;
             resource: string | null;
-            action: string;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: Prisma.JsonValue | null;
@@ -240,6 +240,8 @@ export declare class AdminService {
             errorMessage: string | null;
         }[];
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string | null;
         phone: string | null;
         resetToken: string | null;
@@ -259,23 +261,23 @@ export declare class AdminService {
         failedLoginAttempts: number;
         lockedUntil: Date | null;
         isSystem: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getAllWallets(page: number, limit: number, search?: string): Promise<{
         wallets: ({
             user: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
                 resetToken: string | null;
@@ -296,8 +298,6 @@ export declare class AdminService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -322,16 +322,18 @@ export declare class AdminService {
     getWalletDetail(walletId: string): Promise<{
         user: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -352,17 +354,15 @@ export declare class AdminService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         ledgerEntries: ({
             transaction: {
-                type: import("@src/generated/client").$Enums.LedgerType;
                 id: string;
-                status: string;
                 createdAt: Date;
                 updatedAt: Date;
+                type: import("@src/generated/client").$Enums.LedgerType;
                 metadata: Prisma.JsonValue | null;
+                status: string;
                 amount: Prisma.Decimal;
                 fee: Prisma.Decimal;
                 walletId: string;
@@ -370,16 +370,16 @@ export declare class AdminService {
                 resolvedAt: Date | null;
             } | null;
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             createdAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
             amount: Prisma.Decimal;
             walletId: string;
-            transactionId: string | null;
-            orderId: string | null;
             reference: string;
             balanceAfter: Prisma.Decimal;
+            transactionId: string | null;
+            orderId: string | null;
         })[];
         snapshots: {
             id: string;
@@ -405,6 +405,7 @@ export declare class AdminService {
         wallets: {
             id: string;
             currency: import("@src/generated/client").$Enums.Currency;
+            chain: string | null;
             address: string | null;
             balance: number;
             reservedBalance: number;
@@ -414,17 +415,17 @@ export declare class AdminService {
         }[];
         total: number;
     }>;
-    sweepFeeWallet(currency: Currency, address: string, amount?: number): Promise<{
+    sweepFeeWallet(currency: Currency, address: string, amount?: number, chain?: string): Promise<{
         txId: string;
         status: string;
     }>;
     creditTestFunds(email: string, currency: Currency, amount: number): Promise<{
-        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
+        status: string;
         amount: Prisma.Decimal;
         fee: Prisma.Decimal;
         walletId: string;
@@ -436,16 +437,18 @@ export declare class AdminService {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     resetToken: string | null;
@@ -466,8 +469,6 @@ export declare class AdminService {
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
                     isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
@@ -483,12 +484,12 @@ export declare class AdminService {
                 version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
+            status: string;
             amount: Prisma.Decimal;
             fee: Prisma.Decimal;
             walletId: string;
@@ -505,14 +506,14 @@ export declare class AdminService {
     getAllOrders(page: number, limit: number, search?: string): Promise<{
         orders: ({
             ad: {
-                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
-                status: string;
                 createdAt: Date;
                 updatedAt: Date;
                 version: number;
-                sellerId: string;
+                type: import("@src/generated/client").$Enums.AdType;
+                status: string;
                 asset: import("@src/generated/client").$Enums.Currency;
+                sellerId: string;
                 quantity: Prisma.Decimal;
                 price: Prisma.Decimal;
                 minLimit: Prisma.Decimal;
@@ -521,16 +522,18 @@ export declare class AdminService {
             };
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
                 resetToken: string | null;
@@ -551,21 +554,21 @@ export declare class AdminService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
                 resetToken: string | null;
@@ -586,23 +589,21 @@ export declare class AdminService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
-            status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
             version: number;
-            expiresAt: Date;
-            fraudFlagged: boolean;
-            sellerId: string;
+            status: import("@src/generated/client").$Enums.OrderStatus;
+            adId: string;
             buyerId: string;
+            sellerId: string;
             fiatAmount: Prisma.Decimal;
             cryptoAmount: Prisma.Decimal;
             feeAmount: Prisma.Decimal;
-            adId: string;
+            expiresAt: Date;
+            fraudFlagged: boolean;
         })[];
         meta: {
             total: number;
@@ -612,21 +613,6 @@ export declare class AdminService {
         };
     }>;
     getOrderDetail(orderId: string): Promise<{
-        ad: {
-            type: import("@src/generated/client").$Enums.AdType;
-            id: string;
-            status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            version: number;
-            sellerId: string;
-            asset: import("@src/generated/client").$Enums.Currency;
-            quantity: Prisma.Decimal;
-            price: Prisma.Decimal;
-            minLimit: Prisma.Decimal;
-            maxLimit: Prisma.Decimal;
-            isSponsored: boolean;
-        };
         ledgerEntries: ({
             wallet: {
                 id: string;
@@ -642,26 +628,41 @@ export declare class AdminService {
                 version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             createdAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
             amount: Prisma.Decimal;
             walletId: string;
-            transactionId: string | null;
-            orderId: string | null;
             reference: string;
             balanceAfter: Prisma.Decimal;
+            transactionId: string | null;
+            orderId: string | null;
         })[];
+        ad: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            version: number;
+            type: import("@src/generated/client").$Enums.AdType;
+            status: string;
+            asset: import("@src/generated/client").$Enums.Currency;
+            sellerId: string;
+            quantity: Prisma.Decimal;
+            price: Prisma.Decimal;
+            minLimit: Prisma.Decimal;
+            maxLimit: Prisma.Decimal;
+            isSponsored: boolean;
+        };
         buyer: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
@@ -678,6 +679,8 @@ export declare class AdminService {
             }[];
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -698,18 +701,16 @@ export declare class AdminService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
@@ -726,6 +727,8 @@ export declare class AdminService {
             }[];
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
@@ -746,39 +749,39 @@ export declare class AdminService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
         id: string;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
+        status: import("@src/generated/client").$Enums.OrderStatus;
+        adId: string;
         buyerId: string;
+        sellerId: string;
         fiatAmount: Prisma.Decimal;
         cryptoAmount: Prisma.Decimal;
         feeAmount: Prisma.Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     getBlockchainTransactions(page: number, limit: number): Promise<{
         transactions: ({
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     resetToken: string | null;
@@ -799,8 +802,6 @@ export declare class AdminService {
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
                     isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
@@ -816,12 +817,12 @@ export declare class AdminService {
                 version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
+            status: string;
             amount: Prisma.Decimal;
             fee: Prisma.Decimal;
             walletId: string;
@@ -840,16 +841,18 @@ export declare class AdminService {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     resetToken: string | null;
@@ -870,8 +873,6 @@ export declare class AdminService {
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
                     isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
@@ -887,12 +888,12 @@ export declare class AdminService {
                 version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
+            status: string;
             amount: Prisma.Decimal;
             fee: Prisma.Decimal;
             walletId: string;
@@ -940,16 +941,18 @@ export declare class AdminService {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     resetToken: string | null;
@@ -970,8 +973,6 @@ export declare class AdminService {
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
                     isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
@@ -987,12 +988,12 @@ export declare class AdminService {
                 version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
+            status: string;
             amount: Prisma.Decimal;
             fee: Prisma.Decimal;
             walletId: string;
@@ -1010,16 +1011,18 @@ export declare class AdminService {
         wallet: {
             user: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
                 resetToken: string | null;
@@ -1040,8 +1043,6 @@ export declare class AdminService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
@@ -1057,24 +1058,24 @@ export declare class AdminService {
             version: number;
         };
         ledgerEntries: {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
             createdAt: Date;
+            type: import("@src/generated/client").$Enums.LedgerType;
             metadata: Prisma.JsonValue | null;
             amount: Prisma.Decimal;
             walletId: string;
-            transactionId: string | null;
-            orderId: string | null;
             reference: string;
             balanceAfter: Prisma.Decimal;
+            transactionId: string | null;
+            orderId: string | null;
         }[];
     } & {
-        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        type: import("@src/generated/client").$Enums.LedgerType;
         metadata: Prisma.JsonValue | null;
+        status: string;
         amount: Prisma.Decimal;
         fee: Prisma.Decimal;
         walletId: string;
@@ -1092,23 +1093,23 @@ export declare class AdminService {
     }): Promise<{
         logs: ({
             user: {
-                profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                } | null;
                 id: string;
                 email: string | null;
+                profile: {
+                    lastName: string | null;
+                    firstName: string | null;
+                } | null;
             };
         } & {
-            device: string | null;
             id: string;
+            action: string;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
             metadata: Prisma.JsonValue | null;
-            success: boolean;
+            device: string | null;
             resource: string | null;
-            action: string;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: Prisma.JsonValue | null;
@@ -1154,23 +1155,23 @@ export declare class AdminService {
     getUserAuditTrail(userId: string, page: number, limit: number): Promise<{
         logs: ({
             user: {
-                profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                } | null;
                 id: string;
                 email: string | null;
+                profile: {
+                    lastName: string | null;
+                    firstName: string | null;
+                } | null;
             };
         } & {
-            device: string | null;
             id: string;
+            action: string;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
             metadata: Prisma.JsonValue | null;
-            success: boolean;
+            device: string | null;
             resource: string | null;
-            action: string;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: Prisma.JsonValue | null;
@@ -1191,24 +1192,29 @@ export declare class AdminService {
         webhookProviders: {
             evm: string;
             btc: string;
+            tron: string;
         };
         confirmations: {
             eth: number;
             btc: number;
+            sol: number;
+            tron: number;
         };
         depositSweepThreshold: number;
         registrySize: number;
         masterWallets: {
             evm: string;
             btc: string;
+            sol: string;
+            tron: string;
         };
         recentSweeps: {
+            id: string;
+            createdAt: Date;
             wallet: {
                 currency: import("@src/generated/client").$Enums.Currency;
             };
-            id: string;
             status: string;
-            createdAt: Date;
             amount: Prisma.Decimal;
             reference: string;
         }[];
@@ -1216,15 +1222,16 @@ export declare class AdminService {
     getWithdrawalJobs(page: number, limit: number, status?: string): Promise<{
         jobs: {
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
             currency: import("@src/generated/client").$Enums.Currency;
+            chain: string | null;
             metadata: Prisma.JsonValue | null;
+            status: string;
             destination: string;
             amount: Prisma.Decimal;
-            walletId: string;
             txHash: string;
+            walletId: string;
             attempts: number;
             nextPollAt: Date;
         }[];
@@ -1239,19 +1246,30 @@ export declare class AdminService {
         masterWallets: {
             evm: string;
             btc: string;
+            sol: string;
+            tron: string;
         };
         balances: ({
+            chain: string;
+            currency: "ETH" | "USDT" | "USDC" | "NGN";
+            address: string;
+            balance: number;
+            error?: undefined;
+        } | {
+            chain: string;
+            currency: "ETH" | "USDT" | "USDC" | "NGN";
+            address: string;
+            balance: number;
+            error: string;
+        } | {
+            chain: string;
             currency: "BTC";
             address: string;
             balance: number;
             error?: undefined;
         } | {
-            currency: "NGN" | "USDT" | "ETH" | "USDC";
-            address: string;
-            balance: number;
-            error?: undefined;
-        } | {
-            currency: import("@src/generated/client").$Enums.Currency;
+            chain: string;
+            currency: "BTC";
             address: string;
             balance: number;
             error: string;
@@ -1270,10 +1288,10 @@ export declare class AdminService {
             dbMatch: boolean;
             dbTransaction: {
                 wallet: {
+                    currency: import("@src/generated/client").$Enums.Currency;
                     user: {
                         email: string | null;
                     };
-                    currency: import("@src/generated/client").$Enums.Currency;
                 };
                 status: string;
                 amount: Prisma.Decimal;
@@ -1305,10 +1323,10 @@ export declare class AdminService {
             dbMatch: boolean;
             dbTransaction: {
                 wallet: {
+                    currency: import("@src/generated/client").$Enums.Currency;
                     user: {
                         email: string | null;
                     };
-                    currency: import("@src/generated/client").$Enums.Currency;
                 };
                 status: string;
                 amount: Prisma.Decimal;

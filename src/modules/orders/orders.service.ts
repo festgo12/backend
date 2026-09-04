@@ -5,6 +5,7 @@ import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { PlatformService } from '../crypto/platform.service';
+import { primaryWalletWhere } from '../wallet/wallet-query.util';
 
 @Injectable()
 export class OrdersService {
@@ -89,16 +90,16 @@ export class OrdersService {
       }
 
       // 4. Validate Balances (Instant Insufficient Balance error)
-      const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
+      const buyerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatPayerId, Currency.NGN),
       });
 
       if (!buyerFiatWallet || new Decimal(buyerFiatWallet.balance.toString()).lessThan(fiatAmount)) {
         throw new BadRequestException('Insufficient fiat balance to initiate this trade');
       }
 
-      const sellerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: cryptoSellerId, currency: ad.asset } },
+      const sellerCryptoWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(cryptoSellerId, ad.asset),
       });
 
       if (!sellerCryptoWallet || new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
@@ -205,8 +206,8 @@ export class OrdersService {
       });
 
       // --- STAGE 2: Lock crypto from the crypto seller (Optimistic Lock) ---
-      const sellerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
+      const sellerCryptoWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(cryptoSellerId, order.ad.asset),
       });
       if (!sellerCryptoWallet) throw new InternalServerErrorException('Crypto seller wallet not found');
       if (new Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
@@ -233,8 +234,8 @@ export class OrdersService {
       });
       if (transferCryptoResult.count === 0) throw new InternalServerErrorException('Conflict transferring seller crypto');
 
-      const buyerCryptoWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: cryptoBuyerId, currency: order.ad.asset } },
+      const buyerCryptoWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(cryptoBuyerId, order.ad.asset),
       });
       if (!buyerCryptoWallet) throw new InternalServerErrorException('Crypto buyer wallet not found');
 
@@ -248,8 +249,8 @@ export class OrdersService {
       if (creditBuyerCryptoResult.count === 0) throw new InternalServerErrorException('Conflict crediting buyer crypto');
 
       // --- STAGE 4: Credit fiat receiver (Debit fiat payer reserved NGN) ---
-      const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
+      const buyerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatPayerId, Currency.NGN),
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Fiat payer wallet not found');
 
@@ -262,8 +263,8 @@ export class OrdersService {
       });
       if (releaseReservedFiatResult.count === 0) throw new InternalServerErrorException('Conflict releasing fiat reserve');
 
-      const sellerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatReceiverId, currency: Currency.NGN } },
+      const sellerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatReceiverId, Currency.NGN),
       });
       if (!sellerFiatWallet) throw new InternalServerErrorException('Fiat receiver wallet not found');
 
@@ -413,8 +414,8 @@ export class OrdersService {
       const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
       // Refund the fiat payer's reserved NGN (Optimistic Lock)
-      const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
+      const buyerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatPayerId, Currency.NGN),
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
 
@@ -471,8 +472,8 @@ export class OrdersService {
       const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
       // Refund the fiat payer's reserved NGN (Optimistic Lock)
-      const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
+      const buyerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatPayerId, Currency.NGN),
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Buyer fiat wallet not found');
 
@@ -545,8 +546,8 @@ export class OrdersService {
       const { fiatPayerId, cryptoSellerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
 
       // 1. Refund the fiat payer's reserved NGN
-      const buyerFiatWallet = await tx.wallet.findUnique({
-        where: { userId_currency: { userId: fiatPayerId, currency: Currency.NGN } },
+      const buyerFiatWallet = await tx.wallet.findFirst({
+        where: primaryWalletWhere(fiatPayerId, Currency.NGN),
       });
       if (!buyerFiatWallet) throw new InternalServerErrorException('Fiat payer wallet not found');
 
@@ -576,8 +577,8 @@ export class OrdersService {
       // 2. Refund crypto seller's locked crypto if it was locked.
       if (order.status === OrderStatus.APPROVED) {
         const cryptoAmount = new Decimal(order.cryptoAmount.toString());
-        const sellerCryptoWallet = await tx.wallet.findUnique({
-          where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
+        const sellerCryptoWallet = await tx.wallet.findFirst({
+          where: primaryWalletWhere(cryptoSellerId, order.ad.asset),
         });
         if (!sellerCryptoWallet) throw new InternalServerErrorException('Crypto seller wallet not found');
 

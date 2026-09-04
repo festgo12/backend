@@ -34,13 +34,17 @@
     "@nestjs/swagger": "^7.1.17",
     "@nestjs/terminus": "^10.2.3",
     "@prisma/client": "^5.7.1",
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.0",
     "axios": "^1.17.0",
     "bcrypt": "^5.1.1",
     "bip32": "^5.0.1",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^7.0.1",
+    "bs58": "^4.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "ed25519-hd-key": "^2.0.0",
     "ethers": "^6.17.0",
     "express-rate-limit": "^7.5.0",
     "google-auth-library": "^10.6.2",
@@ -51,6 +55,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "tiny-secp256k1": "^2.2.4",
+    "tronweb": "^6.5.0",
     "uuid": "^14.0.0",
     "ws": "^8.21.3"
   },
@@ -62,6 +67,7 @@
     "@nestjs/testing": "^10.0.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bitcoinjs-lib": "^4.0.1",
+    "@types/bs58": "^4.0.4",
     "@types/express": "^4.17.17",
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.2.0",
@@ -99,7 +105,11 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "moduleNameMapper": {
-      "^@src/(.*)$": "<rootDir>/$1"
+      "^@src/(.*)$": "<rootDir>/$1",
+      "^@solana/web3\\.js$": "<rootDir>/../test/mocks/solana-web3.ts",
+      "^@solana/spl-token$": "<rootDir>/../test/mocks/solana-spl-token.ts",
+      "^tronweb$": "<rootDir>/../test/mocks/trongcoin.ts",
+      "^ed25519-hd-key$": "<rootDir>/../test/mocks/ed25519-hd-key.ts"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

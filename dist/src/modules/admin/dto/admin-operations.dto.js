@@ -68,6 +68,7 @@ __decorate([
 class SweepFeeWalletDto {
     address;
     amount;
+    chain;
 }
 exports.SweepFeeWalletDto = SweepFeeWalletDto;
 __decorate([
@@ -82,6 +83,14 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], SweepFeeWalletDto.prototype, "amount", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Chain of the fee wallet to sweep (ETH/BSC/POLYGON/SOLANA/TRON). Defaults to the currency primary chain.',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SweepFeeWalletDto.prototype, "chain", void 0);
 class CreditTestFundsDto {
     email;
     currency;

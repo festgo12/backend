@@ -79,6 +79,10 @@ let WalletController = WalletController_1 = class WalletController {
                     chain: info.chain,
                 });
                 this.depositRegistry.register(info.address, info.chain, wallet.id);
+                if (currency === client_1.Currency.USDT || currency === client_1.Currency.USDC) {
+                    await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
+                    await this.ensureMultichainWallet(user.id, currency, 'TRON');
+                }
                 return updatedWallet;
             }
             catch (error) {
@@ -89,6 +93,19 @@ let WalletController = WalletController_1 = class WalletController {
             }
         }
         return wallet;
+    }
+    async ensureMultichainWallet(userId, currency, chain) {
+        const chainWallet = await this.walletService.getOrCreateWallet(userId, currency, chain);
+        if (chainWallet.address)
+            return;
+        const info = await this.hdWallet.getOrAssignDepositInfo(userId, currency, chain);
+        const updated = await this.walletService.updateWalletDepositInfo(chainWallet.id, {
+            address: info.address,
+            derivationIndex: info.derivationIndex,
+            chain: info.chain,
+        });
+        this.depositRegistry.register(info.address, info.chain, chainWallet.id);
+        this.logger.log(`Derived ${currency} ${chain} deposit address for user ${userId}`);
     }
     async withdrawCrypto(user, walletId, address, amount) {
         if (!walletId || !(0, class_validator_1.isUUID)(walletId)) {

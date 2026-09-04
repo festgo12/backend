@@ -17,9 +17,11 @@ const prisma_service_1 = require("../../core/database/prisma.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const chain_client_service_1 = require("./chain-client.service");
 const crypto_config_service_1 = require("./crypto-config.service");
-const client_1 = require("../../generated/client/index.js");
 const MAX_ATTEMPTS = 60;
 const MAX_BACKOFF_SEC = 600;
+function asChain(chain) {
+    return chain;
+}
 let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrackerService {
     prisma;
     walletService;
@@ -34,12 +36,13 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         this.config = config;
     }
     async enqueue(params) {
-        const { txHash, walletId, currency, amount, destination, metadata } = params;
+        const { txHash, walletId, currency, chain, amount, destination, metadata, } = params;
         return this.prisma.withdrawalJob.create({
             data: {
                 txHash,
                 walletId,
                 currency,
+                chain,
                 amount,
                 destination,
                 metadata: (metadata ?? {}),
@@ -52,15 +55,29 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         });
         if (!job || job.status !== 'PENDING')
             return;
-        if (job.currency !== client_1.Currency.BTC) {
-            const receipt = await this.chainClient.getEvmReceipt(txHash);
-            if (receipt && receipt.status === 0) {
-                await this.finalize(job, 'FAILED', {
-                    lastError: 'Transaction reverted on-chain',
-                    confirmedVia: 'webhook',
-                    failedAt: new Date().toISOString(),
-                });
-                return;
+        const chain = job.chain;
+        if (chain && chain !== 'BTC') {
+            if (this.config.isEvmChain(asChain(chain))) {
+                const receipt = await this.chainClient.getEvmReceipt(txHash);
+                if (receipt && receipt.status === 0) {
+                    await this.finalize(job, 'FAILED', {
+                        lastError: 'Transaction reverted on-chain',
+                        confirmedVia: 'webhook',
+                        failedAt: new Date().toISOString(),
+                    });
+                    return;
+                }
+            }
+            else if (chain === 'TRON') {
+                const receipt = await this.chainClient.getTronReceipt(txHash);
+                if (receipt && !receipt.confirmed) {
+                    await this.finalize(job, 'FAILED', {
+                        lastError: 'Transaction reverted on-chain',
+                        confirmedVia: 'webhook',
+                        failedAt: new Date().toISOString(),
+                    });
+                    return;
+                }
             }
         }
         const currentMeta = (job.metadata ?? {});
@@ -110,12 +127,12 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         }
     }
     async poll(job) {
-        const currency = job.currency;
+        const chain = job.chain || 'BTC';
         let confirmed = false;
         let failed = false;
         let confirmations = 0;
         let pollError = null;
-        if (currency === client_1.Currency.BTC) {
+        if (chain === 'BTC') {
             const tip = await this.chainClient.getBtcTipHeight();
             const status = await this.chainClient.getBtcTxStatus(job.txHash);
             if (status.error) {
@@ -127,19 +144,50 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
             }
         }
         else {
-            const receipt = await this.chainClient.getEvmReceipt(job.txHash);
-            if (receipt) {
-                if (receipt.status === 0) {
-                    failed = true;
+            const chainConfirmations = this.config.confirmationsFor(asChain(chain));
+            if (this.config.isEvmChain(asChain(chain))) {
+                const receipt = await this.chainClient.getEvmReceipt(job.txHash);
+                if (receipt) {
+                    if (receipt.status === 0) {
+                        failed = true;
+                    }
+                    else {
+                        const latest = await this.chainClient.getLatestEvmBlock();
+                        confirmations = latest - receipt.blockNumber + 1;
+                        confirmed = confirmations >= chainConfirmations;
+                    }
                 }
                 else {
-                    const latest = await this.chainClient.getLatestEvmBlock();
-                    confirmations = latest - receipt.blockNumber + 1;
-                    confirmed = confirmations >= this.config.evmConfirmations;
+                    pollError = 'transaction not found yet';
+                }
+            }
+            else if (chain === 'SOLANA') {
+                const sigs = await this.chainClient.getSolanaSignatureStatuses(job.txHash);
+                if (sigs !== null) {
+                    confirmations = sigs;
+                    confirmed = confirmations >= chainConfirmations;
+                }
+                else {
+                    pollError = 'transaction not found yet';
+                }
+            }
+            else if (chain === 'TRON') {
+                const receipt = await this.chainClient.getTronReceipt(job.txHash);
+                if (receipt) {
+                    if (receipt.confirmed) {
+                        confirmations = 1;
+                        confirmed = confirmations >= chainConfirmations;
+                    }
+                    else {
+                        failed = true;
+                    }
+                }
+                else {
+                    pollError = 'transaction not found yet';
                 }
             }
             else {
-                pollError = 'transaction not found yet';
+                pollError = `unsupported chain for polling: ${chain}`;
             }
         }
         if (confirmed) {

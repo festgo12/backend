@@ -44,12 +44,30 @@ let WalletService = class WalletService {
             balanceInNgn: w.balance.mul(rates[w.currency] || 0),
         }));
     }
-    async getOrCreateWallet(userId, currency) {
+    async getOrCreateWallet(userId, currency, chain) {
+        if (currency === client_1.Currency.NGN) {
+            const existing = await this.prisma.wallet.findFirst({
+                where: { userId, currency, chain: null },
+            });
+            if (existing)
+                return existing;
+            return this.prisma.wallet.create({
+                data: { userId, currency, chain: null, balance: 0 },
+            });
+        }
+        const chainValue = chain ?? this.defaultChainValueForCurrency(currency);
         return this.prisma.wallet.upsert({
-            where: { userId_currency: { userId, currency } },
-            create: { userId, currency, balance: 0 },
+            where: {
+                userId_currency_chain: { userId, currency, chain: chainValue },
+            },
+            create: { userId, currency, chain: chainValue, balance: 0 },
             update: {},
         });
+    }
+    defaultChainValueForCurrency(currency) {
+        if (currency === client_1.Currency.BTC)
+            return 'BTC';
+        return 'EVM';
     }
     async getWalletHistory(walletId, limit = 20, offset = 0) {
         return this.prisma.ledgerEntry.findMany({

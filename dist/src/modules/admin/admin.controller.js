@@ -130,7 +130,7 @@ let AdminController = class AdminController {
         };
     }
     sweepFeeWallet(currency, dto) {
-        return this.adminService.sweepFeeWallet(currency, dto.address, dto.amount);
+        return this.adminService.sweepFeeWallet(currency, dto.address, dto.amount, dto.chain);
     }
     creditTestFunds(dto) {
         return this.adminService.creditTestFunds(dto.email, dto.currency, dto.amount);

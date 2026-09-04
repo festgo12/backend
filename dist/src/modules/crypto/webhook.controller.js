@@ -67,12 +67,6 @@ let WebhookController = WebhookController_1 = class WebhookController {
             res.status(common_1.HttpStatus.BAD_REQUEST).json({ error: 'Missing raw body' });
             return;
         }
-        const signature = req.headers['x-alchemy-signature'];
-        if (!this.verifyAlchemySignature(rawBody, signature)) {
-            this.logger.warn('Alchemy webhook signature verification failed');
-            res.status(common_1.HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
-            return;
-        }
         let payload;
         try {
             payload = JSON.parse(rawBody.toString('utf8'));
@@ -80,6 +74,14 @@ let WebhookController = WebhookController_1 = class WebhookController {
         catch {
             this.logger.warn('Alchemy webhook: invalid JSON payload');
             res.status(common_1.HttpStatus.BAD_REQUEST).json({ error: 'Invalid JSON' });
+            return;
+        }
+        const signature = req.headers['x-alchemy-signature'];
+        const chain = this.processor.chainFromPayload(payload);
+        if (!this.verifyAlchemySignature(rawBody, signature, chain)) {
+            const network = this.processor.networkFromPayload(payload);
+            this.logger.warn(`Alchemy webhook signature verification failed (chain=${chain ?? 'unknown'}, network=${network ?? 'unknown'})`);
+            res.status(common_1.HttpStatus.UNAUTHORIZED).json({ error: 'Invalid signature' });
             return;
         }
         res.status(common_1.HttpStatus.OK).json({ received: true });
@@ -91,24 +93,37 @@ let WebhookController = WebhookController_1 = class WebhookController {
             this.logger.error(`Alchemy webhook processing failed: ${err.message}`);
         }
     }
-    verifyAlchemySignature(rawBody, givenSignature) {
-        const signingKey = this.config.alchemySigningKey;
-        if (!signingKey) {
-            this.logger.error('ALCHEMY_SIGNING_KEY not configured; rejecting Alchemy webhook (fail-closed)');
-            return false;
-        }
+    verifyAlchemySignature(rawBody, givenSignature, chain) {
         if (!givenSignature)
             return false;
-        const digest = crypto
-            .createHmac('sha256', signingKey)
-            .update(rawBody)
-            .digest('hex');
-        try {
-            return crypto.timingSafeEqual(Buffer.from(givenSignature, 'utf8'), Buffer.from(digest, 'utf8'));
+        const candidates = new Set();
+        if (chain) {
+            const chainKey = this.config.signingKeyForChain(chain);
+            if (chainKey)
+                candidates.add(chainKey);
         }
-        catch {
+        for (const key of this.config.allSigningKeys()) {
+            if (key)
+                candidates.add(key);
+        }
+        if (candidates.size === 0) {
+            this.logger.error('No Alchemy webhook signing key configured; rejecting webhook (fail-closed)');
             return false;
         }
+        for (const signingKey of candidates) {
+            const digest = crypto
+                .createHmac('sha256', signingKey)
+                .update(rawBody)
+                .digest('hex');
+            try {
+                if (crypto.timingSafeEqual(Buffer.from(givenSignature, 'utf8'), Buffer.from(digest, 'utf8'))) {
+                    return true;
+                }
+            }
+            catch {
+            }
+        }
+        return false;
     }
 };
 exports.WebhookController = WebhookController;

@@ -17,6 +17,7 @@ const client_1 = require("../../generated/client/index.js");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const library_1 = require("../../generated/client/runtime/library");
 const platform_service_1 = require("../crypto/platform.service");
+const wallet_query_util_1 = require("../wallet/wallet-query.util");
 let OrdersService = OrdersService_1 = class OrdersService {
     prisma;
     eventEmitter;
@@ -79,14 +80,14 @@ let OrdersService = OrdersService_1 = class OrdersService {
             if (cryptoAmount.greaterThan(adQuantity)) {
                 throw new common_1.BadRequestException('Requested quantity exceeds advertisement available volume');
             }
-            const buyerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatPayerId, currency: client_1.Currency.NGN } },
+            const buyerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatPayerId, client_1.Currency.NGN),
             });
             if (!buyerFiatWallet || new library_1.Decimal(buyerFiatWallet.balance.toString()).lessThan(fiatAmount)) {
                 throw new common_1.BadRequestException('Insufficient fiat balance to initiate this trade');
             }
-            const sellerCryptoWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: cryptoSellerId, currency: ad.asset } },
+            const sellerCryptoWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoSellerId, ad.asset),
             });
             if (!sellerCryptoWallet || new library_1.Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
                 throw new common_1.BadRequestException('Seller does not have enough crypto to fulfill this order');
@@ -169,8 +170,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     version: { increment: 1 },
                 },
             });
-            const sellerCryptoWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
+            const sellerCryptoWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoSellerId, order.ad.asset),
             });
             if (!sellerCryptoWallet)
                 throw new common_1.InternalServerErrorException('Crypto seller wallet not found');
@@ -196,8 +197,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (transferCryptoResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict transferring seller crypto');
-            const buyerCryptoWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: cryptoBuyerId, currency: order.ad.asset } },
+            const buyerCryptoWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoBuyerId, order.ad.asset),
             });
             if (!buyerCryptoWallet)
                 throw new common_1.InternalServerErrorException('Crypto buyer wallet not found');
@@ -210,8 +211,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (creditBuyerCryptoResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict crediting buyer crypto');
-            const buyerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatPayerId, currency: client_1.Currency.NGN } },
+            const buyerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatPayerId, client_1.Currency.NGN),
             });
             if (!buyerFiatWallet)
                 throw new common_1.InternalServerErrorException('Fiat payer wallet not found');
@@ -224,8 +225,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (releaseReservedFiatResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict releasing fiat reserve');
-            const sellerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatReceiverId, currency: client_1.Currency.NGN } },
+            const sellerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatReceiverId, client_1.Currency.NGN),
             });
             if (!sellerFiatWallet)
                 throw new common_1.InternalServerErrorException('Fiat receiver wallet not found');
@@ -353,8 +354,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             }
             const fiatAmount = new library_1.Decimal(order.fiatAmount.toString());
             const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
-            const buyerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatPayerId, currency: client_1.Currency.NGN } },
+            const buyerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatPayerId, client_1.Currency.NGN),
             });
             if (!buyerFiatWallet)
                 throw new common_1.InternalServerErrorException('Buyer fiat wallet not found');
@@ -403,8 +404,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             }
             const fiatAmount = new library_1.Decimal(order.fiatAmount.toString());
             const { fiatPayerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
-            const buyerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatPayerId, currency: client_1.Currency.NGN } },
+            const buyerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatPayerId, client_1.Currency.NGN),
             });
             if (!buyerFiatWallet)
                 throw new common_1.InternalServerErrorException('Buyer fiat wallet not found');
@@ -464,8 +465,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             }
             const fiatAmount = new library_1.Decimal(order.fiatAmount.toString());
             const { fiatPayerId, cryptoSellerId } = this.resolveRoles(order.ad.type, order.buyerId, order.sellerId);
-            const buyerFiatWallet = await tx.wallet.findUnique({
-                where: { userId_currency: { userId: fiatPayerId, currency: client_1.Currency.NGN } },
+            const buyerFiatWallet = await tx.wallet.findFirst({
+                where: (0, wallet_query_util_1.primaryWalletWhere)(fiatPayerId, client_1.Currency.NGN),
             });
             if (!buyerFiatWallet)
                 throw new common_1.InternalServerErrorException('Fiat payer wallet not found');
@@ -492,8 +493,8 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (order.status === client_1.OrderStatus.APPROVED) {
                 const cryptoAmount = new library_1.Decimal(order.cryptoAmount.toString());
-                const sellerCryptoWallet = await tx.wallet.findUnique({
-                    where: { userId_currency: { userId: cryptoSellerId, currency: order.ad.asset } },
+                const sellerCryptoWallet = await tx.wallet.findFirst({
+                    where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoSellerId, order.ad.asset),
                 });
                 if (!sellerCryptoWallet)
                     throw new common_1.InternalServerErrorException('Crypto seller wallet not found');

@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { DepositAddressRegistry } from './deposit-address-registry.service';
-import { CryptoConfigService } from './crypto-config.service';
+import {
+  Chain,
+  ChainFamily,
+  CryptoConfigService,
+} from './crypto-config.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { Currency, LedgerType } from '@src/generated/client';
 
@@ -11,10 +15,11 @@ interface ErrorLike {
   code?: string;
 }
 
-/** Normalized event produced by Alchemy normalizer and BTC WebSocket service. */
+/** Normalized event produced by Alchemy normalizer, BTC WebSocket service, and TRON poller. */
 export interface NormalizedCryptoEvent {
-  provider: 'alchemy' | 'btc_websocket';
-  chain: 'EVM' | 'BTC';
+  provider: 'alchemy' | 'btc_websocket' | 'tron_poller';
+  chain: Chain | 'BTC';
+  family: ChainFamily;
   direction: 'INBOUND' | 'OUTBOUND';
   txHash: string;
   fromAddress: string;
@@ -45,9 +50,37 @@ export class WebhookProcessorService {
 
   // ─── Alchemy Event Processing ───────────────────────────────────────────
 
+  /**
+   * Resolves the chain a raw Alchemy webhook payload was delivered for, based
+   * on the `event.network` field. Returns null if the network is unknown.
+   * Used by the webhook controller to select the correct signing key for HMAC
+   * verification before processing.
+   */
+  chainFromPayload(payload: Record<string, unknown>): Chain | null {
+    const event = payload.event as Record<string, unknown> | undefined;
+    if (!event) return null;
+    const network = (event.network as string) || '';
+    return this.config.chainFromWebhookNetwork(network);
+  }
+
+  /**
+   * Returns the raw `event.network` string of a payload (for logging when the
+   * chain cannot be resolved from it).
+   */
+  networkFromPayload(payload: Record<string, unknown>): string | null {
+    const event = payload.event as Record<string, unknown> | undefined;
+    if (!event) return null;
+    return (event.network as string) || null;
+  }
+
   async processAlchemyEvent(payload: Record<string, unknown>): Promise<void> {
     const event = payload.event as Record<string, unknown> | undefined;
     if (!event) return;
+
+    // Route by the Alchemy `network` field so deposits are attributed to the
+    // correct chain (e.g. ETH_MAINNET -> ETH, SOLANA_DEVNET -> SOLANA).
+    const network = (event.network as string) || '';
+    const chain = this.config.chainFromWebhookNetwork(network);
 
     const activity = event.activity as
       | Array<Record<string, unknown>>
@@ -55,7 +88,7 @@ export class WebhookProcessorService {
     if (!Array.isArray(activity) || activity.length === 0) return;
 
     for (const item of activity) {
-      const normalized = this.normalizeAlchemyActivity(item);
+      const normalized = this.normalizeAlchemyActivity(item, chain);
       if (!normalized) continue;
       await this.processEvent(normalized);
     }
@@ -63,7 +96,12 @@ export class WebhookProcessorService {
 
   private normalizeAlchemyActivity(
     item: Record<string, unknown>,
+    chain: Chain | null,
   ): NormalizedCryptoEvent | null {
+    // Only process known networks; skip if the network couldn't be resolved.
+    if (!chain) return null;
+    const family = this.config.chainFamily(chain);
+
     const hash = item.hash as string;
     const from = ((item.fromAddress as string) || '').toLowerCase();
     const to = ((item.toAddress as string) || '').toLowerCase();
@@ -88,8 +126,8 @@ export class WebhookProcessorService {
     }
 
     // Determine direction by checking which address is ours
-    const isToOurs = this.depositRegistry.has(to, 'EVM');
-    const isFromOurs = this.depositRegistry.has(from, 'EVM');
+    const isToOurs = this.depositRegistry.has(to, chain);
+    const isFromOurs = this.depositRegistry.has(from, chain);
 
     // Handle reorg removals
     const log = item.log as Record<string, unknown> | undefined;
@@ -99,7 +137,8 @@ export class WebhookProcessorService {
     if (removed) {
       return {
         provider: 'alchemy',
-        chain: 'EVM',
+        chain,
+        family,
         direction: 'INBOUND',
         txHash: hash,
         fromAddress: from,
@@ -115,7 +154,8 @@ export class WebhookProcessorService {
     if (isToOurs) {
       return {
         provider: 'alchemy',
-        chain: 'EVM',
+        chain,
+        family,
         direction: 'INBOUND',
         txHash: hash,
         fromAddress: from,
@@ -130,7 +170,8 @@ export class WebhookProcessorService {
     if (isFromOurs) {
       return {
         provider: 'alchemy',
-        chain: 'EVM',
+        chain,
+        family,
         direction: 'OUTBOUND',
         txHash: hash,
         fromAddress: from,
@@ -153,11 +194,11 @@ export class WebhookProcessorService {
    * the event into the common format and processes it.
    */
   async processBtcEvent(
-    event: Omit<NormalizedCryptoEvent, 'provider'> & {
+    event: Omit<NormalizedCryptoEvent, 'provider' | 'family'> & {
       provider: 'btc_websocket';
     },
   ): Promise<void> {
-    await this.processEvent(event);
+    await this.processEvent({ ...event, family: 'BTC' });
   }
 
   // ─── Core Event Processing ──────────────────────────────────────────────
@@ -187,8 +228,9 @@ export class WebhookProcessorService {
 
     // Look up which wallets own this address
     const chain = event.chain;
-    const address =
-      chain === 'EVM' ? event.toAddress.toLowerCase() : event.toAddress;
+    const address = this.config.isEvmChain(chain)
+      ? event.toAddress.toLowerCase()
+      : event.toAddress;
     const registrations = this.depositRegistry.lookup(address, chain);
     if (registrations.length === 0) return;
 
@@ -197,11 +239,13 @@ export class WebhookProcessorService {
         where: { id: reg.walletId },
       });
       if (!wallet || wallet.currency !== event.asset) continue;
+      // A shared EVM-family address can belong to wallets on multiple chains
+      // (ETH/BSC/POLYGON all share the same 0x). Attribute the deposit only to
+      // the wallet on the network the webhook reported. Legacy 'EVM' values
+      // resolve to the default ETH chain.
+      if (!this.walletOnChain(wallet.chain, chain)) continue;
 
-      const requiredConfirmations =
-        event.chain === 'EVM'
-          ? this.config.evmConfirmations
-          : this.config.btcConfirmations;
+      const requiredConfirmations = this.config.confirmationsFor(chain);
 
       const canCreditImmediately = event.blockNumber > 0;
 
@@ -209,8 +253,8 @@ export class WebhookProcessorService {
       const metadata = {
         source:
           event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'BTC_WEBSOCKET',
-        listener:
-          event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBSOCKET',
+        listener: this.sourceListenerLabel(event),
+        chain,
         blockTxId: event.txHash,
         asset: event.asset,
         address,
@@ -286,15 +330,42 @@ export class WebhookProcessorService {
     });
     if (!job || job.status !== 'PENDING') return;
 
-    const required =
-      event.chain === 'EVM'
-        ? this.config.evmConfirmations
-        : this.config.btcConfirmations;
+    const required = this.config.confirmationsFor(event.chain);
 
     // Use the tracker's webhook confirmation path
     await this.tracker.confirmFromWebhook(event.txHash, required);
     this.logger.log(
       `Withdrawal confirmed via webhook: ${event.txHash} (${event.amount} ${event.asset})`,
     );
+  }
+
+  /** Human-readable listener label for a normalized event's metadata. */
+  private sourceListenerLabel(event: NormalizedCryptoEvent): string {
+    switch (event.provider) {
+      case 'btc_websocket':
+        return 'BTC_WEBSOCKET';
+      case 'tron_poller':
+        return 'TRON_POLLER';
+      case 'alchemy':
+        return this.config.isEvmChain(event.chain)
+          ? `${event.chain}_WEBHOOK`
+          : 'SOLANA_WEBHOOK';
+    }
+  }
+
+  /**
+   * Whether a wallet's stored `chain` value corresponds to the given event
+   * chain. Legacy 'EVM' rows are treated as the default ETH chain; otherwise
+   * the values must match exactly (e.g. BSC, SOLANA, TRON).
+   */
+  private walletOnChain(
+    walletChain: string | null,
+    eventChain: Chain | 'BTC',
+  ): boolean {
+    if (!walletChain) return false;
+    if (this.config.isEvmChain(eventChain)) {
+      return walletChain === eventChain || walletChain === 'EVM';
+    }
+    return walletChain === eventChain;
   }
 }

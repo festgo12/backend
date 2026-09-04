@@ -26,6 +26,7 @@ const sweep_service_1 = require("../crypto/sweep.service");
 const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const platform_service_1 = require("../crypto/platform.service");
+const wallet_query_util_1 = require("../wallet/wallet-query.util");
 let AdminService = class AdminService {
     static { AdminService_1 = this; }
     prisma;
@@ -263,6 +264,7 @@ let AdminService = class AdminService {
             wallets: wallets.map((w) => ({
                 id: w.id,
                 currency: w.currency,
+                chain: w.chain,
                 address: w.address,
                 balance: w.balance.toNumber(),
                 reservedBalance: w.reservedBalance.toNumber(),
@@ -273,7 +275,7 @@ let AdminService = class AdminService {
             total: wallets.length,
         };
     }
-    async sweepFeeWallet(currency, address, amount) {
+    async sweepFeeWallet(currency, address, amount, chain) {
         if (!address || typeof address !== 'string') {
             throw new common_1.BadRequestException('Treasury destination address is required');
         }
@@ -284,6 +286,7 @@ let AdminService = class AdminService {
             currency,
             destinationAddress: address,
             amount,
+            chain,
         });
     }
     async creditTestFunds(email, currency, amount) {
@@ -300,8 +303,8 @@ let AdminService = class AdminService {
         if (!user) {
             throw new common_1.NotFoundException(`No user found with email ${email}`);
         }
-        const wallet = await this.prisma.wallet.findUnique({
-            where: { userId_currency: { userId: user.id, currency } },
+        const wallet = await this.prisma.wallet.findFirst({
+            where: (0, wallet_query_util_1.primaryWalletWhere)(user.id, currency),
         });
         if (!wallet) {
             throw new common_1.NotFoundException(`No ${currency} wallet for ${email} — create one first`);
@@ -765,16 +768,21 @@ let AdminService = class AdminService {
             webhookProviders: {
                 evm: 'alchemy',
                 btc: 'alchemy',
+                tron: 'tron_poller',
             },
             confirmations: {
                 eth: this.cryptoConfig.evmConfirmations,
                 btc: this.cryptoConfig.btcConfirmations,
+                sol: this.cryptoConfig.confirmationsFor('SOLANA'),
+                tron: this.cryptoConfig.confirmationsFor('TRON'),
             },
             depositSweepThreshold: this.cryptoConfig.depositSweepThreshold,
             registrySize: this.depositRegistry.size,
             masterWallets: {
                 evm: this.hdWallet.getMasterAddress('EVM'),
                 btc: this.hdWallet.getMasterAddress('BTC'),
+                sol: this.hdWallet.getMasterAddressForChain('SOLANA'),
+                tron: this.hdWallet.getMasterAddressForChain('TRON'),
             },
             recentSweeps,
         };
@@ -799,36 +807,124 @@ let AdminService = class AdminService {
     async getChainBalances() {
         const evmMaster = this.hdWallet.getMasterAddress('EVM');
         const btcMaster = this.hdWallet.getMasterAddress('BTC');
+        const solMaster = this.hdWallet.getMasterAddressForChain('SOLANA');
+        const tronMaster = this.hdWallet.getMasterAddressForChain('TRON');
         const currencies = ['BTC', 'ETH', 'USDT', 'USDC'];
-        const balances = await Promise.all(currencies.map(async (currency) => {
+        const evmBalances = await Promise.all(currencies
+            .filter((c) => c !== client_1.Currency.BTC)
+            .map(async (currency) => {
             try {
-                if (currency === client_1.Currency.BTC) {
-                    const utxos = await this.chainClient.getBtcUtxos(btcMaster);
-                    return {
-                        currency,
-                        address: btcMaster,
-                        balance: utxos.reduce((sum, u) => sum + u.value, 0) / 1e8,
-                    };
-                }
                 return {
+                    chain: 'ETH',
                     currency,
                     address: evmMaster,
-                    balance: await this.chainClient.getEvmBalance(evmMaster, currency),
+                    balance: await this.chainClient.getEvmBalance(evmMaster, currency, 'ETH'),
                 };
             }
             catch (error) {
                 const err = error;
                 return {
+                    chain: 'ETH',
                     currency,
-                    address: currency === client_1.Currency.BTC ? btcMaster : evmMaster,
+                    address: evmMaster,
                     balance: 0,
                     error: err.message || 'Balance query failed',
                 };
             }
         }));
+        const solanaBalances = await Promise.all(currencies
+            .filter((c) => c === client_1.Currency.USDT || c === client_1.Currency.USDC)
+            .map(async (currency) => {
+            try {
+                const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
+                if (!mint) {
+                    return {
+                        chain: 'SOLANA',
+                        currency,
+                        address: solMaster,
+                        balance: 0,
+                        error: 'SOLANA mint not configured',
+                    };
+                }
+                return {
+                    chain: 'SOLANA',
+                    currency,
+                    address: solMaster,
+                    balance: await this.chainClient.getSolanaTokenBalance(mint, solMaster),
+                };
+            }
+            catch (error) {
+                const err = error;
+                return {
+                    chain: 'SOLANA',
+                    currency,
+                    address: solMaster,
+                    balance: 0,
+                    error: err.message || 'Balance query failed',
+                };
+            }
+        }));
+        const tronBalances = await Promise.all(currencies
+            .filter((c) => c === client_1.Currency.USDT || c === client_1.Currency.USDC)
+            .map(async (currency) => {
+            try {
+                const contract = this.cryptoConfig.getStablecoinContractFor('TRON', currency);
+                if (!contract) {
+                    return {
+                        chain: 'TRON',
+                        currency,
+                        address: tronMaster,
+                        balance: 0,
+                        error: 'TRON contract not configured',
+                    };
+                }
+                return {
+                    chain: 'TRON',
+                    currency,
+                    address: tronMaster,
+                    balance: await this.chainClient.getTronTokenBalance(contract, tronMaster),
+                };
+            }
+            catch (error) {
+                const err = error;
+                return {
+                    chain: 'TRON',
+                    currency,
+                    address: tronMaster,
+                    balance: 0,
+                    error: err.message || 'Balance query failed',
+                };
+            }
+        }));
+        const btcBalance = await (async () => {
+            try {
+                const utxos = await this.chainClient.getBtcUtxos(btcMaster);
+                return {
+                    chain: 'BTC',
+                    currency: client_1.Currency.BTC,
+                    address: btcMaster,
+                    balance: utxos.reduce((sum, u) => sum + u.value, 0) / 1e8,
+                };
+            }
+            catch (error) {
+                const err = error;
+                return {
+                    chain: 'BTC',
+                    currency: client_1.Currency.BTC,
+                    address: btcMaster,
+                    balance: 0,
+                    error: err.message || 'Balance query failed',
+                };
+            }
+        })();
         return {
-            masterWallets: { evm: evmMaster, btc: btcMaster },
-            balances,
+            masterWallets: {
+                evm: evmMaster,
+                btc: btcMaster,
+                sol: solMaster,
+                tron: tronMaster,
+            },
+            balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances],
         };
     }
     async reconcileAll() {
@@ -843,7 +939,10 @@ let AdminService = class AdminService {
             success: true,
             message: 'Sweep completed',
             summary,
-            swept: summary.evmSwept + summary.btcSwept,
+            swept: summary.evmSwept +
+                summary.btcSwept +
+                summary.solSwept +
+                summary.tronSwept,
         };
     }
     async getBtcHistory(page, pageSize) {

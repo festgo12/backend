@@ -15,9 +15,35 @@ import {
   formatEther,
   formatUnits,
 } from 'ethers';
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  LAMPORTS_PER_SOL,
+} from '@solana/web3.js';
+import {
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
+import { TronWeb } from 'tronweb';
 import * as bitcoin from 'bitcoinjs-lib';
+
+/** Minimal typed contract surface used for read-only TRC-20 calls. */
+type TronWebContract = {
+  balanceOf(address: string): { call(): Promise<{ toString(): string }> };
+  symbol(): { call(): Promise<{ toString(): string }> };
+  decimals(): { call(): Promise<{ toString(): string }> };
+};
 import { Currency } from '@src/generated/client';
-import { CryptoConfigService, ChainKind } from './crypto-config.service';
+import {
+  ChainFamily,
+  Chain,
+  CryptoConfigService,
+  ChainKind,
+} from './crypto-config.service';
 import { HdWalletService } from './hd-wallet.service';
 
 const ERC20_ABI = [
@@ -93,7 +119,12 @@ export interface BtcTxStatus {
 @Injectable()
 export class ChainClientService {
   private readonly logger = new Logger(ChainClientService.name);
-  private providerInstance: JsonRpcProvider | null = null;
+  /** Per-chain EVM JsonRpcProvider instances. */
+  private readonly evmProviders = new Map<string, JsonRpcProvider>();
+  /** Solana Connection per network URL (typically a single cluster). */
+  private readonly solanaConnections = new Map<string, Connection>();
+  /** TronWeb instances per HTTP URL (read-only, no private key). */
+  private readonly tronWebClients = new Map<string, TronWeb>();
 
   /** Per-index async locks ensuring one EVM broadcast at a time per signer. */
   private readonly evmNonceLocks = new Map<number, Promise<void>>();
@@ -105,17 +136,35 @@ export class ChainClientService {
   ) {}
 
   /** Serialize EVM broadcasts per derivation index to prevent nonce races. */
-  private async withNonceLock<T>(index: number, fn: () => Promise<T>): Promise<T> {
+  private async withNonceLock<T>(
+    index: number,
+    fn: () => Promise<T>,
+  ): Promise<T> {
     // Wait for any pending broadcast on this index, then run ours.
     const prev = this.evmNonceLocks.get(index);
-    const chain = (prev ?? Promise.resolve()).then(() => fn(), () => fn());
+    const chain = (prev ?? Promise.resolve()).then(
+      () => fn(),
+      () => fn(),
+    );
     // Store our promise so the next caller waits for us.
-    this.evmNonceLocks.set(index, chain.then(() => {}, () => {}));
+    this.evmNonceLocks.set(
+      index,
+      chain.then(
+        () => {},
+        () => {},
+      ),
+    );
     try {
       return await chain;
     } finally {
       // Clean up if we're the last in line.
-      if (this.evmNonceLocks.get(index) === chain.then(() => {}, () => {})) {
+      if (
+        this.evmNonceLocks.get(index) ===
+        chain.then(
+          () => {},
+          () => {},
+        )
+      ) {
         this.evmNonceLocks.delete(index);
       }
     }
@@ -124,16 +173,66 @@ export class ChainClientService {
   // ─── EVM Provider ──────────────────────────────────────────────────────
 
   get provider(): JsonRpcProvider {
-    const url = this.config.alchemyEthHttpUrl;
+    return this.providerForChain('ETH');
+  }
+
+  /** EVM JsonRpcProvider for a specific EVM-family chain (ETH/BSC/POLYGON). */
+  providerForChain(chain: string): JsonRpcProvider {
+    const existing = this.evmProviders.get(chain);
+    if (existing) return existing;
+    const url = this.config.httpUrlForChain(chain);
     if (!url) {
       throw new InternalServerErrorException(
-        'ALCHEMY_ETH_HTTP_URL is not configured',
+        `ALCHEMY_${chain}_HTTP_URL is not configured`,
       );
     }
-    if (!this.providerInstance) {
-      this.providerInstance = new JsonRpcProvider(url);
+    const provider = new JsonRpcProvider(url);
+    this.evmProviders.set(chain, provider);
+    return provider;
+  }
+
+  /** Configured Solana RPC URL (throws if missing). */
+  private solanaUrl(): string {
+    const url = this.config.httpUrlForChain('SOLANA');
+    if (!url) {
+      throw new InternalServerErrorException(
+        'ALCHEMY_SOLANA_HTTP_URL is not configured',
+      );
     }
-    return this.providerInstance;
+    return url;
+  }
+
+  /** Solana Connection for the configured RPC URL (cached). */
+  private solanaConnection(): Connection {
+    const url = this.solanaUrl();
+    const existing = this.solanaConnections.get(url);
+    if (existing) return existing;
+    const connection = new Connection(url, 'confirmed');
+    this.solanaConnections.set(url, connection);
+    return connection;
+  }
+
+  /**
+   * Read-only TronWeb client for the configured TRON RPC URL.
+   * Broadcasts use a separate PrivateKey-attached instance (see below).
+   */
+  private tronWebRead(): TronWeb {
+    const url = this.config.httpUrlForChain('TRON');
+    if (!url) {
+      throw new InternalServerErrorException(
+        'ALCHEMY_TRON_HTTP_URL is not configured',
+      );
+    }
+    const existing = this.tronWebClients.get(url);
+    if (existing) return existing;
+    const client = new TronWeb({ fullHost: url });
+    this.tronWebClients.set(url, client);
+    return client;
+  }
+
+  /** Underlying chain family for a Chain. */
+  chainFamily(chain: Chain): ChainFamily {
+    return this.config.chainFamily(chain);
   }
 
   // ─── Bitcoin JSON-RPC (Alchemy) ───────────────────────────────────────
@@ -190,13 +289,18 @@ export class ChainClientService {
     return { blockNumber: receipt.blockNumber, status: receipt.status };
   }
 
-  async getEvmBalance(address: string, currency: Currency): Promise<number> {
+  async getEvmBalance(
+    address: string,
+    currency: Currency,
+    chain: string = 'ETH',
+  ): Promise<number> {
+    const provider = this.providerForChain(chain);
     if (currency === Currency.ETH) {
-      return Number(formatEther(await this.provider.getBalance(address)));
+      return Number(formatEther(await provider.getBalance(address)));
     }
-    const contract = this.config.getStablecoinContract(currency);
+    const contract = this.config.getStablecoinContractFor(chain, currency);
     if (!contract) return 0;
-    const token = new Contract(contract, ERC20_ABI, this.provider);
+    const token = new Contract(contract, ERC20_ABI, provider);
     const raw = (await token.balanceOf(address)) as bigint;
     return Number(formatUnits(raw, this.decimalsFor(currency)));
   }
@@ -280,7 +384,11 @@ export class ChainClientService {
         const blockNumber = parseInt(t.blockNum ?? '', 16);
         if (!Number.isFinite(blockNumber)) continue;
         const raw = BigInt(t.value ?? '0');
-        const decimals = t.rawContract?.decimal ? Number(t.rawContract.decimal) : (category === 'external' ? 18 : 6);
+        const decimals = t.rawContract?.decimal
+          ? Number(t.rawContract.decimal)
+          : category === 'external'
+            ? 18
+            : 6;
         const amount = parseFloat(formatUnits(raw, decimals));
         transfers.push({
           category,
@@ -389,14 +497,17 @@ export class ChainClientService {
     fromIndex: number,
     to: string,
     amount: number,
+    chain: string = 'ETH',
   ): Promise<string> {
     return this.withNonceLock(fromIndex, async () => {
-      const signer = this.evmSigner(fromIndex);
+      const signer = this.evmSigner(fromIndex, chain);
       const tx = await signer.sendTransaction({
         to,
         value: parseEther(Number(amount).toFixed(18)),
       });
-      this.logger.log(`ETH broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+      this.logger.log(
+        `${chain} native broadcast: ${amount} ${to} (TX: ${tx.hash})`,
+      );
       return tx.hash;
     });
   }
@@ -406,24 +517,289 @@ export class ChainClientService {
     fromIndex: number,
     to: string,
     amount: number,
+    chain: string = 'ETH',
   ): Promise<string> {
-    const contract = this.config.getStablecoinContract(currency);
+    const contract = this.config.getStablecoinContractFor(chain, currency);
     if (!contract) {
       throw new InternalServerErrorException(
-        `No ${currency} contract configured for the active network`,
+        `No ${currency} contract configured for ${chain}`,
       );
     }
     const decimals = this.decimalsFor(currency);
     return this.withNonceLock(fromIndex, async () => {
-      const signer = this.evmSigner(fromIndex);
+      const signer = this.evmSigner(fromIndex, chain);
       const token = new Contract(contract, ERC20_ABI, signer);
       const tx = (await token.transfer(
         to,
         parseUnits(Number(amount).toFixed(decimals), decimals),
       )) as ContractTransactionResponse;
-      this.logger.log(`${currency} broadcast: ${amount} ${to} (TX: ${tx.hash})`);
+      this.logger.log(
+        `${currency} broadcast on ${chain}: ${amount} ${to} (TX: ${tx.hash})`,
+      );
       return tx.hash;
     });
+  }
+
+  // ─── Solana Read + Broadcast ──────────────────────────────────────────
+
+  /** Native SOL balance (LC) for an address. */
+  async getSolBalance(address: string): Promise<number> {
+    const pubkey = new PublicKey(address);
+    const lamports = await this.solanaConnection().getBalance(pubkey);
+    return Number((lamports / LAMPORTS_PER_SOL).toFixed(9));
+  }
+
+  /**
+   * SPL token balance for an owner given the mint address, using the
+   * owner's associated token account (derived via getAssociatedTokenAddress).
+   */
+  async getSolanaTokenBalance(mint: string, owner: string): Promise<number> {
+    const connection = this.solanaConnection();
+    const mintPub = new PublicKey(mint);
+    const ownerPub = new PublicKey(owner);
+    const { value: accounts } = await connection.getTokenAccountsByOwner(
+      ownerPub,
+      {
+        mint: mintPub,
+      },
+    );
+    if (accounts.length === 0) return 0;
+    // Decode the first matching token account: amount is a u64 at offset 64.
+    const data = Buffer.from(accounts[0].account.data as Uint8Array);
+    const amountRaw = data.readBigUInt64LE(64);
+    return Number((Number(amountRaw) / 1e6).toFixed(6));
+  }
+
+  /**
+   * Transfers SPL tokens (USDT/USDC) from the owner keypair at fromIndex to
+   * `to`. Creates the destination ATA if absent, then transfers in one tx.
+   * Returns the transaction signature.
+   */
+  async broadcastSolanaToken(
+    currency: Currency,
+    fromIndex: number,
+    to: string,
+    amount: number,
+  ): Promise<string> {
+    const mint = this.config.getStablecoinContractFor('SOLANA', currency);
+    if (!mint) {
+      throw new InternalServerErrorException(
+        `No ${currency} SPL mint configured for SOLANA`,
+      );
+    }
+    const connection = this.solanaConnection();
+    const payer = this.hdWallet.solKeypair(fromIndex);
+    const mintPub = new PublicKey(mint);
+    const destination = new PublicKey(to);
+
+    const fromAta = await getAssociatedTokenAddress(
+      mintPub,
+      payer.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+    const toAta = await getAssociatedTokenAddress(
+      mintPub,
+      destination,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+
+    const tx = new Transaction();
+    const toInfo = await connection.getAccountInfo(toAta);
+    if (!toInfo) {
+      tx.add(
+        createAssociatedTokenAccountInstruction(
+          payer.publicKey,
+          toAta,
+          destination,
+          mintPub,
+        ),
+      );
+    }
+
+    const amountRaw = BigInt(Math.round(amount * 1e6));
+    tx.add(
+      createTransferInstruction(fromAta, toAta, payer.publicKey, amountRaw),
+    );
+
+    try {
+      tx.feePayer = payer.publicKey;
+      tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+      tx.sign(payer);
+      const sig = await connection.sendRawTransaction(tx.serialize());
+      await connection.confirmTransaction(sig, 'confirmed');
+      this.logger.log(
+        `SOLANA ${currency} broadcast: ${amount} ${to} (TX: ${sig})`,
+      );
+      return sig;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`SOLANA ${currency} broadcast failed: ${err.message}`);
+      throw new InternalServerErrorException(
+        `SOLANA ${currency} broadcast failed: ${err.message}`,
+      );
+    }
+  }
+
+  /**
+   * Returns 1 if the tx signature is confirmed/finalized, 0 if still
+   * processing, and null if not found. Used by the withdrawal tracker.
+   */
+  async getSolanaSignatureStatuses(sig: string): Promise<number | null> {
+    const connection = this.solanaConnection();
+    const responses = await connection.getSignatureStatuses([sig]);
+    const status = responses?.value?.[0];
+    if (!status) return null;
+    if (status.err) {
+      return 0;
+    }
+    return status.confirmationStatus === 'processed' ? 0 : 1;
+  }
+
+  // ─── TRON Read + Broadcast ────────────────────────────────────────────
+
+  /** Native TRX balance (sun / 1e6) for an address. */
+  async getTrxBalance(address: string): Promise<number> {
+    const client = this.tronWebRead();
+    const sun = await client.trx.getBalance(address);
+    return Number((Number(sun) / 1e6).toFixed(6));
+  }
+
+  /** TRC-20 token balance for an address given the contract address. */
+  async getTronTokenBalance(
+    contract: string,
+    address: string,
+  ): Promise<number> {
+    const client = this.tronWebRead();
+    // tronweb's contract/CHAINSCAN accessors are loosely typed (any); the
+    // result is normalized here so the rest of the code stays type-safe.
+    const tokenContract = (await client
+      .contract()
+      .at(contract)) as unknown as TronWebContract;
+    const raw = await tokenContract.balanceOf(address).call();
+    return Number((Number(raw.toString()) / 1e6).toFixed(6));
+  }
+
+  /**
+   * TronWeb client bound to a private key for signing TRC-20 / TRX sends.
+   * Cached per (url, address) so repeated broadcasts reuse the client.
+   */
+  private tronWebSigner(fromIndex: number): TronWeb {
+    const url = this.config.httpUrlForChain('TRON');
+    if (!url) {
+      throw new InternalServerErrorException(
+        'ALCHEMY_TRON_HTTP_URL is not configured',
+      );
+    }
+    const privateKey = this.hdWallet.derivePrivateKeyForChain(
+      'TRON',
+      fromIndex,
+    );
+    const cacheKey = `${url}:${fromIndex}`;
+    const existing = this.tronWebClients.get(cacheKey);
+    if (existing) return existing;
+    const client = new TronWeb({ fullHost: url, privateKey });
+    this.tronWebClients.set(cacheKey, client);
+    return client;
+  }
+
+  /** Broadcasts a TRC-20 token transfer (USDT/USDC) on TRON. */
+  async broadcastTronToken(
+    currency: Currency,
+    fromIndex: number,
+    to: string,
+    amount: number,
+  ): Promise<string> {
+    const contract = this.config.getStablecoinContractFor('TRON', currency);
+    if (!contract) {
+      throw new InternalServerErrorException(
+        `No ${currency} TRC-20 contract configured for TRON`,
+      );
+    }
+    const client = this.tronWebSigner(fromIndex);
+    try {
+      // TRC-20 USDT/USDC use 6 decimals.
+      const rawAmount = Math.round(amount * 1e6).toString();
+      const tokenContract = (await client
+        .contract()
+        .at(contract)) as unknown as {
+        transfer(to: string, amount: string): {
+          send(options?: { feeLimit?: number }): Promise<string>;
+        };
+      };
+      const txId = await tokenContract
+        .transfer(to, rawAmount)
+        .send({ feeLimit: 25_000_000 });
+      this.logger.log(
+        `TRON ${currency} broadcast: ${amount} ${to} (TX: ${txId})`,
+      );
+      return txId;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`TRON ${currency} broadcast failed: ${err.message}`);
+      throw new InternalServerErrorException(
+        `TRON ${currency} broadcast failed: ${err.message}`,
+      );
+    }
+  }
+
+  /** Broadcasts a native TRX transfer on TRON. */
+  async broadcastTronNative(
+    fromIndex: number,
+    to: string,
+    amountTrx: number,
+  ): Promise<string> {
+    const client = this.tronWebSigner(fromIndex);
+    try {
+      const sun = Math.round(Number(amountTrx) * 1e6);
+      // tronweb's return type is a generic SignedTransaction object; the txid
+      // is accessible via the transaction id. Normalize to string here.
+      const res = await client.trx.sendTransaction(to, sun);
+      const txId = String((res as unknown as { txid?: string }).txid ?? res);
+      this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txId})`);
+      return txId;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`TRON native broadcast failed: ${err.message}`);
+      throw new InternalServerErrorException(
+        `TRON native broadcast failed: ${err.message}`,
+      );
+    }
+  }
+
+  /**
+   * Confirmation status for a TRON tx. Returns null if the tx is not yet
+   * on-chain; otherwise the block number and whether it is confirmed.
+   */
+  async getTronReceipt(txHash: string): Promise<{
+    confirmed: boolean;
+    blockNumber: number;
+  } | null> {
+    const client = this.tronWebRead();
+    try {
+      const info = (await client.trx.getTransactionInfo(txHash)) as unknown as {
+        blockNumber?: number;
+        receipt?: { result?: string };
+      };
+      if (!info || typeof info.blockNumber !== 'number') {
+        return null;
+      }
+      const failed =
+        info.receipt?.result === 'REVERT' || info.receipt?.result === 'FAILED';
+      return {
+        confirmed: !failed,
+        blockNumber: info.blockNumber,
+      };
+    } catch (error) {
+      const err = error as Error;
+      this.logger.warn(
+        `TRON getTransactionInfo failed for ${txHash}: ${err.message}`,
+      );
+      return null;
+    }
   }
 
   // ─── BTC Broadcast (Alchemy RPC) ──────────────────────────────────────
@@ -503,9 +879,9 @@ export class ChainClientService {
 
   // ─── Helpers ────────────────────────────────────────────────────────────
 
-  private evmSigner(fromIndex: number): Wallet {
+  private evmSigner(fromIndex: number, chain: string = 'ETH'): Wallet {
     const pk = this.hdWallet.derivePrivateKey(Currency.ETH, fromIndex);
-    return new Wallet(pk, this.provider);
+    return new Wallet(pk, this.providerForChain(chain));
   }
 
   private decimalsFor(currency: Currency): number {

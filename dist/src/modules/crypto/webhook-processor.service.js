@@ -32,21 +32,39 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         this.config = config;
         this.tracker = tracker;
     }
+    chainFromPayload(payload) {
+        const event = payload.event;
+        if (!event)
+            return null;
+        const network = event.network || '';
+        return this.config.chainFromWebhookNetwork(network);
+    }
+    networkFromPayload(payload) {
+        const event = payload.event;
+        if (!event)
+            return null;
+        return event.network || null;
+    }
     async processAlchemyEvent(payload) {
         const event = payload.event;
         if (!event)
             return;
+        const network = event.network || '';
+        const chain = this.config.chainFromWebhookNetwork(network);
         const activity = event.activity;
         if (!Array.isArray(activity) || activity.length === 0)
             return;
         for (const item of activity) {
-            const normalized = this.normalizeAlchemyActivity(item);
+            const normalized = this.normalizeAlchemyActivity(item, chain);
             if (!normalized)
                 continue;
             await this.processEvent(normalized);
         }
     }
-    normalizeAlchemyActivity(item) {
+    normalizeAlchemyActivity(item, chain) {
+        if (!chain)
+            return null;
+        const family = this.config.chainFamily(chain);
         const hash = item.hash;
         const from = (item.fromAddress || '').toLowerCase();
         const to = (item.toAddress || '').toLowerCase();
@@ -71,14 +89,15 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         else {
             return null;
         }
-        const isToOurs = this.depositRegistry.has(to, 'EVM');
-        const isFromOurs = this.depositRegistry.has(from, 'EVM');
+        const isToOurs = this.depositRegistry.has(to, chain);
+        const isFromOurs = this.depositRegistry.has(from, chain);
         const log = item.log;
         const removed = log?.removed === true;
         if (removed) {
             return {
                 provider: 'alchemy',
-                chain: 'EVM',
+                chain,
+                family,
                 direction: 'INBOUND',
                 txHash: hash,
                 fromAddress: from,
@@ -93,7 +112,8 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         if (isToOurs) {
             return {
                 provider: 'alchemy',
-                chain: 'EVM',
+                chain,
+                family,
                 direction: 'INBOUND',
                 txHash: hash,
                 fromAddress: from,
@@ -107,7 +127,8 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         if (isFromOurs) {
             return {
                 provider: 'alchemy',
-                chain: 'EVM',
+                chain,
+                family,
                 direction: 'OUTBOUND',
                 txHash: hash,
                 fromAddress: from,
@@ -121,7 +142,7 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         return null;
     }
     async processBtcEvent(event) {
-        await this.processEvent(event);
+        await this.processEvent({ ...event, family: 'BTC' });
     }
     async processEvent(event) {
         if (event.direction === 'INBOUND') {
@@ -142,7 +163,9 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         if (existing)
             return;
         const chain = event.chain;
-        const address = chain === 'EVM' ? event.toAddress.toLowerCase() : event.toAddress;
+        const address = this.config.isEvmChain(chain)
+            ? event.toAddress.toLowerCase()
+            : event.toAddress;
         const registrations = this.depositRegistry.lookup(address, chain);
         if (registrations.length === 0)
             return;
@@ -152,14 +175,15 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
             });
             if (!wallet || wallet.currency !== event.asset)
                 continue;
-            const requiredConfirmations = event.chain === 'EVM'
-                ? this.config.evmConfirmations
-                : this.config.btcConfirmations;
+            if (!this.walletOnChain(wallet.chain, chain))
+                continue;
+            const requiredConfirmations = this.config.confirmationsFor(chain);
             const canCreditImmediately = event.blockNumber > 0;
             const status = canCreditImmediately ? 'COMPLETED' : 'PENDING';
             const metadata = {
                 source: event.provider === 'alchemy' ? 'ALCHEMY_WEBHOOK' : 'BTC_WEBSOCKET',
-                listener: event.provider === 'alchemy' ? 'EVM_WEBHOOK' : 'BTC_WEBSOCKET',
+                listener: this.sourceListenerLabel(event),
+                chain,
                 blockTxId: event.txHash,
                 asset: event.asset,
                 address,
@@ -222,11 +246,29 @@ let WebhookProcessorService = WebhookProcessorService_1 = class WebhookProcessor
         });
         if (!job || job.status !== 'PENDING')
             return;
-        const required = event.chain === 'EVM'
-            ? this.config.evmConfirmations
-            : this.config.btcConfirmations;
+        const required = this.config.confirmationsFor(event.chain);
         await this.tracker.confirmFromWebhook(event.txHash, required);
         this.logger.log(`Withdrawal confirmed via webhook: ${event.txHash} (${event.amount} ${event.asset})`);
+    }
+    sourceListenerLabel(event) {
+        switch (event.provider) {
+            case 'btc_websocket':
+                return 'BTC_WEBSOCKET';
+            case 'tron_poller':
+                return 'TRON_POLLER';
+            case 'alchemy':
+                return this.config.isEvmChain(event.chain)
+                    ? `${event.chain}_WEBHOOK`
+                    : 'SOLANA_WEBHOOK';
+        }
+    }
+    walletOnChain(walletChain, eventChain) {
+        if (!walletChain)
+            return false;
+        if (this.config.isEvmChain(eventChain)) {
+            return walletChain === eventChain || walletChain === 'EVM';
+        }
+        return walletChain === eventChain;
     }
 };
 exports.WebhookProcessorService = WebhookProcessorService;

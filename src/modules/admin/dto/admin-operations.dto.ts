@@ -50,6 +50,14 @@ export class SweepFeeWalletDto {
   @IsNumber()
   @Min(0)
   amount?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Chain of the fee wallet to sweep (ETH/BSC/POLYGON/SOLANA/TRON). Defaults to the currency primary chain.',
+  })
+  @IsOptional()
+  @IsString()
+  chain?: string;
 }
 
 export class CreditTestFundsDto {

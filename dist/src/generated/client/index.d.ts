@@ -30930,6 +30930,7 @@ export namespace Prisma {
     txHash: string | null
     walletId: string | null
     currency: $Enums.Currency | null
+    chain: string | null
     amount: Decimal | null
     destination: string | null
     status: string | null
@@ -30944,6 +30945,7 @@ export namespace Prisma {
     txHash: string | null
     walletId: string | null
     currency: $Enums.Currency | null
+    chain: string | null
     amount: Decimal | null
     destination: string | null
     status: string | null
@@ -30958,6 +30960,7 @@ export namespace Prisma {
     txHash: number
     walletId: number
     currency: number
+    chain: number
     amount: number
     destination: number
     status: number
@@ -30985,6 +30988,7 @@ export namespace Prisma {
     txHash?: true
     walletId?: true
     currency?: true
+    chain?: true
     amount?: true
     destination?: true
     status?: true
@@ -30999,6 +31003,7 @@ export namespace Prisma {
     txHash?: true
     walletId?: true
     currency?: true
+    chain?: true
     amount?: true
     destination?: true
     status?: true
@@ -31013,6 +31018,7 @@ export namespace Prisma {
     txHash?: true
     walletId?: true
     currency?: true
+    chain?: true
     amount?: true
     destination?: true
     status?: true
@@ -31115,6 +31121,7 @@ export namespace Prisma {
     txHash: string
     walletId: string
     currency: $Enums.Currency
+    chain: string | null
     amount: Decimal
     destination: string
     status: string
@@ -31149,6 +31156,7 @@ export namespace Prisma {
     txHash?: boolean
     walletId?: boolean
     currency?: boolean
+    chain?: boolean
     amount?: boolean
     destination?: boolean
     status?: boolean
@@ -31165,6 +31173,7 @@ export namespace Prisma {
     txHash?: boolean
     walletId?: boolean
     currency?: boolean
+    chain?: boolean
     amount?: boolean
     destination?: boolean
     status?: boolean
@@ -31181,6 +31190,7 @@ export namespace Prisma {
     txHash?: boolean
     walletId?: boolean
     currency?: boolean
+    chain?: boolean
     amount?: boolean
     destination?: boolean
     status?: boolean
@@ -31208,6 +31218,7 @@ export namespace Prisma {
       txHash: string
       walletId: string
       currency: $Enums.Currency
+      chain: string | null
       amount: Prisma.Decimal
       destination: string
       status: string
@@ -31614,6 +31625,7 @@ export namespace Prisma {
     readonly txHash: FieldRef<"WithdrawalJob", 'String'>
     readonly walletId: FieldRef<"WithdrawalJob", 'String'>
     readonly currency: FieldRef<"WithdrawalJob", 'Currency'>
+    readonly chain: FieldRef<"WithdrawalJob", 'String'>
     readonly amount: FieldRef<"WithdrawalJob", 'Decimal'>
     readonly destination: FieldRef<"WithdrawalJob", 'String'>
     readonly status: FieldRef<"WithdrawalJob", 'String'>
@@ -34502,6 +34514,7 @@ export namespace Prisma {
     txHash: 'txHash',
     walletId: 'walletId',
     currency: 'currency',
+    chain: 'chain',
     amount: 'amount',
     destination: 'destination',
     status: 'status',
@@ -35247,7 +35260,7 @@ export namespace Prisma {
 
   export type WalletWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    userId_currency?: WalletUserIdCurrencyCompoundUniqueInput
+    userId_currency_chain?: WalletUserIdCurrencyChainCompoundUniqueInput
     AND?: WalletWhereInput | WalletWhereInput[]
     OR?: WalletWhereInput[]
     NOT?: WalletWhereInput | WalletWhereInput[]
@@ -35266,7 +35279,7 @@ export namespace Prisma {
     transactions?: WalletTransactionListRelationFilter
     snapshots?: BalanceSnapshotListRelationFilter
     withdrawalJobs?: WithdrawalJobListRelationFilter
-  }, "id" | "userId_currency">
+  }, "id" | "userId_currency_chain">
 
   export type WalletOrderByWithAggregationInput = {
     id?: SortOrder
@@ -37140,6 +37153,7 @@ export namespace Prisma {
     txHash?: StringFilter<"WithdrawalJob"> | string
     walletId?: UuidFilter<"WithdrawalJob"> | string
     currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    chain?: StringNullableFilter<"WithdrawalJob"> | string | null
     amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
     destination?: StringFilter<"WithdrawalJob"> | string
     status?: StringFilter<"WithdrawalJob"> | string
@@ -37156,6 +37170,7 @@ export namespace Prisma {
     txHash?: SortOrder
     walletId?: SortOrder
     currency?: SortOrder
+    chain?: SortOrderInput | SortOrder
     amount?: SortOrder
     destination?: SortOrder
     status?: SortOrder
@@ -37175,6 +37190,7 @@ export namespace Prisma {
     NOT?: WithdrawalJobWhereInput | WithdrawalJobWhereInput[]
     walletId?: UuidFilter<"WithdrawalJob"> | string
     currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    chain?: StringNullableFilter<"WithdrawalJob"> | string | null
     amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
     destination?: StringFilter<"WithdrawalJob"> | string
     status?: StringFilter<"WithdrawalJob"> | string
@@ -37191,6 +37207,7 @@ export namespace Prisma {
     txHash?: SortOrder
     walletId?: SortOrder
     currency?: SortOrder
+    chain?: SortOrderInput | SortOrder
     amount?: SortOrder
     destination?: SortOrder
     status?: SortOrder
@@ -37214,6 +37231,7 @@ export namespace Prisma {
     txHash?: StringWithAggregatesFilter<"WithdrawalJob"> | string
     walletId?: UuidWithAggregatesFilter<"WithdrawalJob"> | string
     currency?: EnumCurrencyWithAggregatesFilter<"WithdrawalJob"> | $Enums.Currency
+    chain?: StringNullableWithAggregatesFilter<"WithdrawalJob"> | string | null
     amount?: DecimalWithAggregatesFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
     destination?: StringWithAggregatesFilter<"WithdrawalJob"> | string
     status?: StringWithAggregatesFilter<"WithdrawalJob"> | string
@@ -39949,6 +39967,7 @@ export namespace Prisma {
     id?: string
     txHash: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -39965,6 +39984,7 @@ export namespace Prisma {
     txHash: string
     walletId: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -39979,6 +39999,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     txHash?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -39995,6 +40016,7 @@ export namespace Prisma {
     txHash?: StringFieldUpdateOperationsInput | string
     walletId?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -40010,6 +40032,7 @@ export namespace Prisma {
     txHash: string
     walletId: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -40024,6 +40047,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     txHash?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -40039,6 +40063,7 @@ export namespace Prisma {
     txHash?: StringFieldUpdateOperationsInput | string
     walletId?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -40879,9 +40904,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type WalletUserIdCurrencyCompoundUniqueInput = {
+  export type WalletUserIdCurrencyChainCompoundUniqueInput = {
     userId: string
     currency: $Enums.Currency
+    chain: string
   }
 
   export type WalletCountOrderByAggregateInput = {
@@ -42254,6 +42280,7 @@ export namespace Prisma {
     txHash?: SortOrder
     walletId?: SortOrder
     currency?: SortOrder
+    chain?: SortOrder
     amount?: SortOrder
     destination?: SortOrder
     status?: SortOrder
@@ -42274,6 +42301,7 @@ export namespace Prisma {
     txHash?: SortOrder
     walletId?: SortOrder
     currency?: SortOrder
+    chain?: SortOrder
     amount?: SortOrder
     destination?: SortOrder
     status?: SortOrder
@@ -42288,6 +42316,7 @@ export namespace Prisma {
     txHash?: SortOrder
     walletId?: SortOrder
     currency?: SortOrder
+    chain?: SortOrder
     amount?: SortOrder
     destination?: SortOrder
     status?: SortOrder
@@ -46730,6 +46759,7 @@ export namespace Prisma {
     id?: string
     txHash: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -46744,6 +46774,7 @@ export namespace Prisma {
     id?: string
     txHash: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -46981,6 +47012,7 @@ export namespace Prisma {
     txHash?: StringFilter<"WithdrawalJob"> | string
     walletId?: UuidFilter<"WithdrawalJob"> | string
     currency?: EnumCurrencyFilter<"WithdrawalJob"> | $Enums.Currency
+    chain?: StringNullableFilter<"WithdrawalJob"> | string | null
     amount?: DecimalFilter<"WithdrawalJob"> | Decimal | DecimalJsLike | number | string
     destination?: StringFilter<"WithdrawalJob"> | string
     status?: StringFilter<"WithdrawalJob"> | string
@@ -52683,6 +52715,7 @@ export namespace Prisma {
     id?: string
     txHash: string
     currency: $Enums.Currency
+    chain?: string | null
     amount: Decimal | DecimalJsLike | number | string
     destination: string
     status?: string
@@ -52795,6 +52828,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     txHash?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -52809,6 +52843,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     txHash?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -52823,6 +52858,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     txHash?: StringFieldUpdateOperationsInput | string
     currency?: EnumCurrencyFieldUpdateOperationsInput | $Enums.Currency
+    chain?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     destination?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string

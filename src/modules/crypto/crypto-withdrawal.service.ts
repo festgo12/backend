@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { getAddress } from 'ethers';
+import * as bs58 from 'bs58';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CryptoConfigService } from './crypto-config.service';
@@ -55,7 +56,13 @@ export class CryptoWithdrawalService {
     // 1. Validate wallet exists
     const wallet = await this.prisma.wallet.findUnique({
       where: { id: walletId },
-      select: { id: true, isFrozen: true, currency: true },
+      select: {
+        id: true,
+        isFrozen: true,
+        currency: true,
+        chain: true,
+        address: true,
+      },
     });
     if (!wallet) throw new BadRequestException('Wallet not found');
 
@@ -66,13 +73,20 @@ export class CryptoWithdrawalService {
       );
     }
 
+    // Legacy 'EVM' family wallets share a single 0x address but predate
+    // per-chain wallets. Normalize to the canonical EVM chain (Ethereum) so
+    // the ENTIRE flow (validation, broadcast, confirmation tracker) uses a
+    // concrete, provider-resolvable chain.
+    const rawChain = (wallet.chain as string) || 'ETH';
+    const chain = rawChain === 'EVM' ? 'ETH' : rawChain;
+
     // 2. Validate chain and destination BEFORE reserving funds to avoid locking
     if (!wallet.currency || !this.hdWallet.chainForCurrency(wallet.currency)) {
       throw new BadRequestException(
         'Wallet has no on-chain address yet. Please request a deposit address first.',
       );
     }
-    this.validateAddress(currency, destinationAddress);
+    this.validateAddress(currency, chain, destinationAddress);
 
     // 3. Atomically reserve funds — prevents double-spend on concurrent requests
     const amountDecimal = new Prisma.Decimal(amount);
@@ -97,7 +111,7 @@ export class CryptoWithdrawalService {
         reference: `intent-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         metadata: {
           destination: destinationAddress,
-          blockchain: this.hdWallet.chainForCurrency(currency),
+          blockchain: chain,
           provider: 'alchemy',
           intent: true,
         },
@@ -110,37 +124,18 @@ export class CryptoWithdrawalService {
     // 5. Broadcast with the wallet's own derived key
     let txHash: string;
     try {
-      if (currency === Currency.BTC) {
-        const feePerByte = await this.chainClient.getBtcRecommendedFee();
-        txHash = await this.chainClient.broadcastBtc(
-          fromIndex,
-          destinationAddress,
-          amount,
-          feePerByte,
-        );
-      } else if (currency === Currency.ETH) {
-        txHash = await this.chainClient.broadcastEvmNative(
-          fromIndex,
-          destinationAddress,
-          amount,
-        );
-      } else if (currency === Currency.USDT || currency === Currency.USDC) {
-        txHash = await this.chainClient.broadcastEvmToken(
-          currency,
-          fromIndex,
-          destinationAddress,
-          amount,
-        );
-      } else {
-        throw new BadRequestException(
-          `Withdrawals not supported for ${currency}`,
-        );
-      }
+      txHash = await this.broadcastByChain(
+        currency,
+        chain,
+        fromIndex,
+        destinationAddress,
+        amount,
+      );
     } catch (error) {
       const err = error as ErrorLike;
       const message = err.response?.data?.message || err.message;
       this.logger.error(
-        `Blockchain submission failed for ${currency}: ${message}`,
+        `Blockchain submission failed for ${currency}/${chain}: ${message}`,
       );
 
       // Release reservation on broadcast failure
@@ -164,7 +159,7 @@ export class CryptoWithdrawalService {
         reference: txHash,
         metadata: {
           destination: destinationAddress,
-          blockchain: this.hdWallet.chainForCurrency(currency),
+          blockchain: chain,
           provider: 'alchemy',
           initiatedAt: new Date().toISOString(),
         },
@@ -175,6 +170,7 @@ export class CryptoWithdrawalService {
       txHash,
       walletId,
       currency,
+      chain,
       amount,
       destination: destinationAddress,
       metadata: { source: 'USER_WITHDRAWAL' },
@@ -238,12 +234,19 @@ export class CryptoWithdrawalService {
     currency: Currency;
     destinationAddress: string;
     amount?: number;
+    chain?: string;
   }): Promise<{ txId: string; status: string }> {
-    const { currency, destinationAddress, amount: requestedAmount } = params;
+    const {
+      currency,
+      destinationAddress,
+      amount: requestedAmount,
+      chain: requestedChain,
+    } = params;
 
-    this.validateAddress(currency, destinationAddress);
-
-    const feeWallet = await this.platformService.getPlatformFeeWallet(currency);
+    const feeWallet = await this.platformService.getPlatformFeeWallet(
+      currency,
+      requestedChain,
+    );
     if (!feeWallet) {
       throw new BadRequestException(`Fee wallet not found for ${currency}`);
     }
@@ -253,17 +256,31 @@ export class CryptoWithdrawalService {
       );
     }
 
+    // The fee wallet's stored chain determines which network the sweep runs on.
+    // Legacy 'EVM' rows normalize to the canonical EVM chain (Ethereum).
+    const rawChain = requestedChain || (feeWallet.chain as string) || 'ETH';
+    const chain = rawChain === 'EVM' ? 'ETH' : rawChain;
+    this.validateAddress(currency, chain, destinationAddress);
+
     // Guard against self-sweeps: the platform fee wallet lives on the master
     // address (index 0), so it can never be a valid sweep destination.
-    const masterAddress = this.hdWallet.getMasterAddress(
-      currency === Currency.BTC ? 'BTC' : 'EVM',
-    );
+    const evmFamily = this.cryptoConfig.isEvmChain(chain);
+    const masterAddress = this.cryptoConfig.isEvmChain(chain)
+      ? this.hdWallet.getMasterAddress('EVM')
+      : chain === 'BTC'
+        ? this.hdWallet.getMasterAddress('BTC')
+        : this.hdWallet.getMasterAddressForChain(chain);
     const dest = destinationAddress.trim();
-    const sameAddress =
-      currency === Currency.BTC
-        ? masterAddress === dest
-        : masterAddress.toLowerCase() === dest.toLowerCase();
-    if (sameAddress || feeWallet.address.toLowerCase() === dest.toLowerCase()) {
+    const sameMaster =
+      evmFamily || chain === 'TRON'
+        ? masterAddress.toLowerCase() === dest.toLowerCase()
+        : masterAddress === dest;
+    if (
+      sameMaster ||
+      (evmFamily || chain === 'TRON'
+        ? feeWallet.address.toLowerCase() === dest.toLowerCase()
+        : feeWallet.address === dest)
+    ) {
       throw new BadRequestException(
         `Destination cannot be the platform address itself for ${currency}`,
       );
@@ -274,18 +291,7 @@ export class CryptoWithdrawalService {
       // Legacy fee wallet (pre-HD address, no derivation index): reassign the
       // platform's pinned master address (index 0) so the sweep can be signed
       // from a derived key. Deterministic across DB resets.
-      const info =
-        currency === Currency.BTC
-          ? {
-              address: this.hdWallet.getMasterAddress('BTC'),
-              derivationIndex: 0,
-              chain: 'BTC' as const,
-            }
-          : {
-              address: this.hdWallet.getMasterAddress('EVM'),
-              derivationIndex: 0,
-              chain: 'EVM' as const,
-            };
+      const info = this.platformFeeAddress(chain);
       await this.prisma.wallet.update({
         where: { id: feeWallet.id },
         data: {
@@ -303,15 +309,7 @@ export class CryptoWithdrawalService {
       amount = requestedAmount;
     } else {
       // Sweep full on-chain balance
-      if (currency === Currency.BTC) {
-        const utxos = await this.chainClient.getBtcUtxos(feeWallet.address);
-        amount = utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
-      } else {
-        amount = await this.chainClient.getEvmBalance(
-          feeWallet.address,
-          currency,
-        );
-      }
+      amount = await this.onChainBalance(currency, chain, feeWallet.address);
       if (amount <= 0) {
         throw new BadRequestException(
           `No on-chain balance available for ${currency} sweep`,
@@ -321,36 +319,19 @@ export class CryptoWithdrawalService {
 
     let txHash: string;
     try {
-      if (currency === Currency.BTC) {
-        const feePerByte = await this.chainClient.getBtcRecommendedFee();
-        txHash = await this.chainClient.broadcastBtc(
-          fromIndex,
-          destinationAddress,
-          amount,
-          feePerByte,
-        );
-      } else if (currency === Currency.ETH) {
-        txHash = await this.chainClient.broadcastEvmNative(
-          fromIndex,
-          destinationAddress,
-          amount,
-        );
-      } else if (currency === Currency.USDT || currency === Currency.USDC) {
-        txHash = await this.chainClient.broadcastEvmToken(
-          currency,
-          fromIndex,
-          destinationAddress,
-          amount,
-        );
-      } else {
-        throw new BadRequestException(
-          `Withdrawals not supported for ${currency}`,
-        );
-      }
+      txHash = await this.broadcastByChain(
+        currency,
+        chain,
+        fromIndex,
+        destinationAddress,
+        amount,
+      );
     } catch (error) {
       const err = error as ErrorLike;
       const message = err.response?.data?.message || err.message;
-      this.logger.error(`Fee sweep failed for ${currency}: ${message}`);
+      this.logger.error(
+        `Fee sweep failed for ${currency}/${chain}: ${message}`,
+      );
       throw new InternalServerErrorException(`Fee sweep failed: ${message}`);
     }
 
@@ -363,7 +344,7 @@ export class CryptoWithdrawalService {
         reference: txHash,
         metadata: {
           destination: destinationAddress,
-          blockchain: this.hdWallet.chainForCurrency(currency),
+          blockchain: chain,
           provider: 'alchemy',
           sweep: true,
           feeWallet: true,
@@ -376,63 +357,187 @@ export class CryptoWithdrawalService {
       txHash,
       walletId: feeWallet.id,
       currency,
+      chain,
       amount,
       destination: destinationAddress,
       metadata: { source: 'FEE_WALLET_SWEEP' },
     });
 
     this.logger.log(
-      `Fee wallet sweep submitted: ${amount} ${currency} -> ${destinationAddress} (TX: ${txHash})`,
+      `Fee wallet sweep submitted: ${amount} ${currency}/${chain} -> ${destinationAddress} (TX: ${txHash})`,
     );
     return { txId: txHash, status: 'PENDING' };
   }
 
-  private validateAddress(currency: Currency, address: string) {
+  private validateAddress(
+    currency: Currency,
+    chain: string,
+    address: string,
+  ) {
     if (!address || typeof address !== 'string') {
       throw new BadRequestException('Invalid destination address');
     }
 
     const trimmed = address.trim();
 
-    switch (currency) {
-      case Currency.BTC:
-        if (this.cryptoConfig.isTestnet) {
-          if (
-            !(
-              /^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
-              /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
-              /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(trimmed)
-            )
-          ) {
-            throw new BadRequestException('Invalid Bitcoin address format');
-          }
-        } else if (
-          !/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(
-            trimmed,
+    if (currency === Currency.BTC) {
+      if (this.cryptoConfig.isTestnet) {
+        if (
+          !(
+            /^(?:m|n)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+            /^2[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(trimmed) ||
+            /^tb1[a-zA-HJ-NP-Z0-9]{25,90}$/.test(trimmed)
           )
         ) {
           throw new BadRequestException('Invalid Bitcoin address format');
         }
-        break;
-      case Currency.ETH:
-      case Currency.USDT:
-      case Currency.USDC:
-        if (!/^0x[0-9a-fA-F]{40}$/.test(trimmed)) {
-          throw new BadRequestException('Invalid Ethereum address format');
-        }
-        try {
-          // EIP-55 checksum validation — rejects mistyped addresses
-          getAddress(trimmed);
-        } catch {
-          throw new BadRequestException(
-            'Invalid Ethereum address checksum (EIP-55). Use a properly checksummed address.',
-          );
-        }
-        break;
-      default:
-        throw new BadRequestException(
-          `Unsupported withdrawal currency: ${currency}`,
-        );
+      } else if (
+        !/^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{25,90})$/.test(
+          trimmed,
+        )
+      ) {
+        throw new BadRequestException('Invalid Bitcoin address format');
+      }
+      return;
     }
+
+    if (chain === 'SOLANA') {
+      this.validateSolanaAddress(trimmed);
+      return;
+    }
+
+    if (chain === 'TRON') {
+      this.validateTronAddress(trimmed);
+      return;
+    }
+
+    // EVM-family chains (ETH/BSC/POLYGON) use the 0x checksum format.
+    if (!/^0x[0-9a-fA-F]{40}$/.test(trimmed)) {
+      throw new BadRequestException('Invalid Ethereum address format');
+    }
+    try {
+      // EIP-55 checksum validation — rejects mistyped addresses
+      getAddress(trimmed);
+    } catch {
+      throw new BadRequestException(
+        'Invalid Ethereum address checksum (EIP-55). Use a properly checksummed address.',
+      );
+    }
+  }
+
+  /** Validates a Solana Base58 public key (32-byte payload). */
+  private validateSolanaAddress(address: string) {
+    if (address.length < 32 || address.length > 44) {
+      throw new BadRequestException('Invalid Solana address length');
+    }
+    try {
+      const decoded = bs58.decode(address);
+      if (decoded.length !== 32) {
+        throw new BadRequestException('Invalid Solana address length');
+      }
+    } catch {
+      throw new BadRequestException('Invalid Solana address format');
+    }
+  }
+
+  /** Validates a TRON base58check address starting with 'T' (0x41 prefix). */
+  private validateTronAddress(address: string) {
+    if (!/^T[a-zA-HJ-NP-Z0-9]{33}$/.test(address)) {
+      throw new BadRequestException('Invalid TRON address format');
+    }
+  }
+
+  /** Broadcasts a withdrawal/sweep on the correct chain for the parameters. */
+  private async broadcastByChain(
+    currency: Currency,
+    chain: string,
+    fromIndex: number,
+    to: string,
+    amount: number,
+  ): Promise<string> {
+    // Legacy 'EVM' family rows share a single 0x address and were created
+    // before per-chain wallets existed; route them to the canonical EVM chain
+    // (Ethereum) so the RPC provider / signer can be resolved concretely.
+    if (chain === 'EVM') chain = 'ETH';
+
+    if (chain === 'BTC') {
+      const feePerByte = await this.chainClient.getBtcRecommendedFee();
+      return this.chainClient.broadcastBtc(fromIndex, to, amount, feePerByte);
+    }
+    if (this.cryptoConfig.isEvmChain(chain)) {
+      if (currency === Currency.ETH) {
+        return this.chainClient.broadcastEvmNative(fromIndex, to, amount, chain);
+      }
+      if (currency === Currency.USDT || currency === Currency.USDC) {
+        return this.chainClient.broadcastEvmToken(currency, fromIndex, to, amount, chain);
+      }
+      throw new BadRequestException(
+        `Withdrawals not supported for ${currency} on ${chain}`,
+      );
+    }
+    if (chain === 'SOLANA') {
+      if (currency === Currency.USDT || currency === Currency.USDC) {
+        return this.chainClient.broadcastSolanaToken(currency, fromIndex, to, amount);
+      }
+      throw new BadRequestException(
+        `Withdrawals not supported for ${currency} on SOLANA`,
+      );
+    }
+    if (chain === 'TRON') {
+      if (currency === Currency.USDT || currency === Currency.USDC) {
+        return this.chainClient.broadcastTronToken(currency, fromIndex, to, amount);
+      }
+      throw new BadRequestException(
+        `Withdrawals not supported for ${currency} on TRON`,
+      );
+    }
+    throw new BadRequestException(
+      `Withdrawals not supported for ${currency} on ${chain}`,
+    );
+  }
+
+  /** Reads the on-chain balance of a fee wallet for a (currency, chain). */
+  private async onChainBalance(
+    currency: Currency,
+    chain: string,
+    address: string,
+  ): Promise<number> {
+    if (chain === 'BTC') {
+      const utxos = await this.chainClient.getBtcUtxos(address);
+      return utxos.reduce((sum, u) => sum + u.value, 0) / 1e8;
+    }
+    if (this.cryptoConfig.isEvmChain(chain)) {
+      if (currency === Currency.ETH) return 0;
+      return this.chainClient.getEvmBalance(address, currency, chain);
+    }
+    if (chain === 'SOLANA') {
+      const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
+      if (!mint) return 0;
+      return this.chainClient.getSolanaTokenBalance(mint, address);
+    }
+    if (chain === 'TRON') {
+      const contract = this.cryptoConfig.getStablecoinContractFor('TRON', currency);
+      if (!contract) return 0;
+      return this.chainClient.getTronTokenBalance(contract, address);
+    }
+    return 0;
+  }
+
+  /** Pinned master (index 0) address details for a chain (legacy reassignment). */
+  private platformFeeAddress(chain: string): {
+    chain: string;
+    address: string;
+    derivationIndex: number;
+  } {
+    if (chain === 'BTC') {
+      return { chain: 'BTC', address: this.hdWallet.getMasterAddress('BTC'), derivationIndex: 0 };
+    }
+    if (chain === 'SOLANA') {
+      return { chain: 'SOLANA', address: this.hdWallet.getMasterAddressForChain('SOLANA'), derivationIndex: 0 };
+    }
+    if (chain === 'TRON') {
+      return { chain: 'TRON', address: this.hdWallet.getMasterAddressForChain('TRON'), derivationIndex: 0 };
+    }
+    return { chain, address: this.hdWallet.getMasterAddress('EVM'), derivationIndex: 0 };
   }
 }

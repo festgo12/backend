@@ -18,6 +18,7 @@ describe('OrdersService', () => {
       updateMany: jest.fn(),
     },
     wallet: {
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       updateMany: jest.fn(),
     },
@@ -134,7 +135,7 @@ describe('OrdersService', () => {
 
     it('should throw BadRequestException if fiat payer has insufficient balance', async () => {
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce({ ...mockBuyerWallet, balance: new Decimal('1000') }) // fiat payer NGN
         .mockResolvedValueOnce(mockSellerWallet); // cryptoSeller USDT
 
@@ -143,7 +144,7 @@ describe('OrdersService', () => {
 
     it('should throw BadRequestException if cryptoSeller has insufficient crypto balance', async () => {
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(mockBuyerWallet)
         .mockResolvedValueOnce({ ...mockSellerWallet, balance: new Decimal('5') });
 
@@ -152,7 +153,7 @@ describe('OrdersService', () => {
 
     it('should throw InternalServerErrorException if optimistic lock fails during reserving fiat', async () => {
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd());
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(mockBuyerWallet)
         .mockResolvedValueOnce(mockSellerWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 0 }); // conflict
@@ -162,7 +163,7 @@ describe('OrdersService', () => {
 
     it('should successfully create SELL order and reserve fiat from responder (buyer)', async () => {
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd(AdType.SELL));
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(mockBuyerWallet)
         .mockResolvedValueOnce(mockSellerWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
@@ -219,7 +220,7 @@ describe('OrdersService', () => {
         reservedBalance: new Decimal('0'),
         version: 1,
       };
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(sellerNgnWallet) // fiat payer = ad owner
         .mockResolvedValueOnce(responderCryptoWallet); // cryptoSeller = responder
 
@@ -355,13 +356,14 @@ describe('OrdersService', () => {
       // 2. crypto buyer crypto (responder)
       // 3. fiat payer NGN (responder)
       // 4. fiat receiver NGN (ad owner)
-      // 5. platform fee wallet (ledger home for buyer fee)
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(mockSellerCryptoWallet)
         .mockResolvedValueOnce(mockBuyerCryptoWallet)
         .mockResolvedValueOnce(mockBuyerFiatWallet)
-        .mockResolvedValueOnce(mockSellerFiatWallet)
-        .mockResolvedValueOnce(mockFeeWallet);
+        .mockResolvedValueOnce(mockSellerFiatWallet);
+
+      // 5. platform fee wallet resolved by primary key (id lookup)
+      mockTransactionClient.wallet.findUnique.mockResolvedValue(mockFeeWallet);
 
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
@@ -463,7 +465,7 @@ describe('OrdersService', () => {
       // 3. fiat payer = ad owner NGN
       // 4. fiat receiver = responder NGN
       // 5. platform fee wallet
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(responderCryptoWallet)
         .mockResolvedValueOnce(adOwnerCryptoWallet)
         .mockResolvedValueOnce(adOwnerNgnWallet)
@@ -533,12 +535,20 @@ describe('OrdersService', () => {
         version: 1,
       });
 
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(mockSellerCryptoWallet)
         .mockResolvedValueOnce(mockBuyerCryptoWallet)
         .mockResolvedValueOnce(mockBuyerFiatWallet)
-        .mockResolvedValueOnce(mockSellerFiatWallet)
-        .mockResolvedValueOnce({ id: 'platform-fee-wallet-uuid', address: null, balance: new Decimal('0'), reservedBalance: new Decimal('0'), version: 1 });
+        .mockResolvedValueOnce(mockSellerFiatWallet);
+
+      // Fee wallet row resolved by primary key via findUnique (id lookup).
+      mockTransactionClient.wallet.findUnique.mockResolvedValue({
+        id: 'platform-fee-wallet-uuid',
+        address: null,
+        balance: new Decimal('0'),
+        reservedBalance: new Decimal('0'),
+        version: 1,
+      });
 
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.ad.findUnique.mockResolvedValue(mockAd);
@@ -585,7 +595,7 @@ describe('OrdersService', () => {
       };
 
       mockTransactionClient.order.findUnique.mockResolvedValue(order);
-      mockTransactionClient.wallet.findUnique.mockResolvedValue(buyerFiatWallet);
+      mockTransactionClient.wallet.findFirst.mockResolvedValue(buyerFiatWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.order.update.mockResolvedValue({
         ...order,
@@ -625,7 +635,7 @@ describe('OrdersService', () => {
       };
 
       mockTransactionClient.order.findUnique.mockResolvedValue(order);
-      mockTransactionClient.wallet.findUnique.mockResolvedValue(adOwnerNgnWallet);
+      mockTransactionClient.wallet.findFirst.mockResolvedValue(adOwnerNgnWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.order.update.mockResolvedValue({
         ...order,
@@ -635,8 +645,8 @@ describe('OrdersService', () => {
       await service.declineOrder('order-uuid', 'seller-uuid');
 
       // BUY ad: fiat payer is the ad owner (sellerId)
-      expect(mockTransactionClient.wallet.findUnique).toHaveBeenCalledWith({
-        where: { userId_currency: { userId: 'seller-uuid', currency: Currency.NGN } },
+      expect(mockTransactionClient.wallet.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'seller-uuid', currency: Currency.NGN, chain: null },
       });
       expect(mockTransactionClient.wallet.updateMany).toHaveBeenCalledWith({
         where: { id: adOwnerNgnWallet.id, version: adOwnerNgnWallet.version },
@@ -667,7 +677,7 @@ describe('OrdersService', () => {
       };
 
       mockTransactionClient.order.findUnique.mockResolvedValue(order);
-      mockTransactionClient.wallet.findUnique.mockResolvedValue(buyerFiatWallet);
+      mockTransactionClient.wallet.findFirst.mockResolvedValue(buyerFiatWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.order.update.mockResolvedValue({
         ...order,
@@ -716,7 +726,7 @@ describe('OrdersService', () => {
     it('should refund the fiat payer and cancel order when state is PENDING_SELLER', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderPending);
       mockTransactionClient.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
-      mockTransactionClient.wallet.findUnique.mockResolvedValueOnce(buyerFiatWallet);
+      mockTransactionClient.wallet.findFirst.mockResolvedValueOnce(buyerFiatWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });
       mockTransactionClient.order.update.mockResolvedValue({
         ...orderPending,
@@ -743,7 +753,7 @@ describe('OrdersService', () => {
     it('should refund fiat payer and refund cryptoSeller locked crypto when state is APPROVED', async () => {
       mockTransactionClient.order.findUnique.mockResolvedValue(orderApproved);
       mockTransactionClient.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
-      mockTransactionClient.wallet.findUnique
+      mockTransactionClient.wallet.findFirst
         .mockResolvedValueOnce(buyerFiatWallet)
         .mockResolvedValueOnce(sellerCryptoWallet);
       mockTransactionClient.wallet.updateMany.mockResolvedValue({ count: 1 });

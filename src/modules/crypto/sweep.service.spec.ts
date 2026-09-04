@@ -40,6 +40,9 @@ describe('SweepService', () => {
 
   const mockConfig = {
     depositSweepThreshold: 10,
+    supportedChains: ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'],
+    isEvmChain: (chain: string) =>
+      chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON',
   };
 
   const mockHdWallet = {
@@ -83,10 +86,10 @@ describe('SweepService', () => {
   it('skips the platform master wallet (index 0) during an EVM sweep', async () => {
     // The master address is registered as a deposit address by the fee wallet.
     mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
-      chain === 'EVM' ? ['0xMaster'] : [],
+      chain === 'ETH' ? ['0xMaster'] : [],
     );
     mockDepositRegistry.lookup.mockReturnValue([
-      { chain: 'EVM', walletId: 'fee-wallet' },
+      { chain: 'ETH', walletId: 'fee-wallet' },
     ]);
     mockPrisma.wallet.findUnique.mockResolvedValue({
       id: 'fee-wallet',
@@ -99,9 +102,29 @@ describe('SweepService', () => {
     expect(summary).toEqual({
       evmSwept: 0,
       btcSwept: 0,
+      solSwept: 0,
+      tronSwept: 0,
       evmSkipped: 1,
       btcSkipped: 0,
+      solSkipped: 0,
+      tronSkipped: 0,
       errors: [],
+      sweptByChain: {
+        ETH: 0,
+        BSC: 0,
+        POLYGON: 0,
+        SOLANA: 0,
+        TRON: 0,
+        BTC: 0,
+      },
+      skippedByChain: {
+        ETH: 1,
+        BSC: 0,
+        POLYGON: 0,
+        SOLANA: 0,
+        TRON: 0,
+        BTC: 0,
+      },
     });
     expect(chainClient.broadcastEvmToken).not.toHaveBeenCalled();
   });
@@ -109,10 +132,10 @@ describe('SweepService', () => {
   it('sweeps a qualifying deposit address into the master wallet and marks the deposit as swept', async () => {
     const userAddress = '0xUserDeposit';
     mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
-      chain === 'EVM' ? [userAddress] : [],
+      chain === 'ETH' ? [userAddress] : [],
     );
     mockDepositRegistry.lookup.mockReturnValue([
-      { chain: 'EVM', walletId: 'user-wallet' },
+      { chain: 'ETH', walletId: 'user-wallet' },
     ]);
     mockPrisma.wallet.findUnique.mockResolvedValue({
       id: 'user-wallet',
@@ -144,10 +167,12 @@ describe('SweepService', () => {
       1000,
       '0xMaster',
       100,
+      'ETH',
     );
     expect(mockTracker.enqueue).toHaveBeenCalledWith(
       expect.objectContaining({
         txHash: '0xsweephash',
+        chain: 'ETH',
         metadata: { source: 'DEPOSIT_SWEEP' },
       }),
     );
@@ -164,19 +189,39 @@ describe('SweepService', () => {
     expect(summary).toEqual({
       evmSwept: 1,
       btcSwept: 0,
+      solSwept: 0,
+      tronSwept: 0,
       evmSkipped: 0,
       btcSkipped: 0,
+      solSkipped: 0,
+      tronSkipped: 0,
       errors: [],
+      sweptByChain: {
+        ETH: 1,
+        BSC: 0,
+        POLYGON: 0,
+        SOLANA: 0,
+        TRON: 0,
+        BTC: 0,
+      },
+      skippedByChain: {
+        ETH: 0,
+        BSC: 0,
+        POLYGON: 0,
+        SOLANA: 0,
+        TRON: 0,
+        BTC: 0,
+      },
     });
   });
 
   it('returns errors in the summary when a broadcast fails', async () => {
     const userAddress = '0xUserDeposit';
     mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
-      chain === 'EVM' ? [userAddress] : [],
+      chain === 'ETH' ? [userAddress] : [],
     );
     mockDepositRegistry.lookup.mockReturnValue([
-      { chain: 'EVM', walletId: 'user-wallet' },
+      { chain: 'ETH', walletId: 'user-wallet' },
     ]);
     mockPrisma.wallet.findUnique.mockResolvedValue({
       id: 'user-wallet',

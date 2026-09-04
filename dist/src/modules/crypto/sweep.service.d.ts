@@ -9,9 +9,15 @@ import { ExchangeRateService } from './exchange-rate.service';
 export interface SweepRunSummary {
     evmSwept: number;
     btcSwept: number;
+    solSwept: number;
+    tronSwept: number;
     evmSkipped: number;
     btcSkipped: number;
+    solSkipped: number;
+    tronSkipped: number;
     errors: string[];
+    sweptByChain: Record<string, number>;
+    skippedByChain: Record<string, number>;
 }
 export declare class SweepService {
     private readonly prisma;
@@ -28,9 +34,11 @@ export declare class SweepService {
     sweepAll(): Promise<void>;
     manualSweepAll(): Promise<SweepRunSummary>;
     private runSweep;
-    private sweepEvm;
-    private sweepBtc;
-    private sweepEvmCurrency;
+    private sweepChain;
+    private chainBalance;
+    private sweepChainCurrency;
+    private destinationAddress;
+    private broadcastSweep;
     private recordSweep;
     private markMatchedDepositsSwept;
 }

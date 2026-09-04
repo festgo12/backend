@@ -1,6 +1,7 @@
 import { DepositAddressRegistry } from './deposit-address-registry.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AddressRegistrationService } from './address-registration.service';
+import { CryptoConfigService } from './crypto-config.service';
 
 describe('DepositAddressRegistry', () => {
   let registry: DepositAddressRegistry;
@@ -11,6 +12,17 @@ describe('DepositAddressRegistry', () => {
       {
         registerAddress: jest.fn().mockResolvedValue(undefined),
       } as unknown as AddressRegistrationService,
+      {
+        supportedChains: ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'],
+        isEvmChain: jest.fn((c: string) =>
+          ['ETH', 'BSC', 'POLYGON'].includes(c),
+        ),
+        chainFamily: jest.fn((c: string) =>
+          ['ETH', 'BSC', 'POLYGON'].includes(c) ? 'EVM' : c,
+        ),
+        webhookIdForChain: jest.fn(() => 'webhook-1'),
+        authTokenForChain: jest.fn(() => 'token-1'),
+      } as unknown as CryptoConfigService,
     );
   });
 

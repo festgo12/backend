@@ -33,9 +33,15 @@ export declare class CryptoWithdrawalService {
         currency: Currency;
         destinationAddress: string;
         amount?: number;
+        chain?: string;
     }): Promise<{
         txId: string;
         status: string;
     }>;
     private validateAddress;
+    private validateSolanaAddress;
+    private validateTronAddress;
+    private broadcastByChain;
+    private onChainBalance;
+    private platformFeeAddress;
 }

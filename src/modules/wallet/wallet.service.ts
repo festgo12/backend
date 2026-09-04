@@ -4,6 +4,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { Currency, LedgerType, Prisma } from '@src/generated/client';
+import { primaryWalletWhere } from './wallet-query.util';
 
 export interface WalletTransactionEvent {
   transactionId: string;
@@ -46,14 +47,42 @@ export class WalletService {
   }
 
   /**
-   * Gets or creates a wallet for a specific currency for a user.
+   * Gets or creates a wallet for a specific user + currency on a chain.
+   *
+   * When `chain` is omitted, resolves the user's primary wallet for the
+   * currency (fiat NGN → the single chain-less row; crypto → the primary
+   * EVM/BTC chain wallet). When `chain` is supplied, targets the exact chain.
+   *
+   * NGN single-wallet integrity is enforced here at the application layer:
+   * with no unique on (userId, currency), a guard prevents a second NGN row.
    */
-  async getOrCreateWallet(userId: string, currency: Currency) {
+  async getOrCreateWallet(userId: string, currency: Currency, chain?: string) {
+    if (currency === Currency.NGN) {
+      const existing = await this.prisma.wallet.findFirst({
+        where: { userId, currency, chain: null },
+      });
+      if (existing) return existing;
+      return this.prisma.wallet.create({
+        data: { userId, currency, chain: null, balance: 0 },
+      });
+    }
+
+    const chainValue = chain ?? this.defaultChainValueForCurrency(currency);
     return this.prisma.wallet.upsert({
-      where: { userId_currency: { userId, currency } },
-      create: { userId, currency, balance: 0 },
+      where: {
+        userId_currency_chain: { userId, currency, chain: chainValue },
+      },
+      create: { userId, currency, chain: chainValue, balance: 0 },
       update: {},
     });
+  }
+
+  /** Primary stored `chain` value used when creating a crypto wallet. */
+  private defaultChainValueForCurrency(currency: Currency): string {
+    if (currency === Currency.BTC) return 'BTC';
+    // EVM-family (ETH/USDT/USDC) new wallets default to the canonical EVM
+    // family value so they share a single balance/address across EVM chains.
+    return 'EVM';
   }
 
   /**

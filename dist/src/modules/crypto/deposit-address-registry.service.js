@@ -14,15 +14,18 @@ exports.DepositAddressRegistry = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("../../generated/client/index.js");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const crypto_config_service_1 = require("./crypto-config.service");
 const address_registration_service_1 = require("./address-registration.service");
 let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegistry {
     prisma;
     addressRegistration;
+    config;
     logger = new common_1.Logger(DepositAddressRegistry_1.name);
     addresses = new Map();
-    constructor(prisma, addressRegistration) {
+    constructor(prisma, addressRegistration, config) {
         this.prisma = prisma;
         this.addressRegistration = addressRegistration;
+        this.config = config;
     }
     async onApplicationBootstrap() {
         await this.rebuild();
@@ -39,28 +42,47 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
         });
         this.addresses.clear();
         for (const wallet of wallets) {
-            const chain = wallet.chain || this.guessChain(wallet.currency);
-            this.add(wallet.address, { chain, walletId: wallet.id }, false);
+            const family = this.familyForChainValue(wallet.chain);
+            this.add(wallet.address, { chain: family, walletId: wallet.id }, false);
         }
         this.logger.log(`Deposit address registry loaded: ${this.addresses.size} unique addresses, ${wallets.length} wallets`);
-        const evmAddresses = this.addressesForChain('EVM');
-        if (evmAddresses.length > 0) {
-            this.logger.log(`Boot-syncing ${evmAddresses.length} EVM addresses to Alchemy webhook...`);
-            void this.addressRegistration
-                .replaceAllEvmAddresses(evmAddresses)
-                .catch(() => {
-            });
+        const synced = this.bootSyncAllChains();
+        if (synced > 0) {
+            this.logger.log(`Boot-synced addresses across ${synced} chains to webhooks`);
         }
     }
+    bootSyncAllChains() {
+        const chainsWithAddresses = [];
+        for (const chain of this.config.supportedChains) {
+            const family = this.config.chainFamily(chain);
+            const addrs = this.addressesForFamily(family);
+            if (addrs.length > 0) {
+                chainsWithAddresses.push(chain);
+                void this.pushChainSnapshot(chain, addrs).catch(() => {
+                });
+            }
+        }
+        return chainsWithAddresses.length;
+    }
+    async pushChainSnapshot(chain, addresses) {
+        const webhookId = this.config.webhookIdForChain(chain);
+        if (!webhookId)
+            return;
+        const authToken = this.config.authTokenForChain(chain);
+        this.logger.log(`Boot-syncing ${addresses.length} addresses to ${chain} webhook...`);
+        await this.addressRegistration.replaceAllChainAddresses(chain, addresses, authToken, webhookId);
+    }
     register(address, chain, walletId) {
-        const isNew = this.add(address, { chain, walletId }, true);
+        const family = this.familyForChainValue(chain);
+        const isNew = this.add(address, { chain: family, walletId }, true);
         if (isNew) {
             try {
-                this.addressRegistration.registerAddress(address, chain);
+                const canonicalChain = this.canonicalChainForFamily(family);
+                this.addressRegistration.registerAddress(address, canonicalChain);
             }
             catch (error) {
                 const err = error;
-                this.logger.warn(`Failed to register ${chain} address ${address} with provider: ${err.message}`);
+                this.logger.warn(`Failed to register ${family} address ${address} with provider: ${err.message}`);
             }
         }
     }
@@ -81,7 +103,8 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
         return true;
     }
     unregister(address, chain, walletId) {
-        const key = this.keyFor(address, chain);
+        const family = this.familyForChainValue(chain);
+        const key = this.keyFor(address, family);
         const existing = this.addresses.get(key);
         if (!existing)
             return;
@@ -94,15 +117,20 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
         }
     }
     lookup(address, chain) {
-        return this.addresses.get(this.keyFor(address, chain)) || [];
+        const family = this.familyForChainValue(chain);
+        return this.addresses.get(this.keyFor(address, family)) || [];
     }
     has(address, chain) {
-        return this.addresses.has(this.keyFor(address, chain));
+        const family = this.familyForChainValue(chain);
+        return this.addresses.has(this.keyFor(address, family));
     }
     addressesForChain(chain) {
+        return this.addressesForFamily(this.familyForChainValue(chain));
+    }
+    addressesForFamily(family) {
         const out = [];
         for (const [key, registrations] of this.addresses.entries()) {
-            if (registrations[0]?.chain === chain)
+            if (registrations[0]?.chain === family)
                 out.push(key);
         }
         return out;
@@ -113,14 +141,41 @@ let DepositAddressRegistry = DepositAddressRegistry_1 = class DepositAddressRegi
     keyFor(address, chain) {
         return chain === 'EVM' ? address.toLowerCase() : address;
     }
-    guessChain(currency) {
-        return currency === client_1.Currency.BTC ? 'BTC' : 'EVM';
+    familyForChainValue(chain) {
+        switch (chain) {
+            case 'BTC':
+                return 'BTC';
+            case 'SOLANA':
+                return 'SOLANA';
+            case 'TRON':
+                return 'TRON';
+            case 'EVM':
+            case 'ETH':
+            case 'BSC':
+            case 'POLYGON':
+            default:
+                return 'EVM';
+        }
+    }
+    canonicalChainForFamily(family) {
+        switch (family) {
+            case 'SOLANA':
+                return 'SOLANA';
+            case 'TRON':
+                return 'TRON';
+            case 'BTC':
+                return 'BTC';
+            case 'EVM':
+            default:
+                return 'ETH';
+        }
     }
 };
 exports.DepositAddressRegistry = DepositAddressRegistry;
 exports.DepositAddressRegistry = DepositAddressRegistry = DepositAddressRegistry_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        address_registration_service_1.AddressRegistrationService])
+        address_registration_service_1.AddressRegistrationService,
+        crypto_config_service_1.CryptoConfigService])
 ], DepositAddressRegistry);
 //# sourceMappingURL=deposit-address-registry.service.js.map
