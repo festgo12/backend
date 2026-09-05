@@ -802,6 +802,179 @@ export class ChainClientService {
     }
   }
 
+  // ─── On-chain History (admin pull) ──────────────────────────────────────
+
+  /**
+   * Parsed SPL token transfers (USDT/USDC) touching an owner address. Inbound
+   * SPL transfers credit the owner's associated token account (ATA), so both
+   * the owner and its ATA are queried for recent signatures.
+   */
+  async getSolanaTransfers(
+    ownerAddress: string,
+    mint: string,
+    limit = 50,
+  ): Promise<
+    Array<{
+      txHash: string;
+      mint: string;
+      amount: number;
+      from: string | null;
+      to: string | null;
+      blockNumber: number | null;
+      confirmed: boolean;
+    }>
+  > {
+    const connection = this.solanaConnection();
+    const owner = new PublicKey(ownerAddress);
+    const mintPub = new PublicKey(mint);
+    const ata = await getAssociatedTokenAddress(
+      mintPub,
+      owner,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+    const targets = [owner, ata];
+
+    const signatures = new Set<string>();
+    for (const target of targets) {
+      try {
+        const res = await connection.getSignaturesForAddress(target, { limit });
+        for (const item of res) {
+          if (item.signature) signatures.add(item.signature);
+        }
+      } catch (error) {
+        const err = error as Error;
+        this.logger.warn(
+          `Solana getSignaturesForAddress failed for ${target.toBase58()}: ${err.message}`,
+        );
+      }
+      if (signatures.size >= limit) break;
+    }
+
+    const events: Array<{
+      txHash: string;
+      mint: string;
+      amount: number;
+      from: string | null;
+      to: string | null;
+      blockNumber: number | null;
+      confirmed: boolean;
+    }> = [];
+    for (const signature of [...signatures].slice(0, limit)) {
+      let parsed;
+      try {
+        parsed = await connection.getParsedTransaction(signature, {
+          maxSupportedTransactionVersion: 0,
+        });
+      } catch (error) {
+        const err = error as Error;
+        this.logger.warn(
+          `Solana getParsedTransaction failed ${signature}: ${err.message}`,
+        );
+        continue;
+      }
+      if (!parsed?.meta) continue;
+
+      const pre = new Map<string, number>();
+      const post = new Map<string, number>();
+      for (const b of parsed.meta.preTokenBalances ?? []) {
+        if (b.mint !== mint || !b.owner) continue;
+        pre.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+      }
+      for (const b of parsed.meta.postTokenBalances ?? []) {
+        if (b.mint !== mint || !b.owner) continue;
+        post.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+      }
+      const owners = new Set([...pre.keys(), ...post.keys()]);
+      let delta = 0;
+      let to: string | null = null;
+      for (const o of owners) {
+        const diff = (post.get(o) ?? 0) - (pre.get(o) ?? 0);
+        delta += diff;
+        if (diff > 0) to = o;
+      }
+      if (delta === 0) continue;
+
+      events.push({
+        txHash: signature,
+        mint,
+        amount: Math.abs(delta),
+        from: delta < 0 ? ownerAddress : null,
+        to,
+        blockNumber: parsed.slot,
+        confirmed:
+          parsed.confirmationStatus === 'confirmed' ||
+          parsed.confirmationStatus === 'finalized',
+      });
+    }
+    return events;
+  }
+
+  /** Minimal shape of a TronGrid v1 TRC-20 transfer entry. */
+  async getTronTransfers(
+    address: string,
+    contract: string,
+    limit = 50,
+  ): Promise<
+    Array<{
+      txHash: string;
+      amount: number;
+      from: string;
+      to: string;
+      blockNumber: number;
+      tokenSymbol: string | null;
+    }>
+  > {
+    const baseUrl = this.config.httpUrlForChain('TRON');
+    if (!baseUrl) {
+      throw new InternalServerErrorException(
+        'ALCHEMY_TRON_HTTP_URL is not configured',
+      );
+    }
+    const url = `${baseUrl.replace(/\/+$/, '')}/v1/accounts/${address}/transactions/trc20`;
+    const res = await lastValueFrom(
+      this.httpService.get<{
+        data?: Array<{
+          transaction_id: string;
+          type: string;
+          to: string | null;
+          from: string | null;
+          value: string | null;
+          block_timestamp: number | null;
+          token_info?: {
+            address?: string;
+            symbol?: string;
+            decimals?: number;
+          };
+        }>;
+      }>(url, {
+        params: {
+          contract_address: contract,
+          limit: Math.min(200, limit),
+          order_by: 'block_timestamp,desc',
+        },
+        timeout: 20_000,
+      }),
+    );
+    const items = Array.isArray(res.data?.data) ? res.data.data : [];
+    const lower = address.toLowerCase();
+    return items
+      .filter(
+        (t) =>
+          t.type === 'Transfer' && (t.to || '').toLowerCase() === lower,
+      )
+      .slice(0, limit)
+      .map((t) => ({
+        txHash: t.transaction_id,
+        amount: Number(t.value ?? 0) / 1e6,
+        from: t.from || '',
+        to: (t.to || '').toLowerCase(),
+        blockNumber: Math.floor((t.block_timestamp || 0) / 1000),
+        tokenSymbol: t.token_info?.symbol ?? null,
+      }));
+  }
+
   // ─── BTC Broadcast (Alchemy RPC) ──────────────────────────────────────
 
   /**

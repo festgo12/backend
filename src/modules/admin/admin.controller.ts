@@ -18,7 +18,7 @@ import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Role, Currency } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
-import { AdminUpdateAdDto, SweepFeeWalletDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
+import { AdminUpdateAdDto, SweepFeeWalletDto, SweepConfigDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
 import { clampPagination } from '../../core/utils/pagination';
 
 @ApiTags('Admin')
@@ -75,9 +75,17 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
+    @Query('currency') currency?: string,
+    @Query('chain') chain?: string,
   ) {
     const p = clampPagination(page, limit);
-    return this.adminService.getAllWallets(p.page, p.limit, search);
+    return this.adminService.getAllWallets(
+      p.page,
+      p.limit,
+      search,
+      (currency as Currency) || undefined,
+      chain,
+    );
   }
 
   @Get('wallets/:id')
@@ -91,9 +99,16 @@ export class AdminController {
   getAllTransactions(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
+    @Query('currency') currency?: string,
+    @Query('chain') chain?: string,
   ) {
     const p = clampPagination(page, limit);
-    return this.adminService.getAllTransactions(p.page, p.limit);
+    return this.adminService.getAllTransactions(
+      p.page,
+      p.limit,
+      currency,
+      chain,
+    );
   }
 
   @Get('orders')
@@ -102,9 +117,10 @@ export class AdminController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @Query('search') search?: string,
+    @Query('chain') chain?: string,
   ) {
     const p = clampPagination(page, limit);
-    return this.adminService.getAllOrders(p.page, p.limit, search);
+    return this.adminService.getAllOrders(p.page, p.limit, search, chain);
   }
 
   @Get('orders/:id')
@@ -157,9 +173,10 @@ export class AdminController {
   getBlockchainTransactions(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
+    @Query('chain') chain?: string,
   ) {
     const p = clampPagination(page, limit);
-    return this.adminService.getBlockchainTransactions(p.page, p.limit);
+    return this.adminService.getBlockchainTransactions(p.page, p.limit, chain);
   }
 
   @Get('blockchain/failed')
@@ -239,6 +256,39 @@ export class AdminController {
     return this.adminService.triggerSweepAll();
   }
 
+  @Post('crypto/sweep/:chain')
+  @AuditLog('ADMIN_CRYPTO_SWEEP_CHAIN', 'SYSTEM')
+  @ApiOperation({
+    summary: 'Trigger a manual sweep of deposit addresses for a single chain',
+  })
+  sweepChain(@Param('chain') chain: string) {
+    return this.adminService.triggerSweepChain(chain);
+  }
+
+  @Get('crypto/sweep-config')
+  @ApiOperation({
+    summary: 'List per-chain sweep enable flags and USD thresholds',
+  })
+  getSweepConfig() {
+    return this.adminService.getSweepConfig();
+  }
+
+  @Patch('crypto/sweep-config/:chain')
+  @AuditLog('ADMIN_SWEEP_CONFIG_UPDATE', 'SYSTEM')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Toggle sweeping and/or set a per-chain USD threshold',
+  })
+  updateSweepConfig(
+    @Param('chain') chain: string,
+    @Body() dto: SweepConfigDto,
+  ) {
+    return this.adminService.updateSweepConfig(chain, {
+      enabled: dto.enabled,
+      thresholdUsd: dto.thresholdUsd,
+    });
+  }
+
   // ─── On-Chain History ──────────────────────────────────────────────────
 
   @Get('crypto/btc-history')
@@ -260,10 +310,51 @@ export class AdminController {
   })
   getEvmHistory(
     @Param('address') address: string,
+    @Query('chain') chain?: string,
     @Query('page') page?: string,
   ) {
     const p = clampPagination(page, '50');
-    return this.adminService.getEvmHistory(address, p.page);
+    return this.adminService.getEvmHistory(address, p.page, chain);
+  }
+
+  @Get('crypto/tron-history/:address')
+  @ApiOperation({
+    summary:
+      'Fetch TRON TRC-20 history for a specific address with DB match status',
+  })
+  getTronHistory(
+    @Param('address') address: string,
+    @Query('page') page?: string,
+  ) {
+    const p = clampPagination(page, '50');
+    return this.adminService.getTronHistory(address, p.page);
+  }
+
+  @Get('crypto/sol-history/:address')
+  @ApiOperation({
+    summary:
+      'Fetch Solana SPL history for a specific address with DB match status',
+  })
+  getSolHistory(
+    @Param('address') address: string,
+    @Query('page') page?: string,
+  ) {
+    const p = clampPagination(page, '50');
+    return this.adminService.getSolHistory(address, p.page);
+  }
+
+  @Post('crypto/evm-pull/:chain/:address')
+  @AuditLog('ADMIN_CRYPTO_EVM_PULL', 'SYSTEM')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({
+    summary:
+      'Manually pull and credit missed deposits for an EVM-family address (ETH/BSC/POLYGON)',
+  })
+  evmPull(
+    @Param('chain') chain: string,
+    @Param('address') address: string,
+  ) {
+    return this.adminService.pullEvmDeposits(chain, address);
   }
 
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────

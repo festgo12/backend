@@ -84,6 +84,65 @@ export class SweepService {
     }
   }
 
+  /**
+   * Manual single-chain sweep — triggered via admin endpoint. Only deposit
+   * addresses registered on the given chain are evaluated. Respects the
+   * per-chain enable flag and threshold (falling back to the global
+   * DEPOSIT_SWEEP_THRESHOLD). Returns a per-chain summary.
+   */
+  async manualSweepChain(chain: string): Promise<SweepRunSummary> {
+    if (!this.registryChains().includes(chain)) {
+      throw new Error(
+        `Unsupported sweep chain: ${chain}. Expected ${this.registryChains().join(', ')}.`,
+      );
+    }
+    if (this.isRunning) {
+      throw new Error('Sweep already in progress');
+    }
+    this.isRunning = true;
+    try {
+      const summary: SweepRunSummary = {
+        evmSwept: 0,
+        btcSwept: 0,
+        solSwept: 0,
+        tronSwept: 0,
+        evmSkipped: 0,
+        btcSkipped: 0,
+        solSkipped: 0,
+        tronSkipped: 0,
+        errors: [],
+        sweptByChain: {},
+        skippedByChain: {},
+      };
+      const res = await this.sweepChain(chain);
+      summary.errors.push(...res.errors);
+      summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
+      summary.skippedByChain[chain] =
+        (summary.skippedByChain[chain] ?? 0) + res.skipped;
+      if (chain === 'BTC') {
+        summary.btcSwept += res.swept;
+        summary.btcSkipped += res.skipped;
+      } else if (this.config.isEvmChain(chain)) {
+        summary.evmSwept += res.swept;
+        summary.evmSkipped += res.skipped;
+      } else if (chain === 'SOLANA') {
+        summary.solSwept += res.swept;
+        summary.solSkipped += res.skipped;
+      } else if (chain === 'TRON') {
+        summary.tronSwept += res.swept;
+        summary.tronSkipped += res.skipped;
+      }
+      return summary;
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  /** All chains that can carry deposit addresses (supported + BTC). */
+  private registryChains(): string[] {
+    return [...(this.config.supportedChains as string[]), 'BTC'];
+  }
+
   /** Shared sweep execution guarded by the running mutex. */
   private async runSweep(): Promise<SweepRunSummary> {
     if (this.isRunning) {
@@ -105,8 +164,7 @@ export class SweepService {
         skippedByChain: {},
       };
       // Sweep every supported chain plus the standalone BTC chain.
-      const chains = [...(this.config.supportedChains as string[]), 'BTC'];
-      for (const chain of chains) {
+      for (const chain of this.registryChains()) {
         const res = await this.sweepChain(chain);
         summary.errors.push(...res.errors);
         summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
@@ -141,7 +199,14 @@ export class SweepService {
     const result = { swept: 0, skipped: 0, errors: [] as string[] };
     const addresses = this.depositRegistry.addressesForChain(chain);
     if (addresses.length === 0) return result;
-    const thresholdUsd = this.config.depositSweepThreshold;
+
+    const chainConfig = await this.sweepConfigFor(chain);
+    if (!chainConfig.enabled) {
+      this.logger.log(`${chain} sweep disabled by config; skipping ${addresses.length} addresses`);
+      return { swept: 0, skipped: addresses.length, errors: [] };
+    }
+    const thresholdUsd =
+      chainConfig.thresholdUsd ?? this.config.depositSweepThreshold;
 
     for (const address of addresses) {
       const registrations = this.depositRegistry.lookup(address, chain);
@@ -380,5 +445,80 @@ export class SweepService {
         },
       });
     }
+  }
+
+  // ─── Per-chain Sweep Configuration ──────────────────────────────────────
+
+  /** Effective sweep config for a single chain (DB row or built-in defaults). */
+  private async sweepConfigFor(chain: string): Promise<{
+    chain: string;
+    enabled: boolean;
+    thresholdUsd: number | null;
+  }> {
+    const row = await this.prisma.sweepConfig.findUnique({
+      where: { chain },
+    });
+    return {
+      chain,
+      enabled: row ? row.enabled : true,
+      thresholdUsd: row?.thresholdUsd
+        ? Number(row.thresholdUsd.toString())
+        : null,
+    };
+  }
+
+  /** Config for every sweepable chain, merged with the global threshold. */
+  async getSweepConfig() {
+    const rows = await this.prisma.sweepConfig.findMany();
+    const byChain = new Map(rows.map((r) => [r.chain, r]));
+    const globalThresholdUsd = this.config.depositSweepThreshold;
+    return {
+      globalThresholdUsd,
+      chains: this.registryChains().map((chain) => {
+        const row = byChain.get(chain);
+        return {
+          chain,
+          enabled: row ? row.enabled : true,
+          thresholdUsd: row?.thresholdUsd
+            ? Number(row.thresholdUsd.toString())
+            : null,
+          usesGlobalThreshold: !row?.thresholdUsd,
+        };
+      }),
+    };
+  }
+
+  /** Upserts a chain's sweep enable flag and/or USD threshold override. */
+  async updateSweepConfig(
+    chain: string,
+    changes: { enabled?: boolean; thresholdUsd?: number | null },
+  ) {
+    if (!this.registryChains().includes(chain)) {
+      throw new Error(
+        `Unsupported sweep chain: ${chain}. Expected ${this.registryChains().join(', ')}.`,
+      );
+    }
+    const data: { enabled?: boolean; thresholdUsd?: number | null } = {};
+    if (typeof changes.enabled === 'boolean') data.enabled = changes.enabled;
+    if (changes.thresholdUsd !== undefined) {
+      data.thresholdUsd =
+        changes.thresholdUsd === null ? null : changes.thresholdUsd;
+    }
+    if (Object.keys(data).length === 0) {
+      throw new Error('Nothing to update: provide enabled and/or thresholdUsd');
+    }
+    const row = await this.prisma.sweepConfig.upsert({
+      where: { chain },
+      create: { chain, ...data },
+      update: data,
+    });
+    this.logger.log(`Sweep config updated for ${chain}: ${JSON.stringify(data)}`);
+    return {
+      chain: row.chain,
+      enabled: row.enabled,
+      thresholdUsd: row.thresholdUsd
+        ? Number(row.thresholdUsd.toString())
+        : null,
+    };
   }
 }

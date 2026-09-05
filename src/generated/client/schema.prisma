@@ -579,6 +579,18 @@ model PlatformSetting {
   @@index([key])
 }
 
+/// Per-chain sweep control (enable/disable + optional USD threshold override).
+/// When thresholdUsd is null the global DEPOSIT_SWEEP_THRESHOLD applies.
+model SweepConfig {
+  id           String   @id @default(uuid()) @db.Uuid
+  chain        String   @unique // ETH | BSC | POLYGON | SOLANA | TRON | BTC
+  enabled      Boolean  @default(true)
+  thresholdUsd Decimal? @db.Decimal(20, 8)
+  updatedAt    DateTime @updatedAt
+
+  @@index([chain])
+}
+
 model Reconciliation {
   id              String   @id @default(uuid()) @db.Uuid
   currency        Currency

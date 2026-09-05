@@ -134,6 +134,12 @@ export type PlatformFeeConfig = $Result.DefaultSelection<Prisma.$PlatformFeeConf
  */
 export type PlatformSetting = $Result.DefaultSelection<Prisma.$PlatformSettingPayload>
 /**
+ * Model SweepConfig
+ * Per-chain sweep control (enable/disable + optional USD threshold override).
+ * When thresholdUsd is null the global DEPOSIT_SWEEP_THRESHOLD applies.
+ */
+export type SweepConfig = $Result.DefaultSelection<Prisma.$SweepConfigPayload>
+/**
  * Model Reconciliation
  * 
  */
@@ -729,6 +735,16 @@ export class PrismaClient<
   get platformSetting(): Prisma.PlatformSettingDelegate<ExtArgs>;
 
   /**
+   * `prisma.sweepConfig`: Exposes CRUD operations for the **SweepConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SweepConfigs
+    * const sweepConfigs = await prisma.sweepConfig.findMany()
+    * ```
+    */
+  get sweepConfig(): Prisma.SweepConfigDelegate<ExtArgs>;
+
+  /**
    * `prisma.reconciliation`: Exposes CRUD operations for the **Reconciliation** model.
     * Example usage:
     * ```ts
@@ -1242,6 +1258,7 @@ export namespace Prisma {
     GiftCardEvidence: 'GiftCardEvidence',
     PlatformFeeConfig: 'PlatformFeeConfig',
     PlatformSetting: 'PlatformSetting',
+    SweepConfig: 'SweepConfig',
     Reconciliation: 'Reconciliation',
     ChainCursor: 'ChainCursor',
     WithdrawalJob: 'WithdrawalJob',
@@ -1262,7 +1279,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "platformSetting" | "reconciliation" | "chainCursor" | "withdrawalJob" | "dailyReport" | "helpContent"
+      modelProps: "user" | "profile" | "userPreference" | "wallet" | "ledgerEntry" | "walletTransaction" | "balanceSnapshot" | "ad" | "order" | "dispute" | "evidence" | "authToken" | "device" | "securityLog" | "notification" | "notificationTemplate" | "notificationLog" | "securityAlert" | "fraudRule" | "giftCardListing" | "giftCardOrder" | "giftCardEvidence" | "platformFeeConfig" | "platformSetting" | "sweepConfig" | "reconciliation" | "chainCursor" | "withdrawalJob" | "dailyReport" | "helpContent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2943,6 +2960,76 @@ export namespace Prisma {
           count: {
             args: Prisma.PlatformSettingCountArgs<ExtArgs>
             result: $Utils.Optional<PlatformSettingCountAggregateOutputType> | number
+          }
+        }
+      }
+      SweepConfig: {
+        payload: Prisma.$SweepConfigPayload<ExtArgs>
+        fields: Prisma.SweepConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SweepConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SweepConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.SweepConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SweepConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          findMany: {
+            args: Prisma.SweepConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>[]
+          }
+          create: {
+            args: Prisma.SweepConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          createMany: {
+            args: Prisma.SweepConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SweepConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.SweepConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          update: {
+            args: Prisma.SweepConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.SweepConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SweepConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SweepConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SweepConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.SweepConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSweepConfig>
+          }
+          groupBy: {
+            args: Prisma.SweepConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SweepConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SweepConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<SweepConfigCountAggregateOutputType> | number
           }
         }
       }
@@ -29052,6 +29139,918 @@ export namespace Prisma {
 
 
   /**
+   * Model SweepConfig
+   */
+
+  export type AggregateSweepConfig = {
+    _count: SweepConfigCountAggregateOutputType | null
+    _avg: SweepConfigAvgAggregateOutputType | null
+    _sum: SweepConfigSumAggregateOutputType | null
+    _min: SweepConfigMinAggregateOutputType | null
+    _max: SweepConfigMaxAggregateOutputType | null
+  }
+
+  export type SweepConfigAvgAggregateOutputType = {
+    thresholdUsd: Decimal | null
+  }
+
+  export type SweepConfigSumAggregateOutputType = {
+    thresholdUsd: Decimal | null
+  }
+
+  export type SweepConfigMinAggregateOutputType = {
+    id: string | null
+    chain: string | null
+    enabled: boolean | null
+    thresholdUsd: Decimal | null
+    updatedAt: Date | null
+  }
+
+  export type SweepConfigMaxAggregateOutputType = {
+    id: string | null
+    chain: string | null
+    enabled: boolean | null
+    thresholdUsd: Decimal | null
+    updatedAt: Date | null
+  }
+
+  export type SweepConfigCountAggregateOutputType = {
+    id: number
+    chain: number
+    enabled: number
+    thresholdUsd: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type SweepConfigAvgAggregateInputType = {
+    thresholdUsd?: true
+  }
+
+  export type SweepConfigSumAggregateInputType = {
+    thresholdUsd?: true
+  }
+
+  export type SweepConfigMinAggregateInputType = {
+    id?: true
+    chain?: true
+    enabled?: true
+    thresholdUsd?: true
+    updatedAt?: true
+  }
+
+  export type SweepConfigMaxAggregateInputType = {
+    id?: true
+    chain?: true
+    enabled?: true
+    thresholdUsd?: true
+    updatedAt?: true
+  }
+
+  export type SweepConfigCountAggregateInputType = {
+    id?: true
+    chain?: true
+    enabled?: true
+    thresholdUsd?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type SweepConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SweepConfig to aggregate.
+     */
+    where?: SweepConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SweepConfigs to fetch.
+     */
+    orderBy?: SweepConfigOrderByWithRelationInput | SweepConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SweepConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SweepConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SweepConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SweepConfigs
+    **/
+    _count?: true | SweepConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SweepConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SweepConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SweepConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SweepConfigMaxAggregateInputType
+  }
+
+  export type GetSweepConfigAggregateType<T extends SweepConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateSweepConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSweepConfig[P]>
+      : GetScalarType<T[P], AggregateSweepConfig[P]>
+  }
+
+
+
+
+  export type SweepConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SweepConfigWhereInput
+    orderBy?: SweepConfigOrderByWithAggregationInput | SweepConfigOrderByWithAggregationInput[]
+    by: SweepConfigScalarFieldEnum[] | SweepConfigScalarFieldEnum
+    having?: SweepConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SweepConfigCountAggregateInputType | true
+    _avg?: SweepConfigAvgAggregateInputType
+    _sum?: SweepConfigSumAggregateInputType
+    _min?: SweepConfigMinAggregateInputType
+    _max?: SweepConfigMaxAggregateInputType
+  }
+
+  export type SweepConfigGroupByOutputType = {
+    id: string
+    chain: string
+    enabled: boolean
+    thresholdUsd: Decimal | null
+    updatedAt: Date
+    _count: SweepConfigCountAggregateOutputType | null
+    _avg: SweepConfigAvgAggregateOutputType | null
+    _sum: SweepConfigSumAggregateOutputType | null
+    _min: SweepConfigMinAggregateOutputType | null
+    _max: SweepConfigMaxAggregateOutputType | null
+  }
+
+  type GetSweepConfigGroupByPayload<T extends SweepConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SweepConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SweepConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SweepConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], SweepConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SweepConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    chain?: boolean
+    enabled?: boolean
+    thresholdUsd?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sweepConfig"]>
+
+  export type SweepConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    chain?: boolean
+    enabled?: boolean
+    thresholdUsd?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sweepConfig"]>
+
+  export type SweepConfigSelectScalar = {
+    id?: boolean
+    chain?: boolean
+    enabled?: boolean
+    thresholdUsd?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $SweepConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SweepConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      chain: string
+      enabled: boolean
+      thresholdUsd: Prisma.Decimal | null
+      updatedAt: Date
+    }, ExtArgs["result"]["sweepConfig"]>
+    composites: {}
+  }
+
+  type SweepConfigGetPayload<S extends boolean | null | undefined | SweepConfigDefaultArgs> = $Result.GetResult<Prisma.$SweepConfigPayload, S>
+
+  type SweepConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SweepConfigFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: SweepConfigCountAggregateInputType | true
+    }
+
+  export interface SweepConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SweepConfig'], meta: { name: 'SweepConfig' } }
+    /**
+     * Find zero or one SweepConfig that matches the filter.
+     * @param {SweepConfigFindUniqueArgs} args - Arguments to find a SweepConfig
+     * @example
+     * // Get one SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SweepConfigFindUniqueArgs>(args: SelectSubset<T, SweepConfigFindUniqueArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one SweepConfig that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {SweepConfigFindUniqueOrThrowArgs} args - Arguments to find a SweepConfig
+     * @example
+     * // Get one SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SweepConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, SweepConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first SweepConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigFindFirstArgs} args - Arguments to find a SweepConfig
+     * @example
+     * // Get one SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SweepConfigFindFirstArgs>(args?: SelectSubset<T, SweepConfigFindFirstArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first SweepConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigFindFirstOrThrowArgs} args - Arguments to find a SweepConfig
+     * @example
+     * // Get one SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SweepConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, SweepConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more SweepConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SweepConfigs
+     * const sweepConfigs = await prisma.sweepConfig.findMany()
+     * 
+     * // Get first 10 SweepConfigs
+     * const sweepConfigs = await prisma.sweepConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sweepConfigWithIdOnly = await prisma.sweepConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SweepConfigFindManyArgs>(args?: SelectSubset<T, SweepConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a SweepConfig.
+     * @param {SweepConfigCreateArgs} args - Arguments to create a SweepConfig.
+     * @example
+     * // Create one SweepConfig
+     * const SweepConfig = await prisma.sweepConfig.create({
+     *   data: {
+     *     // ... data to create a SweepConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends SweepConfigCreateArgs>(args: SelectSubset<T, SweepConfigCreateArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many SweepConfigs.
+     * @param {SweepConfigCreateManyArgs} args - Arguments to create many SweepConfigs.
+     * @example
+     * // Create many SweepConfigs
+     * const sweepConfig = await prisma.sweepConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SweepConfigCreateManyArgs>(args?: SelectSubset<T, SweepConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SweepConfigs and returns the data saved in the database.
+     * @param {SweepConfigCreateManyAndReturnArgs} args - Arguments to create many SweepConfigs.
+     * @example
+     * // Create many SweepConfigs
+     * const sweepConfig = await prisma.sweepConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SweepConfigs and only return the `id`
+     * const sweepConfigWithIdOnly = await prisma.sweepConfig.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SweepConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, SweepConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a SweepConfig.
+     * @param {SweepConfigDeleteArgs} args - Arguments to delete one SweepConfig.
+     * @example
+     * // Delete one SweepConfig
+     * const SweepConfig = await prisma.sweepConfig.delete({
+     *   where: {
+     *     // ... filter to delete one SweepConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SweepConfigDeleteArgs>(args: SelectSubset<T, SweepConfigDeleteArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one SweepConfig.
+     * @param {SweepConfigUpdateArgs} args - Arguments to update one SweepConfig.
+     * @example
+     * // Update one SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SweepConfigUpdateArgs>(args: SelectSubset<T, SweepConfigUpdateArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more SweepConfigs.
+     * @param {SweepConfigDeleteManyArgs} args - Arguments to filter SweepConfigs to delete.
+     * @example
+     * // Delete a few SweepConfigs
+     * const { count } = await prisma.sweepConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SweepConfigDeleteManyArgs>(args?: SelectSubset<T, SweepConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SweepConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SweepConfigs
+     * const sweepConfig = await prisma.sweepConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SweepConfigUpdateManyArgs>(args: SelectSubset<T, SweepConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SweepConfig.
+     * @param {SweepConfigUpsertArgs} args - Arguments to update or create a SweepConfig.
+     * @example
+     * // Update or create a SweepConfig
+     * const sweepConfig = await prisma.sweepConfig.upsert({
+     *   create: {
+     *     // ... data to create a SweepConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SweepConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SweepConfigUpsertArgs>(args: SelectSubset<T, SweepConfigUpsertArgs<ExtArgs>>): Prisma__SweepConfigClient<$Result.GetResult<Prisma.$SweepConfigPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of SweepConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigCountArgs} args - Arguments to filter SweepConfigs to count.
+     * @example
+     * // Count the number of SweepConfigs
+     * const count = await prisma.sweepConfig.count({
+     *   where: {
+     *     // ... the filter for the SweepConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends SweepConfigCountArgs>(
+      args?: Subset<T, SweepConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SweepConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SweepConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SweepConfigAggregateArgs>(args: Subset<T, SweepConfigAggregateArgs>): Prisma.PrismaPromise<GetSweepConfigAggregateType<T>>
+
+    /**
+     * Group by SweepConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SweepConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SweepConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SweepConfigGroupByArgs['orderBy'] }
+        : { orderBy?: SweepConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SweepConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSweepConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SweepConfig model
+   */
+  readonly fields: SweepConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SweepConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SweepConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SweepConfig model
+   */ 
+  interface SweepConfigFieldRefs {
+    readonly id: FieldRef<"SweepConfig", 'String'>
+    readonly chain: FieldRef<"SweepConfig", 'String'>
+    readonly enabled: FieldRef<"SweepConfig", 'Boolean'>
+    readonly thresholdUsd: FieldRef<"SweepConfig", 'Decimal'>
+    readonly updatedAt: FieldRef<"SweepConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SweepConfig findUnique
+   */
+  export type SweepConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which SweepConfig to fetch.
+     */
+    where: SweepConfigWhereUniqueInput
+  }
+
+  /**
+   * SweepConfig findUniqueOrThrow
+   */
+  export type SweepConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which SweepConfig to fetch.
+     */
+    where: SweepConfigWhereUniqueInput
+  }
+
+  /**
+   * SweepConfig findFirst
+   */
+  export type SweepConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which SweepConfig to fetch.
+     */
+    where?: SweepConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SweepConfigs to fetch.
+     */
+    orderBy?: SweepConfigOrderByWithRelationInput | SweepConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SweepConfigs.
+     */
+    cursor?: SweepConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SweepConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SweepConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SweepConfigs.
+     */
+    distinct?: SweepConfigScalarFieldEnum | SweepConfigScalarFieldEnum[]
+  }
+
+  /**
+   * SweepConfig findFirstOrThrow
+   */
+  export type SweepConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which SweepConfig to fetch.
+     */
+    where?: SweepConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SweepConfigs to fetch.
+     */
+    orderBy?: SweepConfigOrderByWithRelationInput | SweepConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SweepConfigs.
+     */
+    cursor?: SweepConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SweepConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SweepConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SweepConfigs.
+     */
+    distinct?: SweepConfigScalarFieldEnum | SweepConfigScalarFieldEnum[]
+  }
+
+  /**
+   * SweepConfig findMany
+   */
+  export type SweepConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which SweepConfigs to fetch.
+     */
+    where?: SweepConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SweepConfigs to fetch.
+     */
+    orderBy?: SweepConfigOrderByWithRelationInput | SweepConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SweepConfigs.
+     */
+    cursor?: SweepConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SweepConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SweepConfigs.
+     */
+    skip?: number
+    distinct?: SweepConfigScalarFieldEnum | SweepConfigScalarFieldEnum[]
+  }
+
+  /**
+   * SweepConfig create
+   */
+  export type SweepConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to create a SweepConfig.
+     */
+    data: XOR<SweepConfigCreateInput, SweepConfigUncheckedCreateInput>
+  }
+
+  /**
+   * SweepConfig createMany
+   */
+  export type SweepConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SweepConfigs.
+     */
+    data: SweepConfigCreateManyInput | SweepConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SweepConfig createManyAndReturn
+   */
+  export type SweepConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many SweepConfigs.
+     */
+    data: SweepConfigCreateManyInput | SweepConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SweepConfig update
+   */
+  export type SweepConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to update a SweepConfig.
+     */
+    data: XOR<SweepConfigUpdateInput, SweepConfigUncheckedUpdateInput>
+    /**
+     * Choose, which SweepConfig to update.
+     */
+    where: SweepConfigWhereUniqueInput
+  }
+
+  /**
+   * SweepConfig updateMany
+   */
+  export type SweepConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SweepConfigs.
+     */
+    data: XOR<SweepConfigUpdateManyMutationInput, SweepConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which SweepConfigs to update
+     */
+    where?: SweepConfigWhereInput
+  }
+
+  /**
+   * SweepConfig upsert
+   */
+  export type SweepConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * The filter to search for the SweepConfig to update in case it exists.
+     */
+    where: SweepConfigWhereUniqueInput
+    /**
+     * In case the SweepConfig found by the `where` argument doesn't exist, create a new SweepConfig with this data.
+     */
+    create: XOR<SweepConfigCreateInput, SweepConfigUncheckedCreateInput>
+    /**
+     * In case the SweepConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SweepConfigUpdateInput, SweepConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * SweepConfig delete
+   */
+  export type SweepConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+    /**
+     * Filter which SweepConfig to delete.
+     */
+    where: SweepConfigWhereUniqueInput
+  }
+
+  /**
+   * SweepConfig deleteMany
+   */
+  export type SweepConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SweepConfigs to delete
+     */
+    where?: SweepConfigWhereInput
+  }
+
+  /**
+   * SweepConfig without action
+   */
+  export type SweepConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SweepConfig
+     */
+    select?: SweepConfigSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Model Reconciliation
    */
 
@@ -34509,6 +35508,17 @@ export namespace Prisma {
   export type PlatformSettingScalarFieldEnum = (typeof PlatformSettingScalarFieldEnum)[keyof typeof PlatformSettingScalarFieldEnum]
 
 
+  export const SweepConfigScalarFieldEnum: {
+    id: 'id',
+    chain: 'chain',
+    enabled: 'enabled',
+    thresholdUsd: 'thresholdUsd',
+    updatedAt: 'updatedAt'
+  };
+
+  export type SweepConfigScalarFieldEnum = (typeof SweepConfigScalarFieldEnum)[keyof typeof SweepConfigScalarFieldEnum]
+
+
   export const ReconciliationScalarFieldEnum: {
     id: 'id',
     currency: 'currency',
@@ -37051,6 +38061,60 @@ export namespace Prisma {
     key?: StringWithAggregatesFilter<"PlatformSetting"> | string
     value?: StringWithAggregatesFilter<"PlatformSetting"> | string
     updatedAt?: DateTimeWithAggregatesFilter<"PlatformSetting"> | Date | string
+  }
+
+  export type SweepConfigWhereInput = {
+    AND?: SweepConfigWhereInput | SweepConfigWhereInput[]
+    OR?: SweepConfigWhereInput[]
+    NOT?: SweepConfigWhereInput | SweepConfigWhereInput[]
+    id?: UuidFilter<"SweepConfig"> | string
+    chain?: StringFilter<"SweepConfig"> | string
+    enabled?: BoolFilter<"SweepConfig"> | boolean
+    thresholdUsd?: DecimalNullableFilter<"SweepConfig"> | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFilter<"SweepConfig"> | Date | string
+  }
+
+  export type SweepConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    enabled?: SortOrder
+    thresholdUsd?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SweepConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    chain?: string
+    AND?: SweepConfigWhereInput | SweepConfigWhereInput[]
+    OR?: SweepConfigWhereInput[]
+    NOT?: SweepConfigWhereInput | SweepConfigWhereInput[]
+    enabled?: BoolFilter<"SweepConfig"> | boolean
+    thresholdUsd?: DecimalNullableFilter<"SweepConfig"> | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFilter<"SweepConfig"> | Date | string
+  }, "id" | "chain">
+
+  export type SweepConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    enabled?: SortOrder
+    thresholdUsd?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    _count?: SweepConfigCountOrderByAggregateInput
+    _avg?: SweepConfigAvgOrderByAggregateInput
+    _max?: SweepConfigMaxOrderByAggregateInput
+    _min?: SweepConfigMinOrderByAggregateInput
+    _sum?: SweepConfigSumOrderByAggregateInput
+  }
+
+  export type SweepConfigScalarWhereWithAggregatesInput = {
+    AND?: SweepConfigScalarWhereWithAggregatesInput | SweepConfigScalarWhereWithAggregatesInput[]
+    OR?: SweepConfigScalarWhereWithAggregatesInput[]
+    NOT?: SweepConfigScalarWhereWithAggregatesInput | SweepConfigScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"SweepConfig"> | string
+    chain?: StringWithAggregatesFilter<"SweepConfig"> | string
+    enabled?: BoolWithAggregatesFilter<"SweepConfig"> | boolean
+    thresholdUsd?: DecimalNullableWithAggregatesFilter<"SweepConfig"> | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeWithAggregatesFilter<"SweepConfig"> | Date | string
   }
 
   export type ReconciliationWhereInput = {
@@ -39873,6 +40937,62 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SweepConfigCreateInput = {
+    id?: string
+    chain: string
+    enabled?: boolean
+    thresholdUsd?: Decimal | DecimalJsLike | number | string | null
+    updatedAt?: Date | string
+  }
+
+  export type SweepConfigUncheckedCreateInput = {
+    id?: string
+    chain: string
+    enabled?: boolean
+    thresholdUsd?: Decimal | DecimalJsLike | number | string | null
+    updatedAt?: Date | string
+  }
+
+  export type SweepConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    thresholdUsd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SweepConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    thresholdUsd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SweepConfigCreateManyInput = {
+    id?: string
+    chain: string
+    enabled?: boolean
+    thresholdUsd?: Decimal | DecimalJsLike | number | string | null
+    updatedAt?: Date | string
+  }
+
+  export type SweepConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    thresholdUsd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SweepConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chain?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    thresholdUsd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ReconciliationCreateInput = {
     id?: string
     currency: $Enums.Currency
@@ -42253,6 +43373,65 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type SweepConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    enabled?: SortOrder
+    thresholdUsd?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SweepConfigAvgOrderByAggregateInput = {
+    thresholdUsd?: SortOrder
+  }
+
+  export type SweepConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    enabled?: SortOrder
+    thresholdUsd?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SweepConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    chain?: SortOrder
+    enabled?: SortOrder
+    thresholdUsd?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SweepConfigSumOrderByAggregateInput = {
+    thresholdUsd?: SortOrder
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
   export type ReconciliationCountOrderByAggregateInput = {
     id?: SortOrder
     currency?: SortOrder
@@ -44345,6 +45524,14 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGiftCardEvidenceInput, UserUpdateWithoutGiftCardEvidenceInput>, UserUncheckedUpdateWithoutGiftCardEvidenceInput>
   }
 
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
   export type WalletCreateNestedOneWithoutWithdrawalJobsInput = {
     create?: XOR<WalletCreateWithoutWithdrawalJobsInput, WalletUncheckedCreateWithoutWithdrawalJobsInput>
     connectOrCreate?: WalletCreateOrConnectWithoutWithdrawalJobsInput
@@ -44878,6 +46065,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
     _max?: NestedEnumGiftCardOrderStatusFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type ProfileCreateWithoutUserInput = {
@@ -53446,6 +54660,10 @@ export namespace Prisma {
      * @deprecated Use PlatformSettingDefaultArgs instead
      */
     export type PlatformSettingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PlatformSettingDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SweepConfigDefaultArgs instead
+     */
+    export type SweepConfigArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SweepConfigDefaultArgs<ExtArgs>
     /**
      * @deprecated Use ReconciliationDefaultArgs instead
      */

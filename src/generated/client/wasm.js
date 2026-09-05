@@ -451,6 +451,14 @@ exports.Prisma.PlatformSettingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SweepConfigScalarFieldEnum = {
+  id: 'id',
+  chain: 'chain',
+  enabled: 'enabled',
+  thresholdUsd: 'thresholdUsd',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ReconciliationScalarFieldEnum = {
   id: 'id',
   currency: 'currency',
@@ -678,6 +686,7 @@ exports.Prisma.ModelName = {
   GiftCardEvidence: 'GiftCardEvidence',
   PlatformFeeConfig: 'PlatformFeeConfig',
   PlatformSetting: 'PlatformSetting',
+  SweepConfig: 'SweepConfig',
   Reconciliation: 'Reconciliation',
   ChainCursor: 'ChainCursor',
   WithdrawalJob: 'WithdrawalJob',

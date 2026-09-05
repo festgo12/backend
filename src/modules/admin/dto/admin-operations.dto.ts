@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsEnum, IsIn, Min } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, IsIn, Min, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Currency } from '@src/generated/client';
 
@@ -58,6 +58,22 @@ export class SweepFeeWalletDto {
   @IsOptional()
   @IsString()
   chain?: string;
+}
+
+export class SweepConfigDto {
+  @ApiPropertyOptional({ description: 'Enable/disable sweeping for this chain' })
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'USD threshold that must be reached before sweeping this chain. Omit/null to use the global DEPOSIT_SWEEP_THRESHOLD.',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  thresholdUsd?: number;
 }
 
 export class CreditTestFundsDto {

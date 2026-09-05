@@ -22,6 +22,11 @@ describe('SweepService', () => {
       findMany: jest.fn(),
       update: jest.fn(),
     },
+    sweepConfig: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+    },
   };
 
   const mockDepositRegistry = {
@@ -238,5 +243,111 @@ describe('SweepService', () => {
     expect(summary.evmSwept).toBe(0);
     expect(summary.errors).toHaveLength(1);
     expect(summary.errors[0]).toContain('nonce too low');
+  });
+
+  it('sweeps only the requested chain via manualSweepChain', async () => {
+    const userAddress = '0xUserDeposit';
+    mockDepositRegistry.addressesForChain.mockReturnValue([userAddress]);
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(100);
+    mockChainClient.broadcastEvmToken.mockResolvedValue('0xsweephash');
+    mockPrisma.wallet.findFirst.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockPrisma.walletTransaction.findMany.mockResolvedValue([]);
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'platform-fee-wallet',
+    });
+
+    const summary = await service.manualSweepChain('ETH');
+
+    expect(mockDepositRegistry.addressesForChain).toHaveBeenCalledTimes(1);
+    expect(mockChainClient.broadcastEvmToken).toHaveBeenCalledTimes(1);
+    expect(summary.evmSwept).toBe(1);
+    expect(summary.sweptByChain).toEqual({ ETH: 1 });
+    expect(summary.skippedByChain).toEqual({ ETH: 0 });
+  });
+
+  it('skips every address on a chain when sweeping is disabled by config', async () => {
+    mockPrisma.sweepConfig.findUnique.mockResolvedValue({
+      chain: 'TRON',
+      enabled: false,
+      thresholdUsd: null,
+    });
+    mockDepositRegistry.addressesForChain.mockReturnValue(['TUserAddress']);
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'TRON', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+
+    const summary = await service.manualSweepChain('TRON');
+
+    expect(summary.tronSwept).toBe(0);
+    expect(summary.tronSkipped).toBe(1);
+    expect(mockChainClient.broadcastEvmToken).not.toHaveBeenCalled();
+  });
+
+  it('honours a per-chain threshold override above the global default', async () => {
+    mockPrisma.sweepConfig.findUnique.mockResolvedValue({
+      chain: 'ETH',
+      enabled: true,
+      thresholdUsd: 100_000,
+    });
+    mockDepositRegistry.addressesForChain.mockReturnValue(['0xUserDeposit']);
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(100);
+    // Global threshold is 10; the per-chain override (100k) should block the sweep.
+    mockExchangeRate.convertToUsd.mockReturnValue(50);
+
+    const summary = await service.manualSweepChain('ETH');
+
+    expect(summary.evmSwept).toBe(0);
+    expect(mockChainClient.broadcastEvmToken).not.toHaveBeenCalled();
+  });
+
+  it('upserts a sweep configuration via updateSweepConfig', async () => {
+    mockPrisma.sweepConfig.upsert.mockResolvedValue({
+      chain: 'SOLANA',
+      enabled: false,
+      thresholdUsd: null,
+    });
+
+    const result = await service.updateSweepConfig('SOLANA', {
+      enabled: false,
+      thresholdUsd: null,
+    });
+
+    expect(mockPrisma.sweepConfig.upsert).toHaveBeenCalledWith({
+      where: { chain: 'SOLANA' },
+      create: { chain: 'SOLANA', enabled: false, thresholdUsd: null },
+      update: { enabled: false, thresholdUsd: null },
+    });
+    expect(result.enabled).toBe(false);
+  });
+
+  it('rejects an unsupported sweep chain in updateSweepConfig', async () => {
+    await expect(
+      service.updateSweepConfig('DOGE', { enabled: false }),
+    ).rejects.toThrow(/Unsupported sweep chain/);
   });
 });
