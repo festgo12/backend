@@ -9,13 +9,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchAdsDto = exports.UpdateAdDto = exports.CreateAdDto = void 0;
+exports.SearchAdsDto = exports.UpdateAdDto = exports.CreateAdDto = exports.AD_CHAINS = void 0;
 const class_validator_1 = require("class-validator");
 const client_1 = require("../../../generated/client/index.js");
 const class_transformer_1 = require("class-transformer");
+exports.AD_CHAINS = ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'];
 class CreateAdDto {
     asset;
     type;
+    chain;
     price;
     quantity;
     minLimit;
@@ -31,6 +33,11 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.AdType),
     __metadata("design:type", String)
 ], CreateAdDto.prototype, "type", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(exports.AD_CHAINS),
+    __metadata("design:type", String)
+], CreateAdDto.prototype, "chain", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsPositive)(),
@@ -104,6 +111,7 @@ class SearchAdsDto {
     minPrice;
     maxPrice;
     isSponsored;
+    chain;
     page = 1;
     limit = 10;
     sortBy = 'createdAt';
@@ -136,6 +144,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], SearchAdsDto.prototype, "isSponsored", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(exports.AD_CHAINS),
+    __metadata("design:type", String)
+], SearchAdsDto.prototype, "chain", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),

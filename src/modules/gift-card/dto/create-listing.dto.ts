@@ -1,4 +1,15 @@
-import { IsEnum, IsString, IsNumber, IsPositive, IsOptional, IsArray, MaxLength, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsNumber,
+  IsPositive,
+  IsOptional,
+  IsArray,
+  MaxLength,
+  Min,
+  ArrayMinSize,
+  ArrayMaxSize,
+} from 'class-validator';
 import { GiftCardBrand } from '@src/generated/client';
 
 export class CreateGiftCardListingDto {
@@ -31,8 +42,9 @@ export class CreateGiftCardListingDto {
   @IsPositive()
   askingPriceNgn: number;
 
-  @IsOptional()
   @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
   @IsString({ each: true })
-  evidenceUrls?: string[];
+  evidenceUrls: string[];
 }

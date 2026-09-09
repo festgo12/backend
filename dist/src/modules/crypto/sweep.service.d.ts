@@ -33,6 +33,8 @@ export declare class SweepService {
     constructor(prisma: PrismaService, depositRegistry: DepositAddressRegistry, chainClient: ChainClientService, config: CryptoConfigService, hdWallet: HdWalletService, tracker: WithdrawalTrackerService, platformService: PlatformService, exchangeRate: ExchangeRateService);
     sweepAll(): Promise<void>;
     manualSweepAll(): Promise<SweepRunSummary>;
+    manualSweepChain(chain: string): Promise<SweepRunSummary>;
+    private registryChains;
     private runSweep;
     private sweepChain;
     private chainBalance;
@@ -41,4 +43,22 @@ export declare class SweepService {
     private broadcastSweep;
     private recordSweep;
     private markMatchedDepositsSwept;
+    private sweepConfigFor;
+    getSweepConfig(): Promise<{
+        globalThresholdUsd: number;
+        chains: {
+            chain: string;
+            enabled: boolean;
+            thresholdUsd: number | null;
+            usesGlobalThreshold: boolean;
+        }[];
+    }>;
+    updateSweepConfig(chain: string, changes: {
+        enabled?: boolean;
+        thresholdUsd?: number | null;
+    }): Promise<{
+        chain: string;
+        enabled: boolean;
+        thresholdUsd: number | null;
+    }>;
 }

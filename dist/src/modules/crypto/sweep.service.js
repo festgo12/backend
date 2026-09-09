@@ -69,6 +69,58 @@ let SweepService = SweepService_1 = class SweepService {
             throw error;
         }
     }
+    async manualSweepChain(chain) {
+        if (!this.registryChains().includes(chain)) {
+            throw new Error(`Unsupported sweep chain: ${chain}. Expected ${this.registryChains().join(', ')}.`);
+        }
+        if (this.isRunning) {
+            throw new Error('Sweep already in progress');
+        }
+        this.isRunning = true;
+        try {
+            const summary = {
+                evmSwept: 0,
+                btcSwept: 0,
+                solSwept: 0,
+                tronSwept: 0,
+                evmSkipped: 0,
+                btcSkipped: 0,
+                solSkipped: 0,
+                tronSkipped: 0,
+                errors: [],
+                sweptByChain: {},
+                skippedByChain: {},
+            };
+            const res = await this.sweepChain(chain);
+            summary.errors.push(...res.errors);
+            summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
+            summary.skippedByChain[chain] =
+                (summary.skippedByChain[chain] ?? 0) + res.skipped;
+            if (chain === 'BTC') {
+                summary.btcSwept += res.swept;
+                summary.btcSkipped += res.skipped;
+            }
+            else if (this.config.isEvmChain(chain)) {
+                summary.evmSwept += res.swept;
+                summary.evmSkipped += res.skipped;
+            }
+            else if (chain === 'SOLANA') {
+                summary.solSwept += res.swept;
+                summary.solSkipped += res.skipped;
+            }
+            else if (chain === 'TRON') {
+                summary.tronSwept += res.swept;
+                summary.tronSkipped += res.skipped;
+            }
+            return summary;
+        }
+        finally {
+            this.isRunning = false;
+        }
+    }
+    registryChains() {
+        return [...this.config.supportedChains, 'BTC'];
+    }
     async runSweep() {
         if (this.isRunning) {
             throw new Error('Sweep already in progress');
@@ -88,8 +140,7 @@ let SweepService = SweepService_1 = class SweepService {
                 sweptByChain: {},
                 skippedByChain: {},
             };
-            const chains = [...this.config.supportedChains, 'BTC'];
-            for (const chain of chains) {
+            for (const chain of this.registryChains()) {
                 const res = await this.sweepChain(chain);
                 summary.errors.push(...res.errors);
                 summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
@@ -123,7 +174,12 @@ let SweepService = SweepService_1 = class SweepService {
         const addresses = this.depositRegistry.addressesForChain(chain);
         if (addresses.length === 0)
             return result;
-        const thresholdUsd = this.config.depositSweepThreshold;
+        const chainConfig = await this.sweepConfigFor(chain);
+        if (!chainConfig.enabled) {
+            this.logger.log(`${chain} sweep disabled by config; skipping ${addresses.length} addresses`);
+            return { swept: 0, skipped: addresses.length, errors: [] };
+        }
+        const thresholdUsd = chainConfig.thresholdUsd ?? this.config.depositSweepThreshold;
         for (const address of addresses) {
             const registrations = this.depositRegistry.lookup(address, chain);
             const seen = new Set();
@@ -289,6 +345,65 @@ let SweepService = SweepService_1 = class SweepService {
                 },
             });
         }
+    }
+    async sweepConfigFor(chain) {
+        const row = await this.prisma.sweepConfig.findUnique({
+            where: { chain },
+        });
+        return {
+            chain,
+            enabled: row ? row.enabled : true,
+            thresholdUsd: row?.thresholdUsd
+                ? Number(row.thresholdUsd.toString())
+                : null,
+        };
+    }
+    async getSweepConfig() {
+        const rows = await this.prisma.sweepConfig.findMany();
+        const byChain = new Map(rows.map((r) => [r.chain, r]));
+        const globalThresholdUsd = this.config.depositSweepThreshold;
+        return {
+            globalThresholdUsd,
+            chains: this.registryChains().map((chain) => {
+                const row = byChain.get(chain);
+                return {
+                    chain,
+                    enabled: row ? row.enabled : true,
+                    thresholdUsd: row?.thresholdUsd
+                        ? Number(row.thresholdUsd.toString())
+                        : null,
+                    usesGlobalThreshold: !row?.thresholdUsd,
+                };
+            }),
+        };
+    }
+    async updateSweepConfig(chain, changes) {
+        if (!this.registryChains().includes(chain)) {
+            throw new Error(`Unsupported sweep chain: ${chain}. Expected ${this.registryChains().join(', ')}.`);
+        }
+        const data = {};
+        if (typeof changes.enabled === 'boolean')
+            data.enabled = changes.enabled;
+        if (changes.thresholdUsd !== undefined) {
+            data.thresholdUsd =
+                changes.thresholdUsd === null ? null : changes.thresholdUsd;
+        }
+        if (Object.keys(data).length === 0) {
+            throw new Error('Nothing to update: provide enabled and/or thresholdUsd');
+        }
+        const row = await this.prisma.sweepConfig.upsert({
+            where: { chain },
+            create: { chain, ...data },
+            update: data,
+        });
+        this.logger.log(`Sweep config updated for ${chain}: ${JSON.stringify(data)}`);
+        return {
+            chain: row.chain,
+            enabled: row.enabled,
+            thresholdUsd: row.thresholdUsd
+                ? Number(row.thresholdUsd.toString())
+                : null,
+        };
     }
 };
 exports.SweepService = SweepService;

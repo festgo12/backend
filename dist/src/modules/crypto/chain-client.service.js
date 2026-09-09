@@ -460,6 +460,107 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
             return null;
         }
     }
+    async getSolanaTransfers(ownerAddress, mint, limit = 50) {
+        const connection = this.solanaConnection();
+        const owner = new web3_js_1.PublicKey(ownerAddress);
+        const mintPub = new web3_js_1.PublicKey(mint);
+        const ata = await (0, spl_token_1.getAssociatedTokenAddress)(mintPub, owner, false, spl_token_1.TOKEN_PROGRAM_ID, spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID);
+        const targets = [owner, ata];
+        const signatures = new Set();
+        for (const target of targets) {
+            try {
+                const res = await connection.getSignaturesForAddress(target, { limit });
+                for (const item of res) {
+                    if (item.signature)
+                        signatures.add(item.signature);
+                }
+            }
+            catch (error) {
+                const err = error;
+                this.logger.warn(`Solana getSignaturesForAddress failed for ${target.toBase58()}: ${err.message}`);
+            }
+            if (signatures.size >= limit)
+                break;
+        }
+        const events = [];
+        for (const signature of [...signatures].slice(0, limit)) {
+            let parsed;
+            try {
+                parsed = await connection.getParsedTransaction(signature, {
+                    maxSupportedTransactionVersion: 0,
+                });
+            }
+            catch (error) {
+                const err = error;
+                this.logger.warn(`Solana getParsedTransaction failed ${signature}: ${err.message}`);
+                continue;
+            }
+            if (!parsed?.meta)
+                continue;
+            const pre = new Map();
+            const post = new Map();
+            for (const b of parsed.meta.preTokenBalances ?? []) {
+                if (b.mint !== mint || !b.owner)
+                    continue;
+                pre.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+            }
+            for (const b of parsed.meta.postTokenBalances ?? []) {
+                if (b.mint !== mint || !b.owner)
+                    continue;
+                post.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+            }
+            const owners = new Set([...pre.keys(), ...post.keys()]);
+            let delta = 0;
+            let to = null;
+            for (const o of owners) {
+                const diff = (post.get(o) ?? 0) - (pre.get(o) ?? 0);
+                delta += diff;
+                if (diff > 0)
+                    to = o;
+            }
+            if (delta === 0)
+                continue;
+            events.push({
+                txHash: signature,
+                mint,
+                amount: Math.abs(delta),
+                from: delta < 0 ? ownerAddress : null,
+                to,
+                blockNumber: parsed.slot,
+                confirmed: parsed.confirmationStatus === 'confirmed' ||
+                    parsed.confirmationStatus === 'finalized',
+            });
+        }
+        return events;
+    }
+    async getTronTransfers(address, contract, limit = 50) {
+        const baseUrl = this.config.httpUrlForChain('TRON');
+        if (!baseUrl) {
+            throw new common_1.InternalServerErrorException('ALCHEMY_TRON_HTTP_URL is not configured');
+        }
+        const url = `${baseUrl.replace(/\/+$/, '')}/v1/accounts/${address}/transactions/trc20`;
+        const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
+            params: {
+                contract_address: contract,
+                limit: Math.min(200, limit),
+                order_by: 'block_timestamp,desc',
+            },
+            timeout: 20_000,
+        }));
+        const items = Array.isArray(res.data?.data) ? res.data.data : [];
+        const lower = address.toLowerCase();
+        return items
+            .filter((t) => t.type === 'Transfer' && (t.to || '').toLowerCase() === lower)
+            .slice(0, limit)
+            .map((t) => ({
+            txHash: t.transaction_id,
+            amount: Number(t.value ?? 0) / 1e6,
+            from: t.from || '',
+            to: (t.to || '').toLowerCase(),
+            blockNumber: Math.floor((t.block_timestamp || 0) / 1000),
+            tokenSymbol: t.token_info?.symbol ?? null,
+        }));
+    }
     async broadcastBtc(fromIndex, to, amountBtc, feePerByte) {
         const valueSat = Math.floor(amountBtc * 1e8);
         const fromAddress = this.hdWallet.deriveAddress(client_1.Currency.BTC, fromIndex);

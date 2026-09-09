@@ -13,6 +13,10 @@ export declare class SweepFeeWalletDto {
     amount?: number;
     chain?: string;
 }
+export declare class SweepConfigDto {
+    enabled?: boolean;
+    thresholdUsd?: number;
+}
 export declare class CreditTestFundsDto {
     email: string;
     currency: Currency;

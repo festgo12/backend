@@ -15,6 +15,7 @@ import { CreateGiftCardListingDto } from './dto/create-listing.dto';
 import { ModerateGiftCardListingDto } from './dto/moderate-listing.dto';
 import { PurchaseGiftCardDto } from './dto/purchase-listing.dto';
 import { ListGiftCardListingsDto, ListGiftCardOrdersDto } from './dto/list-listings.dto';
+import { UploadService } from '../upload/upload.service';
 import { v4 as uuidv4 } from 'uuid';
 import { primaryWalletWhere } from '../wallet/wallet-query.util';
 
@@ -27,7 +28,27 @@ export class GiftCardService {
     private readonly encryption: EncryptionService,
     private readonly ledgerService: LedgerService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly uploadService: UploadService,
   ) {}
+
+  // ─── SELLER: Upload listing evidence photo ─────────────────────────────
+  uploadListingEvidence(userId: string, file: Express.Multer.File) {
+    if (!file || !file.filename) {
+      throw new BadRequestException('No image file provided');
+    }
+
+    const url = this.uploadService.getFileUrl(file.filename, 'cards');
+
+    this.logger.log(
+      `Gift card evidence uploaded by ${userId}: ${file.filename}`,
+    );
+
+    return {
+      url,
+      fileType: file.mimetype,
+      originalName: file.originalname,
+    };
+  }
 
   // ─── SELLER: Create Listing ────────────────────────────────────────────
   async createListing(sellerId: string, dto: CreateGiftCardListingDto) {
@@ -57,7 +78,7 @@ export class GiftCardService {
     this.eventEmitter.emit('gift_card.listing.created', listing);
     this.logger.log(`Listing created: ${listing.id} by ${sellerId}`);
 
-    return this.stripSensitive(listing);
+    return this.stripEvidence(listing);
   }
 
   // ─── PUBLIC: Browse Active Listings ─────────────────────────────────────
@@ -96,7 +117,7 @@ export class GiftCardService {
     ]);
 
     return {
-      data: listings.map((l) => this.stripSensitive(l)),
+      data: listings.map((l) => this.stripEvidence(l)),
       meta: {
         total,
         page,
@@ -114,7 +135,6 @@ export class GiftCardService {
         seller: {
           include: { profile: true },
         },
-        evidenceRecords: true,
       },
     });
 
@@ -122,7 +142,7 @@ export class GiftCardService {
       throw new NotFoundException('Gift card listing not found');
     }
 
-    return this.stripSensitive(listing);
+    return this.stripEvidence(listing);
   }
 
   // ─── SELLER: My Listings ───────────────────────────────────────────────
@@ -140,7 +160,7 @@ export class GiftCardService {
     ]);
 
     return {
-      data: listings.map((l) => this.stripSensitive(l)),
+      data: listings.map((l) => this.stripEvidence(l)),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -635,6 +655,14 @@ export class GiftCardService {
 
   private stripSensitive(listing: any) {
     const { cardCode, cardPin, ...safe } = listing;
+    return safe;
+  }
+
+  // Strips card codes AND any evidence (proof photos are admin-only). Used
+  // for every buyer/seller-facing response; admin endpoints keep evidence.
+  private stripEvidence(listing: any) {
+    const { cardCode, cardPin, evidenceUrls, evidenceRecords, ...safe } =
+      listing;
     return safe;
   }
 

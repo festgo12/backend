@@ -82,6 +82,23 @@ export declare class ChainClientService {
         confirmed: boolean;
         blockNumber: number;
     } | null>;
+    getSolanaTransfers(ownerAddress: string, mint: string, limit?: number): Promise<Array<{
+        txHash: string;
+        mint: string;
+        amount: number;
+        from: string | null;
+        to: string | null;
+        blockNumber: number | null;
+        confirmed: boolean;
+    }>>;
+    getTronTransfers(address: string, contract: string, limit?: number): Promise<Array<{
+        txHash: string;
+        amount: number;
+        from: string;
+        to: string;
+        blockNumber: number;
+        tokenSymbol: string | null;
+    }>>;
     broadcastBtc(fromIndex: number, to: string, amountBtc: number, feePerByte: number): Promise<string>;
     private evmSigner;
     private decimalsFor;

@@ -22,11 +22,15 @@ let MarketplaceService = class MarketplaceService {
     }
     async createAd(userId, dto) {
         if (dto.type === client_1.AdType.SELL) {
-            const wallet = await this.prisma.wallet.findFirst({
-                where: (0, wallet_query_util_1.primaryWalletWhere)(userId, dto.asset),
-            });
-            const available = wallet?.balance?.toString() || '0';
-            if (!wallet || wallet.balance.lessThan(dto.quantity)) {
+            if (!this.isSingleChainAsset(dto.asset) && !dto.chain) {
+                throw new common_1.BadRequestException(`A chain is required for ${dto.asset} advertisements (ETH/BSC/POLYGON/SOLANA/TRON).`);
+            }
+            const walletRow = await (0, wallet_query_util_1.resolveChainWallet)(async (where) => {
+                const row = await this.prisma.wallet.findFirst({ where });
+                return row ? { balance: row.balance } : null;
+            }, userId, dto.asset, this.isSingleChainAsset(dto.asset) ? null : dto.chain);
+            const available = walletRow?.balance?.toString() ?? '0';
+            if (!walletRow || new library_1.Decimal(available).lessThan(dto.quantity)) {
                 throw new common_1.BadRequestException(`Insufficient ${dto.asset} balance. You need ${dto.quantity} ${dto.asset} but have ${available}.`);
             }
         }
@@ -45,6 +49,7 @@ let MarketplaceService = class MarketplaceService {
                 sellerId: userId,
                 asset: dto.asset,
                 type: dto.type,
+                chain: this.isSingleChainAsset(dto.asset) ? null : dto.chain ?? null,
                 price: dto.price,
                 quantity: dto.quantity,
                 minLimit: dto.minLimit,
@@ -53,6 +58,9 @@ let MarketplaceService = class MarketplaceService {
                 status: 'ACTIVE',
             },
         });
+    }
+    isSingleChainAsset(asset) {
+        return asset === client_1.Currency.BTC || asset === client_1.Currency.ETH;
     }
     async updateAd(userId, adId, dto) {
         const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
@@ -115,7 +123,7 @@ let MarketplaceService = class MarketplaceService {
         return map;
     }
     async searchAds(dto) {
-        const { asset, type, minPrice, maxPrice, isSponsored, sortBy, sortOrder } = dto;
+        const { asset, type, minPrice, maxPrice, isSponsored, sortBy, sortOrder, chain } = dto;
         const page = dto.page ?? 1;
         const limit = dto.limit ?? 10;
         const skip = (page - 1) * limit;
@@ -126,6 +134,8 @@ let MarketplaceService = class MarketplaceService {
             where.asset = asset;
         if (type)
             where.type = type;
+        if (chain)
+            where.chain = chain;
         if (isSponsored !== undefined)
             where.isSponsored = isSponsored;
         if (minPrice || maxPrice) {

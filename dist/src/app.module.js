@@ -26,6 +26,7 @@ const disputes_module_1 = require("./modules/disputes/disputes.module");
 const upload_module_1 = require("./modules/upload/upload.module");
 const security_module_1 = require("./modules/security/security.module");
 const gift_card_module_1 = require("./modules/gift-card/gift-card.module");
+const gift_card_store_module_1 = require("./modules/gift-card-store/gift-card-store.module");
 const reporting_module_1 = require("./modules/reporting/reporting.module");
 const help_center_module_1 = require("./modules/help-center/help-center.module");
 const app_controller_1 = require("./app.controller");
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             upload_module_1.UploadModule,
             security_module_1.SecurityModule,
             gift_card_module_1.GiftCardModule,
+            gift_card_store_module_1.GiftCardStoreModule,
             reporting_module_1.ReportingModule,
             help_center_module_1.HelpCenterModule,
         ],

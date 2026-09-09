@@ -68,31 +68,53 @@ let WalletController = WalletController_1 = class WalletController {
             source: info.source,
         };
     }
-    async initWallet(user, currency) {
-        const wallet = await this.walletService.getOrCreateWallet(user.id, currency);
-        if (currency !== client_1.Currency.NGN && !wallet.address) {
-            try {
-                const info = await this.hdWallet.getOrAssignDepositInfo(user.id, currency);
-                const updatedWallet = await this.walletService.updateWalletDepositInfo(wallet.id, {
-                    address: info.address,
-                    derivationIndex: info.derivationIndex,
-                    chain: info.chain,
-                });
-                this.depositRegistry.register(info.address, info.chain, wallet.id);
-                if (currency === client_1.Currency.USDT || currency === client_1.Currency.USDC) {
-                    await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
-                    await this.ensureMultichainWallet(user.id, currency, 'TRON');
-                }
-                return updatedWallet;
-            }
-            catch (error) {
-                const message = error instanceof Error ? error.message : String(error);
-                this.logger.error(`Failed to execute wallet initialization sequence for user ${user.id} (${currency}): ${message}`);
-                throw new common_1.InternalServerErrorException(message ||
-                    `Could not complete blockchain generation layer for ${currency}.`);
-            }
+    async initWallet(user, currency, chain) {
+        if (currency === client_1.Currency.NGN) {
+            return this.walletService.getOrCreateWallet(user.id, currency);
         }
-        return wallet;
+        const isEvmChain = chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON';
+        const isNonEvmChain = chain === 'SOLANA' || chain === 'TRON';
+        try {
+            if (chain && isEvmChain) {
+                return await this.ensurePrimaryEvmDeposit(user.id, currency);
+            }
+            if (chain && isNonEvmChain) {
+                if (currency !== client_1.Currency.USDT && currency !== client_1.Currency.USDC) {
+                    throw new common_1.BadRequestException(`Chain ${chain} is only supported for USDT/USDC wallets`);
+                }
+                await this.ensureMultichainWallet(user.id, currency, chain);
+                return this.walletService.getOrCreateWallet(user.id, currency, chain);
+            }
+            if (chain) {
+                throw new common_1.BadRequestException(`Unsupported chain "${chain}". Expected ETH/BSC/POLYGON/SOLANA/TRON.`);
+            }
+            const wallet = await this.walletService.getOrCreateWallet(user.id, currency);
+            const primary = await this.ensurePrimaryEvmDeposit(user.id, currency);
+            if (currency === client_1.Currency.USDT || currency === client_1.Currency.USDC) {
+                await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
+                await this.ensureMultichainWallet(user.id, currency, 'TRON');
+            }
+            return primary ?? wallet;
+        }
+        catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.error(`Failed to execute wallet initialization sequence for user ${user.id} (${currency}${chain ? `/${chain}` : ''}): ${message}`);
+            throw new common_1.InternalServerErrorException(message ||
+                `Could not complete blockchain generation layer for ${currency}.`);
+        }
+    }
+    async ensurePrimaryEvmDeposit(userId, currency) {
+        const wallet = await this.walletService.getOrCreateWallet(userId, currency);
+        if (wallet.address)
+            return wallet;
+        const info = await this.hdWallet.getOrAssignDepositInfo(userId, currency);
+        const updatedWallet = await this.walletService.updateWalletDepositInfo(wallet.id, {
+            address: info.address,
+            derivationIndex: info.derivationIndex,
+            chain: info.chain,
+        });
+        this.depositRegistry.register(info.address, info.chain, wallet.id);
+        return updatedWallet;
     }
     async ensureMultichainWallet(userId, currency, chain) {
         const chainWallet = await this.walletService.getOrCreateWallet(userId, currency, chain);
@@ -189,11 +211,12 @@ __decorate([
 __decorate([
     (0, common_1.Post)('init'),
     (0, audit_decorator_1.AuditLog)('WALLET_CREATION', 'WALLET'),
-    (0, swagger_1.ApiOperation)({ summary: 'Initialize a wallet for a specific currency' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Initialize a wallet for a specific currency (optionally per-chain)' }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)('currency')),
+    __param(2, (0, common_1.Body)('chain')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], WalletController.prototype, "initWallet", null);
 __decorate([

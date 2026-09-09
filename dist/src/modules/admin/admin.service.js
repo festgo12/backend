@@ -202,18 +202,21 @@ let AdminService = class AdminService {
         const { passwordHash, ...result } = user;
         return result;
     }
-    async getAllWallets(page, limit, search) {
+    async getAllWallets(page, limit, search, currency, chain) {
         const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                user: {
-                    OR: [
-                        { email: { contains: search, mode: 'insensitive' } },
-                        { phone: { contains: search, mode: 'insensitive' } },
-                    ],
-                },
-            }
-            : {};
+        const where = {};
+        if (search) {
+            where.user = {
+                OR: [
+                    { email: { contains: search, mode: 'insensitive' } },
+                    { phone: { contains: search, mode: 'insensitive' } },
+                ],
+            };
+        }
+        if (currency)
+            where.currency = currency;
+        if (chain)
+            where.chain = chain;
         const [wallets, total] = await Promise.all([
             this.prisma.wallet.findMany({
                 where,
@@ -318,10 +321,29 @@ let AdminService = class AdminService {
             metadata: { testnet: true, source: 'admin' },
         });
     }
-    async getAllTransactions(page, limit) {
+    async getAllTransactions(page, limit, currency, chain) {
         const skip = (page - 1) * limit;
+        const where = {};
+        const walletWhere = {};
+        if (currency)
+            walletWhere.currency = currency;
+        if (chain) {
+            walletWhere.OR = [
+                { chain },
+                {
+                    chain: null,
+                    transactions: {
+                        some: { metadata: { path: ['chain'], equals: chain } },
+                    },
+                },
+            ];
+        }
+        if (Object.keys(walletWhere).length > 0) {
+            where.wallet = walletWhere;
+        }
         const [transactions, total] = await Promise.all([
             this.prisma.walletTransaction.findMany({
+                where,
                 skip,
                 take: limit,
                 include: {
@@ -329,14 +351,14 @@ let AdminService = class AdminService {
                 },
                 orderBy: { createdAt: 'desc' },
             }),
-            this.prisma.walletTransaction.count(),
+            this.prisma.walletTransaction.count({ where }),
         ]);
         return {
             transactions,
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
-    async getAllOrders(page, limit, search) {
+    async getAllOrders(page, limit, search, chain) {
         const skip = (page - 1) * limit;
         const where = search
             ? {
@@ -347,6 +369,14 @@ let AdminService = class AdminService {
                 ],
             }
             : {};
+        if (chain) {
+            const existingOr = where.OR ?? [];
+            where.OR = [
+                ...existingOr,
+                { chain },
+                { ad: { chain } },
+            ];
+        }
         const [orders, total] = await Promise.all([
             this.prisma.order.findMany({
                 where,
@@ -380,11 +410,28 @@ let AdminService = class AdminService {
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
-    async getBlockchainTransactions(page, limit) {
+    async getBlockchainTransactions(page, limit, chain) {
         const skip = (page - 1) * limit;
+        const walletWhere = {
+            currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] },
+        };
+        if (chain) {
+            walletWhere.OR = [
+                { chain },
+                {
+                    chain: null,
+                    transactions: {
+                        some: { metadata: { path: ['chain'], equals: chain } },
+                    },
+                },
+            ];
+        }
+        const where = {
+            wallet: walletWhere,
+        };
         const [transactions, total] = await Promise.all([
             this.prisma.walletTransaction.findMany({
-                where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
+                where,
                 skip,
                 take: limit,
                 include: {
@@ -392,9 +439,7 @@ let AdminService = class AdminService {
                 },
                 orderBy: { createdAt: 'desc' },
             }),
-            this.prisma.walletTransaction.count({
-                where: { wallet: { currency: { in: ['BTC', 'ETH', 'USDT', 'USDC'] } } },
-            }),
+            this.prisma.walletTransaction.count({ where }),
         ]);
         return {
             transactions,
@@ -997,10 +1042,13 @@ let AdminService = class AdminService {
             totalPages: data.totalPages || 1,
         };
     }
-    async getEvmHistory(address, page) {
-        const rpcUrl = this.cryptoConfig.alchemyEthHttpUrl;
+    async getEvmHistory(address, page, chain = 'ETH') {
+        if (!this.cryptoConfig.isEvmChain(chain)) {
+            throw new common_1.BadRequestException(`Unsupported EVM chain: ${chain}. Expected one of ETH, BSC, POLYGON.`);
+        }
+        const rpcUrl = this.cryptoConfig.httpUrlForChain(chain);
         if (!rpcUrl) {
-            throw new common_1.BadRequestException('ALCHEMY_ETH_HTTP_URL not configured');
+            throw new common_1.BadRequestException(`No RPC configured for ${chain} (ALCHEMY_${chain}_HTTP_URL)`);
         }
         const axios = await import('axios');
         const params = {
@@ -1049,9 +1097,250 @@ let AdminService = class AdminService {
         }));
         return {
             address,
+            chain,
             transfers: enriched,
             page,
         };
+    }
+    async triggerSweepChain(chain) {
+        const valid = [
+            ...this.cryptoConfig.supportedChains,
+            'BTC',
+        ];
+        if (!valid.includes(chain)) {
+            throw new common_1.BadRequestException(`Unsupported sweep chain: ${chain}. Expected ${valid.join(', ')}.`);
+        }
+        return this.sweepService.manualSweepChain(chain);
+    }
+    async getSweepConfig() {
+        return this.sweepService.getSweepConfig();
+    }
+    async updateSweepConfig(chain, changes) {
+        return this.sweepService.updateSweepConfig(chain, changes);
+    }
+    async getTronHistory(address, page) {
+        const limit = 50;
+        const currencies = [client_1.Currency.USDT, client_1.Currency.USDC];
+        const all = [];
+        for (const currency of currencies) {
+            const contract = this.cryptoConfig.getStablecoinContractFor('TRON', currency);
+            if (!contract)
+                continue;
+            const transfers = await this.chainClient.getTronTransfers(address, contract, limit);
+            for (const tx of transfers) {
+                const dbTx = await this.prisma.walletTransaction.findUnique({
+                    where: { reference: tx.txHash },
+                    select: {
+                        reference: true,
+                        status: true,
+                        amount: true,
+                        wallet: {
+                            select: {
+                                currency: true,
+                                user: { select: { email: true } },
+                            },
+                        },
+                    },
+                });
+                all.push({
+                    hash: tx.txHash,
+                    amount: tx.amount,
+                    asset: tx.tokenSymbol ?? currency,
+                    currency,
+                    from: tx.from,
+                    to: tx.to,
+                    blockNumber: tx.blockNumber,
+                    dbMatch: !!dbTx,
+                    dbTransaction: dbTx || null,
+                });
+            }
+        }
+        all.sort((a, b) => b.blockNumber - a.blockNumber);
+        const start = (page - 1) * limit;
+        return {
+            address,
+            chain: 'TRON',
+            transfers: all.slice(start, start + limit),
+            page,
+            total: all.length,
+        };
+    }
+    async getSolHistory(address, page) {
+        const limit = 50;
+        const currencies = [client_1.Currency.USDT, client_1.Currency.USDC];
+        const all = [];
+        for (const currency of currencies) {
+            const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
+            if (!mint)
+                continue;
+            const transfers = await this.chainClient.getSolanaTransfers(address, mint, limit);
+            for (const tx of transfers) {
+                const dbTx = await this.prisma.walletTransaction.findUnique({
+                    where: { reference: tx.txHash },
+                    select: {
+                        reference: true,
+                        status: true,
+                        amount: true,
+                        wallet: {
+                            select: {
+                                currency: true,
+                                user: { select: { email: true } },
+                            },
+                        },
+                    },
+                });
+                all.push({
+                    hash: tx.txHash,
+                    amount: tx.amount,
+                    asset: currency,
+                    currency,
+                    from: tx.from,
+                    to: tx.to,
+                    blockNumber: tx.blockNumber,
+                    confirmed: tx.confirmed,
+                    dbMatch: !!dbTx,
+                    dbTransaction: dbTx || null,
+                });
+            }
+        }
+        all.sort((a, b) => b.blockNumber - a.blockNumber);
+        const start = (page - 1) * limit;
+        return {
+            address,
+            chain: 'SOLANA',
+            transfers: all.slice(start, start + limit),
+            page,
+            total: all.length,
+        };
+    }
+    async pullEvmDeposits(chain, address) {
+        if (!this.cryptoConfig.isEvmChain(chain)) {
+            throw new common_1.BadRequestException(`Unsupported EVM chain: ${chain}. Expected one of ETH, BSC, POLYGON.`);
+        }
+        const rpcUrl = this.cryptoConfig.httpUrlForChain(chain);
+        if (!rpcUrl) {
+            throw new common_1.BadRequestException(`No RPC configured for ${chain} (ALCHEMY_${chain}_HTTP_URL)`);
+        }
+        const normalizedAddress = address.toLowerCase();
+        const axios = await import('axios');
+        const params = {
+            toAddress: normalizedAddress,
+            category: ['external', 'internal', 'erc20'],
+            fromBlock: '0x0',
+            toBlock: 'latest',
+            order: 'asc',
+            maxCount: '0x3e8',
+            withMetadata: true,
+        };
+        const response = await axios.default.post(rpcUrl, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'alchemy_getAssetTransfers',
+            params: [params],
+        }, { timeout: 30_000 });
+        const result = response.data?.result;
+        const transfers = result?.transfers ?? [];
+        const supported = new Set([
+            client_1.Currency.ETH,
+            client_1.Currency.USDT,
+            client_1.Currency.USDC,
+        ]);
+        const summary = {
+            chain,
+            address: normalizedAddress,
+            found: 0,
+            credited: 0,
+            alreadyRecorded: 0,
+            skipped: [],
+            errors: [],
+        };
+        for (const tx of transfers) {
+            const assetKey = (tx.asset || '').toUpperCase();
+            const currency = Object.values(client_1.Currency).find((c) => c === assetKey);
+            if (!currency || !supported.has(currency)) {
+                summary.skipped.push(`${tx.hash}: unsupported asset "${tx.asset}"`);
+                continue;
+            }
+            const amount = parseFloat(String(tx.value || '0'));
+            if (!Number.isFinite(amount) || amount <= 0) {
+                summary.skipped.push(`${tx.hash}: non-positive amount`);
+                continue;
+            }
+            summary.found += 1;
+            const registrations = this.depositRegistry.lookup(normalizedAddress, chain);
+            let matched = false;
+            for (const reg of registrations) {
+                const wallet = await this.prisma.wallet.findUnique({
+                    where: { id: reg.walletId },
+                });
+                if (!wallet || wallet.currency !== currency)
+                    continue;
+                if (!this.walletOnAdminChain(wallet.chain, chain))
+                    continue;
+                matched = true;
+                const existing = await this.prisma.walletTransaction.findUnique({
+                    where: { reference: tx.hash },
+                });
+                if (existing) {
+                    summary.alreadyRecorded += 1;
+                    continue;
+                }
+                const metadata = {
+                    source: 'ADMIN_MANUAL_PULL',
+                    listener: 'ADMIN_EVM_PULL',
+                    chain,
+                    blockTxId: tx.hash,
+                    asset: currency,
+                    address: normalizedAddress,
+                    sourceAddress: tx.from,
+                    blockNumber: parseInt(tx.blockNum, 16),
+                    confirmations: this.cryptoConfig.confirmationsFor(chain),
+                    receivedAt: new Date().toISOString(),
+                    swept: false,
+                };
+                try {
+                    await this.walletService.createTransaction({
+                        walletId: wallet.id,
+                        type: client_1.LedgerType.DEPOSIT,
+                        amount,
+                        reference: tx.hash,
+                        status: 'COMPLETED',
+                        metadata,
+                    });
+                    const created = await this.prisma.walletTransaction.findUnique({
+                        where: { reference: tx.hash },
+                    });
+                    if (created && !created.resolvedAt) {
+                        await this.prisma.walletTransaction.update({
+                            where: { id: created.id },
+                            data: { resolvedAt: new Date() },
+                        });
+                    }
+                    summary.credited += 1;
+                }
+                catch (error) {
+                    const err = error;
+                    if (err.code === 'P2002') {
+                        summary.alreadyRecorded += 1;
+                    }
+                    else {
+                        summary.errors.push(`${tx.hash}: ${err.message}`);
+                    }
+                }
+            }
+            if (!matched) {
+                summary.skipped.push(`${tx.hash}: no matching wallet on ${chain}`);
+            }
+        }
+        return summary;
+    }
+    walletOnAdminChain(walletChain, eventChain) {
+        if (!walletChain)
+            return false;
+        if (this.cryptoConfig.isEvmChain(eventChain)) {
+            return walletChain === eventChain || walletChain === 'EVM';
+        }
+        return walletChain === eventChain;
     }
 };
 exports.AdminService = AdminService;

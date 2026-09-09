@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateFeeConfigDto = exports.CreditTestFundsDto = exports.SweepFeeWalletDto = exports.AdminUpdateAdDto = void 0;
+exports.UpdateFeeConfigDto = exports.CreditTestFundsDto = exports.SweepConfigDto = exports.SweepFeeWalletDto = exports.AdminUpdateAdDto = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("../../../generated/client/index.js");
@@ -91,6 +91,26 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SweepFeeWalletDto.prototype, "chain", void 0);
+class SweepConfigDto {
+    enabled;
+    thresholdUsd;
+}
+exports.SweepConfigDto = SweepConfigDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Enable/disable sweeping for this chain' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], SweepConfigDto.prototype, "enabled", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'USD threshold that must be reached before sweeping this chain. Omit/null to use the global DEPOSIT_SWEEP_THRESHOLD.',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], SweepConfigDto.prototype, "thresholdUsd", void 0);
 class CreditTestFundsDto {
     email;
     currency;

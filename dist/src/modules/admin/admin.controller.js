@@ -47,20 +47,20 @@ let AdminController = class AdminController {
     getUserDetail(userId) {
         return this.adminService.getUserDetail(userId);
     }
-    getAllWallets(page = '1', limit = '10', search) {
+    getAllWallets(page = '1', limit = '10', search, currency, chain) {
         const p = (0, pagination_1.clampPagination)(page, limit);
-        return this.adminService.getAllWallets(p.page, p.limit, search);
+        return this.adminService.getAllWallets(p.page, p.limit, search, currency || undefined, chain);
     }
     getWalletDetail(walletId) {
         return this.adminService.getWalletDetail(walletId);
     }
-    getAllTransactions(page = '1', limit = '10') {
+    getAllTransactions(page = '1', limit = '10', currency, chain) {
         const p = (0, pagination_1.clampPagination)(page, limit);
-        return this.adminService.getAllTransactions(p.page, p.limit);
+        return this.adminService.getAllTransactions(p.page, p.limit, currency, chain);
     }
-    getAllOrders(page = '1', limit = '10', search) {
+    getAllOrders(page = '1', limit = '10', search, chain) {
         const p = (0, pagination_1.clampPagination)(page, limit);
-        return this.adminService.getAllOrders(p.page, p.limit, search);
+        return this.adminService.getAllOrders(p.page, p.limit, search, chain);
     }
     getOrderDetail(orderId) {
         return this.adminService.getOrderDetail(orderId);
@@ -80,9 +80,9 @@ let AdminController = class AdminController {
     getBlockchainStats() {
         return this.adminService.getBlockchainStats();
     }
-    getBlockchainTransactions(page = '1', limit = '10') {
+    getBlockchainTransactions(page = '1', limit = '10', chain) {
         const p = (0, pagination_1.clampPagination)(page, limit);
-        return this.adminService.getBlockchainTransactions(p.page, p.limit);
+        return this.adminService.getBlockchainTransactions(p.page, p.limit, chain);
     }
     getFailedTransactions(page = '1', limit = '10') {
         const p = (0, pagination_1.clampPagination)(page, limit);
@@ -110,13 +110,36 @@ let AdminController = class AdminController {
     sweepAll() {
         return this.adminService.triggerSweepAll();
     }
+    sweepChain(chain) {
+        return this.adminService.triggerSweepChain(chain);
+    }
+    getSweepConfig() {
+        return this.adminService.getSweepConfig();
+    }
+    updateSweepConfig(chain, dto) {
+        return this.adminService.updateSweepConfig(chain, {
+            enabled: dto.enabled,
+            thresholdUsd: dto.thresholdUsd,
+        });
+    }
     getBtcHistory(page, pageSize) {
         const p = (0, pagination_1.clampPagination)(page, pageSize, { maxLimit: 100 });
         return this.adminService.getBtcHistory(p.page, p.limit);
     }
-    getEvmHistory(address, page) {
+    getEvmHistory(address, chain, page) {
         const p = (0, pagination_1.clampPagination)(page, '50');
-        return this.adminService.getEvmHistory(address, p.page);
+        return this.adminService.getEvmHistory(address, p.page, chain);
+    }
+    getTronHistory(address, page) {
+        const p = (0, pagination_1.clampPagination)(page, '50');
+        return this.adminService.getTronHistory(address, p.page);
+    }
+    getSolHistory(address, page) {
+        const p = (0, pagination_1.clampPagination)(page, '50');
+        return this.adminService.getSolHistory(address, p.page);
+    }
+    evmPull(chain, address) {
+        return this.adminService.pullEvmDeposits(chain, address);
     }
     getFeeWallets() {
         return this.adminService.getFeeWallets();
@@ -230,8 +253,10 @@ __decorate([
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('search')),
+    __param(3, (0, common_1.Query)('currency')),
+    __param(4, (0, common_1.Query)('chain')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getAllWallets", null);
 __decorate([
@@ -247,8 +272,10 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'List platform transactions' }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('currency')),
+    __param(3, (0, common_1.Query)('chain')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getAllTransactions", null);
 __decorate([
@@ -257,8 +284,9 @@ __decorate([
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('search')),
+    __param(3, (0, common_1.Query)('chain')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getAllOrders", null);
 __decorate([
@@ -318,8 +346,9 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Monitor blockchain transactions' }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('chain')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getBlockchainTransactions", null);
 __decorate([
@@ -399,6 +428,39 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "sweepAll", null);
 __decorate([
+    (0, common_1.Post)('crypto/sweep/:chain'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_SWEEP_CHAIN', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Trigger a manual sweep of deposit addresses for a single chain',
+    }),
+    __param(0, (0, common_1.Param)('chain')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "sweepChain", null);
+__decorate([
+    (0, common_1.Get)('crypto/sweep-config'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'List per-chain sweep enable flags and USD thresholds',
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getSweepConfig", null);
+__decorate([
+    (0, common_1.Patch)('crypto/sweep-config/:chain'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_SWEEP_CONFIG_UPDATE', 'SYSTEM'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Toggle sweeping and/or set a per-chain USD threshold',
+    }),
+    __param(0, (0, common_1.Param)('chain')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, admin_operations_dto_1.SweepConfigDto]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "updateSweepConfig", null);
+__decorate([
     (0, common_1.Get)('crypto/btc-history'),
     (0, swagger_1.ApiOperation)({
         summary: 'Fetch BTC on-chain history (xpub) with DB match status',
@@ -415,11 +477,47 @@ __decorate([
         summary: 'Fetch EVM on-chain history for a specific address with DB match status',
     }),
     __param(0, (0, common_1.Param)('address')),
+    __param(1, (0, common_1.Query)('chain')),
+    __param(2, (0, common_1.Query)('page')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getEvmHistory", null);
+__decorate([
+    (0, common_1.Get)('crypto/tron-history/:address'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Fetch TRON TRC-20 history for a specific address with DB match status',
+    }),
+    __param(0, (0, common_1.Param)('address')),
     __param(1, (0, common_1.Query)('page')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
-], AdminController.prototype, "getEvmHistory", null);
+], AdminController.prototype, "getTronHistory", null);
+__decorate([
+    (0, common_1.Get)('crypto/sol-history/:address'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Fetch Solana SPL history for a specific address with DB match status',
+    }),
+    __param(0, (0, common_1.Param)('address')),
+    __param(1, (0, common_1.Query)('page')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getSolHistory", null);
+__decorate([
+    (0, common_1.Post)('crypto/evm-pull/:chain/:address'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_EVM_PULL', 'SYSTEM'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Manually pull and credit missed deposits for an EVM-family address (ETH/BSC/POLYGON)',
+    }),
+    __param(0, (0, common_1.Param)('chain')),
+    __param(1, (0, common_1.Param)('address')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "evmPull", null);
 __decorate([
     (0, common_1.Get)('fee-wallets'),
     (0, swagger_1.ApiOperation)({ summary: 'List platform fee wallets with ledger balances' }),

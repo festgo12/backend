@@ -9,11 +9,20 @@ import {
   Query,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Request as ExpressRequest } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GiftCardService } from './gift-card.service';
+import { cardMulterConfig } from '../upload/multer.config';
 import { CreateGiftCardListingDto } from './dto/create-listing.dto';
+
+interface AuthenticatedRequest extends ExpressRequest {
+  user: { id: string; [key: string]: unknown };
+}
 import { PurchaseGiftCardDto } from './dto/purchase-listing.dto';
 import { ListGiftCardListingsDto } from './dto/list-listings.dto';
 
@@ -56,6 +65,28 @@ export class GiftCardController {
   @ApiOperation({ summary: 'Create a gift card listing (seller)' })
   createListing(@Request() req, @Body() dto: CreateGiftCardListingDto) {
     return this.giftCardService.createListing(req.user.id, dto);
+  }
+
+  // ─── SELLER: Upload listing evidence (proof of card) photo ─────────────
+  @Post('evidence/upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file', cardMulterConfig))
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Upload a listing evidence (card proof) image' })
+  uploadEvidence(
+    @Request() req: AuthenticatedRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.giftCardService.uploadListingEvidence(req.user.id, file);
   }
 
   // ─── SELLER: Delete Listing (PENDING_REVIEW only) ─────────────────────

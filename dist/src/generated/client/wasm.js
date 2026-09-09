@@ -222,6 +222,7 @@ exports.Prisma.AdScalarFieldEnum = {
   sellerId: 'sellerId',
   asset: 'asset',
   type: 'type',
+  chain: 'chain',
   price: 'price',
   quantity: 'quantity',
   minLimit: 'minLimit',
@@ -239,6 +240,7 @@ exports.Prisma.OrderScalarFieldEnum = {
   buyerId: 'buyerId',
   sellerId: 'sellerId',
   status: 'status',
+  chain: 'chain',
   fiatAmount: 'fiatAmount',
   cryptoAmount: 'cryptoAmount',
   feeAmount: 'feeAmount',
@@ -434,6 +436,61 @@ exports.Prisma.GiftCardEvidenceScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.GiftCardStoreBrandScalarFieldEnum = {
+  id: 'id',
+  providerBrandId: 'providerBrandId',
+  brandName: 'brandName',
+  logoUrl: 'logoUrl',
+  backgroundColor: 'backgroundColor',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GiftCardStoreProductScalarFieldEnum = {
+  id: 'id',
+  providerProductId: 'providerProductId',
+  productName: 'productName',
+  brandId: 'brandId',
+  countryCode: 'countryCode',
+  currencyCode: 'currencyCode',
+  denominationType: 'denominationType',
+  fixedDenominations: 'fixedDenominations',
+  minDenomination: 'minDenomination',
+  maxDenomination: 'maxDenomination',
+  senderFee: 'senderFee',
+  discountPercentage: 'discountPercentage',
+  providerPriceNgn: 'providerPriceNgn',
+  enabled: 'enabled',
+  markupPercent: 'markupPercent',
+  providerResponse: 'providerResponse',
+  lastSyncedAt: 'lastSyncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GiftCardStoreOrderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  denomination: 'denomination',
+  currencyCode: 'currencyCode',
+  quantity: 'quantity',
+  status: 'status',
+  providerOrderId: 'providerOrderId',
+  costNgn: 'costNgn',
+  sellPriceNgn: 'sellPriceNgn',
+  feeNgn: 'feeNgn',
+  recipientEmail: 'recipientEmail',
+  cardCode: 'cardCode',
+  cardPin: 'cardPin',
+  failureMessage: 'failureMessage',
+  providerResponse: 'providerResponse',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
 exports.Prisma.PlatformFeeConfigScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -446,6 +503,14 @@ exports.Prisma.PlatformSettingScalarFieldEnum = {
   id: 'id',
   key: 'key',
   value: 'value',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SweepConfigScalarFieldEnum = {
+  id: 'id',
+  chain: 'chain',
+  enabled: 'enabled',
+  thresholdUsd: 'thresholdUsd',
   updatedAt: 'updatedAt'
 };
 
@@ -574,6 +639,8 @@ exports.LedgerType = exports.$Enums.LedgerType = {
   FEE: 'FEE',
   GIFT_CARD_PURCHASE: 'GIFT_CARD_PURCHASE',
   GIFT_CARD_SALE: 'GIFT_CARD_SALE',
+  GIFT_CARD_STORE_PURCHASE: 'GIFT_CARD_STORE_PURCHASE',
+  GIFT_CARD_STORE_REFUND: 'GIFT_CARD_STORE_REFUND',
   RECONCILIATION_ADJUSTMENT: 'RECONCILIATION_ADJUSTMENT'
 };
 
@@ -651,6 +718,19 @@ exports.GiftCardOrderStatus = exports.$Enums.GiftCardOrderStatus = {
   DISPUTED: 'DISPUTED'
 };
 
+exports.GiftCardDenominationType = exports.$Enums.GiftCardDenominationType = {
+  FIXED: 'FIXED',
+  RANGE: 'RANGE',
+  OPEN: 'OPEN'
+};
+
+exports.GiftCardStoreOrderStatus = exports.$Enums.GiftCardStoreOrderStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Profile: 'Profile',
@@ -674,8 +754,12 @@ exports.Prisma.ModelName = {
   GiftCardListing: 'GiftCardListing',
   GiftCardOrder: 'GiftCardOrder',
   GiftCardEvidence: 'GiftCardEvidence',
+  GiftCardStoreBrand: 'GiftCardStoreBrand',
+  GiftCardStoreProduct: 'GiftCardStoreProduct',
+  GiftCardStoreOrder: 'GiftCardStoreOrder',
   PlatformFeeConfig: 'PlatformFeeConfig',
   PlatformSetting: 'PlatformSetting',
+  SweepConfig: 'SweepConfig',
   Reconciliation: 'Reconciliation',
   ChainCursor: 'ChainCursor',
   WithdrawalJob: 'WithdrawalJob',

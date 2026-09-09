@@ -18,6 +18,7 @@ import { DisputesModule } from './modules/disputes/disputes.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { SecurityModule } from './modules/security/security.module';
 import { GiftCardModule } from './modules/gift-card/gift-card.module';
+import { GiftCardStoreModule } from './modules/gift-card-store/gift-card-store.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { HelpCenterModule } from './modules/help-center/help-center.module';
 import { AppController } from './app.controller';
@@ -43,6 +44,7 @@ import { AppService } from './app.service';
     UploadModule,
     SecurityModule,
     GiftCardModule,
+    GiftCardStoreModule,
     ReportingModule,
     HelpCenterModule,
   ],

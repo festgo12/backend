@@ -86,10 +86,11 @@ let OrdersService = OrdersService_1 = class OrdersService {
             if (!buyerFiatWallet || new library_1.Decimal(buyerFiatWallet.balance.toString()).lessThan(fiatAmount)) {
                 throw new common_1.BadRequestException('Insufficient fiat balance to initiate this trade');
             }
-            const sellerCryptoWallet = await tx.wallet.findFirst({
-                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoSellerId, ad.asset),
-            });
-            if (!sellerCryptoWallet || new library_1.Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
+            const sellerCryptoRow = await (0, wallet_query_util_1.resolveChainWallet)((where) => tx.wallet.findFirst({ where }), cryptoSellerId, ad.asset, ad.chain);
+            if (!sellerCryptoRow) {
+                throw new common_1.BadRequestException('Seller does not have a wallet for this network');
+            }
+            if (sellerCryptoRow && new library_1.Decimal(sellerCryptoRow.balance.toString()).lessThan(cryptoAmount)) {
                 throw new common_1.BadRequestException('Seller does not have enough crypto to fulfill this order');
             }
             const reserveResult = await tx.wallet.updateMany({
@@ -110,6 +111,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     buyerId,
                     sellerId: ad.sellerId,
                     status: client_1.OrderStatus.CREATED,
+                    chain: ad.chain,
                     fiatAmount,
                     cryptoAmount,
                     feeAmount: 0,
@@ -170,16 +172,14 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     version: { increment: 1 },
                 },
             });
-            const sellerCryptoWallet = await tx.wallet.findFirst({
-                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoSellerId, order.ad.asset),
-            });
-            if (!sellerCryptoWallet)
+            const sellerCryptoRow = await (0, wallet_query_util_1.resolveChainWallet)((where) => tx.wallet.findFirst({ where }), cryptoSellerId, order.ad.asset, order.chain);
+            if (!sellerCryptoRow)
                 throw new common_1.InternalServerErrorException('Crypto seller wallet not found');
-            if (new library_1.Decimal(sellerCryptoWallet.balance.toString()).lessThan(cryptoAmount)) {
+            if (sellerCryptoRow && new library_1.Decimal(sellerCryptoRow.balance.toString()).lessThan(cryptoAmount)) {
                 throw new common_1.BadRequestException('Seller has insufficient crypto balance to lock');
             }
             const lockCryptoResult = await tx.wallet.updateMany({
-                where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version },
+                where: { id: sellerCryptoRow.id, version: sellerCryptoRow.version },
                 data: {
                     balance: { decrement: cryptoAmount },
                     reservedBalance: { increment: cryptoAmount },
@@ -189,7 +189,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
             if (lockCryptoResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict locking seller crypto');
             const transferCryptoResult = await tx.wallet.updateMany({
-                where: { id: sellerCryptoWallet.id, version: sellerCryptoWallet.version + 1 },
+                where: { id: sellerCryptoRow.id, version: sellerCryptoRow.version + 1 },
                 data: {
                     reservedBalance: { decrement: cryptoAmount },
                     version: { increment: 1 },
@@ -197,13 +197,11 @@ let OrdersService = OrdersService_1 = class OrdersService {
             });
             if (transferCryptoResult.count === 0)
                 throw new common_1.InternalServerErrorException('Conflict transferring seller crypto');
-            const buyerCryptoWallet = await tx.wallet.findFirst({
-                where: (0, wallet_query_util_1.primaryWalletWhere)(cryptoBuyerId, order.ad.asset),
-            });
-            if (!buyerCryptoWallet)
+            const buyerCryptoRow = await (0, wallet_query_util_1.resolveChainWallet)((where) => tx.wallet.findFirst({ where }), cryptoBuyerId, order.ad.asset, order.chain);
+            if (!buyerCryptoRow)
                 throw new common_1.InternalServerErrorException('Crypto buyer wallet not found');
             const creditBuyerCryptoResult = await tx.wallet.updateMany({
-                where: { id: buyerCryptoWallet.id, version: buyerCryptoWallet.version },
+                where: { id: buyerCryptoRow.id, version: buyerCryptoRow.version },
                 data: {
                     balance: { increment: cryptoAmount.minus(buyerFee) },
                     version: { increment: 1 },
@@ -279,28 +277,28 @@ let OrdersService = OrdersService_1 = class OrdersService {
                     balanceAfter: new library_1.Decimal(sellerFiatWallet.balance.toString()).plus(fiatAmount.minus(sellerFee)),
                 },
                 {
-                    walletId: buyerCryptoWallet.id,
+                    walletId: buyerCryptoRow.id,
                     orderId: order.id,
                     amount: cryptoAmount,
                     type: client_1.LedgerType.TRADE_SETTLEMENT,
                     reference: `SETTLE-CRYPTO-BUYER-${order.id}`,
-                    balanceAfter: new library_1.Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount),
+                    balanceAfter: new library_1.Decimal(buyerCryptoRow.balance.toString()).plus(cryptoAmount),
                 },
                 {
-                    walletId: buyerCryptoWallet.id,
+                    walletId: buyerCryptoRow.id,
                     orderId: order.id,
                     amount: buyerFee.negated(),
                     type: client_1.LedgerType.FEE,
                     reference: `FEE-CRYPTO-BUYER-${order.id}`,
-                    balanceAfter: new library_1.Decimal(buyerCryptoWallet.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
+                    balanceAfter: new library_1.Decimal(buyerCryptoRow.balance.toString()).plus(cryptoAmount.minus(buyerFee)),
                 },
                 {
-                    walletId: sellerCryptoWallet.id,
+                    walletId: sellerCryptoRow.id,
                     orderId: order.id,
                     amount: cryptoAmount.negated(),
                     type: client_1.LedgerType.TRADE_SETTLEMENT,
                     reference: `SETTLE-CRYPTO-SELLER-${order.id}`,
-                    balanceAfter: new library_1.Decimal(sellerCryptoWallet.balance.toString()).minus(cryptoAmount),
+                    balanceAfter: new library_1.Decimal(sellerCryptoRow.balance.toString()).minus(cryptoAmount),
                 },
             ];
             if (feeWallet) {
@@ -334,7 +332,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
                 },
             });
             this.eventEmitter.emit('order.completed', finalOrder);
-            return { finalOrder, sellerCryptoWallet, buyerCryptoWallet };
+            return { finalOrder, sellerCryptoWallet: sellerCryptoRow, buyerCryptoWallet: buyerCryptoRow };
         });
         return settlement.finalOrder;
     }

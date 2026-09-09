@@ -10,8 +10,9 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: Decimal;
         price: Decimal;
@@ -19,14 +20,16 @@ export declare class MarketplaceService {
         maxLimit: Decimal;
         isSponsored: boolean;
     }>;
+    private isSingleChainAsset;
     updateAd(userId: string, adId: string, dto: UpdateAdDto): Promise<{
         type: import("@src/generated/client").$Enums.AdType;
         id: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: Decimal;
         price: Decimal;
@@ -40,8 +43,9 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: Decimal;
         price: Decimal;
@@ -55,8 +59,9 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: Decimal;
         price: Decimal;
@@ -92,8 +97,9 @@ export declare class MarketplaceService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
+            chain: string | null;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             quantity: Decimal;
             price: Decimal;

@@ -39,6 +39,8 @@ enum LedgerType {
   FEE
   GIFT_CARD_PURCHASE
   GIFT_CARD_SALE
+  GIFT_CARD_STORE_PURCHASE
+  GIFT_CARD_STORE_REFUND
   RECONCILIATION_ADJUSTMENT
 }
 
@@ -76,49 +78,50 @@ enum DisputeSubjectType {
 }
 
 model User {
-  id                       String             @id @default(uuid()) @db.Uuid
-  email                    String?            @unique
-  phone                    String?            @unique
+  id                       String               @id @default(uuid()) @db.Uuid
+  email                    String?              @unique
+  phone                    String?              @unique
   passwordHash             String
-  role                     Role               @default(USER)
-  status                   UserStatus         @default(ACTIVE)
+  role                     Role                 @default(USER)
+  status                   UserStatus           @default(ACTIVE)
   profile                  Profile?
   preferences              UserPreference?
   wallets                  Wallet[]
   ads                      Ad[]
-  buyOrders                Order[]            @relation("BuyerOrders")
-  sellOrders               Order[]            @relation("SellerOrders")
+  buyOrders                Order[]              @relation("BuyerOrders")
+  sellOrders               Order[]              @relation("SellerOrders")
   authTokens               AuthToken[]
   devices                  Device[]
   notifications            Notification[]
   notificationLogs         NotificationLog[]
-  initiatedDisputes        Dispute[]          @relation("Initiator")
-  assignedDisputes         Dispute[]          @relation("Assignee")
+  initiatedDisputes        Dispute[]            @relation("Initiator")
+  assignedDisputes         Dispute[]            @relation("Assignee")
   evidenceUploads          Evidence[]
   giftCardListings         GiftCardListing[]
-  moderatedListings        GiftCardListing[]  @relation("ModeratedListings")
-  giftCardBuyerOrders      GiftCardOrder[]    @relation("GiftCardBuyerOrders")
-  giftCardSellerOrders     GiftCardOrder[]    @relation("GiftCardSellerOrders")
+  moderatedListings        GiftCardListing[]    @relation("ModeratedListings")
+  giftCardBuyerOrders      GiftCardOrder[]      @relation("GiftCardBuyerOrders")
+  giftCardSellerOrders     GiftCardOrder[]      @relation("GiftCardSellerOrders")
   giftCardEvidence         GiftCardEvidence[]
+  giftCardStoreOrders      GiftCardStoreOrder[]
   securityLogs             SecurityLog[]
   securityAlerts           SecurityAlert[]
-  twoFactorEnabled         Boolean            @default(false)
+  twoFactorEnabled         Boolean              @default(false)
   twoFactorSecret          String?
   twoFactorOtpHash         String?
   twoFactorOtpExpires      DateTime?
-  resetToken               String?            @unique
+  resetToken               String?              @unique
   resetTokenExpires        DateTime?
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
-  emailVerified            Boolean            @default(false)
+  emailVerified            Boolean              @default(false)
   phoneVerificationToken   String?
   phoneVerificationExpires DateTime?
-  phoneVerified            Boolean            @default(false)
-  failedLoginAttempts      Int                @default(0)
+  phoneVerified            Boolean              @default(false)
+  failedLoginAttempts      Int                  @default(0)
   lockedUntil              DateTime?
-  isSystem                 Boolean            @default(false)
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
+  isSystem                 Boolean              @default(false)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
 
   @@index([email, phone])
 }
@@ -558,6 +561,95 @@ model GiftCardEvidence {
   createdAt  DateTime        @default(now())
 
   @@index([listingId])
+}
+
+enum GiftCardStoreOrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum GiftCardDenominationType {
+  FIXED
+  RANGE
+  OPEN
+}
+
+/// Reloadly brand cache used to power the gift card storefront.
+model GiftCardStoreBrand {
+  id              String                 @id @default(uuid()) @db.Uuid
+  providerBrandId Int                    @unique
+  brandName       String
+  logoUrl         String?
+  backgroundColor String?
+  enabled         Boolean                @default(true)
+  products        GiftCardStoreProduct[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([enabled])
+}
+
+/// Synced Reloadly product cache. Admins enable/disable listings and set a
+/// per-product markup (%) on top of the provider's NGN cost.
+model GiftCardStoreProduct {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  providerProductId  Int                      @unique
+  productName        String
+  brandId            String?                  @db.Uuid
+  brand              GiftCardStoreBrand?      @relation(fields: [brandId], references: [id])
+  countryCode        String
+  currencyCode       String
+  denominationType   GiftCardDenominationType
+  fixedDenominations Json?
+  minDenomination    Decimal?                 @db.Decimal(14, 2)
+  maxDenomination    Decimal?                 @db.Decimal(14, 2)
+  senderFee          Decimal                  @default(0) @db.Decimal(14, 4)
+  discountPercentage Decimal                  @default(0) @db.Decimal(8, 2)
+  providerPriceNgn   Decimal                  @default(0) @db.Decimal(16, 2)
+  enabled            Boolean                  @default(false)
+  markupPercent      Decimal                  @default(5) @db.Decimal(8, 2)
+  providerResponse   Json?
+  orders             GiftCardStoreOrder[]
+  lastSyncedAt       DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([brandId])
+  @@index([enabled, countryCode])
+  @@index([denominationType])
+}
+
+/// A platform-sold gift card order fulfilled via Reloadly. Card codes are
+/// stored encrypted with the shared GIFT_CARD_ENCRYPTION_KEY.
+model GiftCardStoreOrder {
+  id               String                   @id @default(uuid()) @db.Uuid
+  userId           String                   @db.Uuid
+  user             User                     @relation(fields: [userId], references: [id])
+  productId        String                   @db.Uuid
+  product          GiftCardStoreProduct     @relation(fields: [productId], references: [id])
+  denomination     Decimal                  @db.Decimal(14, 2)
+  currencyCode     String
+  quantity         Int                      @default(1)
+  status           GiftCardStoreOrderStatus @default(PENDING)
+  providerOrderId  String?
+  costNgn          Decimal                  @db.Decimal(16, 2)
+  sellPriceNgn     Decimal                  @db.Decimal(16, 2)
+  feeNgn           Decimal                  @default(0) @db.Decimal(16, 2)
+  recipientEmail   String?
+  cardCode         String?
+  cardPin          String?
+  failureMessage   String?
+  providerResponse Json?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  version          Int                      @default(0)
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([status])
+  @@index([providerOrderId])
 }
 
 model PlatformFeeConfig {

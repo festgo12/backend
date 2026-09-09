@@ -2,7 +2,7 @@ import { AdminService } from './admin.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Currency } from '@src/generated/client';
-import { AdminUpdateAdDto, SweepFeeWalletDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
+import { AdminUpdateAdDto, SweepFeeWalletDto, SweepConfigDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
 export declare class AdminController {
     private readonly adminService;
     private readonly exchangeRateService;
@@ -31,7 +31,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -39,6 +38,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
@@ -121,7 +121,6 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -129,6 +128,7 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         }[];
         devices: {
             id: string;
@@ -185,7 +185,7 @@ export declare class AdminController {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    getAllWallets(page?: string, limit?: string, search?: string): Promise<{
+    getAllWallets(page?: string, limit?: string, search?: string, currency?: string, chain?: string): Promise<{
         wallets: ({
             user: {
                 profile: {
@@ -226,7 +226,6 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -234,6 +233,7 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         })[];
         meta: {
             total: number;
@@ -315,7 +315,6 @@ export declare class AdminController {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -323,8 +322,9 @@ export declare class AdminController {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }>;
-    getAllTransactions(page?: string, limit?: string): Promise<{
+    getAllTransactions(page?: string, limit?: string, currency?: string, chain?: string): Promise<{
         transactions: ({
             wallet: {
                 user: {
@@ -366,7 +366,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -374,6 +373,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -395,7 +395,7 @@ export declare class AdminController {
             totalPages: number;
         };
     }>;
-    getAllOrders(page?: string, limit?: string, search?: string): Promise<{
+    getAllOrders(page?: string, limit?: string, search?: string, chain?: string): Promise<{
         orders: ({
             ad: {
                 type: import("@src/generated/client").$Enums.AdType;
@@ -403,8 +403,9 @@ export declare class AdminController {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
+                chain: string | null;
                 version: number;
+                sellerId: string;
                 asset: import("@src/generated/client").$Enums.Currency;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
@@ -487,11 +488,12 @@ export declare class AdminController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            chain: string | null;
+            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
-            version: number;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -511,8 +513,9 @@ export declare class AdminController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
+            chain: string | null;
             version: number;
+            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
             quantity: import("@src/generated/client/runtime/library").Decimal;
             price: import("@src/generated/client/runtime/library").Decimal;
@@ -525,7 +528,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -533,6 +535,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -560,7 +563,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -568,6 +570,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
@@ -608,7 +611,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -616,6 +618,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
@@ -647,11 +650,12 @@ export declare class AdminController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        chain: string | null;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -662,11 +666,12 @@ export declare class AdminController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        chain: string | null;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -677,11 +682,12 @@ export declare class AdminController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        chain: string | null;
+        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
-        version: number;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -693,8 +699,9 @@ export declare class AdminController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
@@ -708,8 +715,9 @@ export declare class AdminController {
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
+        chain: string | null;
         version: number;
+        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
@@ -732,7 +740,7 @@ export declare class AdminController {
         successRate: number;
         exchangeRates: Record<string, number>;
     }>;
-    getBlockchainTransactions(page?: string, limit?: string): Promise<{
+    getBlockchainTransactions(page?: string, limit?: string, chain?: string): Promise<{
         transactions: ({
             wallet: {
                 user: {
@@ -774,7 +782,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -782,6 +789,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -845,7 +853,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -853,6 +860,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -918,9 +926,9 @@ export declare class AdminController {
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             currency: import("@src/generated/client").$Enums.Currency;
             chain: string | null;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             destination: string;
             amount: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
@@ -944,13 +952,13 @@ export declare class AdminController {
         };
         balances: ({
             chain: string;
-            currency: "NGN" | "USDT" | "USDC" | "ETH";
+            currency: "NGN" | "USDT" | "ETH" | "USDC";
             address: string;
             balance: number;
             error?: undefined;
         } | {
             chain: string;
-            currency: "NGN" | "USDT" | "USDC" | "ETH";
+            currency: "NGN" | "USDT" | "ETH" | "USDC";
             address: string;
             balance: number;
             error: string;
@@ -975,6 +983,21 @@ export declare class AdminController {
         message: string;
         summary: import("../crypto/sweep.service").SweepRunSummary;
         swept: number;
+    }>;
+    sweepChain(chain: string): Promise<import("../crypto/sweep.service").SweepRunSummary>;
+    getSweepConfig(): Promise<{
+        globalThresholdUsd: number;
+        chains: {
+            chain: string;
+            enabled: boolean;
+            thresholdUsd: number | null;
+            usesGlobalThreshold: boolean;
+        }[];
+    }>;
+    updateSweepConfig(chain: string, dto: SweepConfigDto): Promise<{
+        chain: string;
+        enabled: boolean;
+        thresholdUsd: number | null;
     }>;
     getBtcHistory(page?: string, pageSize?: string): Promise<{
         transactions: {
@@ -1003,8 +1026,9 @@ export declare class AdminController {
         pageSize: number;
         totalPages: number;
     }>;
-    getEvmHistory(address: string, page?: string): Promise<{
+    getEvmHistory(address: string, chain?: string, page?: string): Promise<{
         address: string;
+        chain: string;
         transfers: {
             hash: string;
             amount: number;
@@ -1027,6 +1051,29 @@ export declare class AdminController {
             } | null;
         }[];
         page: number;
+    }>;
+    getTronHistory(address: string, page?: string): Promise<{
+        address: string;
+        chain: string;
+        transfers: Record<string, unknown>[];
+        page: number;
+        total: number;
+    }>;
+    getSolHistory(address: string, page?: string): Promise<{
+        address: string;
+        chain: string;
+        transfers: Record<string, unknown>[];
+        page: number;
+        total: number;
+    }>;
+    evmPull(chain: string, address: string): Promise<{
+        chain: string;
+        address: string;
+        found: number;
+        credited: number;
+        alreadyRecorded: number;
+        skipped: string[];
+        errors: string[];
     }>;
     getFeeWallets(): Promise<{
         wallets: {
@@ -1115,7 +1162,6 @@ export declare class AdminController {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -1123,6 +1169,7 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
             type: import("@src/generated/client").$Enums.LedgerType;
@@ -1185,7 +1232,6 @@ export declare class AdminController {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -1193,6 +1239,7 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         };
         ledgerEntries: {
             type: import("@src/generated/client").$Enums.LedgerType;
