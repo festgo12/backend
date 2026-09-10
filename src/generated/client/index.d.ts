@@ -125,19 +125,20 @@ export type GiftCardOrder = $Result.DefaultSelection<Prisma.$GiftCardOrderPayloa
 export type GiftCardEvidence = $Result.DefaultSelection<Prisma.$GiftCardEvidencePayload>
 /**
  * Model GiftCardStoreBrand
- * Reloadly brand cache used to power the gift card storefront.
+ * Giftbit brand cache used to power the gift card storefront.
  */
 export type GiftCardStoreBrand = $Result.DefaultSelection<Prisma.$GiftCardStoreBrandPayload>
 /**
  * Model GiftCardStoreProduct
- * Synced Reloadly product cache. Admins enable/disable listings and set a
+ * Synced Giftbit product cache. Admins enable/disable listings and set a
  * per-product markup (%) on top of the provider's NGN cost.
  */
 export type GiftCardStoreProduct = $Result.DefaultSelection<Prisma.$GiftCardStoreProductPayload>
 /**
  * Model GiftCardStoreOrder
- * A platform-sold gift card order fulfilled via Reloadly. Card codes are
- * stored encrypted with the shared GIFT_CARD_ENCRYPTION_KEY.
+ * A platform-sold gift card order fulfilled via the Giftbit embedded
+ * endpoint. Delivery is an embedded claim link (giftLink) instead of a raw
+ * card code: Giftbit never returns card codes to the server.
  */
 export type GiftCardStoreOrder = $Result.DefaultSelection<Prisma.$GiftCardStoreOrderPayload>
 /**
@@ -27750,23 +27751,13 @@ export namespace Prisma {
 
   export type AggregateGiftCardStoreBrand = {
     _count: GiftCardStoreBrandCountAggregateOutputType | null
-    _avg: GiftCardStoreBrandAvgAggregateOutputType | null
-    _sum: GiftCardStoreBrandSumAggregateOutputType | null
     _min: GiftCardStoreBrandMinAggregateOutputType | null
     _max: GiftCardStoreBrandMaxAggregateOutputType | null
   }
 
-  export type GiftCardStoreBrandAvgAggregateOutputType = {
-    providerBrandId: number | null
-  }
-
-  export type GiftCardStoreBrandSumAggregateOutputType = {
-    providerBrandId: number | null
-  }
-
   export type GiftCardStoreBrandMinAggregateOutputType = {
     id: string | null
-    providerBrandId: number | null
+    providerBrandId: string | null
     brandName: string | null
     logoUrl: string | null
     backgroundColor: string | null
@@ -27777,7 +27768,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandMaxAggregateOutputType = {
     id: string | null
-    providerBrandId: number | null
+    providerBrandId: string | null
     brandName: string | null
     logoUrl: string | null
     backgroundColor: string | null
@@ -27798,14 +27789,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type GiftCardStoreBrandAvgAggregateInputType = {
-    providerBrandId?: true
-  }
-
-  export type GiftCardStoreBrandSumAggregateInputType = {
-    providerBrandId?: true
-  }
 
   export type GiftCardStoreBrandMinAggregateInputType = {
     id?: true
@@ -27879,18 +27862,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: GiftCardStoreBrandAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: GiftCardStoreBrandSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: GiftCardStoreBrandMinAggregateInputType
@@ -27921,15 +27892,13 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: GiftCardStoreBrandCountAggregateInputType | true
-    _avg?: GiftCardStoreBrandAvgAggregateInputType
-    _sum?: GiftCardStoreBrandSumAggregateInputType
     _min?: GiftCardStoreBrandMinAggregateInputType
     _max?: GiftCardStoreBrandMaxAggregateInputType
   }
 
   export type GiftCardStoreBrandGroupByOutputType = {
     id: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl: string | null
     backgroundColor: string | null
@@ -27937,8 +27906,6 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     _count: GiftCardStoreBrandCountAggregateOutputType | null
-    _avg: GiftCardStoreBrandAvgAggregateOutputType | null
-    _sum: GiftCardStoreBrandSumAggregateOutputType | null
     _min: GiftCardStoreBrandMinAggregateOutputType | null
     _max: GiftCardStoreBrandMaxAggregateOutputType | null
   }
@@ -28005,7 +27972,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      providerBrandId: number
+      providerBrandId: string
       brandName: string
       logoUrl: string | null
       backgroundColor: string | null
@@ -28407,7 +28374,7 @@ export namespace Prisma {
    */ 
   interface GiftCardStoreBrandFieldRefs {
     readonly id: FieldRef<"GiftCardStoreBrand", 'String'>
-    readonly providerBrandId: FieldRef<"GiftCardStoreBrand", 'Int'>
+    readonly providerBrandId: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly brandName: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly logoUrl: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly backgroundColor: FieldRef<"GiftCardStoreBrand", 'String'>
@@ -28775,7 +28742,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductAvgAggregateOutputType = {
-    providerProductId: number | null
     minDenomination: Decimal | null
     maxDenomination: Decimal | null
     senderFee: Decimal | null
@@ -28785,7 +28751,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumAggregateOutputType = {
-    providerProductId: number | null
     minDenomination: Decimal | null
     maxDenomination: Decimal | null
     senderFee: Decimal | null
@@ -28796,7 +28761,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductMinAggregateOutputType = {
     id: string | null
-    providerProductId: number | null
+    providerProductId: string | null
     productName: string | null
     brandId: string | null
     countryCode: string | null
@@ -28816,7 +28781,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductMaxAggregateOutputType = {
     id: string | null
-    providerProductId: number | null
+    providerProductId: string | null
     productName: string | null
     brandId: string | null
     countryCode: string | null
@@ -28859,7 +28824,6 @@ export namespace Prisma {
 
 
   export type GiftCardStoreProductAvgAggregateInputType = {
-    providerProductId?: true
     minDenomination?: true
     maxDenomination?: true
     senderFee?: true
@@ -28869,7 +28833,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumAggregateInputType = {
-    providerProductId?: true
     minDenomination?: true
     maxDenomination?: true
     senderFee?: true
@@ -29029,7 +28992,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductGroupByOutputType = {
     id: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId: string | null
     countryCode: string
@@ -29155,7 +29118,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      providerProductId: number
+      providerProductId: string
       productName: string
       brandId: string | null
       countryCode: string
@@ -29569,7 +29532,7 @@ export namespace Prisma {
    */ 
   interface GiftCardStoreProductFieldRefs {
     readonly id: FieldRef<"GiftCardStoreProduct", 'String'>
-    readonly providerProductId: FieldRef<"GiftCardStoreProduct", 'Int'>
+    readonly providerProductId: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly productName: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly brandId: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly countryCode: FieldRef<"GiftCardStoreProduct", 'String'>
@@ -29993,6 +29956,8 @@ export namespace Prisma {
     quantity: number | null
     status: $Enums.GiftCardStoreOrderStatus | null
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal | null
     sellPriceNgn: Decimal | null
     feeNgn: Decimal | null
@@ -30014,6 +29979,8 @@ export namespace Prisma {
     quantity: number | null
     status: $Enums.GiftCardStoreOrderStatus | null
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal | null
     sellPriceNgn: Decimal | null
     feeNgn: Decimal | null
@@ -30035,6 +30002,8 @@ export namespace Prisma {
     quantity: number
     status: number
     providerOrderId: number
+    providerGiftUuid: number
+    giftLink: number
     costNgn: number
     sellPriceNgn: number
     feeNgn: number
@@ -30077,6 +30046,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30098,6 +30069,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30119,6 +30092,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30228,6 +30203,8 @@ export namespace Prisma {
     quantity: number
     status: $Enums.GiftCardStoreOrderStatus
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal
     sellPriceNgn: Decimal
     feeNgn: Decimal
@@ -30269,6 +30246,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30293,6 +30272,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30317,6 +30298,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30354,6 +30337,8 @@ export namespace Prisma {
       quantity: number
       status: $Enums.GiftCardStoreOrderStatus
       providerOrderId: string | null
+      providerGiftUuid: string | null
+      giftLink: string | null
       costNgn: Prisma.Decimal
       sellPriceNgn: Prisma.Decimal
       feeNgn: Prisma.Decimal
@@ -30768,6 +30753,8 @@ export namespace Prisma {
     readonly quantity: FieldRef<"GiftCardStoreOrder", 'Int'>
     readonly status: FieldRef<"GiftCardStoreOrder", 'GiftCardStoreOrderStatus'>
     readonly providerOrderId: FieldRef<"GiftCardStoreOrder", 'String'>
+    readonly providerGiftUuid: FieldRef<"GiftCardStoreOrder", 'String'>
+    readonly giftLink: FieldRef<"GiftCardStoreOrder", 'String'>
     readonly costNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
     readonly sellPriceNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
     readonly feeNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
@@ -39286,6 +39273,8 @@ export namespace Prisma {
     quantity: 'quantity',
     status: 'status',
     providerOrderId: 'providerOrderId',
+    providerGiftUuid: 'providerGiftUuid',
+    giftLink: 'giftLink',
     costNgn: 'costNgn',
     sellPriceNgn: 'sellPriceNgn',
     feeNgn: 'feeNgn',
@@ -41813,7 +41802,7 @@ export namespace Prisma {
     OR?: GiftCardStoreBrandWhereInput[]
     NOT?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
     id?: UuidFilter<"GiftCardStoreBrand"> | string
-    providerBrandId?: IntFilter<"GiftCardStoreBrand"> | number
+    providerBrandId?: StringFilter<"GiftCardStoreBrand"> | string
     brandName?: StringFilter<"GiftCardStoreBrand"> | string
     logoUrl?: StringNullableFilter<"GiftCardStoreBrand"> | string | null
     backgroundColor?: StringNullableFilter<"GiftCardStoreBrand"> | string | null
@@ -41837,7 +41826,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    providerBrandId?: number
+    providerBrandId?: string
     AND?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
     OR?: GiftCardStoreBrandWhereInput[]
     NOT?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
@@ -41860,10 +41849,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GiftCardStoreBrandCountOrderByAggregateInput
-    _avg?: GiftCardStoreBrandAvgOrderByAggregateInput
     _max?: GiftCardStoreBrandMaxOrderByAggregateInput
     _min?: GiftCardStoreBrandMinOrderByAggregateInput
-    _sum?: GiftCardStoreBrandSumOrderByAggregateInput
   }
 
   export type GiftCardStoreBrandScalarWhereWithAggregatesInput = {
@@ -41871,7 +41858,7 @@ export namespace Prisma {
     OR?: GiftCardStoreBrandScalarWhereWithAggregatesInput[]
     NOT?: GiftCardStoreBrandScalarWhereWithAggregatesInput | GiftCardStoreBrandScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"GiftCardStoreBrand"> | string
-    providerBrandId?: IntWithAggregatesFilter<"GiftCardStoreBrand"> | number
+    providerBrandId?: StringWithAggregatesFilter<"GiftCardStoreBrand"> | string
     brandName?: StringWithAggregatesFilter<"GiftCardStoreBrand"> | string
     logoUrl?: StringNullableWithAggregatesFilter<"GiftCardStoreBrand"> | string | null
     backgroundColor?: StringNullableWithAggregatesFilter<"GiftCardStoreBrand"> | string | null
@@ -41885,7 +41872,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductWhereInput[]
     NOT?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
     id?: UuidFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringFilter<"GiftCardStoreProduct"> | string
     productName?: StringFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringFilter<"GiftCardStoreProduct"> | string
@@ -41933,7 +41920,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    providerProductId?: number
+    providerProductId?: string
     AND?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
     OR?: GiftCardStoreProductWhereInput[]
     NOT?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
@@ -41990,7 +41977,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductScalarWhereWithAggregatesInput[]
     NOT?: GiftCardStoreProductScalarWhereWithAggregatesInput | GiftCardStoreProductScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntWithAggregatesFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
     productName?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableWithAggregatesFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
@@ -42022,6 +42009,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -42046,6 +42035,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrderInput | SortOrder
+    providerGiftUuid?: SortOrderInput | SortOrder
+    giftLink?: SortOrderInput | SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -42073,6 +42064,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -42097,6 +42090,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrderInput | SortOrder
+    providerGiftUuid?: SortOrderInput | SortOrder
+    giftLink?: SortOrderInput | SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -42127,6 +42122,8 @@ export namespace Prisma {
     quantity?: IntWithAggregatesFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusWithAggregatesFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -45016,7 +45013,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45028,7 +45025,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedCreateInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45040,7 +45037,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45052,7 +45049,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45064,7 +45061,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateManyInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45075,7 +45072,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45086,7 +45083,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45097,7 +45094,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -45120,7 +45117,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -45143,7 +45140,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -45166,7 +45163,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -45189,7 +45186,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateManyInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -45211,7 +45208,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -45232,7 +45229,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -45259,6 +45256,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45283,6 +45282,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45303,6 +45304,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45327,6 +45330,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45349,6 +45354,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45369,6 +45376,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45391,6 +45400,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -47923,10 +47934,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type GiftCardStoreBrandAvgOrderByAggregateInput = {
-    providerBrandId?: SortOrder
-  }
-
   export type GiftCardStoreBrandMaxOrderByAggregateInput = {
     id?: SortOrder
     providerBrandId?: SortOrder
@@ -47947,10 +47954,6 @@ export namespace Prisma {
     enabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type GiftCardStoreBrandSumOrderByAggregateInput = {
-    providerBrandId?: SortOrder
   }
 
   export type EnumGiftCardDenominationTypeFilter<$PrismaModel = never> = {
@@ -47999,7 +48002,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductAvgOrderByAggregateInput = {
-    providerProductId?: SortOrder
     minDenomination?: SortOrder
     maxDenomination?: SortOrder
     senderFee?: SortOrder
@@ -48049,7 +48051,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumOrderByAggregateInput = {
-    providerProductId?: SortOrder
     minDenomination?: SortOrder
     maxDenomination?: SortOrder
     senderFee?: SortOrder
@@ -48105,6 +48106,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -48136,6 +48139,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -48157,6 +48162,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -51844,6 +51851,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -51866,6 +51875,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -52516,6 +52527,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -58081,7 +58094,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateWithoutBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58103,7 +58116,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateWithoutBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58154,7 +58167,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductScalarWhereInput[]
     NOT?: GiftCardStoreProductScalarWhereInput | GiftCardStoreProductScalarWhereInput[]
     id?: UuidFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringFilter<"GiftCardStoreProduct"> | string
     productName?: StringFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringFilter<"GiftCardStoreProduct"> | string
@@ -58176,7 +58189,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateWithoutProductsInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -58187,7 +58200,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedCreateWithoutProductsInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -58208,6 +58221,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -58230,6 +58245,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -58266,7 +58283,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58277,7 +58294,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58401,7 +58418,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateWithoutOrdersInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58423,7 +58440,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateWithoutOrdersInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -58564,7 +58581,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -58586,7 +58603,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -58925,6 +58942,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -59683,6 +59702,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -59705,6 +59726,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -59726,6 +59749,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60370,7 +60395,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateManyBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -60391,7 +60416,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60413,7 +60438,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60435,7 +60460,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateManyWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60462,6 +60487,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -60482,6 +60509,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60504,6 +60533,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60525,6 +60556,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string

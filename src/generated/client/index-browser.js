@@ -478,6 +478,8 @@ exports.Prisma.GiftCardStoreOrderScalarFieldEnum = {
   quantity: 'quantity',
   status: 'status',
   providerOrderId: 'providerOrderId',
+  providerGiftUuid: 'providerGiftUuid',
+  giftLink: 'giftLink',
   costNgn: 'costNgn',
   sellPriceNgn: 'sellPriceNgn',
   feeNgn: 'feeNgn',

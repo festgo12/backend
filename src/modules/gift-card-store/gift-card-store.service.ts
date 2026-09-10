@@ -4,9 +4,10 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { EncryptionService } from '../../core/utils/encryption';
 import { LedgerService } from '../wallet/ledger.service';
 import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -17,12 +18,13 @@ import {
   Currency,
 } from '@src/generated/client';
 import {
-  ReloadlyClient,
-  ReloadlyBrand,
-  ReloadlyGiftCard,
-  ReloadlyProduct,
-  ReloadlyWebhook,
-} from './reloadly.client';
+  GiftbitClient,
+  GiftbitBrand,
+  GiftbitBrandDetail,
+  GiftbitEmbeddedResponse,
+  GIFTBIT_INFO_FUNDS_REQUIRED,
+  GIFTBIT_INFO_FUNDS_PENDING,
+} from './giftbit.client';
 import { PurchaseStoreGiftCardDto } from './dto/purchase-store-gift-card.dto';
 import { ListStoreProductsDto } from './dto/list-store-products.dto';
 import { ListStoreOrdersDto } from './dto/list-store-orders.dto';
@@ -30,6 +32,9 @@ import { UpdateStoreProductDto } from './dto/update-store-product.dto';
 import { primaryWalletWhere } from '../wallet/wallet-query.util';
 
 const DEFAULT_NGN_PER_USD = 1550;
+const PENDING_ORDER_SWEEP_MS = 5 * 60 * 1000;
+const PENDING_ORDER_STARTUP_DELAY_MS = 10 * 1000;
+const PENDING_ORDER_SWEEP_BATCH = 50;
 
 type StoreProduct = GiftCardStoreProduct;
 type StoreProductWithBrand = Prisma.GiftCardStoreProductGetPayload<{
@@ -45,13 +50,9 @@ type StoreOrderWithUserProduct = Prisma.GiftCardStoreOrderGetPayload<{
   };
 }>;
 
-interface SyncOptions {
-  countries?: string[];
-}
-
 export interface PriceQuote {
   productId: string;
-  providerProductId: number;
+  providerProductId: string;
   productName: string;
   brand: StoreProductWithBrand['brand'];
   currencyCode: string;
@@ -66,96 +67,109 @@ export interface PriceQuote {
 }
 
 @Injectable()
-export class GiftCardStoreService {
+export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(GiftCardStoreService.name);
+
+  private pollTimer?: NodeJS.Timeout;
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly encryption: EncryptionService,
     private readonly ledgerService: LedgerService,
     private readonly exchangeRateService: ExchangeRateService,
     private readonly eventEmitter: EventEmitter2,
-    private readonly reloadly: ReloadlyClient,
+    private readonly giftbit: GiftbitClient,
   ) {}
+
+  onModuleInit() {
+    if (!this.giftbit.isConfigured()) {
+      this.logger.warn(
+        'Giftbit is not configured; skipping pending-order resolution poller.',
+      );
+      return;
+    }
+
+    this.pollTimer = setInterval(() => {
+      void this.sweepPendingOrders();
+    }, PENDING_ORDER_SWEEP_MS);
+    setTimeout(() => {
+      void this.sweepPendingOrders();
+    }, PENDING_ORDER_STARTUP_DELAY_MS);
+    this.logger.log(
+      `Giftbit configured for ${this.giftbit.getEnvironment()}; pending-order poller started.`,
+    );
+  }
+
+  onModuleDestroy() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // CATALOG
   // ═══════════════════════════════════════════════════════════════════════
 
   /**
-   * Pulls products for NG + global and upserts the local cache. New products
-   * are added as disabled so the catalog only goes live after admin review.
+   * Pulls the embeddable, USD-denominated Giftbit brand catalog and upserts
+   * the local cache. New products are added as disabled so the catalog only
+   * goes live after admin review.
    */
-  async syncCatalog(options: SyncOptions = {}) {
-    if (!this.reloadly.isConfigured()) {
+  async syncCatalog() {
+    if (!this.giftbit.isConfigured()) {
       throw new BadRequestException(
-        'Reloadly is not configured. Set RELOADLY_CLIENT_ID and RELOADLY_CLIENT_SECRET.',
+        'Giftbit is not configured. Set GIFTBIT_ENV and the matching GIFTBIT_*_API_TOKEN.',
       );
     }
 
-    const countries = options.countries?.length
-      ? options.countries
-      : ['NG', 'global'];
     const ngnPerUsd = this.ngnPerUsd();
-    let syncedProducts = 0;
+    const limit = 100;
+    let offset = 0;
+    let totalCount = Number.POSITIVE_INFINITY;
+    let guard = 0;
     let syncedBrands = 0;
+    let syncedProducts = 0;
 
-    for (const countryCode of countries) {
-      let page = 0;
-      let totalPages = 1;
-      let guard = 0;
+    while (offset < totalCount && guard < 100) {
+      guard += 1;
+      const page = await this.giftbit.listBrands({
+        currencyisocode: 'USD',
+        embeddable: true,
+        limit,
+        offset,
+      });
+      const brands: GiftbitBrand[] = page?.brands || [];
+      if (!brands.length) break;
 
-      while (page < totalPages && guard < 50) {
-        guard += 1;
-        const res = await this.reloadly.getProducts({
-          countryCode,
-          page,
-          size: 100,
-        });
-        const content: ReloadlyProduct[] = res?.content || [];
-
-        for (const product of content) {
-          await this.upsertProduct(product, countryCode, ngnPerUsd);
-          syncedProducts += 1;
-        }
-
-        totalPages = res?.totalPages || totalPages;
-        page += 1;
+      for (const brand of brands) {
+        const detail = await this.giftbit
+          .getBrand(brand.brand_code)
+          .catch(() => null);
+        await this.upsertBrand(brand, detail);
+        await this.upsertProduct(brand, detail, ngnPerUsd);
+        syncedBrands += 1;
+        syncedProducts += 1;
       }
-    }
 
-    // Brands: pull the brand list for logos/display.
-    for (let page = 0; page < 5; page += 1) {
-      const res = await this.reloadly.getBrands(page, 100);
-      const content: ReloadlyBrand[] = res?.content || [];
-      if (!content.length) break;
-      for (const brand of content) {
-        const upserted = await this.upsertBrand(brand);
-        if (upserted) syncedBrands += 1;
-      }
-      if (res?.last) break;
+      totalCount = page?.total_count ?? offset + brands.length;
+      offset += brands.length;
     }
 
     this.logger.log(
-      `Catalog sync complete: ${syncedProducts} products, ${syncedBrands} brands across ${countries.join(', ')}`,
+      `Giftbit catalog sync complete: ${syncedProducts} products, ${syncedBrands} brands (USD, embeddable)`,
     );
 
     return {
       syncedProducts,
       syncedBrands,
-      countries,
+      currency: 'USD',
       lastSyncedAt: new Date(),
     };
   }
 
-  private async upsertBrand(brand: ReloadlyBrand): Promise<boolean> {
-    const providerBrandId = Number(brand?.id);
+  private async upsertBrand(
+    brand: GiftbitBrand,
+    detail: GiftbitBrandDetail | null,
+  ): Promise<boolean> {
+    const providerBrandId = brand?.brand_code;
     if (!providerBrandId) return false;
-
-    const logos: unknown = brand.logoUrls || [];
-    const logoList = Array.isArray(logos) ? (logos as string[]) : [];
-    const logoUrl = typeof logos === 'string' ? logos : logoList[0] || null;
-    const backgroundColor = logoList.length > 1 ? logoList[1] : logoUrl;
 
     const existing = await this.prisma.giftCardStoreBrand.findUnique({
       where: { providerBrandId },
@@ -165,15 +179,13 @@ export class GiftCardStoreService {
       where: { providerBrandId },
       update: {
         brandName:
-          brand?.name || existing?.brandName || `Brand ${providerBrandId}`,
-        logoUrl: logoUrl || existing?.logoUrl,
-        backgroundColor: backgroundColor || existing?.backgroundColor,
+          detail?.name || brand?.name || existing?.brandName || providerBrandId,
+        logoUrl: brand?.image_url || existing?.logoUrl,
       },
       create: {
         providerBrandId,
-        brandName: brand?.name || `Brand ${providerBrandId}`,
-        logoUrl,
-        backgroundColor,
+        brandName: detail?.name || brand?.name || providerBrandId,
+        logoUrl: brand?.image_url || null,
       },
     });
 
@@ -181,91 +193,84 @@ export class GiftCardStoreService {
   }
 
   private async upsertProduct(
-    product: ReloadlyProduct,
-    countryCode: string,
+    brand: GiftbitBrand,
+    detail: GiftbitBrandDetail | null,
     ngnPerUsd: number,
   ): Promise<void> {
-    const providerProductId = Number(product?.productId);
+    const providerProductId = brand?.brand_code;
     if (!providerProductId) return;
 
-    // Reloadly may embed the brand inside the product payload.
-    let brandId: string | null = null;
-    if (product?.brand?.id) {
-      const brand = await this.prisma.giftCardStoreBrand.upsert({
-        where: { providerBrandId: Number(product.brand.id) },
-        update: { brandName: product.brand.name },
-        create: {
-          providerBrandId: Number(product.brand.id),
-          brandName: product.brand.name || `Brand ${product.brand.id}`,
-        },
-      });
-      brandId = brand.id;
-    }
+    const brandRow = await this.prisma.giftCardStoreBrand.findUnique({
+      where: { providerBrandId: providerProductId },
+    });
+    const brandId = brandRow?.id || null;
 
-    const denominationType = this.mapDenominationType(
-      product?.denominationType,
-    );
-    const sendersCurrency = (
-      product?.senderCurrencyCode || 'USD'
-    ).toUpperCase();
-    const senderNgn = this.usdToNgnThrough(sendersCurrency, ngnPerUsd);
-    const senderFeeNgn = Number(product?.senderFee || 0) * senderNgn;
-    const firstDenomination = this.firstDenomination(product);
-    const indicativeNgn = senderNgn * firstDenomination + senderFeeNgn;
+    const variablePrice = Boolean(detail?.variable_price);
+    const denominationType = variablePrice
+      ? GiftCardDenominationType.RANGE
+      : GiftCardDenominationType.FIXED;
+
+    const fixedDenominations = Array.isArray(detail?.allowed_prices_in_cents)
+      ? detail.allowed_prices_in_cents.map((cents) => cents / 100)
+      : [];
+    const minDenomination =
+      variablePrice && detail?.min_price_in_cents != null
+        ? new Prisma.Decimal(detail.min_price_in_cents).div(100)
+        : null;
+    const maxDenomination =
+      variablePrice && detail?.max_price_in_cents != null
+        ? new Prisma.Decimal(detail.max_price_in_cents).div(100)
+        : null;
+
+    const firstDenomination =
+      fixedDenominations.length > 0
+        ? Number(fixedDenominations[0])
+        : minDenomination
+          ? minDenomination.toNumber()
+          : maxDenomination
+            ? maxDenomination.toNumber()
+            : 5;
+    const indicativeNgn = new Prisma.Decimal(firstDenomination).mul(ngnPerUsd);
 
     await this.prisma.giftCardStoreProduct.upsert({
       where: { providerProductId },
       update: {
-        productName: product?.productName,
+        productName: detail?.name || brand?.name || providerProductId,
         brandId,
-        countryCode,
-        currencyCode: (product?.receiverCurrencyCode || 'USD').toUpperCase(),
         denominationType,
-        fixedDenominations: product?.fixedRecipientDenominations
-          ? (product.fixedRecipientDenominations as Prisma.InputJsonValue)
+        fixedDenominations: fixedDenominations.length
+          ? (fixedDenominations as Prisma.InputJsonValue)
           : undefined,
-        minDenomination: product?.minRecipientDenomination
-          ? new Prisma.Decimal(product.minRecipientDenomination)
-          : null,
-        maxDenomination: product?.maxRecipientDenomination
-          ? new Prisma.Decimal(product.maxRecipientDenomination)
-          : null,
-        senderFee: new Prisma.Decimal(Number(product?.senderFee || 0)),
-        discountPercentage: new Prisma.Decimal(
-          Number(product?.discountPercentage || 0),
-        ),
-        providerPriceNgn: new Prisma.Decimal(indicativeNgn),
+        minDenomination,
+        maxDenomination,
+        providerPriceNgn: indicativeNgn,
         providerResponse: this.toJson({
-          raw: product,
+          raw: brand,
+          detail,
           syncedAt: new Date().toISOString(),
         }),
         lastSyncedAt: new Date(),
       },
       create: {
         providerProductId,
-        productName: product?.productName || `Product ${providerProductId}`,
+        productName: detail?.name || brand?.name || providerProductId,
         brandId,
-        countryCode,
-        currencyCode: (product?.receiverCurrencyCode || 'USD').toUpperCase(),
+        countryCode: 'US',
+        currencyCode: 'USD',
         denominationType,
-        fixedDenominations: product?.fixedRecipientDenominations
-          ? (product.fixedRecipientDenominations as Prisma.InputJsonValue)
+        fixedDenominations: fixedDenominations.length
+          ? (fixedDenominations as Prisma.InputJsonValue)
           : undefined,
-        minDenomination: product?.minRecipientDenomination
-          ? new Prisma.Decimal(product.minRecipientDenomination)
-          : null,
-        maxDenomination: product?.maxRecipientDenomination
-          ? new Prisma.Decimal(product.maxRecipientDenomination)
-          : null,
-        senderFee: new Prisma.Decimal(Number(product?.senderFee || 0)),
-        discountPercentage: new Prisma.Decimal(
-          Number(product?.discountPercentage || 0),
-        ),
-        providerPriceNgn: new Prisma.Decimal(indicativeNgn),
+        minDenomination,
+        maxDenomination,
+        senderFee: new Prisma.Decimal(0),
+        discountPercentage: new Prisma.Decimal(0),
+        providerPriceNgn: indicativeNgn,
         enabled: false,
         markupPercent: new Prisma.Decimal(0),
         providerResponse: this.toJson({
-          raw: product,
+          raw: brand,
+          detail,
           syncedAt: new Date().toISOString(),
         }),
         lastSyncedAt: new Date(),
@@ -380,9 +385,9 @@ export class GiftCardStoreService {
   }
 
   /**
-   * Debites the buyer's NGN wallet and places the Reloadly order.
-   * Card codes are delivered immediately when the provider returns them
-   * synchronously; otherwise the order stays PENDING until the webhook lands.
+   * Debites the buyer's NGN wallet and creates an embedded Giftbit reward.
+   * Delivery is an embedded claim link (giftLink) instead of a raw card code,
+   * which Giftbit never exposes to the server.
    */
   async purchase(userId: string, dto: PurchaseStoreGiftCardDto) {
     const quantity = dto.quantity || 1;
@@ -465,48 +470,46 @@ export class GiftCardStoreService {
       return created;
     });
 
-    // 2. Call Reloadly outside the DB transaction.
-    let providerTransactionId: string | null = null;
+    // 2. Create the embedded Giftbit reward outside the DB transaction.
+    let providerResp: GiftbitEmbeddedResponse | null = null;
     try {
-      const senderName =
-        [user.profile?.firstName, user.profile?.lastName]
-          .filter(Boolean)
-          .join(' ') ||
-        (user.email ?? '');
-
-      const providerResp = await this.reloadly.createOrder({
-        productId: product.providerProductId,
-        quantity,
-        unitPrice: Number(dto.amount),
-        customIdentifier: order.id,
-        recipientEmail,
-        senderName,
-        countryCode: product.countryCode,
-        promoCode: dto.promoCode,
+      providerResp = await this.giftbit.createEmbedded({
+        brand_code: product.providerProductId,
+        price_in_cents: Math.round(Number(dto.amount) * 100),
+        id: order.id,
       });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Gift card store order ${order.id} provider failure: ${message}`,
+      );
+      await this.failOrder(order.id, message, null);
+      throw new BadRequestException(
+        `Gift card order failed: ${message}. Your funds have been refunded.`,
+      );
+    }
 
-      providerTransactionId =
-        providerResp?.transactionId ||
-        providerResp?.customIdentifier ||
-        order.id;
+    const infoCode = providerResp?.info?.code;
+    const campaign = providerResp?.campaign;
+    const giftLink = providerResp?.gift_link || null;
+    const providerOrderId = campaign?.uuid || null;
+    const providerGiftUuid = giftLink ? this.giftUuidFromLink(giftLink) : null;
 
-      await this.prisma.giftCardStoreOrder.update({
-        where: { id: order.id },
-        data: {
-          providerOrderId: providerTransactionId,
-          providerResponse: this.toJson(providerResp),
-        },
-      });
+    await this.prisma.giftCardStoreOrder.update({
+      where: { id: order.id },
+      data: {
+        providerOrderId,
+        providerGiftUuid,
+        giftLink,
+        providerResponse: this.toJson(providerResp),
+      },
+    });
 
-      // 3. Attempt synchronous code delivery.
-      const cards = providerTransactionId
-        ? await this.reloadly.getCards(providerTransactionId).catch(() => null)
-        : null;
-      const { giftCard } = cards || {};
-      if (giftCard && giftCard.code) {
-        return this.finalizeOrder(order.id, giftCard, providerResp);
-      }
+    const awaitingFunds =
+      infoCode === GIFTBIT_INFO_FUNDS_REQUIRED ||
+      infoCode === GIFTBIT_INFO_FUNDS_PENDING;
 
+    if (awaitingFunds) {
       this.eventEmitter.emit('gift-card-store.order.pending', {
         order: {
           id: order.id,
@@ -517,18 +520,15 @@ export class GiftCardStoreService {
       return this.buildOrderResponse(order.id, {
         pending: true,
         message:
-          'Order placed. Your card code will appear here as soon as the provider delivers it.',
+          'Order placed. Your claim link will appear here as soon as Giftbit funds settle.',
       });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(
-        `Gift card store order ${order.id} provider failure: ${message}`,
-      );
-      await this.failOrder(order.id, message, providerTransactionId);
-      throw new BadRequestException(
-        `Gift card order failed: ${message}. Your funds have been refunded.`,
-      );
     }
+
+    return this.completeOrder(order.id, {
+      giftLink,
+      providerGiftUuid,
+      providerResponse: providerResp,
+    });
   }
 
   async getMyOrders(userId: string, page = 1, limit = 20) {
@@ -551,94 +551,108 @@ export class GiftCardStoreService {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // WEBHOOK / DELIVERY
+  // DELIVERY
   // ═══════════════════════════════════════════════════════════════════════
 
   /**
-   * Resolves an order identified by its customIdentifier (our order id) or
-   * provider transaction id against a webhook / polling event.
+   * Sweeps PENDING orders whose embedded reward may have been created after
+   * Giftbit funds settled.
    */
-  async resolveOrder(payload: ReloadlyWebhook) {
-    const data = payload?.data;
-    const identifier =
-      data?.customIdentifier ||
-      data?.transactionId ||
-      data?.reference ||
-      data?.giftCard?.transactionId;
+  private async sweepPendingOrders(): Promise<void> {
+    if (!this.giftbit.isConfigured()) return;
 
-    if (!identifier) {
-      this.logger.warn('Reloadly webhook received without an order identifier');
+    const orders = await this.prisma.giftCardStoreOrder.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { createdAt: 'asc' },
+      take: PENDING_ORDER_SWEEP_BATCH,
+      select: { id: true },
+    });
+
+    for (const { id } of orders) {
+      try {
+        await this.resolveOrder(id);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Giftbit pending-order resolution failed for ${id}: ${message}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Resolves a single PENDING order against Giftbit, completing it once the
+   * reward exists and is redeemable.
+   */
+  async resolveOrder(orderId: string) {
+    const order = await this.prisma.giftCardStoreOrder.findFirst({
+      where: { id: orderId },
+      include: { product: true },
+    });
+    if (!order) {
+      this.logger.warn(`No gift card store order matched ${orderId}`);
       return { matched: false, orderId: null };
     }
 
-    const order = await this.prisma.giftCardStoreOrder.findFirst({
-      where: {
-        OR: [{ id: identifier }, { providerOrderId: identifier }],
-      },
-      include: { product: true, user: true },
-    });
-
-    if (!order) {
-      this.logger.warn(
-        `No gift card store order matched webhook identifier ${identifier}`,
-      );
-      return { matched: false, orderId: null, order };
+    if (order.status !== 'PENDING') {
+      return { matched: true, orderId: order.id, alreadyFinalized: true };
     }
 
-    if (order.status === 'COMPLETED') {
-      return {
+    if (!order.providerGiftUuid && !order.providerOrderId) {
+      return { matched: true, orderId: order.id, pending: true };
+    }
+
+    let gift: { uuid: string; status: string } | null = null;
+    if (order.providerGiftUuid) {
+      const res = await this.giftbit
+        .getGift(order.providerGiftUuid)
+        .catch(() => null);
+      gift = res?.gift || null;
+    } else if (order.providerOrderId) {
+      const res = await this.giftbit
+        .listGifts({ campaignUuid: order.providerOrderId, limit: 1 })
+        .catch(() => null);
+      gift = res?.gifts?.[0] || null;
+    }
+
+    if (!gift) {
+      return { matched: true, orderId: order.id, pending: true };
+    }
+
+    const status = String(gift.status || '').toUpperCase();
+    if (status === 'SENT_AND_REDEEMABLE' || status === 'REDEEMED') {
+      const giftLink = order.giftLink || this.deriveEmbeddedLink(gift.uuid);
+      return this.completeOrder(order.id, {
+        giftLink,
+        providerGiftUuid: gift.uuid,
+        providerResponse: gift,
+      }).then(() => ({
         matched: true,
         orderId: order.id,
-        order,
-        alreadyFinalized: true,
-      };
+        delivered: true,
+        gift,
+      }));
     }
 
-    const status = String(data?.status || '').toUpperCase();
-
-    // Provider reports failure → refund and mark FAILED.
-    if (status.includes('FAILED') || data?.errorCode) {
-      await this.failOrder(
-        order.id,
-        data?.message || data?.errorCode || 'Provider order failed',
-        order.providerOrderId,
-      );
-      return { matched: true, orderId: order.id, order, failed: true };
-    }
-
-    // Attempt code delivery for any non-failed terminal/processing state.
-    if (order.providerOrderId) {
-      const cards = await this.reloadly
-        .getCards(order.providerOrderId)
-        .catch(() => null);
-      const { giftCard } = cards || {};
-      if (giftCard && giftCard.code) {
-        await this.finalizeOrder(order.id, giftCard, data);
-        return { matched: true, orderId: order.id, order, delivered: true };
-      }
-    }
-
-    return { matched: true, orderId: order.id, order, pending: true };
+    return { matched: true, orderId: order.id, pending: true };
   }
 
-  private async finalizeOrder(
+  private async completeOrder(
     orderId: string,
-    giftCard: ReloadlyGiftCard,
-    providerResponse?: unknown,
+    fields: {
+      giftLink?: string | null;
+      providerGiftUuid?: string | null;
+      providerResponse?: unknown;
+    },
   ) {
-    const encryptedCode = this.encryption.encrypt(String(giftCard.code));
-    const encryptedPin = giftCard.pin
-      ? this.encryption.encrypt(String(giftCard.pin))
-      : null;
-
     const order = await this.prisma.giftCardStoreOrder.update({
       where: { id: orderId },
       data: {
         status: 'COMPLETED',
-        cardCode: encryptedCode,
-        cardPin: encryptedPin,
-        providerResponse: providerResponse
-          ? this.toJson(providerResponse)
+        giftLink: fields.giftLink ?? undefined,
+        providerGiftUuid: fields.providerGiftUuid ?? undefined,
+        providerResponse: fields.providerResponse
+          ? this.toJson(fields.providerResponse)
           : undefined,
         version: { increment: 1 },
       },
@@ -657,8 +671,7 @@ export class GiftCardStoreService {
     this.logger.log(`Gift card store order completed: ${orderId}`);
     return this.buildOrderResponse(orderId, {
       status: 'COMPLETED',
-      cardCode: this.encryption.decrypt(encryptedCode),
-      cardPin: encryptedPin ? this.encryption.decrypt(encryptedPin) : null,
+      giftLink: order.giftLink,
     });
   }
 
@@ -709,6 +722,27 @@ export class GiftCardStoreService {
   // ═══════════════════════════════════════════════════════════════════════
   // ADMIN
   // ═══════════════════════════════════════════════════════════════════════
+
+  async getStoreConfig() {
+    const configured = this.giftbit.isConfigured();
+    const funds = configured
+      ? await this.giftbit.getFunds().catch(() => null)
+      : null;
+    const usdFunds = funds?.fundsbycurrency?.USD || null;
+
+    return {
+      provider: 'giftbit',
+      configured,
+      environment: configured ? this.giftbit.getEnvironment() : null,
+      fundsUsd: usdFunds
+        ? {
+            available: usdFunds.available_in_cents / 100,
+            pending: usdFunds.pending_in_cents / 100,
+            reserved: usdFunds.reserved_in_cents / 100,
+          }
+        : null,
+    };
+  }
 
   async getAllProductsAdmin(dto: ListStoreProductsDto) {
     const where: Prisma.GiftCardStoreProductWhereInput = {};
@@ -812,14 +846,7 @@ export class GiftCardStoreService {
 
     if (!order) throw new NotFoundException('Gift card store order not found');
 
-    const formatted = this.formatOrderForAdmin(order);
-    if (order.cardCode) {
-      formatted.cardCode = this.encryption.decrypt(order.cardCode);
-    }
-    if (order.cardPin) {
-      formatted.cardPin = this.encryption.decrypt(order.cardPin);
-    }
-    return formatted;
+    return this.formatOrderForAdmin(order);
   }
 
   async getStats() {
@@ -855,6 +882,7 @@ export class GiftCardStoreService {
       completedOrders,
       failedOrders,
       totalVolumeNgn: volumeResult._sum.sellPriceNgn || 0,
+      currency: 'USD',
     };
   }
 
@@ -866,37 +894,6 @@ export class GiftCardStoreService {
     const rates = this.exchangeRateService.getAllRates();
     const usdt = Number(rates['USDT']);
     return usdt > 0 ? usdt : DEFAULT_NGN_PER_USD;
-  }
-
-  private usdToNgnThrough(currency: string, ngnPerUsd: number): number {
-    // Store only handles USD- and NGN-priced products for now.
-    if (currency === 'NGN') return 1;
-    return ngnPerUsd;
-  }
-
-  private mapDenominationType(type?: string): GiftCardDenominationType {
-    switch (String(type || '').toUpperCase()) {
-      case 'FIXED':
-        return GiftCardDenominationType.FIXED;
-      case 'RANGE':
-        return GiftCardDenominationType.RANGE;
-      default:
-        return GiftCardDenominationType.OPEN;
-    }
-  }
-
-  private firstDenomination(product: ReloadlyProduct): number {
-    if (
-      Array.isArray(product?.fixedRecipientDenominations) &&
-      product.fixedRecipientDenominations.length
-    ) {
-      return Number(product.fixedRecipientDenominations[0]);
-    }
-    return (
-      Number(product?.minRecipientDenomination || 0) ||
-      Number(product?.maxRecipientDenomination || 5) ||
-      5
-    );
   }
 
   private validateDenomination(product: StoreProduct, amount: number): void {
@@ -935,10 +932,9 @@ export class GiftCardStoreService {
     quantity: number,
     ngnPerUsd: number,
   ): Prisma.Decimal {
-    const senderNgn = this.usdToNgnThrough(product.currencyCode, ngnPerUsd);
-    const unit = new Prisma.Decimal(amount).mul(senderNgn);
+    const unit = new Prisma.Decimal(amount).mul(ngnPerUsd);
     const fee = new Prisma.Decimal(Number(product.senderFee || 0)).mul(
-      senderNgn,
+      ngnPerUsd,
     );
     return unit.plus(fee).mul(quantity);
   }
@@ -1016,6 +1012,7 @@ export class GiftCardStoreService {
       cardPin: undefined,
       providerResponse: undefined,
     };
+    const delivered = order.status === 'COMPLETED' && Boolean(order.giftLink);
     return {
       ...safe,
       product: order.product
@@ -1027,14 +1024,10 @@ export class GiftCardStoreService {
             countryCode: order.product.countryCode,
           }
         : null,
-      cardCode:
-        order.status === 'COMPLETED' && order.cardCode
-          ? this.encryption.decrypt(order.cardCode)
-          : null,
-      cardPin:
-        order.status === 'COMPLETED' && order.cardPin
-          ? this.encryption.decrypt(order.cardPin)
-          : null,
+      delivered,
+      giftLink: delivered ? order.giftLink : null,
+      cardCode: null,
+      cardPin: null,
     };
   }
 
@@ -1044,6 +1037,23 @@ export class GiftCardStoreService {
       cardCode: null as string | null,
       cardPin: null as string | null,
     };
+  }
+
+  private giftUuidFromLink(link: string): string | null {
+    try {
+      const parts = new URL(link).pathname.split('/').filter(Boolean);
+      return parts[parts.length - 1] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private deriveEmbeddedLink(uuid: string): string {
+    const host =
+      this.giftbit.getEnvironment() === 'testbed'
+        ? 'testbedapp.giftbit.com'
+        : 'app.giftbit.com';
+    return `https://${host}/embeddedRewards/index/${uuid}`;
   }
 
   private toJson(value: unknown): Prisma.InputJsonValue {

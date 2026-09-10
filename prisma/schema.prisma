@@ -576,10 +576,10 @@ enum GiftCardDenominationType {
   OPEN
 }
 
-/// Reloadly brand cache used to power the gift card storefront.
+/// Giftbit brand cache used to power the gift card storefront.
 model GiftCardStoreBrand {
   id               String   @id @default(uuid()) @db.Uuid
-  providerBrandId  Int      @unique
+  providerBrandId  String   @unique
   brandName        String
   logoUrl          String?
   backgroundColor  String?
@@ -591,11 +591,11 @@ model GiftCardStoreBrand {
   @@index([enabled])
 }
 
-/// Synced Reloadly product cache. Admins enable/disable listings and set a
+/// Synced Giftbit product cache. Admins enable/disable listings and set a
 /// per-product markup (%) on top of the provider's NGN cost.
 model GiftCardStoreProduct {
   id                String                  @id @default(uuid()) @db.Uuid
-  providerProductId Int                     @unique
+  providerProductId String                  @unique
   productName       String
   brandId           String?                 @db.Uuid
   brand             GiftCardStoreBrand?     @relation(fields: [brandId], references: [id])
@@ -621,8 +621,9 @@ model GiftCardStoreProduct {
   @@index([denominationType])
 }
 
-/// A platform-sold gift card order fulfilled via Reloadly. Card codes are
-/// stored encrypted with the shared GIFT_CARD_ENCRYPTION_KEY.
+/// A platform-sold gift card order fulfilled via the Giftbit embedded
+/// endpoint. Delivery is an embedded claim link (giftLink) instead of a raw
+/// card code: Giftbit never returns card codes to the server.
 model GiftCardStoreOrder {
   id               String                  @id @default(uuid()) @db.Uuid
   userId           String                  @db.Uuid
@@ -634,6 +635,8 @@ model GiftCardStoreOrder {
   quantity         Int                     @default(1)
   status           GiftCardStoreOrderStatus @default(PENDING)
   providerOrderId  String?
+  providerGiftUuid String?
+  giftLink         String?
   costNgn          Decimal                 @db.Decimal(16, 2)
   sellPriceNgn     Decimal                 @db.Decimal(16, 2)
   feeNgn           Decimal                 @default(0) @db.Decimal(16, 2)

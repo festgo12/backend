@@ -33,11 +33,20 @@ export class AdminGiftCardStoreController {
     return this.storeService.getStats();
   }
 
+  // ─── Provider Config ───────────────────────────────────────────────────
+  @Get('config')
+  @ApiOperation({
+    summary: 'Get gift card store provider config (environment + funds)',
+  })
+  getConfig() {
+    return this.storeService.getStoreConfig();
+  }
+
   // ─── Catalog Sync ──────────────────────────────────────────────────────
   @Post('sync')
-  @ApiOperation({ summary: 'Sync the gift card catalog from Reloadly' })
-  syncCatalog(@Body() body?: { countries?: string[] }) {
-    return this.storeService.syncCatalog({ countries: body?.countries });
+  @ApiOperation({ summary: 'Sync the gift card catalog from Giftbit' })
+  syncCatalog() {
+    return this.storeService.syncCatalog();
   }
 
   // ─── Products ──────────────────────────────────────────────────────────
@@ -62,7 +71,7 @@ export class AdminGiftCardStoreController {
 
   @Get('orders/:id')
   @ApiOperation({
-    summary: 'Get gift card store order detail with decrypted code',
+    summary: 'Get gift card store order detail with claim link',
   })
   getOrderDetail(@Param('id') id: string) {
     return this.storeService.getOrderDetailAdmin(id);

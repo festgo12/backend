@@ -22,7 +22,7 @@ export class GiftCardStoreEventsHandler {
       type: 'GIFT_CARD_STORE_ORDER_PENDING',
       customTitle: 'Gift Card Order Placed',
       customBody:
-        'Your gift card order has been placed. The card code will appear in your gift cards shortly.',
+        'Your gift card order has been placed. Your claim link will appear in your gift cards shortly.',
       data: { orderId: order.id, amount: order.sellPriceNgn },
     });
   }
@@ -36,7 +36,7 @@ export class GiftCardStoreEventsHandler {
       userId: order.userId,
       type: 'GIFT_CARD_STORE_ORDER_COMPLETED',
       customTitle: 'Gift Card Delivered',
-      customBody: `Your ${order.productName || 'gift card'} is ready. Tap to view and copy your card code.`,
+      customBody: `Your ${order.productName || 'gift card'} is ready. Tap to open and claim your card.`,
       data: { orderId: order.id, amount: order.amount },
     });
 
