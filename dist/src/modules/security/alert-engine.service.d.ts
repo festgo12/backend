@@ -19,10 +19,10 @@ export declare class AlertEngineService {
         id: string;
         createdAt: Date;
         userId: string;
-        severity: string;
-        message: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        message: string;
         isRead: boolean;
+        severity: string;
     }>;
     getAlertStats(userId: string): Promise<{
         total: number;

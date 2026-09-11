@@ -10,12 +10,13 @@ exports.UploadService = void 0;
 const common_1 = require("@nestjs/common");
 const path_1 = require("path");
 let UploadService = class UploadService {
-    uploadsDir = (0, path_1.join)(__dirname, '..', '..', 'uploads', 'disputes');
-    getUploadPath(filename) {
-        return (0, path_1.join)(this.uploadsDir, filename);
+    uploadsDir = (0, path_1.join)(__dirname, '..', '..', 'uploads');
+    getUploadPath(filename, subdir = 'disputes') {
+        return (0, path_1.join)(this.uploadsDir, subdir, filename);
     }
-    getFileUrl(filename) {
-        return `/uploads/disputes/${filename}`;
+    getFileUrl(filename, subdir = 'disputes') {
+        const publicBase = (process.env.PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+        return `${publicBase}/uploads/${subdir}/${filename}`;
     }
 };
 exports.UploadService = UploadService;

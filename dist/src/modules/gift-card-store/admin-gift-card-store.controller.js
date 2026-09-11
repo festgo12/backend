@@ -18,7 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../core/security/guards/roles.guard");
 const roles_decorator_1 = require("../../core/security/decorators/roles.decorator");
-const client_1 = require("../../generated/client/index.js");
+const client_1 = require("@src/generated/client");
 const gift_card_store_service_1 = require("./gift-card-store.service");
 const list_store_products_dto_1 = require("./dto/list-store-products.dto");
 const list_store_orders_dto_1 = require("./dto/list-store-orders.dto");
@@ -31,8 +31,11 @@ let AdminGiftCardStoreController = class AdminGiftCardStoreController {
     getStats() {
         return this.storeService.getStats();
     }
-    syncCatalog(body) {
-        return this.storeService.syncCatalog({ countries: body?.countries });
+    getConfig() {
+        return this.storeService.getStoreConfig();
+    }
+    syncCatalog() {
+        return this.storeService.syncCatalog();
     }
     getAllProducts(dto) {
         return this.storeService.getAllProductsAdmin(dto);
@@ -56,11 +59,19 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminGiftCardStoreController.prototype, "getStats", null);
 __decorate([
-    (0, common_1.Post)('sync'),
-    (0, swagger_1.ApiOperation)({ summary: 'Sync the gift card catalog from Reloadly' }),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Get)('config'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get gift card store provider config (environment + funds)',
+    }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminGiftCardStoreController.prototype, "getConfig", null);
+__decorate([
+    (0, common_1.Post)('sync'),
+    (0, swagger_1.ApiOperation)({ summary: 'Sync the gift card catalog from Giftbit' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], AdminGiftCardStoreController.prototype, "syncCatalog", null);
 __decorate([
@@ -91,7 +102,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('orders/:id'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Get gift card store order detail with decrypted code',
+        summary: 'Get gift card store order detail with claim link',
     }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),

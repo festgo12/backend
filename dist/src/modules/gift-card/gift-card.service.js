@@ -16,7 +16,8 @@ const prisma_service_1 = require("../../core/database/prisma.service");
 const encryption_1 = require("../../core/utils/encryption");
 const ledger_service_1 = require("../wallet/ledger.service");
 const event_emitter_1 = require("@nestjs/event-emitter");
-const client_1 = require("../../generated/client/index.js");
+const client_1 = require("@src/generated/client");
+const upload_service_1 = require("../upload/upload.service");
 const uuid_1 = require("uuid");
 const wallet_query_util_1 = require("../wallet/wallet-query.util");
 let GiftCardService = GiftCardService_1 = class GiftCardService {
@@ -24,12 +25,26 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
     encryption;
     ledgerService;
     eventEmitter;
+    uploadService;
     logger = new common_1.Logger(GiftCardService_1.name);
-    constructor(prisma, encryption, ledgerService, eventEmitter) {
+    constructor(prisma, encryption, ledgerService, eventEmitter, uploadService) {
         this.prisma = prisma;
         this.encryption = encryption;
         this.ledgerService = ledgerService;
         this.eventEmitter = eventEmitter;
+        this.uploadService = uploadService;
+    }
+    uploadListingEvidence(userId, file) {
+        if (!file || !file.filename) {
+            throw new common_1.BadRequestException('No image file provided');
+        }
+        const url = this.uploadService.getFileUrl(file.filename, 'cards');
+        this.logger.log(`Gift card evidence uploaded by ${userId}: ${file.filename}`);
+        return {
+            url,
+            fileType: file.mimetype,
+            originalName: file.originalname,
+        };
     }
     async createListing(sellerId, dto) {
         const encryptedCode = this.encryption.encrypt(dto.cardCode);
@@ -55,7 +70,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
         });
         this.eventEmitter.emit('gift_card.listing.created', listing);
         this.logger.log(`Listing created: ${listing.id} by ${sellerId}`);
-        return this.stripSensitive(listing);
+        return this.stripEvidence(listing);
     }
     async getActiveListings(dto) {
         const where = {
@@ -87,7 +102,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
             this.prisma.giftCardListing.count({ where }),
         ]);
         return {
-            data: listings.map((l) => this.stripSensitive(l)),
+            data: listings.map((l) => this.stripEvidence(l)),
             meta: {
                 total,
                 page,
@@ -103,13 +118,12 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
                 seller: {
                     include: { profile: true },
                 },
-                evidenceRecords: true,
             },
         });
         if (!listing) {
             throw new common_1.NotFoundException('Gift card listing not found');
         }
-        return this.stripSensitive(listing);
+        return this.stripEvidence(listing);
     }
     async getMyListings(sellerId, page = 1, limit = 20) {
         const skip = (page - 1) * limit;
@@ -123,7 +137,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
             this.prisma.giftCardListing.count({ where: { sellerId } }),
         ]);
         return {
-            data: listings.map((l) => this.stripSensitive(l)),
+            data: listings.map((l) => this.stripEvidence(l)),
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
@@ -512,6 +526,10 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
         const { cardCode, cardPin, ...safe } = listing;
         return safe;
     }
+    stripEvidence(listing) {
+        const { cardCode, cardPin, evidenceUrls, evidenceRecords, ...safe } = listing;
+        return safe;
+    }
     formatOrderForBuyer(order) {
         const { listing, ...rest } = order;
         return {
@@ -543,6 +561,7 @@ exports.GiftCardService = GiftCardService = GiftCardService_1 = __decorate([
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         encryption_1.EncryptionService,
         ledger_service_1.LedgerService,
-        event_emitter_1.EventEmitter2])
+        event_emitter_1.EventEmitter2,
+        upload_service_1.UploadService])
 ], GiftCardService);
 //# sourceMappingURL=gift-card.service.js.map

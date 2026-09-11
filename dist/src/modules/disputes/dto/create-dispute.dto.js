@@ -12,29 +12,41 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateDisputeDto = exports.DisputeSubjectType = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const validate_at_least_one_validator_1 = require("../../../core/validators/validate-at-least-one.validator");
 var DisputeSubjectType;
 (function (DisputeSubjectType) {
     DisputeSubjectType["ORDER"] = "ORDER";
     DisputeSubjectType["DEPOSIT"] = "DEPOSIT";
     DisputeSubjectType["WITHDRAWAL"] = "WITHDRAWAL";
     DisputeSubjectType["OTHER"] = "OTHER";
+    DisputeSubjectType["GIFT_CARD_STORE_ORDER"] = "GIFT_CARD_STORE_ORDER";
 })(DisputeSubjectType || (exports.DisputeSubjectType = DisputeSubjectType = {}));
 class CreateDisputeDto {
     orderId;
+    storeOrderId;
     subjectType;
     reference;
     reason;
     description;
+    _subjectLink;
 }
 exports.CreateDisputeDto = CreateDisputeDto;
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Order ID to dispute. Required only for ORDER disputes; omit for deposit/withdrawal disputes.',
+        description: 'Marketplace order ID to dispute. Required for ORDER disputes; omit for deposit/withdrawal/store order disputes.',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateDisputeDto.prototype, "orderId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Gift Card Store order ID to dispute. Required for GIFT_CARD_STORE_ORDER disputes.',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CreateDisputeDto.prototype, "storeOrderId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'What the dispute is about',
@@ -69,4 +81,8 @@ __decorate([
     (0, class_validator_1.MaxLength)(5000),
     __metadata("design:type", String)
 ], CreateDisputeDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.Validate)(validate_at_least_one_validator_1.ValidateAtLeastOne, ['orderId', 'storeOrderId', 'reference']),
+    __metadata("design:type", String)
+], CreateDisputeDto.prototype, "_subjectLink", void 0);
 //# sourceMappingURL=create-dispute.dto.js.map

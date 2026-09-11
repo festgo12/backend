@@ -13,7 +13,12 @@ import {
   DisputeStatus,
   DisputeSubjectType,
   OrderStatus,
+  GiftCardStoreOrderStatus,
 } from '@src/generated/client';
+import { primaryWalletWhere } from '../wallet/wallet-query.util';
+import { LedgerService } from '../wallet/ledger.service';
+import { Currency } from '@src/generated/client';
+import { ValidateAtLeastOne } from '../../core/validators/validate-at-least-one.validator';
 
 const VALID_TRANSITIONS: Record<DisputeStatus, DisputeStatus[]> = {
   [DisputeStatus.OPEN]: [
@@ -55,13 +60,21 @@ export class DisputesService {
     private prisma: PrismaService,
     private uploadService: UploadService,
     private eventEmitter: EventEmitter2,
+    private ledgerService: LedgerService,
   ) {}
 
   async createDispute(userId: string, dto: CreateDisputeDto) {
-    const subjectType = dto.subjectType ?? DisputeSubjectType.ORDER;
+    const subjectType =
+      dto.subjectType ??
+      (dto.orderId
+        ? DisputeSubjectType.ORDER
+        : dto.storeOrderId
+          ? DisputeSubjectType.GIFT_CARD_STORE_ORDER
+          : DisputeSubjectType.OTHER);
 
     return this.prisma.$transaction(async (tx) => {
       let order: any = null;
+      let storeOrder: any = null;
 
       if (dto.orderId) {
         order = await tx.order.findUnique({
@@ -99,13 +112,64 @@ export class DisputesService {
         });
 
         if (existingDispute) {
-          throw new ConflictException('An active dispute already exists for this order');
+          throw new ConflictException(
+            'An active dispute already exists for this order',
+          );
+        }
+      }
+
+      if (dto.storeOrderId) {
+        storeOrder = await tx.giftCardStoreOrder.findUnique({
+          where: { id: dto.storeOrderId },
+          include: { product: { include: { brand: true } } },
+        });
+
+        if (!storeOrder) {
+          throw new NotFoundException('Gift card store order not found');
+        }
+
+        if (storeOrder.userId !== userId) {
+          throw new ForbiddenException(
+            'You are not the buyer of this gift card store order',
+          );
+        }
+
+        if (storeOrder.status === 'REFUNDED') {
+          throw new BadRequestException(
+            'This gift card store order has already been refunded',
+          );
+        }
+
+        if (
+          storeOrder.status !== 'PENDING' &&
+          storeOrder.status !== 'COMPLETED' &&
+          storeOrder.status !== 'FAILED'
+        ) {
+          throw new BadRequestException(
+            `Cannot open dispute for gift card store order in ${storeOrder.status} status`,
+          );
+        }
+
+        const existingDispute = await tx.dispute.findFirst({
+          where: {
+            storeOrderId: dto.storeOrderId,
+            status: {
+              notIn: [DisputeStatus.RESOLVED, DisputeStatus.REJECTED],
+            },
+          },
+        });
+
+        if (existingDispute) {
+          throw new ConflictException(
+            'An active dispute already exists for this gift card store order',
+          );
         }
       }
 
       const dispute = await tx.dispute.create({
         data: {
           orderId: dto.orderId ?? null,
+          storeOrderId: dto.storeOrderId ?? null,
           subjectType,
           reference: dto.reference,
           initiatorId: userId,
@@ -125,7 +189,20 @@ export class DisputesService {
         });
       }
 
-      this.eventEmitter.emit('dispute.created', { dispute, order });
+      if (storeOrder) {
+        await tx.giftCardStoreOrder.update({
+          where: { id: storeOrder.id },
+          data: {
+            status: 'FAILED',
+            version: { increment: 1 },
+          },
+        });
+      }
+
+      this.eventEmitter.emit('dispute.created', {
+        dispute,
+        order: order ?? storeOrder,
+      });
 
       return dispute;
     });
@@ -152,6 +229,12 @@ export class DisputesService {
       include: {
         order: {
           include: { ad: true, buyer: true, seller: true },
+        },
+        storeOrder: {
+          include: {
+            user: { select: { id: true, email: true, profile: true } },
+            product: { include: { brand: true } },
+          },
         },
         initiator: {
           select: { id: true, email: true, profile: true },
@@ -286,6 +369,7 @@ export class DisputesService {
         { description: { contains: filters.search, mode: 'insensitive' } },
         { initiator: { email: { contains: filters.search, mode: 'insensitive' } } },
         { order: { id: { contains: filters.search, mode: 'insensitive' } } },
+        { storeOrder: { id: { contains: filters.search, mode: 'insensitive' } } },
       ];
     }
 
@@ -296,6 +380,12 @@ export class DisputesService {
         take: limit,
         include: {
           order: { include: { ad: true } },
+          storeOrder: {
+            include: {
+              user: { select: { id: true, email: true, profile: true } },
+              product: { include: { brand: true } },
+            },
+          },
           initiator: {
             select: { id: true, email: true, profile: true },
           },
@@ -329,6 +419,12 @@ export class DisputesService {
             ad: true,
             buyer: { include: { profile: true, wallets: true } },
             seller: { include: { profile: true, wallets: true } },
+          },
+        },
+        storeOrder: {
+          include: {
+            user: { include: { profile: true } },
+            product: { include: { brand: true } },
           },
         },
         initiator: {
@@ -469,6 +565,11 @@ export class DisputesService {
         },
         include: {
           order: true,
+          storeOrder: {
+            include: {
+              product: { include: { brand: true } },
+            },
+          },
           initiator: {
             select: { id: true, email: true, profile: true },
           },
@@ -494,11 +595,50 @@ export class DisputesService {
         });
       }
 
+      if (outcome === DisputeStatus.RESOLVED && dispute.storeOrderId) {
+        await tx.giftCardStoreOrder.update({
+          where: { id: dispute.storeOrderId },
+          data: {
+            status: GiftCardStoreOrderStatus.COMPLETED,
+            version: { increment: 1 },
+          },
+        });
+      } else if (outcome === DisputeStatus.REJECTED && dispute.storeOrderId) {
+        await tx.giftCardStoreOrder.update({
+          where: { id: dispute.storeOrderId },
+          data: {
+            status: GiftCardStoreOrderStatus.REFUNDED,
+            version: { increment: 1 },
+          },
+        });
+
+        const storeOrderRow = updated.storeOrder;
+        if (storeOrderRow) {
+          const wallet = await tx.wallet.findFirst({
+            where: primaryWalletWhere(storeOrderRow.userId, Currency.NGN),
+          });
+          if (wallet) {
+            await this.ledgerService.createEntry(tx, {
+              walletId: wallet.id,
+              amount: Number(storeOrderRow.sellPriceNgn),
+              type: 'GIFT_CARD_STORE_REFUND',
+              reference: `GC-STORE-REFUND-DISPUTE-${dispute.storeOrderId}`,
+              metadata: {
+                orderId: storeOrderRow.id,
+                disputeId: dispute.id,
+                reason: resolution,
+              },
+            });
+          }
+        }
+      }
+
       this.eventEmitter.emit('dispute.resolved', {
         dispute: updated,
         resolution,
         outcome,
         resolvedBy,
+        storeOrder: updated.storeOrder,
       });
 
       return updated;
@@ -529,27 +669,65 @@ export class DisputesService {
         OrderStatus.CANCELLED,
       ];
 
-      if (frozenStatuses.includes(dispute.order.status)) {
-        throw new BadRequestException(
-          `Cannot freeze order in ${dispute.order.status} status`,
-        );
+      if (dispute.orderId) {
+        if (frozenStatuses.includes(dispute.order.status)) {
+          throw new BadRequestException(
+            `Cannot freeze order in ${dispute.order.status} status`,
+          );
+        }
+
+        const updatedOrder = await tx.order.update({
+          where: { id: dispute.orderId },
+          data: {
+            status: OrderStatus.DISPUTED,
+            version: { increment: 1 },
+          },
+        });
+
+        this.eventEmitter.emit('order.frozen', {
+          order: updatedOrder,
+          disputeId,
+          adminId,
+        });
+
+        return updatedOrder;
       }
 
-      const updatedOrder = await tx.order.update({
-        where: { id: dispute.orderId },
-        data: {
-          status: OrderStatus.DISPUTED,
-          version: { increment: 1 },
-        },
-      });
+      if (dispute.storeOrderId) {
+        const storeOrderForFreeze = await tx.giftCardStoreOrder.findUnique({
+          where: { id: dispute.storeOrderId },
+        });
+        if (!storeOrderForFreeze) {
+          throw new NotFoundException('Gift card store order not found');
+        }
+        if (storeOrderForFreeze.status !== 'PENDING') {
+          throw new BadRequestException(
+            `Cannot freeze gift card store order in ${storeOrderForFreeze.status} status`,
+          );
+        }
 
-      this.eventEmitter.emit('order.frozen', {
-        order: updatedOrder,
-        disputeId,
-        adminId,
-      });
+        const updatedStoreOrder = await tx.giftCardStoreOrder.update({
+          where: { id: dispute.storeOrderId },
+          data: {
+            status: GiftCardStoreOrderStatus.FAILED,
+            version: { increment: 1 },
+          },
+        });
 
-      return updatedOrder;
+        this.eventEmitter.emit('gift-card-store.order.failed', {
+          order: {
+            id: updatedStoreOrder.id,
+            userId: updatedStoreOrder.userId,
+            message: `Order frozen due to dispute #${dispute.id.slice(0, 8)}`,
+          },
+        });
+
+        return updatedStoreOrder;
+      }
+
+      throw new BadRequestException(
+        'This dispute is not linked to an order and cannot be frozen',
+      );
     });
   }
 

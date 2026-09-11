@@ -12,12 +12,10 @@ const axios_1 = require("@nestjs/axios");
 const gift_card_store_service_1 = require("./gift-card-store.service");
 const gift_card_store_controller_1 = require("./gift-card-store.controller");
 const admin_gift_card_store_controller_1 = require("./admin-gift-card-store.controller");
-const gift_card_store_webhook_controller_1 = require("./gift-card-store.webhook.controller");
 const gift_card_store_events_handler_1 = require("./gift-card-store.events.handler");
-const reloadly_client_1 = require("./reloadly.client");
+const giftbit_client_1 = require("./giftbit.client");
 const wallet_module_1 = require("../wallet/wallet.module");
 const notifications_module_1 = require("../notifications/notifications.module");
-const encryption_1 = require("../../core/utils/encryption");
 let GiftCardStoreModule = class GiftCardStoreModule {
 };
 exports.GiftCardStoreModule = GiftCardStoreModule;
@@ -28,17 +26,8 @@ exports.GiftCardStoreModule = GiftCardStoreModule = __decorate([
             (0, common_1.forwardRef)(() => wallet_module_1.WalletModule),
             (0, common_1.forwardRef)(() => notifications_module_1.NotificationsModule),
         ],
-        controllers: [
-            gift_card_store_controller_1.GiftCardStoreController,
-            admin_gift_card_store_controller_1.AdminGiftCardStoreController,
-            gift_card_store_webhook_controller_1.GiftCardStoreWebhookController,
-        ],
-        providers: [
-            gift_card_store_service_1.GiftCardStoreService,
-            reloadly_client_1.ReloadlyClient,
-            gift_card_store_events_handler_1.GiftCardStoreEventsHandler,
-            encryption_1.EncryptionService,
-        ],
+        controllers: [gift_card_store_controller_1.GiftCardStoreController, admin_gift_card_store_controller_1.AdminGiftCardStoreController],
+        providers: [gift_card_store_service_1.GiftCardStoreService, giftbit_client_1.GiftbitClient, gift_card_store_events_handler_1.GiftCardStoreEventsHandler],
         exports: [gift_card_store_service_1.GiftCardStoreService],
     })
 ], GiftCardStoreModule);

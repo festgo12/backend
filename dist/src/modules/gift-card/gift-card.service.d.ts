@@ -7,13 +7,20 @@ import { CreateGiftCardListingDto } from './dto/create-listing.dto';
 import { ModerateGiftCardListingDto } from './dto/moderate-listing.dto';
 import { PurchaseGiftCardDto } from './dto/purchase-listing.dto';
 import { ListGiftCardListingsDto, ListGiftCardOrdersDto } from './dto/list-listings.dto';
+import { UploadService } from '../upload/upload.service';
 export declare class GiftCardService {
     private readonly prisma;
     private readonly encryption;
     private readonly ledgerService;
     private readonly eventEmitter;
+    private readonly uploadService;
     private readonly logger;
-    constructor(prisma: PrismaService, encryption: EncryptionService, ledgerService: LedgerService, eventEmitter: EventEmitter2);
+    constructor(prisma: PrismaService, encryption: EncryptionService, ledgerService: LedgerService, eventEmitter: EventEmitter2, uploadService: UploadService);
+    uploadListingEvidence(userId: string, file: Express.Multer.File): {
+        url: string;
+        fileType: string;
+        originalName: string;
+    };
     createListing(sellerId: string, dto: CreateGiftCardListingDto): Promise<any>;
     getActiveListings(dto: ListGiftCardListingsDto): Promise<{
         data: any[];
@@ -39,15 +46,15 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
-        sellerId: string;
         buyerId: string;
+        sellerId: string;
         feeAmount: Prisma.Decimal;
+        version: number;
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        listingId: string;
         totalPaidNgn: Prisma.Decimal;
+        listingId: string;
     }>;
     getMyPurchases(buyerId: string, page?: number, limit?: number): Promise<{
         data: any[];
@@ -80,26 +87,28 @@ export declare class GiftCardService {
         cardPin: string | null;
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -110,32 +119,32 @@ export declare class GiftCardService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         orders: ({
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
-                resetToken: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -146,46 +155,46 @@ export declare class GiftCardService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
-            sellerId: string;
             buyerId: string;
+            sellerId: string;
             feeAmount: Prisma.Decimal;
+            version: number;
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            listingId: string;
             totalPaidNgn: Prisma.Decimal;
+            listingId: string;
         })[];
         moderator: ({
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -196,8 +205,6 @@ export declare class GiftCardService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         }) | null;
         evidenceRecords: {
             id: string;
@@ -211,8 +218,8 @@ export declare class GiftCardService {
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
         denomination: Prisma.Decimal;
         cardCurrency: string;
@@ -234,26 +241,28 @@ export declare class GiftCardService {
     moderateListing(listingId: string, dto: ModerateGiftCardListingDto, moderatorId: string): Promise<{
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -264,20 +273,18 @@ export declare class GiftCardService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
         id: string;
         status: import("@src/generated/client").$Enums.GiftCardListingStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
         sellerId: string;
+        version: number;
         brand: import("@src/generated/client").$Enums.GiftCardBrand;
+        denomination: Prisma.Decimal;
         cardCode: string;
         cardPin: string | null;
-        denomination: Prisma.Decimal;
         cardCurrency: string;
         exchangeRate: Prisma.Decimal;
         askingPriceNgn: Prisma.Decimal;
@@ -289,26 +296,28 @@ export declare class GiftCardService {
         data: ({
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
-                resetToken: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -319,31 +328,31 @@ export declare class GiftCardService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    firstName: string | null;
+                    lastName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
                 email: string | null;
                 phone: string | null;
-                resetToken: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -354,20 +363,18 @@ export declare class GiftCardService {
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
             listing: {
                 id: string;
                 status: import("@src/generated/client").$Enums.GiftCardListingStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                version: number;
                 sellerId: string;
+                version: number;
                 brand: import("@src/generated/client").$Enums.GiftCardBrand;
+                denomination: Prisma.Decimal;
                 cardCode: string;
                 cardPin: string | null;
-                denomination: Prisma.Decimal;
                 cardCurrency: string;
                 exchangeRate: Prisma.Decimal;
                 askingPriceNgn: Prisma.Decimal;
@@ -380,15 +387,15 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
-            sellerId: string;
             buyerId: string;
+            sellerId: string;
             feeAmount: Prisma.Decimal;
+            version: number;
             denomination: Prisma.Decimal;
             cardCurrency: string;
             askingPriceNgn: Prisma.Decimal;
-            listingId: string;
             totalPaidNgn: Prisma.Decimal;
+            listingId: string;
         })[];
         meta: {
             total: number;
@@ -405,8 +412,8 @@ export declare class GiftCardService {
             status: import("@src/generated/client").$Enums.GiftCardListingStatus;
             createdAt: Date;
             updatedAt: Date;
-            version: number;
             sellerId: string;
+            version: number;
             brand: import("@src/generated/client").$Enums.GiftCardBrand;
             denomination: Prisma.Decimal;
             cardCurrency: string;
@@ -418,26 +425,28 @@ export declare class GiftCardService {
         };
         buyer: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -448,31 +457,31 @@ export declare class GiftCardService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                firstName: string | null;
+                lastName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -483,22 +492,20 @@ export declare class GiftCardService {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         id: string;
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
-        sellerId: string;
         buyerId: string;
+        sellerId: string;
         feeAmount: Prisma.Decimal;
+        version: number;
         denomination: Prisma.Decimal;
         cardCurrency: string;
         askingPriceNgn: Prisma.Decimal;
-        listingId: string;
         totalPaidNgn: Prisma.Decimal;
+        listingId: string;
     }>;
     getStats(): Promise<{
         totalListings: number;
@@ -509,6 +516,7 @@ export declare class GiftCardService {
         totalVolumeNgn: number | Prisma.Decimal;
     }>;
     private stripSensitive;
+    private stripEvidence;
     private formatOrderForBuyer;
     private formatOrderForSeller;
 }

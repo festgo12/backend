@@ -29,15 +29,15 @@ export declare class PlatformService implements OnApplicationBootstrap {
     getPlatformFeeWallet(currency: Currency, chain?: string): Promise<{
         id: string;
         updatedAt: Date;
+        chain: string | null;
+        version: number;
         userId: string;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
         address: string | null;
         derivationIndex: number | null;
-        chain: string | null;
         isFrozen: boolean;
-        version: number;
     } | null>;
     getPlatformUserId(): Promise<string>;
 }

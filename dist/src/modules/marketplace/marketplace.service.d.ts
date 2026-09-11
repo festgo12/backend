@@ -10,12 +10,12 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
+        sellerId: string;
         chain: string | null;
         version: number;
-        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
-        quantity: Decimal;
         price: Decimal;
+        quantity: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -27,12 +27,12 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
+        sellerId: string;
         chain: string | null;
         version: number;
-        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
-        quantity: Decimal;
         price: Decimal;
+        quantity: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -43,12 +43,12 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
+        sellerId: string;
         chain: string | null;
         version: number;
-        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
-        quantity: Decimal;
         price: Decimal;
+        quantity: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -59,12 +59,12 @@ export declare class MarketplaceService {
         status: string;
         createdAt: Date;
         updatedAt: Date;
+        sellerId: string;
         chain: string | null;
         version: number;
-        sellerId: string;
         asset: import("@src/generated/client").$Enums.Currency;
-        quantity: Decimal;
         price: Decimal;
+        quantity: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -83,8 +83,8 @@ export declare class MarketplaceService {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
-                    avatarUrl: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
                 id: string;
                 devices: {
@@ -97,12 +97,12 @@ export declare class MarketplaceService {
             status: string;
             createdAt: Date;
             updatedAt: Date;
+            sellerId: string;
             chain: string | null;
             version: number;
-            sellerId: string;
             asset: import("@src/generated/client").$Enums.Currency;
-            quantity: Decimal;
             price: Decimal;
+            quantity: Decimal;
             minLimit: Decimal;
             maxLimit: Decimal;
             isSponsored: boolean;

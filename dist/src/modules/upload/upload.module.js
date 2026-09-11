@@ -16,9 +16,7 @@ let UploadModule = class UploadModule {
 exports.UploadModule = UploadModule;
 exports.UploadModule = UploadModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            platform_express_1.MulterModule.register(multer_config_1.multerConfig),
-        ],
+        imports: [platform_express_1.MulterModule.register(multer_config_1.multerConfig)],
         providers: [upload_service_1.UploadService],
         exports: [upload_service_1.UploadService, platform_express_1.MulterModule],
     })

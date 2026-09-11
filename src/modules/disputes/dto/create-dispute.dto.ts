@@ -5,24 +5,35 @@ import {
   MaxLength,
   IsOptional,
   IsEnum,
+  Validate,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ValidateAtLeastOne } from '../../../core/validators/validate-at-least-one.validator';
 
 export enum DisputeSubjectType {
   ORDER = 'ORDER',
   DEPOSIT = 'DEPOSIT',
   WITHDRAWAL = 'WITHDRAWAL',
   OTHER = 'OTHER',
+  GIFT_CARD_STORE_ORDER = 'GIFT_CARD_STORE_ORDER',
 }
 
 export class CreateDisputeDto {
   @ApiPropertyOptional({
     description:
-      'Order ID to dispute. Required only for ORDER disputes; omit for deposit/withdrawal disputes.',
+      'Marketplace order ID to dispute. Required for ORDER disputes; omit for deposit/withdrawal/store order disputes.',
   })
   @IsOptional()
   @IsUUID()
   orderId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Gift Card Store order ID to dispute. Required for GIFT_CARD_STORE_ORDER disputes.',
+  })
+  @IsOptional()
+  @IsUUID()
+  storeOrderId?: string;
 
   @ApiPropertyOptional({
     description: 'What the dispute is about',
@@ -54,4 +65,7 @@ export class CreateDisputeDto {
   @IsOptional()
   @MaxLength(5000)
   description?: string;
+
+  @Validate(ValidateAtLeastOne, ['orderId', 'storeOrderId', 'reference'])
+  _subjectLink?: string;
 }

@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateGiftCardListingDto = void 0;
 const class_validator_1 = require("class-validator");
-const client_1 = require("../../../generated/client/index.js");
+const client_1 = require("@src/generated/client");
 class CreateGiftCardListingDto {
     brand;
     cardCode;
@@ -60,8 +60,9 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateGiftCardListingDto.prototype, "askingPriceNgn", void 0);
 __decorate([
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayMinSize)(2),
+    (0, class_validator_1.ArrayMaxSize)(2),
     (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateGiftCardListingDto.prototype, "evidenceUrls", void 0);

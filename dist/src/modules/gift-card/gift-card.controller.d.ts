@@ -1,5 +1,12 @@
+import { Request as ExpressRequest } from 'express';
 import { GiftCardService } from './gift-card.service';
 import { CreateGiftCardListingDto } from './dto/create-listing.dto';
+interface AuthenticatedRequest extends ExpressRequest {
+    user: {
+        id: string;
+        [key: string]: unknown;
+    };
+}
 import { PurchaseGiftCardDto } from './dto/purchase-listing.dto';
 import { ListGiftCardListingsDto } from './dto/list-listings.dto';
 export declare class GiftCardController {
@@ -25,6 +32,11 @@ export declare class GiftCardController {
     }>;
     getListingById(id: string): Promise<any>;
     createListing(req: any, dto: CreateGiftCardListingDto): Promise<any>;
+    uploadEvidence(req: AuthenticatedRequest, file: Express.Multer.File): {
+        url: string;
+        fileType: string;
+        originalName: string;
+    };
     deleteListing(req: any, id: string): Promise<{
         success: boolean;
     }>;
@@ -33,15 +45,15 @@ export declare class GiftCardController {
         status: import("@src/generated/client").$Enums.GiftCardOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        version: number;
-        sellerId: string;
         buyerId: string;
+        sellerId: string;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
+        version: number;
         denomination: import("@src/generated/client/runtime/library").Decimal;
         cardCurrency: string;
         askingPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-        listingId: string;
         totalPaidNgn: import("@src/generated/client/runtime/library").Decimal;
+        listingId: string;
     }>;
     getMyPurchases(req: any, page?: number, limit?: number): Promise<{
         data: any[];
@@ -67,3 +79,4 @@ export declare class GiftCardController {
         message: string;
     }>;
 }
+export {};

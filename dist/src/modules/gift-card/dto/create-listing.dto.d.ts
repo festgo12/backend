@@ -7,5 +7,5 @@ export declare class CreateGiftCardListingDto {
     cardCurrency: string;
     exchangeRate: number;
     askingPriceNgn: number;
-    evidenceUrls?: string[];
+    evidenceUrls: string[];
 }

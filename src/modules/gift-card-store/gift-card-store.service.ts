@@ -583,11 +583,18 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
   /**
    * Resolves a single PENDING order against Giftbit, completing it once the
    * reward exists and is redeemable.
+   *
+   * Crash-window recovery: if both providerGiftUuid and providerOrderId are
+   * null (the process crashed after the DB debit but before createEmbedded
+   * returned), re-invoke createEmbedded with the original order ID. Giftbit's
+   * /embedded endpoint is idempotent on the client-supplied `id`, so this is
+   * safe — if Giftbit already created the gift it returns the existing record,
+   * otherwise it creates a fresh one.
    */
   async resolveOrder(orderId: string) {
     const order = await this.prisma.giftCardStoreOrder.findFirst({
       where: { id: orderId },
-      include: { product: true },
+      include: { product: { include: { brand: true } } },
     });
     if (!order) {
       this.logger.warn(`No gift card store order matched ${orderId}`);
@@ -598,8 +605,10 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
       return { matched: true, orderId: order.id, alreadyFinalized: true };
     }
 
+    // Crash-window recovery: both provider IDs are null — the initial API
+    // call never completed. Retry createEmbedded with the idempotency key.
     if (!order.providerGiftUuid && !order.providerOrderId) {
-      return { matched: true, orderId: order.id, pending: true };
+      return this.retryCreateEmbedded(order);
     }
 
     let gift: { uuid: string; status: string } | null = null;
@@ -635,6 +644,89 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
     }
 
     return { matched: true, orderId: order.id, pending: true };
+  }
+
+  /**
+   * Re-executes createEmbedded for a PENDING order that never received its
+   * provider IDs (crash-window recovery). The Giftbit /embedded endpoint is
+   * idempotent on the client-supplied `id`, so re-sending the same order ID
+   * is safe.
+   *
+   * - On success: updates the order with the provider IDs and gift link, then
+   *   completes or leaves PENDING depending on the Giftbit info code.
+   * - On non-retryable error (invalid brand, insufficient account balance,
+   *   out of stock, etc.): fails the order and issues an NGN refund.
+   */
+  private async retryCreateEmbedded(order: StoreOrderWithProduct) {
+    const priceInCents = Math.round(Number(order.denomination) * 100);
+
+    let providerResp: GiftbitEmbeddedResponse | null = null;
+    try {
+      providerResp = await this.giftbit.createEmbedded({
+        brand_code: order.product.providerProductId,
+        price_in_cents: priceInCents,
+        id: order.id,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Crash-window retry createEmbedded failed for order ${order.id}: ${message}`,
+      );
+      await this.failOrder(order.id, message, null);
+      return {
+        matched: true,
+        orderId: order.id,
+        failed: true,
+        message,
+      };
+    }
+
+    const infoCode = providerResp?.info?.code;
+    const campaign = providerResp?.campaign;
+    const giftLink = providerResp?.gift_link || null;
+    const providerOrderId = campaign?.uuid || null;
+    const providerGiftUuid = giftLink ? this.giftUuidFromLink(giftLink) : null;
+
+    await this.prisma.giftCardStoreOrder.update({
+      where: { id: order.id },
+      data: {
+        providerOrderId,
+        providerGiftUuid,
+        giftLink,
+        providerResponse: this.toJson(providerResp),
+      },
+    });
+
+    const awaitingFunds =
+      infoCode === GIFTBIT_INFO_FUNDS_REQUIRED ||
+      infoCode === GIFTBIT_INFO_FUNDS_PENDING;
+
+    if (awaitingFunds) {
+      this.eventEmitter.emit('gift-card-store.order.pending', {
+        order: {
+          id: order.id,
+          userId: order.userId,
+          sellPriceNgn: order.sellPriceNgn.toString(),
+        },
+      });
+      return {
+        matched: true,
+        orderId: order.id,
+        pending: true,
+        message: 'Crash-window retry: order is pending Giftbit funds settlement.',
+      };
+    }
+
+    return this.completeOrder(order.id, {
+      giftLink,
+      providerGiftUuid,
+      providerResponse: providerResp,
+    }).then((result) => ({
+      matched: true,
+      orderId: order.id,
+      delivered: true,
+      gift: providerResp,
+    }));
   }
 
   private async completeOrder(
