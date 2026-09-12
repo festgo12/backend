@@ -295,7 +295,7 @@ let AdminService = class AdminService {
             chain,
         });
     }
-    async creditTestFunds(email, currency, amount) {
+    async creditTestFunds(email, currency, amount, chain) {
         if (!this.cryptoConfig.isTestnet) {
             throw new common_1.ForbiddenException('Testnet credit is disabled on a mainnet environment');
         }
@@ -309,11 +309,19 @@ let AdminService = class AdminService {
         if (!user) {
             throw new common_1.NotFoundException(`No user found with email ${email}`);
         }
+        const supportsChain = (currency === client_1.Currency.USDT || currency === client_1.Currency.USDC) &&
+            chain &&
+            ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'].includes(chain);
         const wallet = await this.prisma.wallet.findFirst({
-            where: (0, wallet_query_util_1.primaryWalletWhere)(user.id, currency),
+            where: supportsChain
+                ? (0, wallet_query_util_1.chainWalletWhere)(user.id, currency, chain)
+                : (0, wallet_query_util_1.primaryWalletWhere)(user.id, currency),
         });
         if (!wallet) {
-            throw new common_1.NotFoundException(`No ${currency} wallet for ${email} — create one first`);
+            const target = supportsChain
+                ? ` ${currency} on ${chain}`
+                : ` ${currency}`;
+            throw new common_1.NotFoundException(`No${target} wallet for ${email} — create one first`);
         }
         return this.walletService.createTransaction({
             walletId: wallet.id,

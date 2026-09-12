@@ -89,6 +89,14 @@ export class CreditTestFundsDto {
   @IsNumber()
   @Min(0)
   amount!: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Target chain for multichain assets (ETH/BSC/POLYGON/SOLANA/TRON). Omit to credit the primary wallet.',
+  })
+  @IsOptional()
+  @IsString()
+  chain?: string;
 }
 
 export class UpdateFeeConfigDto {

@@ -20,7 +20,10 @@ import { SanctionedAddressRepository } from '../security/crypto-risk.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
-import { primaryWalletWhere } from '../wallet/wallet-query.util';
+import {
+  primaryWalletWhere,
+  chainWalletWhere,
+} from '../wallet/wallet-query.util';
 
 interface ErrorLike {
   message?: string;
@@ -345,7 +348,12 @@ export class AdminService {
    * Credits a user's wallet with test funds via the ledger. Only available on
    * testnet (mainnet funds are real money and must never be fabricated).
    */
-  async creditTestFunds(email: string, currency: Currency, amount: number) {
+  async creditTestFunds(
+    email: string,
+    currency: Currency,
+    amount: number,
+    chain?: string,
+  ) {
     if (!this.cryptoConfig.isTestnet) {
       throw new ForbiddenException(
         'Testnet credit is disabled on a mainnet environment',
@@ -363,12 +371,25 @@ export class AdminService {
       throw new NotFoundException(`No user found with email ${email}`);
     }
 
+    // Multichain assets (USDT/USDC) can target a specific network; the EVM
+    // family shares one row (chain='EVM'), so ETH/BSC/POLYGON requests all
+    // resolve to it via chainWalletWhere's legacy fallback. Other currencies
+    // ignore the chain.
+    const supportsChain =
+      (currency === Currency.USDT || currency === Currency.USDC) &&
+      chain &&
+      ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'].includes(chain);
     const wallet = await this.prisma.wallet.findFirst({
-      where: primaryWalletWhere(user.id, currency),
+      where: supportsChain
+        ? chainWalletWhere(user.id, currency, chain)
+        : primaryWalletWhere(user.id, currency),
     });
     if (!wallet) {
+      const target = supportsChain
+        ? ` ${currency} on ${chain}`
+        : ` ${currency}`;
       throw new NotFoundException(
-        `No ${currency} wallet for ${email} — create one first`,
+        `No${target} wallet for ${email} — create one first`,
       );
     }
 

@@ -115,6 +115,7 @@ class CreditTestFundsDto {
     email;
     currency;
     amount;
+    chain;
 }
 exports.CreditTestFundsDto = CreditTestFundsDto;
 __decorate([
@@ -133,6 +134,14 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], CreditTestFundsDto.prototype, "amount", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Target chain for multichain assets (ETH/BSC/POLYGON/SOLANA/TRON). Omit to credit the primary wallet.',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreditTestFundsDto.prototype, "chain", void 0);
 class UpdateFeeConfigDto {
     value;
 }

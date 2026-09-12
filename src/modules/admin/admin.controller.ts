@@ -414,7 +414,12 @@ export class AdminController {
     summary: 'Credit a user wallet with test funds (testnet environments only)',
   })
   creditTestFunds(@Body() dto: CreditTestFundsDto) {
-    return this.adminService.creditTestFunds(dto.email, dto.currency, dto.amount);
+    return this.adminService.creditTestFunds(
+      dto.email,
+      dto.currency,
+      dto.amount,
+      dto.chain,
+    );
   }
 
   @Get('payments/stats')

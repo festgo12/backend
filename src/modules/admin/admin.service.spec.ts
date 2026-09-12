@@ -437,5 +437,39 @@ describe('AdminService', () => {
       );
       expect(result.reference).toBe('testnet-credit-x');
     });
+
+    it('credits the chain-specific wallet when a chain is provided', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: 'user-uuid',
+        email: 'user@example.com',
+      });
+      mockPrismaService.wallet.findFirst.mockResolvedValue({
+        id: 'tron-wallet-uuid',
+        userId: 'user-uuid',
+        currency: Currency.USDT,
+        chain: 'TRON',
+      });
+      mockWalletService.createTransaction.mockResolvedValue({
+        id: 'tx-uuid',
+        reference: 'testnet-credit-tron',
+        status: 'COMPLETED',
+      });
+
+      await service.creditTestFunds(
+        'user@example.com',
+        Currency.USDT,
+        10,
+        'TRON',
+      );
+
+      expect(mockPrismaService.wallet.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ userId: 'user-uuid' }),
+        }),
+      );
+      expect(mockWalletService.createTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ walletId: 'tron-wallet-uuid' }),
+      );
+    });
   });
 });

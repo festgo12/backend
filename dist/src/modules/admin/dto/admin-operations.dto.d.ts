@@ -21,6 +21,7 @@ export declare class CreditTestFundsDto {
     email: string;
     currency: Currency;
     amount: number;
+    chain?: string;
 }
 export declare class UpdateFeeConfigDto {
     value: number;
