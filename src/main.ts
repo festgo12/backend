@@ -94,8 +94,10 @@ async function bootstrap() {
     }),
   );
 
-  // Static file serving for uploads
-  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  // Static file serving for uploads. Rooted at <process.cwd()>/uploads (NOT
+  // dist/, which `nest build` cleans) so uploaded files survive rebuilds —
+  // the users controller writes avatars to the same root.
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   // Global Validation
   app.useGlobalPipes(
