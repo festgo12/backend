@@ -5,14 +5,20 @@ import { Currency } from '@src/generated/client';
  *
  * The `Wallet` model is keyed on `(userId, currency, chain)` so a user can
  * hold the same currency on multiple networks. Fiat (NGN) wallets use
- * `chain = null`; crypto wallets store either a legacy family value
- * ('EVM' / 'BTC') or a specific chain ('ETH' / 'BSC' / 'POLYGON' /
- * 'SOLANA' / 'TRON').
+ * `chain = null`; crypto wallets store a specific chain ('ETH' / 'BSC' /
+ * 'POLYGON' / 'SOLANA' / 'TRON' / 'BTC').
+ *
+ * Since the per-chain EVM refactor, each EVM network (ETH/BSC/POLYGON) has
+ * its own independent wallet row and ledger balance; the legacy family value
+ * 'EVM' no longer exists on new rows (old rows were migrated to 'ETH').
  *
  * Order/marketplace/gift-card flows settle against a user's primary wallet
  * for a currency (they have no chain context), so they resolve the primary
  * chain's wallet via these helpers.
  */
+
+/** Canonical EVM chains that hold independent wallet rows. */
+export const EVM_WALLET_CHAINS = ['ETH', 'BSC', 'POLYGON'] as const;
 
 /**
  * Accepted `chain` column values when resolving a user's primary wallet for
@@ -27,15 +33,13 @@ export function chainValuesForCurrency(currency: Currency): string[] | null {
     case Currency.BTC:
       return ['BTC'];
     case Currency.ETH:
-      // ETH is Ethereum-only (plus legacy 'EVM' family rows). No BSC/POLYGON/
-      // SOLANA/TRON ETH wallets — multichain is USDT/USDC only.
-      return ['EVM', 'ETH'];
+      // ETH is Ethereum-only. No BSC/POLYGON/SOLANA/TRON ETH wallets —
+      // multichain is USDT/USDC only.
+      return ['ETH'];
     case Currency.USDT:
     case Currency.USDC:
-      // Primary balance wallet. EVM-family chains (plus legacy 'EVM') share
-      // a single 0x address; SOLANA and TRON have their own distinct
-      // addresses. All resolve as candidate primary rows.
-      return ['EVM', 'ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'];
+      // Primary balance wallet. Every supported network holds its own row.
+      return ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'];
     default:
       return [];
   }
@@ -50,8 +54,8 @@ export function isFiatCurrency(currency: Currency): boolean {
 
 /**
  * Builds the `Prisma.WalletWhereInput` fragment that selects a user's primary
- * wallet for a currency. Prefer the legacy/primary chain first for stable
- * resolution across old rows (chain='EVM') and new per-network rows.
+ * wallet for a currency. Prefers the ETH (Ethereum) row first for stable
+ * resolution across the per-chain rows.
  */
 export function primaryWalletWhere(
   userId: string,
@@ -66,10 +70,9 @@ export function primaryWalletWhere(
 
 /**
  * Chain values to match when resolving a wallet for a specific network.
- * Returns `null` for fiat (NGN). For EVM-family chains returns the exact
- * chain first with the legacy 'EVM' row as a fallback (legacy primary
- * wallets are stored with chain='EVM'); SOLANA/TRON/BTC/ETH resolve to a
- * single value. ETH is Ethereum-only, so 'ETH' maps to ['ETH', 'EVM'].
+ * Returns `null` for fiat (NGN). Each supported chain maps to exactly itself:
+ * per-chain EVM rows are independent, so 'BSC' resolves only the BSC row and
+ * 'POLYGON' only the POLYGON row. Unrecognized chains resolve to themselves.
  */
 export function chainValuesForCurrencyChain(
   currency: Currency,
@@ -79,15 +82,13 @@ export function chainValuesForCurrencyChain(
   const c = chain ?? undefined;
   if (!c) return chainValuesForCurrency(currency);
   if (currency === Currency.BTC) return ['BTC'];
-  if (c === 'ETH' || c === 'EVM') return ['EVM', 'ETH'];
-  if (c === 'BSC' || c === 'POLYGON') return [c, 'EVM'];
+  if (c === 'EVM') return ['ETH'];
   return [c];
 }
 
 /**
  * Builds the `Prisma.WalletWhereInput` fragment selecting a user's wallet for
- * a specific chain. Deterministic priority: the exact chain row first, legacy
- * 'EVM' second for EVM-family chains.
+ * a specific chain. Exact chain match — per-chain EVM rows are independent.
  */
 export function chainWalletWhere(
   userId: string,
@@ -102,11 +103,11 @@ export function chainWalletWhere(
 }
 
 /**
- * Resolves a user's wallet row for a specific chain, trying the exact chain
- * first and falling back to the legacy 'EVM' row for EVM-family chains so the
- * legacy primary wallet is still usable. `walletFindFirst` is a function
- * (e.g. `(where) => tx.wallet.findFirst({ where })`) so it works inside
- * transactions without leaking the Prisma client type.
+ * Resolves a user's wallet row for a specific chain. Since the per-chain EVM
+ * refactor this is an exact match (no legacy 'EVM' fallback): 'BSC' resolves
+ * only the BSC row, 'POLYGON' only the POLYGON row. `walletFindFirst` is a
+ * function (e.g. `(where) => tx.wallet.findFirst({ where })`) so it works
+ * inside transactions without leaking the Prisma client type.
  */
 export async function resolveChainWallet<T>(
   walletFindFirst: (

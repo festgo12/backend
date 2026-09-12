@@ -1,0 +1,34 @@
+import { OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { CryptoConfigService } from './crypto-config.service';
+import { WebhookProcessorService } from './webhook-processor.service';
+import { DepositAddressRegistry } from './deposit-address-registry.service';
+export declare class BtcAlchemyWebSocketService implements OnApplicationBootstrap, OnApplicationShutdown {
+    private readonly cryptoConfig;
+    private readonly webhookProcessor;
+    private readonly depositRegistry;
+    private readonly logger;
+    private ws;
+    private monitoredAddresses;
+    private reconnectAttempts;
+    private reconnectTimer;
+    private isShuttingDown;
+    private subscriptionId;
+    private static readonly MAX_BACKOFF_MS;
+    private static readonly INITIAL_BACKOFF_MS;
+    constructor(cryptoConfig: CryptoConfigService, webhookProcessor: WebhookProcessorService, depositRegistry: DepositAddressRegistry);
+    onApplicationBootstrap(): void;
+    private connect;
+    private cleanupSocket;
+    private scheduleReconnect;
+    private resubscribe;
+    addAddress(address: string): void;
+    removeAddress(address: string): void;
+    refreshAll(): void;
+    private handleMessage;
+    private processTransaction;
+    private normalizeTx;
+    private extractAddresses;
+    private isMonitoredAddress;
+    private parseBtcAmount;
+    onApplicationShutdown(): void;
+}

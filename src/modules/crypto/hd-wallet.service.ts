@@ -223,11 +223,18 @@ export class HdWalletService {
   }
 
   /**
-   * Returns the deposit address info for a user/currency/chain, reusing the
-   * user's existing on-chain address for that chain when one has already been
-   * assigned (this is what unifies USDT/USDC/ETH onto a single EVM address).
+   * Returns the deposit address info for a user/currency/chain.
+   *
+   * Per-chain EVM model: ETH/BSC/POLYGON rows share one 0x address (same key
+   * family, Metamask-style). The user's EVM derivation index is looked up
+   * family-wide — any existing ETH/BSC/POLYGON row with an index supplies the
+   * address for every EVM chain, so existing deposit addresses stay valid and
+   * new per-chain rows reuse it. A fresh index is only assigned when the user
+   * has no EVM address at all. The returned `chain` is the SPECIFIC chain
+   * (never the legacy family value 'EVM').
+   *
    * When `chain` is omitted, it falls back to the currency's default chain
-   * (EVM-family → ETH) for backwards compatibility.
+   * (EVM-family → ETH).
    */
   async getOrAssignDepositInfo(
     userId: string,
@@ -251,13 +258,37 @@ export class HdWalletService {
       );
     }
 
-    const chainValue = this.config.isEvmChain(targetChain)
-      ? 'EVM'
-      : targetChain;
+    if (this.config.isEvmChain(targetChain)) {
+      // Family-wide lookup: any EVM-family row with an assigned index.
+      // 'EVM' is included defensively for rows not yet migrated.
+      const existing = await this.prisma.wallet.findFirst({
+        where: {
+          userId,
+          chain: { in: ['ETH', 'BSC', 'POLYGON', 'EVM'] },
+          address: { not: null },
+          derivationIndex: { not: null },
+        },
+        select: { address: true, derivationIndex: true },
+      });
+
+      if (existing) {
+        return {
+          chain: targetChain,
+          address: existing.address!,
+          derivationIndex: existing.derivationIndex!,
+        };
+      }
+
+      const index = await this.getNextIndexForUser();
+      const address = this.deriveAddressForChain(targetChain, index);
+      return { chain: targetChain, address, derivationIndex: index };
+    }
+
+    // Non-EVM chains (SOLANA/TRON): chain-specific rows and indexes.
     const existing = await this.prisma.wallet.findFirst({
       where: {
         userId,
-        chain: chainValue,
+        chain: targetChain,
         address: { not: null },
         derivationIndex: { not: null },
       },
@@ -266,15 +297,15 @@ export class HdWalletService {
 
     if (existing) {
       return {
-        chain: chainValue,
+        chain: targetChain,
         address: existing.address!,
         derivationIndex: existing.derivationIndex!,
       };
     }
 
-    const index = await this.indexForUser(userId, chainValue);
+    const index = await this.indexForUser(userId, targetChain);
     const address = this.deriveAddressForChain(targetChain, index);
-    return { chain: chainValue, address, derivationIndex: index };
+    return { chain: targetChain, address, derivationIndex: index };
   }
 
   /**

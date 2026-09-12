@@ -93,12 +93,14 @@ describe('PlatformService', () => {
       });
 
       expect(mockHdWallet.getOrAssignDepositInfo).not.toHaveBeenCalled();
-      // BTC once + EVM once per EVM fee wallet (ETH, USDT/ETH, USDC/ETH).
-      expect(mockHdWallet.getMasterAddress).toHaveBeenCalledTimes(4);
+      // BTC once + EVM master address per USDT/USDC EVM-chain fee wallet
+      // (ETH/BSC/POLYGON each): 1 + 3 + 3 = 7. 8th call is from the
+      // ETH fee wallet's EVM master address lookup.
+      expect(mockHdWallet.getMasterAddress).toHaveBeenCalledTimes(8);
       expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('BTC');
       expect(mockHdWallet.getMasterAddress).toHaveBeenCalledWith('EVM');
       // getMasterAddressForChain: 2 from persistMasterXpubs fallback
-      // (SOLANA/TRON) + 2 for USDT + 2 for USDC fee wallets.
+      // (SOLANA/TRON) + 2 for USDT (SOLANA/TRON) + 2 for USDC (SOLANA/TRON).
       expect(mockHdWallet.getMasterAddressForChain).toHaveBeenCalledTimes(6);
       expect(mockHdWallet.getMasterAddressForChain).toHaveBeenCalledWith(
         'SOLANA',
@@ -107,11 +109,12 @@ describe('PlatformService', () => {
         'TRON',
       );
 
-      // 8 pairs: BTC(1) + ETH(1) + USDT(ETH/SOLANA/TRON = 3) + USDC(3).
-      expect(mockPrismaService.wallet.create).toHaveBeenCalledTimes(8);
-      expect(mockPrismaService.wallet.update).toHaveBeenCalledTimes(8);
-      expect(mockDepositRegistry.register).toHaveBeenCalledTimes(8);
-      expect(result.wallets).toHaveLength(8);
+      // 12 pairs: BTC(1) + ETH(1) + USDT(ETH/BSC/POLYGON/SOLANA/TRON = 5)
+      // + USDC(5).
+      expect(mockPrismaService.wallet.create).toHaveBeenCalledTimes(12);
+      expect(mockPrismaService.wallet.update).toHaveBeenCalledTimes(12);
+      expect(mockDepositRegistry.register).toHaveBeenCalledTimes(12);
+      expect(result.wallets).toHaveLength(12);
       expect(
         result.wallets.every((w) => w.address === '0xDerivedFeeAddress'),
       ).toBe(true);
@@ -132,7 +135,7 @@ describe('PlatformService', () => {
       expect(mockHdWallet.getOrAssignDepositInfo).not.toHaveBeenCalled();
       expect(mockPrismaService.wallet.update).not.toHaveBeenCalled();
       expect(mockDepositRegistry.register).not.toHaveBeenCalled();
-      expect(result.wallets).toHaveLength(8);
+      expect(result.wallets).toHaveLength(12);
       expect(result.wallets[0].address).toBe('0xExistingFeeAddress');
     });
 

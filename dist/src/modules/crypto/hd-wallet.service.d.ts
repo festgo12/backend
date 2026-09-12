@@ -1,0 +1,48 @@
+import { HDNodeWallet } from 'ethers';
+import { BIP32Interface } from 'bip32';
+import { Keypair } from '@solana/web3.js';
+import { Currency } from '@src/generated/client';
+import { PrismaService } from '../../core/database/prisma.service';
+import { Chain, ChainFamily, ChainKind, CryptoConfigService } from './crypto-config.service';
+export interface DepositAddressInfo {
+    chain: ChainKind | Chain;
+    address: string;
+    derivationIndex: number;
+}
+export declare const MASTER_WALLET_INDEX = 0;
+export declare const USER_INDEX_BASE = 1000;
+export declare class HdWalletService {
+    private readonly prisma;
+    private readonly config;
+    private readonly logger;
+    private cachedBtcSeed;
+    private cachedEvmRoot;
+    private cachedTronRoot;
+    private cachedSolSeed;
+    constructor(prisma: PrismaService, config: CryptoConfigService);
+    chainForCurrency(currency: Currency): ChainKind | null;
+    familyForCurrency(currency: Currency): ChainFamily | null;
+    defaultChainForCurrency(currency: Currency): Chain | null;
+    private ensureSeedCache;
+    getNextIndexForUser(): Promise<number>;
+    indexForUser(userId: string, chain?: string): Promise<number>;
+    getOrAssignDepositInfo(userId: string, currency: Currency, chain?: Chain): Promise<DepositAddressInfo>;
+    private getOrAssignBtcDepositInfo;
+    deriveAddress(currency: Currency, index: number): string;
+    deriveAddressForChain(chain: string, index: number): string;
+    getMasterAddress(chain: ChainKind): string;
+    getMasterAddressForChain(chain: string): string;
+    derivePrivateKey(currency: Currency, index: number): string;
+    derivePrivateKeyForChain(chain: string, index: number): string;
+    evmNode(index: number): HDNodeWallet;
+    tronNode(index: number): HDNodeWallet;
+    btcNode(index: number): BIP32Interface;
+    solSeedFor(index: number): Buffer;
+    solKeypair(index: number): Keypair;
+    private deriveEvmAddress;
+    private deriveSolanaAddress;
+    private deriveTronAddress;
+    private base58Check;
+    private deriveBtcAddress;
+    private get btcNetwork();
+}

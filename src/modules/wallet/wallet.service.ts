@@ -47,6 +47,39 @@ export class WalletService {
   }
 
   /**
+   * Per-chain deposited totals for a user's multi-chain crypto wallet.
+   *
+   * EVM-family chains (ETH/BSC/POLYGON) intentionally share one wallet row
+   * and one ledger balance, so the per-chain breakdown lives in each deposit
+   * transaction's metadata.chain (written by the webhook listener). This
+   * aggregates COMPLETED DEPOSIT transactions per chain so the asset details
+   * screen can show what was received on each network. Untagged/legacy rows
+   * (recorded before per-chain tagging) are reported under 'EVM'.
+   */
+  async getChainDepositTotals(userId: string, currency: Currency) {
+    const txs = await this.prisma.walletTransaction.findMany({
+      where: {
+        wallet: { userId, currency },
+        type: LedgerType.DEPOSIT,
+        status: 'COMPLETED',
+      },
+      select: { amount: true, metadata: true },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    const totals: Record<string, number> = {};
+    for (const tx of txs) {
+      const meta = (tx.metadata ?? {}) as Record<string, unknown>;
+      const rawChain = typeof meta.chain === 'string' ? meta.chain : 'EVM';
+      // Legacy rows may carry the family value 'EVM'; keep it as its own key.
+      const chain = rawChain.toUpperCase();
+      totals[chain] = (totals[chain] ?? 0) + tx.amount.toNumber();
+    }
+    return { currency, totals };
+  }
+
+  /**
    * Gets or creates a wallet for a specific user + currency on a chain.
    *
    * When `chain` is omitted, resolves the user's primary wallet for the
@@ -77,12 +110,39 @@ export class WalletService {
     });
   }
 
-  /** Primary stored `chain` value used when creating a crypto wallet. */
+  /**
+   * Gets or creates the user's wallet row for a specific chain, then ensures
+   * the row carries the user's per-chain deposit address.
+   *
+   * Used by trades and wallet init: since the per-chain EVM refactor every
+   * network (ETH/BSC/POLYGON/SOLANA/TRON) holds an independent row that is
+   * created on demand — e.g. a buyer's first BSC trade auto-creates their BSC
+   * row. Deposit-address assignment is handled by the caller (wallet
+   * controller / hd-wallet service), which reuses the user's existing EVM
+   * derivation index so the 0x address is identical across all EVM rows.
+   *
+   * `chain` values: ETH | BSC | POLYGON | SOLANA | TRON | BTC.
+   */
+  async getOrCreateChainWallet(userId: string, currency: Currency, chain: string) {
+    if (currency === Currency.NGN) {
+      return this.getOrCreateWallet(userId, currency);
+    }
+    const chainValue = chain === 'EVM' ? 'ETH' : chain.toUpperCase();
+    return this.prisma.wallet.upsert({
+      where: {
+        userId_currency_chain: { userId, currency, chain: chainValue },
+      },
+      create: { userId, currency, chain: chainValue, balance: 0 },
+      update: {},
+    });
+  }
+
+  /** Primary stored `chain` value when creating a wallet with no explicit chain. */
   private defaultChainValueForCurrency(currency: Currency): string {
     if (currency === Currency.BTC) return 'BTC';
-    // EVM-family (ETH/USDT/USDC) new wallets default to the canonical EVM
-    // family value so they share a single balance/address across EVM chains.
-    return 'EVM';
+    // Per-chain EVM model: each EVM network (ETH/BSC/POLYGON) holds an
+    // independent row. New EVM-family wallets default to the ETH row.
+    return 'ETH';
   }
 
   /**

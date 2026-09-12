@@ -163,7 +163,7 @@ describe('HdWalletService', () => {
   });
 
   describe('getOrAssignDepositInfo', () => {
-    it('reuses an existing on-chain address for the same chain', async () => {
+    it('reuses the family-wide address (any EVM row) and reports the specific chain', async () => {
       mockPrisma.wallet.findFirst.mockResolvedValue({
         address: '0xExistingEVMAddress0000000000000000000000',
         derivationIndex: 4242,
@@ -175,7 +175,7 @@ describe('HdWalletService', () => {
       );
 
       expect(info).toEqual({
-        chain: 'EVM',
+        chain: 'ETH',
         address: '0xExistingEVMAddress0000000000000000000000',
         derivationIndex: 4242,
       });
@@ -183,10 +183,29 @@ describe('HdWalletService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             userId: 'user-1',
-            chain: 'EVM',
+            chain: { in: ['ETH', 'BSC', 'POLYGON', 'EVM'] },
           }),
         }),
       );
+    });
+
+    it('reuses the same family address for a BSC request (per-chain rows share the 0x)', async () => {
+      mockPrisma.wallet.findFirst.mockResolvedValue({
+        address: '0xExistingEVMAddress0000000000000000000000',
+        derivationIndex: 4242,
+      });
+
+      const info = await service.getOrAssignDepositInfo(
+        'user-1',
+        Currency.USDT,
+        'BSC' as never,
+      );
+
+      expect(info).toEqual({
+        chain: 'BSC',
+        address: '0xExistingEVMAddress0000000000000000000000',
+        derivationIndex: 4242,
+      });
     });
 
     it('derives and returns a fresh address when none exists', async () => {
@@ -201,7 +220,7 @@ describe('HdWalletService', () => {
       const index = await service.indexForUser('user-1');
       const info = await service.getOrAssignDepositInfo('user-1', Currency.ETH);
 
-      expect(info.chain).toBe('EVM');
+      expect(info.chain).toBe('ETH');
       expect(info.derivationIndex).toBe(index);
       expect(info.address).toBe(service.deriveAddress(Currency.ETH, index));
     });

@@ -1,0 +1,803 @@
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+const {
+  Decimal,
+  objectEnumValues,
+  makeStrictEnum,
+  Public,
+  getRuntime,
+  skip
+} = require('./runtime/index-browser.js')
+
+
+const Prisma = {}
+
+exports.Prisma = Prisma
+exports.$Enums = {}
+
+/**
+ * Prisma Client JS version: 5.22.0
+ * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
+ */
+Prisma.prismaVersion = {
+  client: "5.22.0",
+  engine: "605197351a3c8bdd595af2d2a9bc3025bca48ea2"
+}
+
+Prisma.PrismaClientKnownRequestError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`PrismaClientKnownRequestError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)};
+Prisma.PrismaClientUnknownRequestError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`PrismaClientUnknownRequestError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.PrismaClientRustPanicError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`PrismaClientRustPanicError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.PrismaClientInitializationError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`PrismaClientInitializationError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.PrismaClientValidationError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`PrismaClientValidationError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.NotFoundError = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`NotFoundError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.Decimal = Decimal
+
+/**
+ * Re-export of sql-template-tag
+ */
+Prisma.sql = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`sqltag is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.empty = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`empty is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.join = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`join is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.raw = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`raw is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.validator = Public.validator
+
+/**
+* Extensions
+*/
+Prisma.getExtensionContext = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`Extensions.getExtensionContext is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+Prisma.defineExtension = () => {
+  const runtimeName = getRuntime().prettyName;
+  throw new Error(`Extensions.defineExtension is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
+In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
+)}
+
+/**
+ * Shorthand utilities for JSON filtering
+ */
+Prisma.DbNull = objectEnumValues.instances.DbNull
+Prisma.JsonNull = objectEnumValues.instances.JsonNull
+Prisma.AnyNull = objectEnumValues.instances.AnyNull
+
+Prisma.NullTypes = {
+  DbNull: objectEnumValues.classes.DbNull,
+  JsonNull: objectEnumValues.classes.JsonNull,
+  AnyNull: objectEnumValues.classes.AnyNull
+}
+
+
+
+/**
+ * Enums
+ */
+
+exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
+  Serializable: 'Serializable'
+});
+
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  phone: 'phone',
+  passwordHash: 'passwordHash',
+  role: 'role',
+  status: 'status',
+  twoFactorEnabled: 'twoFactorEnabled',
+  twoFactorSecret: 'twoFactorSecret',
+  twoFactorOtpHash: 'twoFactorOtpHash',
+  twoFactorOtpExpires: 'twoFactorOtpExpires',
+  resetToken: 'resetToken',
+  resetTokenExpires: 'resetTokenExpires',
+  emailVerificationToken: 'emailVerificationToken',
+  emailVerificationExpires: 'emailVerificationExpires',
+  emailVerified: 'emailVerified',
+  phoneVerificationToken: 'phoneVerificationToken',
+  phoneVerificationExpires: 'phoneVerificationExpires',
+  phoneVerified: 'phoneVerified',
+  failedLoginAttempts: 'failedLoginAttempts',
+  lockedUntil: 'lockedUntil',
+  isSystem: 'isSystem',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  kycStatus: 'kycStatus',
+  avatarUrl: 'avatarUrl',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserPreferenceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  baseCurrency: 'baseCurrency',
+  emailNotify: 'emailNotify',
+  pushNotify: 'pushNotify',
+  theme: 'theme',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WalletScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  currency: 'currency',
+  balance: 'balance',
+  reservedBalance: 'reservedBalance',
+  address: 'address',
+  derivationIndex: 'derivationIndex',
+  chain: 'chain',
+  isFrozen: 'isFrozen',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.LedgerEntryScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  transactionId: 'transactionId',
+  orderId: 'orderId',
+  amount: 'amount',
+  type: 'type',
+  reference: 'reference',
+  balanceAfter: 'balanceAfter',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WalletTransactionScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  type: 'type',
+  status: 'status',
+  amount: 'amount',
+  fee: 'fee',
+  reference: 'reference',
+  metadata: 'metadata',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BalanceSnapshotScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  balance: 'balance',
+  ledgerId: 'ledgerId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AdScalarFieldEnum = {
+  id: 'id',
+  sellerId: 'sellerId',
+  asset: 'asset',
+  type: 'type',
+  chain: 'chain',
+  price: 'price',
+  quantity: 'quantity',
+  minLimit: 'minLimit',
+  maxLimit: 'maxLimit',
+  isSponsored: 'isSponsored',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  adId: 'adId',
+  buyerId: 'buyerId',
+  sellerId: 'sellerId',
+  status: 'status',
+  chain: 'chain',
+  fiatAmount: 'fiatAmount',
+  cryptoAmount: 'cryptoAmount',
+  feeAmount: 'feeAmount',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version',
+  fraudFlagged: 'fraudFlagged'
+};
+
+exports.Prisma.DisputeScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  storeOrderId: 'storeOrderId',
+  subjectType: 'subjectType',
+  reference: 'reference',
+  initiatorId: 'initiatorId',
+  reason: 'reason',
+  description: 'description',
+  status: 'status',
+  assigneeId: 'assigneeId',
+  resolution: 'resolution',
+  deadline: 'deadline',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EvidenceScalarFieldEnum = {
+  id: 'id',
+  disputeId: 'disputeId',
+  url: 'url',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AuthTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
+  lastActivity: 'lastActivity',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.DeviceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  deviceId: 'deviceId',
+  fingerprint: 'fingerprint',
+  deviceName: 'deviceName',
+  browser: 'browser',
+  osVersion: 'osVersion',
+  location: 'location',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  fcmToken: 'fcmToken',
+  lastLogin: 'lastLogin',
+  lastActivity: 'lastActivity',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SecurityLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  actorId: 'actorId',
+  action: 'action',
+  resource: 'resource',
+  resourceId: 'resourceId',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  metadata: 'metadata',
+  ipAddress: 'ipAddress',
+  device: 'device',
+  success: 'success',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  body: 'body',
+  data: 'data',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationTemplateScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  name: 'name',
+  emailSubject: 'emailSubject',
+  emailBody: 'emailBody',
+  pushTitle: 'pushTitle',
+  pushBody: 'pushBody',
+  inAppTitle: 'inAppTitle',
+  inAppBody: 'inAppBody',
+  smsBody: 'smsBody',
+  systemBody: 'systemBody',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  channel: 'channel',
+  recipient: 'recipient',
+  title: 'title',
+  body: 'body',
+  status: 'status',
+  retryCount: 'retryCount',
+  maxRetries: 'maxRetries',
+  nextTryAt: 'nextTryAt',
+  errorDetails: 'errorDetails',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SecurityAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  severity: 'severity',
+  title: 'title',
+  message: 'message',
+  metadata: 'metadata',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FraudRuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  description: 'description',
+  enabled: 'enabled',
+  threshold: 'threshold',
+  severity: 'severity',
+  action: 'action',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GiftCardListingScalarFieldEnum = {
+  id: 'id',
+  sellerId: 'sellerId',
+  brand: 'brand',
+  cardCode: 'cardCode',
+  cardPin: 'cardPin',
+  denomination: 'denomination',
+  cardCurrency: 'cardCurrency',
+  exchangeRate: 'exchangeRate',
+  askingPriceNgn: 'askingPriceNgn',
+  status: 'status',
+  evidenceUrls: 'evidenceUrls',
+  moderatorId: 'moderatorId',
+  moderatorNote: 'moderatorNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.GiftCardOrderScalarFieldEnum = {
+  id: 'id',
+  listingId: 'listingId',
+  buyerId: 'buyerId',
+  sellerId: 'sellerId',
+  status: 'status',
+  denomination: 'denomination',
+  cardCurrency: 'cardCurrency',
+  askingPriceNgn: 'askingPriceNgn',
+  feeAmount: 'feeAmount',
+  totalPaidNgn: 'totalPaidNgn',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.GiftCardEvidenceScalarFieldEnum = {
+  id: 'id',
+  listingId: 'listingId',
+  uploadedBy: 'uploadedBy',
+  fileUrl: 'fileUrl',
+  fileType: 'fileType',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.GiftCardStoreBrandScalarFieldEnum = {
+  id: 'id',
+  providerBrandId: 'providerBrandId',
+  brandName: 'brandName',
+  logoUrl: 'logoUrl',
+  backgroundColor: 'backgroundColor',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GiftCardStoreProductScalarFieldEnum = {
+  id: 'id',
+  providerProductId: 'providerProductId',
+  productName: 'productName',
+  brandId: 'brandId',
+  countryCode: 'countryCode',
+  currencyCode: 'currencyCode',
+  denominationType: 'denominationType',
+  fixedDenominations: 'fixedDenominations',
+  minDenomination: 'minDenomination',
+  maxDenomination: 'maxDenomination',
+  senderFee: 'senderFee',
+  discountPercentage: 'discountPercentage',
+  providerPriceNgn: 'providerPriceNgn',
+  enabled: 'enabled',
+  markupPercent: 'markupPercent',
+  providerResponse: 'providerResponse',
+  lastSyncedAt: 'lastSyncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GiftCardStoreOrderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  denomination: 'denomination',
+  currencyCode: 'currencyCode',
+  quantity: 'quantity',
+  status: 'status',
+  providerOrderId: 'providerOrderId',
+  providerGiftUuid: 'providerGiftUuid',
+  giftLink: 'giftLink',
+  costNgn: 'costNgn',
+  sellPriceNgn: 'sellPriceNgn',
+  feeNgn: 'feeNgn',
+  recipientEmail: 'recipientEmail',
+  cardCode: 'cardCode',
+  cardPin: 'cardPin',
+  failureMessage: 'failureMessage',
+  providerResponse: 'providerResponse',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  version: 'version'
+};
+
+exports.Prisma.PlatformFeeConfigScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  label: 'label',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PlatformSettingScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SweepConfigScalarFieldEnum = {
+  id: 'id',
+  chain: 'chain',
+  enabled: 'enabled',
+  thresholdUsd: 'thresholdUsd',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ReconciliationScalarFieldEnum = {
+  id: 'id',
+  currency: 'currency',
+  internalBalance: 'internalBalance',
+  onChainBalance: 'onChainBalance',
+  difference: 'difference',
+  status: 'status',
+  reference: 'reference',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ChainCursorScalarFieldEnum = {
+  id: 'id',
+  chain: 'chain',
+  lastBlock: 'lastBlock',
+  lastBlockHash: 'lastBlockHash',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WithdrawalJobScalarFieldEnum = {
+  id: 'id',
+  txHash: 'txHash',
+  walletId: 'walletId',
+  currency: 'currency',
+  chain: 'chain',
+  amount: 'amount',
+  destination: 'destination',
+  status: 'status',
+  attempts: 'attempts',
+  nextPollAt: 'nextPollAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DailyReportScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  platformFeesNgn: 'platformFeesNgn',
+  tradingVolumeNgn: 'tradingVolumeNgn',
+  tradingVolumeUsd: 'tradingVolumeUsd',
+  totalOrders: 'totalOrders',
+  completedOrders: 'completedOrders',
+  cancelledOrders: 'cancelledOrders',
+  depositsNgn: 'depositsNgn',
+  depositCount: 'depositCount',
+  withdrawalsNgn: 'withdrawalsNgn',
+  withdrawalCount: 'withdrawalCount',
+  giftCardVolumeNgn: 'giftCardVolumeNgn',
+  giftCardCount: 'giftCardCount',
+  newUsers: 'newUsers',
+  totalUsers: 'totalUsers',
+  newDisputes: 'newDisputes',
+  resolvedDisputes: 'resolvedDisputes',
+  fraudEvents: 'fraudEvents',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.HelpContentScalarFieldEnum = {
+  id: 'id',
+  category: 'category',
+  title: 'title',
+  content: 'content',
+  sortOrder: 'sortOrder',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.Role = exports.$Enums.Role = {
+  USER: 'USER',
+  MODERATOR: 'MODERATOR',
+  ADMIN: 'ADMIN',
+  SUPER_ADMIN: 'SUPER_ADMIN'
+};
+
+exports.UserStatus = exports.$Enums.UserStatus = {
+  ACTIVE: 'ACTIVE',
+  FROZEN: 'FROZEN',
+  SUSPENDED: 'SUSPENDED'
+};
+
+exports.Currency = exports.$Enums.Currency = {
+  NGN: 'NGN',
+  USDT: 'USDT',
+  BTC: 'BTC',
+  ETH: 'ETH',
+  USDC: 'USDC'
+};
+
+exports.LedgerType = exports.$Enums.LedgerType = {
+  DEPOSIT: 'DEPOSIT',
+  WITHDRAWAL: 'WITHDRAWAL',
+  TRADE_RESERVE: 'TRADE_RESERVE',
+  TRADE_SETTLEMENT: 'TRADE_SETTLEMENT',
+  TRADE_REFUND: 'TRADE_REFUND',
+  FEE: 'FEE',
+  GIFT_CARD_PURCHASE: 'GIFT_CARD_PURCHASE',
+  GIFT_CARD_SALE: 'GIFT_CARD_SALE',
+  GIFT_CARD_STORE_PURCHASE: 'GIFT_CARD_STORE_PURCHASE',
+  GIFT_CARD_STORE_REFUND: 'GIFT_CARD_STORE_REFUND',
+  RECONCILIATION_ADJUSTMENT: 'RECONCILIATION_ADJUSTMENT'
+};
+
+exports.AdType = exports.$Enums.AdType = {
+  BUY: 'BUY',
+  SELL: 'SELL'
+};
+
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  CREATED: 'CREATED',
+  PENDING_SELLER: 'PENDING_SELLER',
+  APPROVED: 'APPROVED',
+  COMPLETED: 'COMPLETED',
+  DECLINED: 'DECLINED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+  DISPUTED: 'DISPUTED'
+};
+
+exports.DisputeSubjectType = exports.$Enums.DisputeSubjectType = {
+  ORDER: 'ORDER',
+  DEPOSIT: 'DEPOSIT',
+  WITHDRAWAL: 'WITHDRAWAL',
+  OTHER: 'OTHER',
+  GIFT_CARD_STORE_ORDER: 'GIFT_CARD_STORE_ORDER'
+};
+
+exports.DisputeStatus = exports.$Enums.DisputeStatus = {
+  OPEN: 'OPEN',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  WAITING_FOR_USER: 'WAITING_FOR_USER',
+  WAITING_FOR_ADMIN: 'WAITING_FOR_ADMIN',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+  ESCALATED: 'ESCALATED'
+};
+
+exports.NotificationChannel = exports.$Enums.NotificationChannel = {
+  IN_APP: 'IN_APP',
+  PUSH: 'PUSH',
+  EMAIL: 'EMAIL',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.NotificationStatus = exports.$Enums.NotificationStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING'
+};
+
+exports.GiftCardBrand = exports.$Enums.GiftCardBrand = {
+  AMAZON: 'AMAZON',
+  APPLE: 'APPLE',
+  STEAM: 'STEAM',
+  GOOGLE_PLAY: 'GOOGLE_PLAY',
+  VISA_GIFT: 'VISA_GIFT',
+  MASTERCARD_GIFT: 'MASTERCARD_GIFT',
+  OTHER: 'OTHER'
+};
+
+exports.GiftCardListingStatus = exports.$Enums.GiftCardListingStatus = {
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  ACTIVE: 'ACTIVE',
+  SOLD: 'SOLD',
+  EXPIRED: 'EXPIRED',
+  REJECTED: 'REJECTED',
+  PAUSED: 'PAUSED'
+};
+
+exports.GiftCardOrderStatus = exports.$Enums.GiftCardOrderStatus = {
+  CREATED: 'CREATED',
+  PENDING_DELIVERY: 'PENDING_DELIVERY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  DISPUTED: 'DISPUTED'
+};
+
+exports.GiftCardDenominationType = exports.$Enums.GiftCardDenominationType = {
+  FIXED: 'FIXED',
+  RANGE: 'RANGE',
+  OPEN: 'OPEN'
+};
+
+exports.GiftCardStoreOrderStatus = exports.$Enums.GiftCardStoreOrderStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+};
+
+exports.Prisma.ModelName = {
+  User: 'User',
+  Profile: 'Profile',
+  UserPreference: 'UserPreference',
+  Wallet: 'Wallet',
+  LedgerEntry: 'LedgerEntry',
+  WalletTransaction: 'WalletTransaction',
+  BalanceSnapshot: 'BalanceSnapshot',
+  Ad: 'Ad',
+  Order: 'Order',
+  Dispute: 'Dispute',
+  Evidence: 'Evidence',
+  AuthToken: 'AuthToken',
+  Device: 'Device',
+  SecurityLog: 'SecurityLog',
+  Notification: 'Notification',
+  NotificationTemplate: 'NotificationTemplate',
+  NotificationLog: 'NotificationLog',
+  SecurityAlert: 'SecurityAlert',
+  FraudRule: 'FraudRule',
+  GiftCardListing: 'GiftCardListing',
+  GiftCardOrder: 'GiftCardOrder',
+  GiftCardEvidence: 'GiftCardEvidence',
+  GiftCardStoreBrand: 'GiftCardStoreBrand',
+  GiftCardStoreProduct: 'GiftCardStoreProduct',
+  GiftCardStoreOrder: 'GiftCardStoreOrder',
+  PlatformFeeConfig: 'PlatformFeeConfig',
+  PlatformSetting: 'PlatformSetting',
+  SweepConfig: 'SweepConfig',
+  Reconciliation: 'Reconciliation',
+  ChainCursor: 'ChainCursor',
+  WithdrawalJob: 'WithdrawalJob',
+  DailyReport: 'DailyReport',
+  HelpContent: 'HelpContent'
+};
+
+/**
+ * This is a stub Prisma Client that will error at runtime if called.
+ */
+class PrismaClient {
+  constructor() {
+    return new Proxy(this, {
+      get(target, prop) {
+        let message
+        const runtime = getRuntime()
+        if (runtime.isEdge) {
+          message = `PrismaClient is not configured to run in ${runtime.prettyName}. In order to run Prisma Client on edge runtime, either:
+- Use Prisma Accelerate: https://pris.ly/d/accelerate
+- Use Driver Adapters: https://pris.ly/d/driver-adapters
+`;
+        } else {
+          message = 'PrismaClient is unable to run in this browser environment, or has been bundled for the browser (running in `' + runtime.prettyName + '`).'
+        }
+        
+        message += `
+If this is unexpected, please open an issue: https://pris.ly/prisma-prisma-bug-report`
+
+        throw new Error(message)
+      }
+    })
+  }
+}
+
+exports.PrismaClient = PrismaClient
+
+Object.assign(exports, Prisma)

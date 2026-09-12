@@ -5,7 +5,8 @@ import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { PlatformService } from '../crypto/platform.service';
-import { primaryWalletWhere, resolveChainWallet } from '../wallet/wallet-query.util';
+import { primaryWalletWhere } from '../wallet/wallet-query.util';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class OrdersService {
@@ -15,7 +16,39 @@ export class OrdersService {
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
     private platformService: PlatformService,
+    private walletService: WalletService,
   ) {}
+
+  /**
+   * Resolves (or creates) the wallet row for a trade participant on the
+   * order's chain. Per-chain EVM model: every network holds an independent
+   * row that is auto-created on demand (e.g. a participant's first BSC
+   * trade), so settlement never fails for an uninitialized chain. Ad chain
+   * is null for single-chain assets (BTC/ETH) — those resolve to their own
+   * canonical rows ('BTC' / 'ETH').
+   */
+  private async resolveOrCreateChainWallet(
+    tx: {
+      wallet: {
+        findFirst(args: { where: Record<string, unknown> }): {
+          [Symbol.asyncIterator]?: never;
+        } & PromiseLike<any>;
+      };
+    },
+    userId: string,
+    asset: Currency,
+    chain: string | null,
+  ) {
+    const chainValue =
+      chain && chain !== 'EVM' ? chain : asset === Currency.BTC ? 'BTC' : 'ETH';
+
+    const existing = await tx.wallet.findFirst({
+      where: { userId, currency: asset, chain: chainValue },
+    });
+    if (existing) return existing;
+
+    return this.walletService.getOrCreateChainWallet(userId, asset, chainValue);
+  }
 
   private async getFeePercent(key: string): Promise<number> {
     const config = await this.prisma.platformFeeConfig.findUnique({ where: { key } });
@@ -98,8 +131,8 @@ export class OrdersService {
         throw new BadRequestException('Insufficient fiat balance to initiate this trade');
       }
 
-      const sellerCryptoRow = await resolveChainWallet(
-        (where) => tx.wallet.findFirst({ where }),
+      const sellerCryptoRow = await this.resolveOrCreateChainWallet(
+        tx,
         cryptoSellerId,
         ad.asset,
         ad.chain,
@@ -213,8 +246,8 @@ export class OrdersService {
       });
 
       // --- STAGE 2: Lock crypto from the crypto seller (Optimistic Lock) ---
-      const sellerCryptoRow = await resolveChainWallet(
-        (where) => tx.wallet.findFirst({ where }),
+      const sellerCryptoRow = await this.resolveOrCreateChainWallet(
+        tx,
         cryptoSellerId,
         order.ad.asset,
         order.chain,
@@ -244,8 +277,8 @@ export class OrdersService {
       });
       if (transferCryptoResult.count === 0) throw new InternalServerErrorException('Conflict transferring seller crypto');
 
-      const buyerCryptoRow = await resolveChainWallet(
-        (where) => tx.wallet.findFirst({ where }),
+      const buyerCryptoRow = await this.resolveOrCreateChainWallet(
+        tx,
         cryptoBuyerId,
         order.ad.asset,
         order.chain,

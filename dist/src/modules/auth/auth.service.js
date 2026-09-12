@@ -1,0 +1,629 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var AuthService_1;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthService = void 0;
+const common_1 = require("@nestjs/common");
+const event_emitter_1 = require("@nestjs/event-emitter");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
+const users_service_1 = require("../users/users.service");
+const prisma_service_1 = require("../../core/database/prisma.service");
+const security_service_1 = require("../security/security.service");
+const fraud_rules_service_1 = require("../security/fraud-rules.service");
+const email_service_1 = require("../notifications/email.service");
+const notifications_service_1 = require("../notifications/notifications.service");
+const bcrypt = __importStar(require("bcrypt"));
+const crypto = __importStar(require("crypto"));
+const client_1 = require("../../generated/client/index.js");
+const google_auth_library_1 = require("google-auth-library");
+let AuthService = AuthService_1 = class AuthService {
+    usersService;
+    jwtService;
+    configService;
+    prisma;
+    eventEmitter;
+    securityService;
+    fraudRulesService;
+    emailService;
+    notifications;
+    logger = new common_1.Logger(AuthService_1.name);
+    constructor(usersService, jwtService, configService, prisma, eventEmitter, securityService, fraudRulesService, emailService, notifications) {
+        this.usersService = usersService;
+        this.jwtService = jwtService;
+        this.configService = configService;
+        this.prisma = prisma;
+        this.eventEmitter = eventEmitter;
+        this.securityService = securityService;
+        this.fraudRulesService = fraudRulesService;
+        this.emailService = emailService;
+        this.notifications = notifications;
+    }
+    async register(dto) {
+        if (dto.email) {
+            const existingEmail = await this.usersService.findOneByEmail(dto.email);
+            if (existingEmail)
+                throw new common_1.ConflictException('Email already exists');
+        }
+        if (dto.phone) {
+            const existingPhone = await this.usersService.findOneByPhone(dto.phone);
+            if (existingPhone)
+                throw new common_1.ConflictException('Phone number already exists');
+        }
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
+        const user = await this.prisma.user.create({
+            data: {
+                email: dto.email,
+                phone: dto.phone,
+                passwordHash: hashedPassword,
+                role: client_1.Role.USER,
+                profile: {
+                    create: {
+                        firstName: dto.firstName,
+                        lastName: dto.lastName,
+                    },
+                },
+            },
+            include: { profile: true },
+        });
+        this.eventEmitter.emit('user.created', { userId: user.id, email: user.email });
+        return this.generateTokens(user.id, user.role);
+    }
+    async login(dto, request) {
+        const user = dto.email
+            ? await this.usersService.findOneByEmail(dto.email)
+            : await this.usersService.findOneByPhone(dto.phone);
+        if (!user)
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        if (user.lockedUntil && user.lockedUntil > new Date()) {
+            const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+            throw new common_1.ForbiddenException(`Account locked. Try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`);
+        }
+        const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+        if (!isPasswordValid) {
+            const failedAttempts = user.failedLoginAttempts + 1;
+            const maxAttempts = 5;
+            const lockoutMinutes = 30;
+            const updateData = { failedLoginAttempts: failedAttempts };
+            if (failedAttempts >= maxAttempts) {
+                updateData.lockedUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000);
+                updateData.failedLoginAttempts = 0;
+            }
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: updateData,
+            });
+            const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
+            await this.fraudRulesService.evaluateFailedLoginBurst(user.email || '', ipAddress).catch(() => { });
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        }
+        if (user.failedLoginAttempts > 0) {
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: 0, lockedUntil: null },
+            });
+        }
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const parsedUA = this.securityService.parseUserAgent(userAgent);
+        const location = await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown');
+        await this.prisma.device.upsert({
+            where: { userId_deviceId: { userId: user.id, deviceId: dto.deviceId } },
+            update: {
+                lastLogin: new Date(),
+                fingerprint: dto.fingerprint,
+                userAgent,
+                ipAddress,
+                browser: parsedUA.browser,
+                osVersion: parsedUA.osVersion,
+                deviceName: parsedUA.deviceName,
+                location,
+                lastActivity: new Date(),
+            },
+            create: {
+                userId: user.id,
+                deviceId: dto.deviceId,
+                fingerprint: dto.fingerprint,
+                userAgent,
+                ipAddress,
+                browser: parsedUA.browser,
+                osVersion: parsedUA.osVersion,
+                deviceName: parsedUA.deviceName,
+                location,
+            },
+        });
+        this.fraudRulesService.evaluateNewDeviceLogin(user.id, dto.deviceId, ipAddress).catch(() => { });
+        this.fraudRulesService.evaluateMultipleAccountsSameDevice(user.id, dto.deviceId).catch(() => { });
+        this.fraudRulesService.evaluateRapidWithdrawals(user.id).catch(() => { });
+        this.fraudRulesService.evaluateUnusualVolume(user.id).catch(() => { });
+        const { passwordHash, ...userWithoutPassword } = user;
+        if (user.twoFactorEnabled) {
+            const twoFactorToken = await this.jwtService.signAsync({ sub: user.id, purpose: '2fa' }, { secret: this.configService.get('JWT_SECRET'), expiresIn: '10m' });
+            await this.generateAndSend2faOtp(user);
+            return { requiresTwoFactor: true, twoFactorToken };
+        }
+        const token = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
+        const userData = { ...token, user: userWithoutPassword };
+        this.notifyLogin(user.id, request, {
+            deviceName: parsedUA.deviceName,
+            browser: parsedUA.browser,
+            location,
+        }).catch(() => { });
+        return userData;
+    }
+    async generateTokens(userId, role, userAgent, ipAddress) {
+        const payload = { sub: userId, role };
+        const accessToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get('JWT_SECRET'),
+            expiresIn: '1h',
+        });
+        const refreshToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get('JWT_REFRESH_SECRET'),
+            expiresIn: '7d',
+        });
+        await this.prisma.authToken.create({
+            data: {
+                userId,
+                token: refreshToken,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                userAgent: userAgent || null,
+                ipAddress: ipAddress || null,
+            },
+        });
+        return { accessToken, refreshToken };
+    }
+    async refresh(refreshToken, request) {
+        try {
+            const payload = await this.jwtService.verifyAsync(refreshToken, {
+                secret: this.configService.get('JWT_REFRESH_SECRET'),
+            });
+            const tokenInDb = await this.prisma.authToken.findUnique({
+                where: { token: refreshToken },
+            });
+            if (!tokenInDb || tokenInDb.expiresAt < new Date()) {
+                throw new common_1.UnauthorizedException('Invalid or expired refresh token');
+            }
+            const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip;
+            const userAgent = request?.headers?.['user-agent'];
+            await this.prisma.authToken.delete({ where: { id: tokenInDb.id } });
+            return this.generateTokens(payload.sub, payload.role, userAgent, ipAddress);
+        }
+        catch (e) {
+            throw new common_1.UnauthorizedException('Invalid refresh token');
+        }
+    }
+    async logout(refreshToken) {
+        await this.prisma.authToken.deleteMany({ where: { token: refreshToken } });
+    }
+    async notifyLogin(userId, request, extra) {
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+            request?.ip ||
+            'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const parsedUA = this.securityService.parseUserAgent(userAgent);
+        const location = extra?.location ??
+            (await this.securityService.getLocationFromIp(ipAddress).catch(() => 'Unknown'));
+        await this.notifications.notifyUser({
+            userId,
+            type: 'LOGIN',
+            data: {
+                deviceName: extra?.deviceName || parsedUA.deviceName || 'Unknown device',
+                browser: extra?.browser || parsedUA.browser || 'Unknown browser',
+                location,
+                time: new Date().toLocaleString(),
+            },
+        });
+    }
+    async generateAndSend2faOtp(user) {
+        if (!user.email)
+            throw new common_1.BadRequestException('No email address on file for 2FA');
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                twoFactorOtpHash: hashedCode,
+                twoFactorOtpExpires: new Date(Date.now() + 10 * 60 * 1000),
+            },
+        });
+        const innerHtml = `
+      <p>Your 6-digit verification code is:</p>
+      <div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;color:#E89E2D;">${code}</div>
+      <p style="color:#666;">This code expires in 10 minutes. If you didn't request this, please ignore this email.</p>
+    `;
+        const html = this.emailService.wrapEmailHtml(innerHtml, 'Login Verification');
+        await this.emailService.sendEmail(user.email, 'Your P2N Login Code', html);
+    }
+    async verify2faOtp(userId, code) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.twoFactorOtpHash || !user.twoFactorOtpExpires) {
+            throw new common_1.UnauthorizedException('No verification pending');
+        }
+        if (user.twoFactorOtpExpires < new Date()) {
+            throw new common_1.UnauthorizedException('Verification code expired. Request a new one.');
+        }
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        return hashedCode === user.twoFactorOtpHash;
+    }
+    async clear2faOtp(userId) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { twoFactorOtpHash: null, twoFactorOtpExpires: null },
+        });
+    }
+    async enable2FA(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.email)
+            throw new common_1.BadRequestException('No email address on file');
+        if (user.twoFactorEnabled)
+            throw new common_1.BadRequestException('2FA is already enabled');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP sent to your email' };
+    }
+    async confirmEnable2FA(userId, code) {
+        const isValid = await this.verify2faOtp(userId, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: true,
+                twoFactorOtpHash: null,
+                twoFactorOtpExpires: null,
+                twoFactorSecret: null,
+            },
+        });
+        return { success: true };
+    }
+    async verify2FALogin(twoFactorToken, code, request) {
+        let payload;
+        try {
+            payload = await this.jwtService.verifyAsync(twoFactorToken, {
+                secret: this.configService.get('JWT_SECRET'),
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid or expired 2FA token');
+        }
+        if (payload.purpose !== '2fa') {
+            throw new common_1.UnauthorizedException('Invalid 2FA token');
+        }
+        const isValid = await this.verify2faOtp(payload.sub, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.clear2faOtp(payload.sub);
+        const user = await this.usersService.findOneById(payload.sub);
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        const ipAddress = request?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || request?.ip || 'unknown';
+        const userAgent = request?.headers?.['user-agent'] || 'unknown';
+        const { passwordHash, ...userWithoutPassword } = user;
+        const tokens = await this.generateTokens(user.id, user.role, userAgent, ipAddress);
+        this.notifyLogin(user.id, request).catch(() => { });
+        return { ...tokens, user: userWithoutPassword };
+    }
+    async send2faOtp(twoFactorToken) {
+        let payload;
+        try {
+            payload = await this.jwtService.verifyAsync(twoFactorToken, {
+                secret: this.configService.get('JWT_SECRET'),
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid or expired 2FA token');
+        }
+        if (payload.purpose !== '2fa') {
+            throw new common_1.UnauthorizedException('Invalid 2FA token');
+        }
+        const user = await this.usersService.findOneById(payload.sub);
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP resent to your email' };
+    }
+    async disable2FA(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.twoFactorEnabled)
+            throw new common_1.BadRequestException('2FA is not enabled');
+        await this.generateAndSend2faOtp(user);
+        return { success: true, message: 'OTP sent to your email to confirm disabling 2FA' };
+    }
+    async confirmDisable2FA(userId, code) {
+        const isValid = await this.verify2faOtp(userId, code);
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: false,
+                twoFactorOtpHash: null,
+                twoFactorOtpExpires: null,
+                twoFactorSecret: null,
+            },
+        });
+        return { success: true };
+    }
+    async googleLogin(dto) {
+        const client = new google_auth_library_1.OAuth2Client(this.configService.get('GOOGLE_CLIENT_ID'));
+        try {
+            const ticket = await client.verifyIdToken({
+                idToken: dto.token,
+                audience: this.configService.get('GOOGLE_CLIENT_ID'),
+            });
+            const payload = ticket.getPayload();
+            if (!payload || !payload.email)
+                throw new common_1.UnauthorizedException('Invalid Google token');
+            let user = await this.usersService.findOneByEmail(payload.email);
+            if (!user) {
+                user = await this.prisma.user.create({
+                    data: {
+                        email: payload.email,
+                        passwordHash: '',
+                        role: client_1.Role.USER,
+                        profile: {
+                            create: {
+                                firstName: payload.given_name || '',
+                                lastName: payload.family_name || '',
+                            },
+                        },
+                    },
+                    include: {
+                        profile: true
+                    }
+                });
+            }
+            if (!user || !user.id) {
+                throw new Error('User not found or ID is missing');
+            }
+            await this.prisma.device.upsert({
+                where: {
+                    userId_deviceId: {
+                        userId: user.id,
+                        deviceId: dto.deviceId
+                    }
+                },
+                update: {
+                    lastLogin: new Date(),
+                    fingerprint: dto.fingerprint
+                },
+                create: {
+                    userId: user.id,
+                    deviceId: dto.deviceId,
+                    fingerprint: dto.fingerprint,
+                },
+            });
+            const { passwordHash, ...userWithoutPassword } = user;
+            const token = await this.generateTokens(user.id, user.role);
+            const userData = { ...token, user: userWithoutPassword };
+            return userData;
+        }
+        catch (e) {
+            throw new common_1.UnauthorizedException('Google authentication failed');
+        }
+    }
+    async forgotPassword(email) {
+        const user = await this.usersService.findOneByEmail(email);
+        if (!user)
+            return;
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetToken: hashedToken,
+                resetTokenExpires: new Date(Date.now() + 3600000),
+            },
+        });
+        const resetUrl = `${this.configService.get('APP_URL', 'http://localhost:3000')}/reset-password?token=${resetToken}`;
+        const innerHtml = `<p>You requested a password reset for your P2N account.</p>
+<p style="text-align:center;margin:24px 0;">
+  <a href="${resetUrl}" style="display:inline-block;padding:12px 32px;background:#E89E2D;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:bold;">Reset Password</a>
+</p>
+<p style="color:#666;">This link expires in 1 hour. If you did not request this, please ignore this email.</p>`;
+        if (!user.email)
+            return { message: 'If an account exists with that email, a reset link has been sent.' };
+        const html = this.emailService.wrapEmailHtml(innerHtml, 'Password Reset');
+        await this.emailService.sendEmail(user.email, 'P2N Password Reset', html);
+        return { message: 'If an account exists with that email, a reset link has been sent.' };
+    }
+    async resetPassword(token, newPassword) {
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        const user = await this.prisma.user.findFirst({
+            where: {
+                resetToken: hashedToken,
+                resetTokenExpires: { gt: new Date() },
+            },
+        });
+        if (!user)
+            throw new common_1.UnauthorizedException('Invalid or expired reset token');
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                passwordHash: hashedPassword,
+                resetToken: null,
+                resetTokenExpires: null,
+            },
+        });
+        return { success: true };
+    }
+    async changePassword(userId, currentPassword, newPassword) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!isCurrentValid)
+            throw new common_1.UnauthorizedException('Current password is incorrect');
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash: hashedPassword },
+        });
+        return { success: true };
+    }
+    async sendEmailVerification(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.email)
+            throw new common_1.UnauthorizedException('No email address on file');
+        if (user.emailVerified)
+            return { success: true, message: 'Email already verified' };
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                emailVerificationToken: hashedCode,
+                emailVerificationExpires: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
+        const innerHtml = `
+      <p>Your 6-digit email verification code is:</p>
+      <div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;color:#E89E2D;">${code}</div>
+      <p style="color:#666;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
+    `;
+        const html = this.emailService.wrapEmailHtml(innerHtml, 'Email Verification');
+        await this.emailService.sendEmail(user.email, 'Your P2N Email Verification Code', html);
+        return { success: true };
+    }
+    async verifyEmail(userId, token) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (user.emailVerified)
+            return { success: true };
+        if (!user.emailVerificationToken || !user.emailVerificationExpires) {
+            throw new common_1.UnauthorizedException('No verification pending. Request a new code.');
+        }
+        if (user.emailVerificationExpires < new Date()) {
+            throw new common_1.UnauthorizedException('Verification code expired. Request a new one.');
+        }
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        if (hashedToken !== user.emailVerificationToken) {
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        }
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                emailVerified: true,
+                emailVerificationToken: null,
+                emailVerificationExpires: null,
+            },
+        });
+        return { success: true };
+    }
+    async sendPhoneVerification(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (!user.phone)
+            throw new common_1.UnauthorizedException('No phone number on file');
+        if (user.phoneVerified)
+            return { success: true, message: 'Phone already verified' };
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                phoneVerificationToken: hashedCode,
+                phoneVerificationExpires: new Date(Date.now() + 15 * 60 * 1000),
+            },
+        });
+        if (this.configService.get('NODE_ENV') === 'production') {
+            this.logger.warn('SMS not configured — phone verification code not delivered');
+        }
+        return {
+            success: true,
+            ...(this.configService.get('NODE_ENV') !== 'production' ? { code } : {}),
+            message: this.configService.get('NODE_ENV') === 'production'
+                ? 'Verification code sent to your phone'
+                : 'Verification code returned (dev mode)',
+        };
+    }
+    async verifyPhone(userId, token) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.UnauthorizedException('User not found');
+        if (user.phoneVerified)
+            return { success: true };
+        if (!user.phoneVerificationToken || !user.phoneVerificationExpires) {
+            throw new common_1.UnauthorizedException('No verification pending. Request a new code.');
+        }
+        if (user.phoneVerificationExpires < new Date()) {
+            throw new common_1.UnauthorizedException('Verification code expired. Request a new one.');
+        }
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        if (hashedToken !== user.phoneVerificationToken) {
+            throw new common_1.UnauthorizedException('Invalid verification code');
+        }
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                phoneVerified: true,
+                phoneVerificationToken: null,
+                phoneVerificationExpires: null,
+            },
+        });
+        return { success: true };
+    }
+};
+exports.AuthService = AuthService;
+exports.AuthService = AuthService = AuthService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [users_service_1.UsersService,
+        jwt_1.JwtService,
+        config_1.ConfigService,
+        prisma_service_1.PrismaService,
+        event_emitter_1.EventEmitter2,
+        security_service_1.SecurityService,
+        fraud_rules_service_1.FraudRulesService,
+        email_service_1.EmailService,
+        notifications_service_1.NotificationsService])
+], AuthService);
+//# sourceMappingURL=auth.service.js.map

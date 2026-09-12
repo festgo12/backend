@@ -221,13 +221,18 @@ export class SweepService {
 
     for (const address of addresses) {
       const registrations = this.depositRegistry.lookup(address, chain);
-      const seen = new Set<Currency>();
+      // Dedupe on (currency, stored chain): per-chain EVM rows share one 0x
+      // address, so a currency-only key would collapse ETH/BSC/POLYGON rows
+      // into one and skip legitimate per-chain sweeps.
+      const seen = new Set<string>();
       for (const reg of registrations) {
         const wallet = await this.prisma.wallet.findUnique({
           where: { id: reg.walletId },
         });
-        if (!wallet || seen.has(wallet.currency)) continue;
-        seen.add(wallet.currency);
+        if (!wallet) continue;
+        const dedupeKey = `${wallet.currency}:${wallet.chain ?? ''}`;
+        if (seen.has(dedupeKey)) continue;
+        seen.add(dedupeKey);
 
         // Index 0 is the platform master/fee wallet — never sweep it to itself.
         if (

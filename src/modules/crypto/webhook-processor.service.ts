@@ -355,17 +355,16 @@ export class WebhookProcessorService {
 
   /**
    * Whether a wallet's stored `chain` value corresponds to the given event
-   * chain. Legacy 'EVM' rows are treated as the default ETH chain; otherwise
-   * the values must match exactly (e.g. BSC, SOLANA, TRON).
+   * chain. Per-chain EVM model: each EVM network has its own row, so the
+   * values must match exactly (deposit on BSC credits the BSC row). Legacy
+   * 'EVM' rows (pre-migration, defensive) are treated as ETH.
    */
   private walletOnChain(
     walletChain: string | null,
     eventChain: Chain | 'BTC',
   ): boolean {
     if (!walletChain) return false;
-    if (this.config.isEvmChain(eventChain)) {
-      return walletChain === eventChain || walletChain === 'EVM';
-    }
+    if (walletChain === 'EVM') return eventChain === 'ETH';
     return walletChain === eventChain;
   }
 }

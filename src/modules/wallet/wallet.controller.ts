@@ -85,6 +85,28 @@ export class WalletController {
     };
   }
 
+  @Get('chain-deposits')
+  @ApiOperation({
+    summary: 'Per-chain deposited totals for a multi-chain crypto asset',
+    description:
+      'Aggregates COMPLETED DEPOSIT transactions by network (metadata.chain) for a currency. EVM-family chains share one ledger wallet, so this is a per-network received breakdown, not a spendable per-chain balance.',
+  })
+  async getChainDepositTotals(
+    @GetUser() user: User,
+    @Query('currency') currency?: string,
+  ) {
+    const valid = Object.values(Currency) as string[];
+    if (!currency || !valid.includes(currency)) {
+      throw new BadRequestException(
+        `currency query param is required and must be one of: ${valid.join(', ')}`,
+      );
+    }
+    return this.walletService.getChainDepositTotals(
+      user.id,
+      currency as Currency,
+    );
+  }
+
   @Post('init')
   @AuditLog('WALLET_CREATION', 'WALLET')
   @ApiOperation({ summary: 'Initialize a wallet for a specific currency (optionally per-chain)' })
@@ -102,9 +124,9 @@ export class WalletController {
 
     try {
       if (chain && isEvmChain) {
-        // EVM families share a single 0x address; derive/return the shared
-        // EVM wallet regardless of which EVM chain is requested.
-        return await this.ensurePrimaryEvmDeposit(user.id, currency);
+        // Per-chain EVM model: each of ETH/BSC/POLYGON gets its own wallet
+        // row, sharing the user's single 0x address across the family.
+        return await this.ensureChainDeposit(user.id, currency, chain);
       }
 
       if (chain && isNonEvmChain) {
@@ -124,14 +146,17 @@ export class WalletController {
         );
       }
 
-      // No chain requested: existing behavior (shared EVM + auto SOLANA/TRON).
-      const wallet = await this.walletService.getOrCreateWallet(user.id, currency);
-      const primary = await this.ensurePrimaryEvmDeposit(user.id, currency);
+      // No chain requested: default ETH row + auto SOLANA/TRON for stablecoins.
+      const primary = await this.ensureChainDeposit(
+        user.id,
+        currency,
+        'ETH',
+      );
       if (currency === Currency.USDT || currency === Currency.USDC) {
         await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
         await this.ensureMultichainWallet(user.id, currency, 'TRON');
       }
-      return primary ?? wallet;
+      return primary;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
@@ -145,24 +170,38 @@ export class WalletController {
   }
 
   /**
-   * Derives (if needed) and persists the shared EVM deposit address for a user
-   * wallet, registering it with the provider, and returns the updated/primary
-   * wallet. Works for any crypto currency on the EVM family (ETH, USDT, USDC).
+   * Derives (if needed) and persists the deposit address for a user's wallet
+   * on a specific chain, registering it with the provider, and returns the
+   * updated wallet. Per-chain EVM model: the ETH/BSC/POLYGON row shares the
+   * user's family-wide 0x address and derivation index (see
+   * HdWalletService.getOrAssignDepositInfo).
    */
-  private async ensurePrimaryEvmDeposit(userId: string, currency: Currency) {
-    const wallet = await this.walletService.getOrCreateWallet(userId, currency);
+  private async ensureChainDeposit(
+    userId: string,
+    currency: Currency,
+    chain: 'ETH' | 'BSC' | 'POLYGON',
+  ) {
+    const wallet = await this.walletService.getOrCreateChainWallet(
+      userId,
+      currency,
+      chain,
+    );
     if (wallet.address) return wallet;
 
-    const info = await this.hdWallet.getOrAssignDepositInfo(userId, currency);
+    const info = await this.hdWallet.getOrAssignDepositInfo(
+      userId,
+      currency,
+      chain,
+    );
     const updatedWallet = await this.walletService.updateWalletDepositInfo(
       wallet.id,
       {
         address: info.address,
         derivationIndex: info.derivationIndex,
-        chain: info.chain,
+        chain,
       },
     );
-    this.depositRegistry.register(info.address, info.chain, wallet.id);
+    this.depositRegistry.register(info.address, chain, wallet.id);
     return updatedWallet;
   }
 
@@ -239,9 +278,16 @@ export class WalletController {
       );
     }
 
-    // 3. Run full risk screening (address + transaction + user risk level)
+    // 3. Run full risk screening (address + transaction + user risk level).
+    // Per-chain EVM model: use the wallet row's concrete chain (EVM-family
+    // rows all screen as 'ethereum' — same address format).
+    const rawChain = (ownedWallet.chain as string) || 'ethereum';
     const chain =
-      ownedWallet.currency === Currency.BTC ? 'bitcoin' : 'ethereum';
+      rawChain === 'EVM' || rawChain === 'ETH' || rawChain === 'BSC' || rawChain === 'POLYGON'
+        ? 'ethereum'
+        : rawChain === 'BTC'
+          ? 'bitcoin'
+          : rawChain.toLowerCase();
     const addressResult = await this.cryptoRisk.screenAddress(
       address.trim(),
       chain,

@@ -20,9 +20,10 @@ function feeWalletChain(currency: Currency): string {
 
 /**
  * All (configuredChain, currency) pairs a platform fee wallet is created for.
- * BTC lives on its own chain; ETH is Ethereum-only (single EVM fee wallet);
- * USDT/USDC are multichain — one EVM fee wallet (shared 0x across ETH/BSC/
- * POLYGON) plus a Solana (SPL) and a TRON (TRC-20) fee wallet.
+ * BTC lives on its own chain. Per-chain EVM model: ETH is Ethereum-only;
+ * USDT/USDC get one fee wallet PER EVM chain (ETH/BSC/POLYGON — all sharing
+ * the master 0x address at index 0) plus a Solana (SPL) and a TRON (TRC-20)
+ * fee wallet.
  */
 function feeWalletPairs(
   cryptoCurrencies: Currency[],
@@ -36,12 +37,14 @@ function feeWalletPairs(
       continue;
     }
     if (currency === Currency.ETH) {
-      // ETH is Ethereum-only — a single EVM fee wallet, not one per EVM chain.
+      // ETH is Ethereum-only — a single ETH fee wallet, not one per EVM chain.
       if (evmChains.includes('ETH')) pairs.push({ currency, chain: 'ETH' });
       continue;
     }
-    // USDT / USDC — one EVM fee wallet (canonical EVM) + Solana + TRON.
-    if (evmChains.includes('ETH')) pairs.push({ currency, chain: 'ETH' });
+    // USDT / USDC — one fee wallet per EVM chain + Solana + TRON.
+    for (const evmChain of ['ETH', 'BSC', 'POLYGON'] as const) {
+      if (evmChains.includes(evmChain)) pairs.push({ currency, chain: evmChain });
+    }
     if (supportedChains.includes('SOLANA')) {
       pairs.push({ currency, chain: 'SOLANA' });
     }

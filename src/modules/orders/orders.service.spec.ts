@@ -6,6 +6,7 @@ import { OrderStatus, Currency, LedgerType, AdType } from '@src/generated/client
 import { NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { PlatformService } from '../crypto/platform.service';
+import { WalletService } from '../wallet/wallet.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -57,6 +58,10 @@ describe('OrdersService', () => {
     ensurePlatformWallets: jest.fn(),
   };
 
+  const mockWalletService = {
+    getOrCreateChainWallet: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -64,6 +69,7 @@ describe('OrdersService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: mockEventEmitter2 },
         { provide: PlatformService, useValue: mockPlatformService },
+        { provide: WalletService, useValue: mockWalletService },
       ],
     }).compile();
 
