@@ -89,6 +89,7 @@ let TransactionsService = class TransactionsService {
                     details = {
                         paymentMethod: l.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
                         blockchainTxHash: l.transaction.metadata ? l.transaction.metadata.blockchainTxHash : null,
+                        chain: l.transaction.metadata ? (l.transaction.metadata.chain ?? null) : null,
                     };
                 }
                 else if (l.order) {
@@ -143,6 +144,7 @@ let TransactionsService = class TransactionsService {
                 details: {
                     paymentMethod: t.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
                     blockchainTxHash: t.metadata ? t.metadata.blockchainTxHash : null,
+                    chain: t.metadata ? (t.metadata.chain ?? null) : null,
                 },
             }));
         }
@@ -184,11 +186,11 @@ let TransactionsService = class TransactionsService {
                     counterparty: isBuyer
                         ? ledger.order.seller.profile?.firstName || ledger.order.seller.email
                         : ledger.order.buyer.profile?.firstName || ledger.order.buyer.email,
-                }
-                : {
-                    paymentMethod: ledger.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
-                    blockchainTxHash: ledger.transaction?.metadata ? ledger.transaction.metadata.blockchainTxHash : null,
-                };
+                } : {
+                paymentMethod: ledger.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
+                blockchainTxHash: ledger.transaction?.metadata ? ledger.transaction.metadata.blockchainTxHash : null,
+                chain: ledger.transaction?.metadata ? (ledger.transaction.metadata.chain ?? null) : null,
+            };
             return {
                 id: ledger.id,
                 walletId: ledger.walletId,
@@ -231,6 +233,7 @@ let TransactionsService = class TransactionsService {
             details: {
                 paymentMethod: tx.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
                 blockchainTxHash: tx.metadata ? tx.metadata.blockchainTxHash : null,
+                chain: tx.metadata ? (tx.metadata.chain ?? null) : null,
                 metadata: tx.metadata,
             },
         };

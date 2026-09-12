@@ -39,9 +39,11 @@ export declare class TransactionsService {
             counterparty: string | null;
             paymentMethod?: undefined;
             blockchainTxHash?: undefined;
+            chain?: undefined;
         } | {
             paymentMethod: string;
             blockchainTxHash: any;
+            chain: any;
             orderId?: undefined;
             fiatAmount?: undefined;
             cryptoAmount?: undefined;
@@ -63,6 +65,7 @@ export declare class TransactionsService {
         details: {
             paymentMethod: string;
             blockchainTxHash: any;
+            chain: any;
             metadata: Prisma.JsonValue;
         };
     }>;

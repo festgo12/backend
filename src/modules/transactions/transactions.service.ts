@@ -100,6 +100,9 @@ export class TransactionsService {
           details = {
             paymentMethod: l.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
             blockchainTxHash: l.transaction.metadata ? (l.transaction.metadata as any).blockchainTxHash : null,
+            // Network the deposit/withdrawal moved on (ETH/BSC/POLYGON/SOLANA/
+            // TRON/BTC), recorded by the crypto listeners in metadata.
+            chain: l.transaction.metadata ? ((l.transaction.metadata as any).chain ?? null) : null,
           };
         } else if (l.order) {
           const isBuyer = l.wallet.userId === l.order.buyerId;
@@ -156,6 +159,8 @@ export class TransactionsService {
         details: {
           paymentMethod: t.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
           blockchainTxHash: t.metadata ? (t.metadata as any).blockchainTxHash : null,
+          // Network the deposit/withdrawal moved on (see ledger mapping above).
+          chain: t.metadata ? ((t.metadata as any).chain ?? null) : null,
         },
       }));
     }
@@ -202,10 +207,10 @@ export class TransactionsService {
             counterparty: isBuyer
               ? ledger.order.seller.profile?.firstName || ledger.order.seller.email
               : ledger.order.buyer.profile?.firstName || ledger.order.buyer.email,
-          }
-        : {
+          }          : {
             paymentMethod: ledger.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
             blockchainTxHash: ledger.transaction?.metadata ? (ledger.transaction.metadata as any).blockchainTxHash : null,
+            chain: ledger.transaction?.metadata ? ((ledger.transaction.metadata as any).chain ?? null) : null,
           };
 
       return {
@@ -255,6 +260,7 @@ export class TransactionsService {
       details: {
         paymentMethod: tx.wallet.currency === 'NGN' ? 'Paystack' : 'Crypto',
         blockchainTxHash: tx.metadata ? (tx.metadata as any).blockchainTxHash : null,
+        chain: tx.metadata ? ((tx.metadata as any).chain ?? null) : null,
         metadata: tx.metadata,
       },
     };

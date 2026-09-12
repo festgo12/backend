@@ -31,9 +31,11 @@ export declare class TransactionsController {
             counterparty: string | null;
             paymentMethod?: undefined;
             blockchainTxHash?: undefined;
+            chain?: undefined;
         } | {
             paymentMethod: string;
             blockchainTxHash: any;
+            chain: any;
             orderId?: undefined;
             fiatAmount?: undefined;
             cryptoAmount?: undefined;
@@ -55,6 +57,7 @@ export declare class TransactionsController {
         details: {
             paymentMethod: string;
             blockchainTxHash: any;
+            chain: any;
             metadata: import("@src/generated/client/runtime/library").JsonValue;
         };
     }>;
