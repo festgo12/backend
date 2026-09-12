@@ -245,6 +245,28 @@ export class SweepService {
         );
         if (balanceUsd < thresholdUsd) continue;
 
+        // Pre-flight: a token sweep is only possible if the source address
+        // holds enough of the chain's native asset to pay gas. Native sweeps
+        // (ETH/BTC) pay gas out of the swept balance itself — no extra check.
+        const isNativeSweep =
+          (chain === 'BTC' && wallet.currency === Currency.BTC) ||
+          (this.config.isEvmChain(chain) && wallet.currency === Currency.ETH);
+        if (!isNativeSweep) {
+          const gasOk = await this.hasSufficientGas(
+            chain,
+            wallet.currency,
+            address,
+            balance,
+          );
+          if (!gasOk) {
+            result.skipped += 1;
+            result.errors.push(
+              `${chain} ${wallet.currency} ${address}: insufficient native gas at source to pay sweep fees; fund the address to enable sweeping`,
+            );
+            continue;
+          }
+        }
+
         this.logger.log(
           `${chain} sweep candidate: ${balance} ${wallet.currency} (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`,
         );
@@ -259,6 +281,43 @@ export class SweepService {
       }
     }
     return result;
+  }
+
+  /**
+   * Whether the source address holds enough native gas to pay for a token
+   * sweep. Gas-cost estimates come from ChainClientService; a failed or
+   * unavailable estimate (0) is treated as sufficient so a broken estimator
+   * degrades to the old behavior instead of blocking every sweep.
+   */
+  private async hasSufficientGas(
+    chain: string,
+    currency: Currency,
+    address: string,
+    tokenBalance: number,
+  ): Promise<boolean> {
+    try {
+      const gasCost = await this.chainClient.estimateTokenTransferGasCost(
+        chain,
+        address,
+        currency,
+      );
+      if (gasCost <= 0) return true;
+      const gasBalance = await this.chainClient.getNativeGasBalance(
+        chain,
+        address,
+      );
+      if (gasBalance >= gasCost) return true;
+      this.logger.warn(
+        `${chain} sweep pre-flight: ${address} has ${gasBalance} native but needs ~${gasCost} for the ${currency} sweep (${tokenBalance} ${currency} will be skipped)`,
+      );
+      return false;
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `${chain} gas pre-flight failed for ${address}: ${err.message}; attempting sweep anyway`,
+      );
+      return true;
+    }
   }
 
   /** Reads the on-chain balance of an address for a (chain, currency). */

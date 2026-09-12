@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -31,6 +32,8 @@ interface ErrorLike {
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private prisma: PrismaService,
     private readonly cryptoWithdrawal: CryptoWithdrawalService,
@@ -1075,35 +1078,66 @@ export class AdminService {
 
   /**
    * Live on-chain balances of the platform master wallets across every
-   * supported chain: BTC on the BTC master, EVM currencies on the EVM master,
-   * USDT/USDC also on the SOLANA and TRON masters.
+   * supported chain: BTC on the BTC master, EVM currencies on the EVM master
+   * (per EVM chain: ETH/BSC/POLYGON), USDT/USDC also on the SOLANA and TRON
+   * masters. Never throws: a missing mnemonic or failed balance query is
+   * reported per-entry so the admin Treasury card always renders.
    */
   async getChainBalances() {
-    const evmMaster = this.hdWallet.getMasterAddress('EVM');
-    const btcMaster = this.hdWallet.getMasterAddress('BTC');
-    const solMaster = this.hdWallet.getMasterAddressForChain('SOLANA');
-    const tronMaster = this.hdWallet.getMasterAddressForChain('TRON');
+    const safeMaster = (fn: () => string): string | null => {
+      try {
+        return fn();
+      } catch (error) {
+        const err = error as ErrorLike;
+        this.logger.error(
+          `Master address derivation failed in getChainBalances: ${err.message}`,
+        );
+        return null;
+      }
+    };
+
+    const evmMaster = safeMaster(() => this.hdWallet.getMasterAddress('EVM'));
+    const btcMaster = safeMaster(() => this.hdWallet.getMasterAddress('BTC'));
+    const solMaster = safeMaster(() =>
+      this.hdWallet.getMasterAddressForChain('SOLANA'),
+    );
+    const tronMaster = safeMaster(() =>
+      this.hdWallet.getMasterAddressForChain('TRON'),
+    );
+
+    const missingAddress = (chain: string, currency: Currency) => ({
+      chain,
+      currency,
+      address: null as string | null,
+      balance: 0,
+      error: 'Master wallet not configured (missing HD mnemonic)',
+    });
+
+    // Every EVM chain the sweeper runs on shares the same master address but
+    // has its own token contracts — show each as a separate entry.
+    const evmChains = ['ETH', 'BSC', 'POLYGON'] as const;
+    const evmCurrencies: Currency[] = [Currency.ETH, Currency.USDT, Currency.USDC];
     const currencies: Currency[] = ['BTC', 'ETH', 'USDT', 'USDC'];
 
     const evmBalances = await Promise.all(
-      currencies
-        .filter((c) => c !== Currency.BTC)
-        .map(async (currency) => {
+      evmChains.flatMap((chain) =>
+        evmCurrencies.map(async (currency) => {
+          if (!evmMaster) return missingAddress(chain, currency);
           try {
             return {
-              chain: 'ETH',
+              chain,
               currency,
               address: evmMaster,
               balance: await this.chainClient.getEvmBalance(
                 evmMaster,
                 currency,
-                'ETH',
+                chain,
               ),
             };
           } catch (error) {
             const err = error as ErrorLike;
             return {
-              chain: 'ETH',
+              chain,
               currency,
               address: evmMaster,
               balance: 0,
@@ -1111,12 +1145,14 @@ export class AdminService {
             };
           }
         }),
+      ),
     );
 
     const solanaBalances = await Promise.all(
       currencies
         .filter((c) => c === Currency.USDT || c === Currency.USDC)
         .map(async (currency) => {
+          if (!solMaster) return missingAddress('SOLANA', currency);
           try {
             const mint = this.cryptoConfig.getStablecoinContractFor(
               'SOLANA',
@@ -1157,6 +1193,7 @@ export class AdminService {
       currencies
         .filter((c) => c === Currency.USDT || c === Currency.USDC)
         .map(async (currency) => {
+          if (!tronMaster) return missingAddress('TRON', currency);
           try {
             const contract = this.cryptoConfig.getStablecoinContractFor(
               'TRON',
@@ -1194,6 +1231,7 @@ export class AdminService {
     );
 
     const btcBalance = await (async () => {
+      if (!btcMaster) return missingAddress('BTC', Currency.BTC);
       try {
         const utxos = await this.chainClient.getBtcUtxos(btcMaster);
         return {

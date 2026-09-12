@@ -46,6 +46,12 @@ describe('SweepService', () => {
     getBtcUtxos: jest.fn(),
     getBtcRecommendedFee: jest.fn(),
     broadcastBtc: jest.fn(),
+    getSolanaTokenBalance: jest.fn(),
+    broadcastSolanaToken: jest.fn(),
+    getTronTokenBalance: jest.fn(),
+    broadcastTronToken: jest.fn(),
+    estimateTokenTransferGasCost: jest.fn(),
+    getNativeGasBalance: jest.fn(),
   };
 
   const mockConfig = {
@@ -53,10 +59,12 @@ describe('SweepService', () => {
     supportedChains: ['ETH', 'BSC', 'POLYGON', 'SOLANA', 'TRON'],
     isEvmChain: (chain: string) =>
       chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON',
+    getStablecoinContractFor: jest.fn(),
   };
 
   const mockHdWallet = {
     getMasterAddress: jest.fn(),
+    getMasterAddressForChain: jest.fn(),
   };
 
   const mockTracker = { enqueue: jest.fn() };
@@ -73,7 +81,11 @@ describe('SweepService', () => {
     jest.resetAllMocks();
 
     mockHdWallet.getMasterAddress.mockReturnValue('0xMaster');
+    mockHdWallet.getMasterAddressForChain.mockReturnValue('MasterChainAddr');
     mockExchangeRate.convertToUsd.mockReturnValue(50);
+    // Default: gas pre-flight passes (estimate > 0, balance covers it).
+    mockChainClient.estimateTokenTransferGasCost.mockResolvedValue(0.001);
+    mockChainClient.getNativeGasBalance.mockResolvedValue(1);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -371,5 +383,130 @@ describe('SweepService', () => {
     await expect(
       service.updateSweepConfig('DOGE', { enabled: false }),
     ).rejects.toThrow(/Unsupported sweep chain/);
+  });
+
+  it('sweeps a qualifying SOLANA deposit address via broadcastSolanaToken', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'SOLANA' ? ['SolUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'SOLANA', walletId: 'sol-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'sol-user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockConfig.getStablecoinContractFor.mockReturnValue('MintAddr');
+    mockChainClient.getSolanaTokenBalance.mockResolvedValue(100);
+    mockChainClient.broadcastSolanaToken.mockResolvedValue('sol-sig');
+    mockPrisma.wallet.findFirst.mockResolvedValue({
+      id: 'sol-user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockPrisma.walletTransaction.findMany.mockResolvedValue([]);
+    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'sweep-tx' });
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'platform-fee-wallet',
+    });
+
+    const summary = await service.manualSweepChain('SOLANA');
+
+    expect(mockChainClient.broadcastSolanaToken).toHaveBeenCalledWith(
+      Currency.USDT,
+      1000,
+      'MasterChainAddr',
+      100,
+    );
+    expect(summary.solSwept).toBe(1);
+    expect(summary.errors).toHaveLength(0);
+  });
+
+  it('skips a SOLANA sweep with a clear error when the source has no native SOL for gas', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'SOLANA' ? ['SolUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'SOLANA', walletId: 'sol-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'sol-user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockConfig.getStablecoinContractFor.mockReturnValue('MintAddr');
+    mockChainClient.getSolanaTokenBalance.mockResolvedValue(100);
+    // Estimate needs gas but the address holds none.
+    mockChainClient.estimateTokenTransferGasCost.mockResolvedValue(0.0021);
+    mockChainClient.getNativeGasBalance.mockResolvedValue(0);
+
+    const summary = await service.manualSweepChain('SOLANA');
+
+    expect(mockChainClient.broadcastSolanaToken).not.toHaveBeenCalled();
+    expect(summary.solSwept).toBe(0);
+    expect(summary.solSkipped).toBe(1);
+    expect(summary.errors).toHaveLength(1);
+    expect(summary.errors[0]).toContain('insufficient native gas');
+  });
+
+  it('skips a TRON sweep with a clear error when the source has no native TRX for energy', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'TRON' ? ['TUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'TRON', walletId: 'tron-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'tron-user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockConfig.getStablecoinContractFor.mockReturnValue('TronContract');
+    mockChainClient.getTronTokenBalance.mockResolvedValue(100);
+    mockChainClient.estimateTokenTransferGasCost.mockResolvedValue(27.6);
+    mockChainClient.getNativeGasBalance.mockResolvedValue(5);
+
+    const summary = await service.manualSweepChain('TRON');
+
+    expect(mockChainClient.broadcastTronToken).not.toHaveBeenCalled();
+    expect(summary.tronSwept).toBe(0);
+    expect(summary.tronSkipped).toBe(1);
+    expect(summary.errors).toHaveLength(1);
+    expect(summary.errors[0]).toContain('insufficient native gas');
+  });
+
+  it('does not pre-flight gas for native ETH sweeps (gas is paid from the swept balance)', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'ETH' ? ['0xUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.ETH,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(1);
+    mockChainClient.broadcastEvmNative.mockResolvedValue('0xethsweep');
+    mockPrisma.wallet.findFirst.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.ETH,
+      derivationIndex: 1000,
+    });
+    mockPrisma.walletTransaction.findMany.mockResolvedValue([]);
+    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'sweep-tx' });
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'platform-fee-wallet',
+    });
+
+    await service.manualSweepChain('ETH');
+
+    expect(
+      mockChainClient.estimateTokenTransferGasCost,
+    ).not.toHaveBeenCalled();
+    expect(mockChainClient.getNativeGasBalance).not.toHaveBeenCalled();
+    expect(mockChainClient.broadcastEvmNative).toHaveBeenCalled();
   });
 });

@@ -491,6 +491,56 @@ export class ChainClientService {
       }));
   }
 
+  /**
+   * Estimates the native gas cost (in the chain's native units) of a token
+   * transfer from `address` on `chain`. Used by the sweeper to pre-flight
+   * whether a deposit address can actually pay for its own sweep before
+   * attempting a broadcast. Returns 0 when estimation is unavailable.
+   */
+  async estimateTokenTransferGasCost(
+    chain: string,
+    fromAddress: string,
+    currency: Currency,
+  ): Promise<number> {
+    try {
+      if (this.config.isEvmChain(chain)) {
+        // ERC-20 transfer: ~65k gas ceiling. Read fee data + native price.
+        const provider = this.providerForChain(chain);
+        const feeData = await provider.getFeeData();
+        const gasPrice = feeData.gasPrice ?? 0n;
+        if (gasPrice === 0n) return 0;
+        const wei = gasPrice * 65_000n;
+        return Number(formatEther(wei));
+      }
+      if (chain === 'SOLANA') {
+        // Flat-ish: 5k lamports signature fee; ~0.00205 SOL for a transfer
+        // plus destination-ATA creation when needed.
+        return 0.0021;
+      }
+      if (chain === 'TRON') {
+        // TRC-20 USDT transfer burns ~27.6 TRX in energy at default feeLimit.
+        return 27.6;
+      }
+      return 0;
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `Gas cost estimation failed for ${chain} (${currency}): ${err.message}`,
+      );
+      return 0;
+    }
+  }
+
+  /** Native gas balance of an address in native units (ETH/SOL/TRX). */
+  async getNativeGasBalance(chain: string, address: string): Promise<number> {
+    if (this.config.isEvmChain(chain)) {
+      return this.getEvmBalance(address, Currency.ETH, chain);
+    }
+    if (chain === 'SOLANA') return this.getSolBalance(address);
+    if (chain === 'TRON') return this.getTrxBalance(address);
+    return 0;
+  }
+
   // ─── EVM Broadcast ─────────────────────────────────────────────────────
 
   async broadcastEvmNative(
