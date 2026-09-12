@@ -85,6 +85,7 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(
         'Giftbit is not configured; skipping pending-order resolution poller.',
       );
+      void this.ensureCatalogSeeded();
       return;
     }
 
@@ -97,6 +98,8 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(
       `Giftbit configured for ${this.giftbit.getEnvironment()}; pending-order poller started.`,
     );
+
+    void this.ensureCatalogSynced();
   }
 
   onModuleDestroy() {
@@ -266,7 +269,7 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
         senderFee: new Prisma.Decimal(0),
         discountPercentage: new Prisma.Decimal(0),
         providerPriceNgn: indicativeNgn,
-        enabled: false,
+        enabled: this.autoEnableNewProducts(),
         markupPercent: new Prisma.Decimal(0),
         providerResponse: this.toJson({
           raw: brand,
@@ -981,6 +984,127 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
   // ═══════════════════════════════════════════════════════════════════════
   // PRIVATE HELPERS
   // ═══════════════════════════════════════════════════════════════════════
+
+  /**
+   * Whether newly synced products go live immediately. Enabled by default so
+   * the storefront populates without manual admin action; set
+   * GIFTBIT_AUTO_ENABLE=false to keep new products disabled until an admin
+   * reviews them in the admin panel (existing products are never touched).
+   */
+  private autoEnableNewProducts(): boolean {
+    return process.env.GIFTBIT_AUTO_ENABLE !== 'false';
+  }
+
+  /**
+   * Guarantees the storefront has a catalog shortly after boot: when Giftbit
+   * is configured but the local cache is still empty (fresh deployment), pull
+   * the catalog from Giftbit once. Fire-and-forget so boot is never blocked;
+   * failures are logged and can be retried from the admin panel.
+   */
+  private async ensureCatalogSynced(): Promise<void> {
+    try {
+      const count = await this.prisma.giftCardStoreProduct.count();
+      if (count > 0) return;
+      this.logger.log(
+        'Gift card store catalog is empty; syncing from Giftbit...',
+      );
+      const result = await this.syncCatalog();
+      this.logger.log(
+        `Initial Giftbit catalog sync complete: ${result.syncedProducts} products.`,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Initial Giftbit catalog sync failed: ${message}`);
+    }
+  }
+
+  /**
+   * Dev/demo fallback: when Giftbit is NOT configured (no API token) and the
+   * catalog is empty, seed a small set of enabled demo products so the
+   * storefront is not blank outside production. Production stays empty and
+   * relies on Giftbit configuration instead — demo products cannot actually
+   * be fulfilled by the provider.
+   */
+  private async ensureCatalogSeeded(): Promise<void> {
+    if (process.env.NODE_ENV === 'production') return;
+
+    const demoCatalog = [
+      {
+        providerBrandId: 'DEMO-AMAZON',
+        brandName: 'Amazon',
+        productName: 'Amazon Gift Card',
+        fixedDenominations: [10, 25, 50, 100],
+      },
+      {
+        providerBrandId: 'DEMO-APPLE',
+        brandName: 'Apple',
+        productName: 'Apple & iTunes Gift Card',
+        fixedDenominations: [10, 25, 50, 100],
+      },
+      {
+        providerBrandId: 'DEMO-STEAM',
+        brandName: 'Steam',
+        productName: 'Steam Wallet Card',
+        fixedDenominations: [20, 50, 100],
+      },
+      {
+        providerBrandId: 'DEMO-GOOGLE-PLAY',
+        brandName: 'Google Play',
+        productName: 'Google Play Gift Card',
+        fixedDenominations: [10, 25, 50],
+      },
+    ];
+
+    try {
+      const count = await this.prisma.giftCardStoreProduct.count();
+      if (count > 0) return;
+
+      const ngnPerUsd = DEFAULT_NGN_PER_USD;
+      for (const entry of demoCatalog) {
+        const brand = await this.prisma.giftCardStoreBrand.upsert({
+          where: { providerBrandId: entry.providerBrandId },
+          update: {},
+          create: {
+            providerBrandId: entry.providerBrandId,
+            brandName: entry.brandName,
+          },
+        });
+
+        await this.prisma.giftCardStoreProduct.upsert({
+          where: { providerProductId: entry.providerBrandId },
+          update: {},
+          create: {
+            providerProductId: entry.providerBrandId,
+            productName: entry.productName,
+            brandId: brand.id,
+            countryCode: 'US',
+            currencyCode: 'USD',
+            denominationType: GiftCardDenominationType.FIXED,
+            fixedDenominations: entry.fixedDenominations as Prisma.InputJsonValue,
+            senderFee: new Prisma.Decimal(0),
+            discountPercentage: new Prisma.Decimal(0),
+            providerPriceNgn: new Prisma.Decimal(entry.fixedDenominations[0]).mul(
+              ngnPerUsd,
+            ),
+            enabled: true,
+            markupPercent: new Prisma.Decimal(0),
+            providerResponse: this.toJson({
+              demo: true,
+              seededAt: new Date().toISOString(),
+            }),
+            lastSyncedAt: new Date(),
+          },
+        });
+      }
+
+      this.logger.log(
+        `Giftbit not configured; seeded ${demoCatalog.length} demo gift card products (non-production).`,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Demo catalog seed failed: ${message}`);
+    }
+  }
 
   private ngnPerUsd(): number {
     const rates = this.exchangeRateService.getAllRates();
