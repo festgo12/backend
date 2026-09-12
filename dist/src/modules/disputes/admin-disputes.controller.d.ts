@@ -15,9 +15,9 @@ export declare class AdminDisputesController {
                     status: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    chain: string | null;
-                    version: number;
                     sellerId: string;
+                    version: number;
+                    chain: string | null;
                     asset: import("@src/generated/client").$Enums.Currency;
                     quantity: import("@src/generated/client/runtime/library").Decimal;
                     price: import("@src/generated/client/runtime/library").Decimal;
@@ -30,12 +30,12 @@ export declare class AdminDisputesController {
                 status: import("@src/generated/client").$Enums.OrderStatus;
                 createdAt: Date;
                 updatedAt: Date;
-                chain: string | null;
-                version: number;
                 expiresAt: Date;
                 fraudFlagged: boolean;
                 sellerId: string;
                 buyerId: string;
+                version: number;
+                chain: string | null;
                 fiatAmount: import("@src/generated/client/runtime/library").Decimal;
                 cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
                 feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -83,18 +83,18 @@ export declare class AdminDisputesController {
                     enabled: boolean;
                     currencyCode: string;
                     providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
+                    denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+                    markupPercent: import("@src/generated/client/runtime/library").Decimal;
                     providerProductId: string;
                     productName: string;
                     brandId: string | null;
                     countryCode: string;
-                    denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                     fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                     minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                     maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                     senderFee: import("@src/generated/client/runtime/library").Decimal;
                     discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                     providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-                    markupPercent: import("@src/generated/client/runtime/library").Decimal;
                     lastSyncedAt: Date | null;
                 };
             } & {
@@ -186,9 +186,9 @@ export declare class AdminDisputesController {
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                chain: string | null;
-                version: number;
                 sellerId: string;
+                version: number;
+                chain: string | null;
                 asset: import("@src/generated/client").$Enums.Currency;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
@@ -210,6 +210,7 @@ export declare class AdminDisputesController {
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -217,7 +218,6 @@ export declare class AdminDisputesController {
                     derivationIndex: number | null;
                     chain: string | null;
                     isFrozen: boolean;
-                    version: number;
                 }[];
             } & {
                 id: string;
@@ -258,6 +258,7 @@ export declare class AdminDisputesController {
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    version: number;
                     currency: import("@src/generated/client").$Enums.Currency;
                     balance: import("@src/generated/client/runtime/library").Decimal;
                     reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -265,7 +266,6 @@ export declare class AdminDisputesController {
                     derivationIndex: number | null;
                     chain: string | null;
                     isFrozen: boolean;
-                    version: number;
                 }[];
             } & {
                 id: string;
@@ -297,12 +297,12 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            chain: string | null;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
+            chain: string | null;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -386,18 +386,18 @@ export declare class AdminDisputesController {
                 enabled: boolean;
                 currencyCode: string;
                 providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
+                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+                markupPercent: import("@src/generated/client/runtime/library").Decimal;
                 providerProductId: string;
                 productName: string;
                 brandId: string | null;
                 countryCode: string;
-                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                 minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 senderFee: import("@src/generated/client/runtime/library").Decimal;
                 discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                 providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-                markupPercent: import("@src/generated/client/runtime/library").Decimal;
                 lastSyncedAt: Date | null;
             };
         } & {
@@ -471,12 +471,12 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            chain: string | null;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
+            chain: string | null;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -527,12 +527,12 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            chain: string | null;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
+            chain: string | null;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -570,12 +570,12 @@ export declare class AdminDisputesController {
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            chain: string | null;
-            version: number;
             expiresAt: Date;
             fraudFlagged: boolean;
             sellerId: string;
             buyerId: string;
+            version: number;
+            chain: string | null;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
@@ -610,18 +610,18 @@ export declare class AdminDisputesController {
                 enabled: boolean;
                 currencyCode: string;
                 providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
+                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+                markupPercent: import("@src/generated/client/runtime/library").Decimal;
                 providerProductId: string;
                 productName: string;
                 brandId: string | null;
                 countryCode: string;
-                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                 minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 senderFee: import("@src/generated/client/runtime/library").Decimal;
                 discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                 providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
-                markupPercent: import("@src/generated/client/runtime/library").Decimal;
                 lastSyncedAt: Date | null;
             };
         } & {
@@ -681,12 +681,12 @@ export declare class AdminDisputesController {
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        chain: string | null;
-        version: number;
         expiresAt: Date;
         fraudFlagged: boolean;
         sellerId: string;
         buyerId: string;
+        version: number;
+        chain: string | null;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
