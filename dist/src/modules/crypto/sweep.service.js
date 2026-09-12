@@ -22,6 +22,7 @@ const withdrawal_tracker_service_1 = require("./withdrawal-tracker.service");
 const platform_service_1 = require("./platform.service");
 const exchange_rate_service_1 = require("./exchange-rate.service");
 const client_1 = require("../../generated/client/index.js");
+const ledger_service_1 = require("../wallet/ledger.service");
 let SweepService = SweepService_1 = class SweepService {
     prisma;
     depositRegistry;
@@ -31,9 +32,10 @@ let SweepService = SweepService_1 = class SweepService {
     tracker;
     platformService;
     exchangeRate;
+    ledger;
     logger = new common_1.Logger(SweepService_1.name);
     isRunning = false;
-    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker, platformService, exchangeRate) {
+    constructor(prisma, depositRegistry, chainClient, config, hdWallet, tracker, platformService, exchangeRate, ledger) {
         this.prisma = prisma;
         this.depositRegistry = depositRegistry;
         this.chainClient = chainClient;
@@ -42,6 +44,7 @@ let SweepService = SweepService_1 = class SweepService {
         this.tracker = tracker;
         this.platformService = platformService;
         this.exchangeRate = exchangeRate;
+        this.ledger = ledger;
     }
     async sweepAll() {
         if (this.isRunning)
@@ -279,7 +282,7 @@ let SweepService = SweepService_1 = class SweepService {
         if (!platformWallet) {
             throw new Error(`Platform fee wallet not found for ${currency}/${chain}`);
         }
-        await this.prisma.walletTransaction.create({
+        const sweepTx = await this.prisma.walletTransaction.create({
             data: {
                 walletId: platformWallet.id,
                 type: client_1.LedgerType.DEPOSIT,
@@ -294,6 +297,21 @@ let SweepService = SweepService_1 = class SweepService {
                     fromAddress,
                     initiatedAt: new Date().toISOString(),
                 },
+            },
+        });
+        await this.ledger.createEntry(this.prisma, {
+            walletId: platformWallet.id,
+            transactionId: sweepTx.id,
+            amount,
+            type: client_1.LedgerType.DEPOSIT,
+            reference: `${txHash}-ledger`,
+            metadata: {
+                destination,
+                blockchain: chain,
+                provider: 'alchemy',
+                sweep: true,
+                fromAddress,
+                initiatedAt: new Date().toISOString(),
             },
         });
         await this.tracker.enqueue({
@@ -422,6 +440,7 @@ exports.SweepService = SweepService = SweepService_1 = __decorate([
         hd_wallet_service_1.HdWalletService,
         withdrawal_tracker_service_1.WithdrawalTrackerService,
         platform_service_1.PlatformService,
-        exchange_rate_service_1.ExchangeRateService])
+        exchange_rate_service_1.ExchangeRateService,
+        ledger_service_1.LedgerService])
 ], SweepService);
 //# sourceMappingURL=sweep.service.js.map

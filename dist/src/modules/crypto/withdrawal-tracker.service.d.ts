@@ -38,4 +38,5 @@ export declare class WithdrawalTrackerService {
     processQueue(): Promise<void>;
     private poll;
     private finalize;
+    private raiseRevertAlert;
 }

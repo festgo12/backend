@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var CryptoRiskService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CryptoRiskService = void 0;
+exports.CryptoRiskService = exports.SanctionedAddressRepository = exports.DEFAULT_SANCTIONED_ADDRESSES = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const crypto_config_service_1 = require("../crypto/crypto-config.service");
@@ -18,7 +18,7 @@ const risk_engine_service_1 = require("./risk-engine.service");
 const fraud_rules_service_1 = require("./fraud-rules.service");
 const alert_engine_service_1 = require("./alert-engine.service");
 const client_1 = require("../../generated/client/index.js");
-const SANCTIONED_ADDRESSES = {
+exports.DEFAULT_SANCTIONED_ADDRESSES = {
     ethereum: new Set([
         '0x722122df12d4e14e13ac3b6895a86e84145b6967',
         '0xd90e2f925da72a612f2b6293a22bc604b0357acf',
@@ -33,6 +33,78 @@ const SANCTIONED_ADDRESSES = {
         'bc1q056v2m0r8qez9d2y9ax93cx6lq6ln5rhf7kvz3',
     ]),
 };
+let SanctionedAddressRepository = class SanctionedAddressRepository {
+    byChain = {};
+    lastRefreshedAt = null;
+    constructor() {
+        this.reloadFrom(exports.DEFAULT_SANCTIONED_ADDRESSES);
+    }
+    getLastRefreshedAt() {
+        return this.lastRefreshedAt;
+    }
+    getCounts() {
+        const out = {};
+        for (const [chain, set] of Object.entries(this.byChain)) {
+            out[chain] = set.size;
+        }
+        return out;
+    }
+    isSanctioned(address, chain) {
+        const set = this.byChain[chain];
+        if (!set)
+            return false;
+        const key = address.toLowerCase();
+        return set.has(key) || set.has(address);
+    }
+    async refreshFromSource() {
+        const before = this.byChain;
+        this.reloadFrom(exports.DEFAULT_SANCTIONED_ADDRESSES);
+        this.lastRefreshedAt = new Date();
+        return {
+            lastRefreshedAt: this.lastRefreshedAt,
+            counts: this.getCounts(),
+            source: 'defaults',
+            merged: this.mergeReport(before),
+        };
+    }
+    loadChain(chain, addresses) {
+        const set = this.byChain[chain] ?? new Set();
+        for (const a of addresses) {
+            if (a && a.trim().length > 0)
+                set.add(a.trim().toLowerCase());
+        }
+        this.byChain[chain] = set;
+    }
+    replaceFrom(source) {
+        this.byChain = {};
+        for (const [chain, set] of Object.entries(source)) {
+            this.byChain[chain] = new Set([...set].map((a) => a.toLowerCase()));
+        }
+        this.lastRefreshedAt = new Date();
+    }
+    reloadFrom(source) {
+        this.byChain = {};
+        for (const [chain, set] of Object.entries(source)) {
+            this.byChain[chain] = new Set([...set].map((a) => a.toLowerCase()));
+        }
+        this.lastRefreshedAt = new Date();
+    }
+    mergeReport(before) {
+        const chainsBefore = {};
+        for (const [chain, set] of Object.entries(before)) {
+            chainsBefore[chain] = set.size;
+        }
+        return {
+            chainsBefore,
+            chainsAfter: this.getCounts(),
+        };
+    }
+};
+exports.SanctionedAddressRepository = SanctionedAddressRepository;
+exports.SanctionedAddressRepository = SanctionedAddressRepository = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [])
+], SanctionedAddressRepository);
 const DEFAULT_RISK_CONFIG = {
     addressBlockThreshold: 70,
     addressFlagThreshold: 40,
@@ -46,6 +118,7 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
     riskEngine;
     fraudRules;
     alertEngine;
+    sanctions;
     logger = new common_1.Logger(CryptoRiskService_1.name);
     KNOWN_EXCHANGE_PATTERNS = {
         bitcoin: [
@@ -64,12 +137,13 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
         USDT: 100000,
         USDC: 100000,
     };
-    constructor(prisma, cryptoConfig, riskEngine, fraudRules, alertEngine) {
+    constructor(prisma, cryptoConfig, riskEngine, fraudRules, alertEngine, sanctions) {
         this.prisma = prisma;
         this.cryptoConfig = cryptoConfig;
         this.riskEngine = riskEngine;
         this.fraudRules = fraudRules;
         this.alertEngine = alertEngine;
+        this.sanctions = sanctions;
     }
     async getRiskConfig() {
         const config = { ...DEFAULT_RISK_CONFIG };
@@ -110,7 +184,7 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
                         severity: 'CRITICAL',
                         title: 'Sanctioned address interaction',
                         message: `Address ${address.slice(0, 10)}... is on the OFAC sanctions list.`,
-                        metadata: { address, chain, context },
+                        metadata: { address, chain, context, sanctionsLastRefreshedAt: this.sanctions.getLastRefreshedAt()?.toISOString() ?? null },
                     });
                     await this.prisma.user.update({
                         where: { id: wallet.userId },
@@ -270,10 +344,7 @@ let CryptoRiskService = CryptoRiskService_1 = class CryptoRiskService {
         }
     }
     isSanctioned(address, chain) {
-        const sanctioned = SANCTIONED_ADDRESSES[chain];
-        if (!sanctioned)
-            return false;
-        return sanctioned.has(address.toLowerCase()) || sanctioned.has(address);
+        return this.sanctions.isSanctioned(address, chain);
     }
     isValidAddressFormat(address, chain) {
         if (!address || typeof address !== 'string')
@@ -300,6 +371,7 @@ exports.CryptoRiskService = CryptoRiskService = CryptoRiskService_1 = __decorate
         crypto_config_service_1.CryptoConfigService,
         risk_engine_service_1.RiskEngineService,
         fraud_rules_service_1.FraudRulesService,
-        alert_engine_service_1.AlertEngineService])
+        alert_engine_service_1.AlertEngineService,
+        SanctionedAddressRepository])
 ], CryptoRiskService);
 //# sourceMappingURL=crypto-risk.service.js.map

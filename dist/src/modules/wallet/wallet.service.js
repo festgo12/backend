@@ -178,6 +178,16 @@ let WalletService = class WalletService {
         REVERSED: [],
         CANCELLED: [],
     };
+    async releaseWithdrawalReservation(tx, walletId, amount) {
+        await tx.$executeRaw `
+      UPDATE "Wallet"
+      SET "reservedBalance" = GREATEST("reservedBalance" - ${amount}, 0)
+      WHERE "id" = ${walletId}::uuid
+    `;
+    }
+    static withdrawMetadataSaysSkipRelease(metadata) {
+        return Boolean(metadata?.sweep || metadata?.ledgerSettled);
+    }
     async updateTransactionStatus(transactionId, status, metadata) {
         let changed = false;
         const transaction = await this.prisma.$transaction(async (tx) => {
@@ -200,6 +210,13 @@ let WalletService = class WalletService {
                 ...(current.metadata || {}),
                 ...(metadata || {}),
             };
+            const isWithdrawal = current.type === client_1.LedgerType.WITHDRAWAL;
+            const releasesReservation = isWithdrawal &&
+                (status === 'COMPLETED' || status === 'FAILED') &&
+                !WalletService_1.withdrawMetadataSaysSkipRelease(updatedMetadata);
+            if (releasesReservation) {
+                updatedMetadata.reservationReleasedAt = new Date().toISOString();
+            }
             const transaction = await tx.walletTransaction.update({
                 where: { id: transactionId },
                 data: {
@@ -216,13 +233,16 @@ let WalletService = class WalletService {
                         walletId: transaction.walletId,
                         transactionId: transaction.id,
                         amount: transaction.type === client_1.LedgerType.WITHDRAWAL
-                            ? -transaction.amount.toNumber()
+                            ? -Math.abs(transaction.amount.toNumber())
                             : transaction.amount.toNumber(),
                         type: transaction.type,
                         reference: `${transaction.reference}-ledger`,
                         metadata: updatedMetadata,
                     });
                 }
+            }
+            if (releasesReservation) {
+                await this.releaseWithdrawalReservation(tx, transaction.walletId, transaction.amount.abs());
             }
             return transaction;
         });
@@ -233,6 +253,12 @@ let WalletService = class WalletService {
     }
     async reverseTransaction(transactionId, reason) {
         const reversedTransaction = await this.prisma.$transaction(async (tx) => {
+            const prior = await tx.walletTransaction.findUnique({
+                where: { id: transactionId },
+            });
+            if (!prior)
+                return null;
+            const wasDebited = prior.status === 'COMPLETED';
             const affected = await tx.$executeRaw `
         UPDATE "WalletTransaction"
         SET "status" = 'REVERSED',
@@ -247,6 +273,34 @@ let WalletService = class WalletService {
             });
             if (!transaction)
                 return null;
+            const metadata = (transaction.metadata ?? {});
+            if (transaction.type === client_1.LedgerType.WITHDRAWAL) {
+                const skipReservationHandling = WalletService_1.withdrawMetadataSaysSkipRelease(metadata);
+                if (wasDebited && !skipReservationHandling) {
+                    await this.ledger.createEntry(tx, {
+                        walletId: transaction.walletId,
+                        transactionId: transaction.id,
+                        amount: Math.abs(transaction.amount.toNumber()),
+                        type: client_1.LedgerType.TRADE_REFUND,
+                        reference: `${transaction.reference}-rev`,
+                        metadata: { reason },
+                    });
+                }
+                else if (!wasDebited &&
+                    (prior.status === 'PENDING' || prior.status === 'PROCESSING') &&
+                    !skipReservationHandling) {
+                    await this.releaseWithdrawalReservation(tx, transaction.walletId, transaction.amount.abs());
+                    await tx.$executeRaw `
+            UPDATE "WalletTransaction"
+            SET "metadata" = "metadata" || ${JSON.stringify({
+                        reservationReleasedAt: new Date().toISOString(),
+                        reservationReleasedVia: 'reverse-of-unsettled',
+                    })}::jsonb
+            WHERE "id" = ${transactionId}::uuid
+          `;
+                }
+                return transaction;
+            }
             const depositTypes = [client_1.LedgerType.DEPOSIT, client_1.LedgerType.GIFT_CARD_PURCHASE];
             const isDeposit = depositTypes.includes(transaction.type);
             const reverseAmount = isDeposit

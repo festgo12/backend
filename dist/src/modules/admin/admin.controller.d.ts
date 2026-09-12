@@ -895,6 +895,10 @@ export declare class AdminController {
             btc: string;
             tron: string;
         };
+        webhookSigningCoverage: Record<string, {
+            configured: boolean;
+            keySource: string;
+        }>;
         confirmations: {
             eth: number;
             btc: number;
@@ -909,6 +913,10 @@ export declare class AdminController {
             sol: string;
             tron: string;
         };
+        sanctions: {
+            lastRefreshedAt: string | null;
+            counts: Record<string, number>;
+        };
         recentSweeps: {
             wallet: {
                 currency: import("@src/generated/client").$Enums.Currency;
@@ -920,6 +928,7 @@ export declare class AdminController {
             reference: string;
         }[];
     }>;
+    refreshSanctions(): Promise<import("../security/crypto-risk.service").RefreshResult>;
     getWithdrawalJobs(page?: string, limit?: string, status?: string): Promise<{
         jobs: {
             id: string;

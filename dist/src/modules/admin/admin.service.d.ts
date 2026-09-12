@@ -9,6 +9,7 @@ import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
 import { ReconciliationService } from '../crypto/reconciliation.service';
 import { SweepService } from '../crypto/sweep.service';
+import { SanctionedAddressRepository } from '../security/crypto-risk.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 export declare class AdminService {
@@ -23,7 +24,8 @@ export declare class AdminService {
     private readonly walletService;
     private readonly reconciliationService;
     private readonly sweepService;
-    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService, sweepService: SweepService);
+    private readonly sanctions;
+    constructor(prisma: PrismaService, cryptoWithdrawal: CryptoWithdrawalService, exchangeRateService: ExchangeRateService, cryptoConfig: CryptoConfigService, depositRegistry: DepositAddressRegistry, hdWallet: HdWalletService, chainClient: ChainClientService, paystackService: PaystackService, walletService: WalletService, reconciliationService: ReconciliationService, sweepService: SweepService, sanctions: SanctionedAddressRepository);
     getDashboardStats(): Promise<{
         totalUsers: number;
         totalOrders: number;
@@ -1202,6 +1204,10 @@ export declare class AdminService {
             btc: string;
             tron: string;
         };
+        webhookSigningCoverage: Record<string, {
+            configured: boolean;
+            keySource: string;
+        }>;
         confirmations: {
             eth: number;
             btc: number;
@@ -1216,6 +1222,10 @@ export declare class AdminService {
             sol: string;
             tron: string;
         };
+        sanctions: {
+            lastRefreshedAt: string | null;
+            counts: Record<string, number>;
+        };
         recentSweeps: {
             wallet: {
                 currency: import("@src/generated/client").$Enums.Currency;
@@ -1227,6 +1237,7 @@ export declare class AdminService {
             reference: string;
         }[];
     }>;
+    refreshSanctions(): Promise<import("../security/crypto-risk.service").RefreshResult>;
     getWithdrawalJobs(page: number, limit: number, status?: string): Promise<{
         jobs: {
             id: string;

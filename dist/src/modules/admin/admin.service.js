@@ -23,6 +23,7 @@ const hd_wallet_service_1 = require("../crypto/hd-wallet.service");
 const chain_client_service_1 = require("../crypto/chain-client.service");
 const reconciliation_service_1 = require("../crypto/reconciliation.service");
 const sweep_service_1 = require("../crypto/sweep.service");
+const crypto_risk_service_1 = require("../security/crypto-risk.service");
 const paystack_service_1 = require("../paystack/paystack.service");
 const wallet_service_1 = require("../wallet/wallet.service");
 const platform_service_1 = require("../crypto/platform.service");
@@ -40,7 +41,8 @@ let AdminService = class AdminService {
     walletService;
     reconciliationService;
     sweepService;
-    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService, reconciliationService, sweepService) {
+    sanctions;
+    constructor(prisma, cryptoWithdrawal, exchangeRateService, cryptoConfig, depositRegistry, hdWallet, chainClient, paystackService, walletService, reconciliationService, sweepService, sanctions) {
         this.prisma = prisma;
         this.cryptoWithdrawal = cryptoWithdrawal;
         this.exchangeRateService = exchangeRateService;
@@ -52,6 +54,7 @@ let AdminService = class AdminService {
         this.walletService = walletService;
         this.reconciliationService = reconciliationService;
         this.sweepService = sweepService;
+        this.sanctions = sanctions;
     }
     async getDashboardStats() {
         const [totalUsers, totalOrders, completedOrders, pendingDisputes, revenueAgg,] = await Promise.all([
@@ -806,6 +809,29 @@ let AdminService = class AdminService {
                 wallet: { select: { currency: true } },
             },
         });
+        const webhookSigningCoverage = (() => {
+            const chains = [
+                'ETH',
+                'BSC',
+                'POLYGON',
+                'SOLANA',
+            ];
+            const out = {};
+            for (const chain of chains) {
+                const perChain = this.cryptoConfig.signingKeyForChain(chain);
+                const global = this.cryptoConfig.alchemySigningKey;
+                if (perChain) {
+                    out[chain] = { configured: true, keySource: 'per-chain' };
+                }
+                else if (global) {
+                    out[chain] = { configured: true, keySource: 'global-fallback' };
+                }
+                else {
+                    out[chain] = { configured: false, keySource: 'none' };
+                }
+            }
+            return out;
+        })();
         return {
             provider: this.cryptoConfig.provider,
             network: this.cryptoConfig.network,
@@ -815,6 +841,7 @@ let AdminService = class AdminService {
                 btc: 'alchemy',
                 tron: 'tron_poller',
             },
+            webhookSigningCoverage,
             confirmations: {
                 eth: this.cryptoConfig.evmConfirmations,
                 btc: this.cryptoConfig.btcConfirmations,
@@ -829,8 +856,15 @@ let AdminService = class AdminService {
                 sol: this.hdWallet.getMasterAddressForChain('SOLANA'),
                 tron: this.hdWallet.getMasterAddressForChain('TRON'),
             },
+            sanctions: {
+                lastRefreshedAt: this.sanctions.getLastRefreshedAt()?.toISOString() ?? null,
+                counts: this.sanctions.getCounts(),
+            },
             recentSweeps,
         };
+    }
+    async refreshSanctions() {
+        return this.sanctions.refreshFromSource();
     }
     async getWithdrawalJobs(page, limit, status) {
         const skip = (page - 1) * limit;
@@ -1356,6 +1390,7 @@ exports.AdminService = AdminService = AdminService_1 = __decorate([
         paystack_service_1.PaystackService,
         wallet_service_1.WalletService,
         reconciliation_service_1.ReconciliationService,
-        sweep_service_1.SweepService])
+        sweep_service_1.SweepService,
+        crypto_risk_service_1.SanctionedAddressRepository])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

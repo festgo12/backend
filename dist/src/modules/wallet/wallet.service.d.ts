@@ -171,6 +171,8 @@ export declare class WalletService {
         resolvedAt: Date | null;
     } | null>;
     private static readonly VALID_TRANSITIONS;
+    private releaseWithdrawalReservation;
+    private static withdrawMetadataSaysSkipRelease;
     updateTransactionStatus(transactionId: string, status: string, metadata?: any): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
         id: string;

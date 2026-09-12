@@ -28,6 +28,7 @@ exports.SecurityModule = SecurityModule = __decorate([
             fraud_rules_service_1.FraudRulesService,
             risk_engine_service_1.RiskEngineService,
             alert_engine_service_1.AlertEngineService,
+            crypto_risk_service_1.SanctionedAddressRepository,
             crypto_risk_service_1.CryptoRiskService,
         ],
         exports: [
@@ -35,6 +36,7 @@ exports.SecurityModule = SecurityModule = __decorate([
             fraud_rules_service_1.FraudRulesService,
             risk_engine_service_1.RiskEngineService,
             alert_engine_service_1.AlertEngineService,
+            crypto_risk_service_1.SanctionedAddressRepository,
             crypto_risk_service_1.CryptoRiskService,
         ],
     })

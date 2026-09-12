@@ -127,7 +127,7 @@ let PaystackController = PaystackController_1 = class PaystackController {
             await this.walletService.createTransaction({
                 walletId: wallet.id,
                 type: client_1.LedgerType.WITHDRAWAL,
-                amount: -dto.amount,
+                amount: dto.amount,
                 reference,
                 status: 'PROCESSING',
                 metadata: {

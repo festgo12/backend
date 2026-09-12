@@ -249,6 +249,36 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
                 ? extraMetadata.confirmedVia
                 : 'unknown';
             this.logger.log(`Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'} (via ${via})`);
+            if (status === 'FAILED' && transaction.walletId) {
+                await this.raiseRevertAlert(transaction.walletId, job.txHash, extraMetadata);
+            }
+        }
+    }
+    async raiseRevertAlert(walletId, txHash, extraMetadata) {
+        try {
+            const wallet = await this.prisma.wallet.findUnique({
+                where: { id: walletId },
+                select: { userId: true },
+            });
+            if (!wallet)
+                return;
+            const reason = typeof extraMetadata.lastError === 'string'
+                ? extraMetadata.lastError
+                : 'transaction failed on-chain';
+            await this.prisma.securityAlert.create({
+                data: {
+                    userId: wallet.userId,
+                    type: 'WITHDRAWAL_FAILED_ON_CHAIN',
+                    severity: 'CRITICAL',
+                    title: 'Withdrawal failed on-chain',
+                    message: `Your withdrawal ${txHash} failed on-chain (${reason}). The transaction is marked FAILED for admin retry — no funds left your wallet on this attempt.`,
+                    metadata: { txHash, reason, via: extraMetadata.confirmedVia ?? 'unknown' },
+                },
+            });
+        }
+        catch (error) {
+            const err = error;
+            this.logger.warn(`Failed to raise withdrawal revert alert for ${txHash}: ${err.message ?? 'unknown error'}`);
         }
     }
 };

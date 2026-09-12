@@ -12,12 +12,13 @@ const admin_service_1 = require("./admin.service");
 const admin_controller_1 = require("./admin.controller");
 const paystack_module_1 = require("../paystack/paystack.module");
 const wallet_module_1 = require("../wallet/wallet.module");
+const security_module_1 = require("../security/security.module");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
 exports.AdminModule = AdminModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), (0, common_1.forwardRef)(() => wallet_module_1.WalletModule)],
+        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), (0, common_1.forwardRef)(() => wallet_module_1.WalletModule), security_module_1.SecurityModule],
         controllers: [admin_controller_1.AdminController],
         providers: [admin_service_1.AdminService],
         exports: [admin_service_1.AdminService],

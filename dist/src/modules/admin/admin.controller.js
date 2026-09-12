@@ -94,6 +94,9 @@ let AdminController = class AdminController {
     getCryptoSystemStatus() {
         return this.adminService.getCryptoSystemStatus();
     }
+    refreshSanctions() {
+        return this.adminService.refreshSanctions();
+    }
     getWithdrawalJobs(page = '1', limit = '20', status) {
         const p = (0, pagination_1.clampPagination)(page, limit, { maxLimit: 50 });
         return this.adminService.getWithdrawalJobs(p.page, p.limit, status);
@@ -373,12 +376,22 @@ __decorate([
 __decorate([
     (0, common_1.Get)('crypto/status'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Hybrid webhook crypto system status (providers, registry, sweeps)',
+        summary: 'Hybrid webhook crypto system status (providers, registry, sweeps, webhook key coverage, sanctions freshness)',
     }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getCryptoSystemStatus", null);
+__decorate([
+    (0, common_1.Post)('crypto/sanctions/refresh'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_SANCTIONS_REFRESH', 'SYSTEM'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Refresh the in-memory sanctions address store from its source (currently the hard-coded OFAC defaults; replace with a live feed via SanctionedAddressRepository)',
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "refreshSanctions", null);
 __decorate([
     (0, common_1.Get)('crypto/withdrawal-jobs'),
     (0, swagger_1.ApiOperation)({ summary: 'List withdrawal confirmation jobs' }),

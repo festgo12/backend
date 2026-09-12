@@ -154,7 +154,11 @@ export class PaystackController {
       await this.walletService.createTransaction({
         walletId: wallet.id,
         type: LedgerType.WITHDRAWAL,
-        amount: -dto.amount,
+        // Positive magnitude (crypto flow convention). The ledger debit is
+        // applied via abs() at completion; keeping the stored value positive
+        // also keeps velocity/fraud aggregations (_sum of withdrawal amounts)
+        // directionally correct.
+        amount: dto.amount,
         reference,
         status: 'PROCESSING',
         metadata: {

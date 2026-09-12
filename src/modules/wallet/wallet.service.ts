@@ -247,7 +247,45 @@ export class WalletService {
   };
 
   /**
+   * Releases a withdrawal funds reservation inside the caller's transaction.
+   *
+   * Withdrawals reserve funds (reservedBalance += amount) before the external
+   * transfer/broadcast; reaching a terminal state must release them, otherwise
+   * user funds stay locked off-chain even after the ledger settles (audit
+   * finding: unreleased reserved balance on FAILED withdrawals).
+   *
+   * GREATEST clamps at zero so corrupt rows (reserved < amount) cannot go
+   * negative. The reserved amount is derived from abs(transaction.amount)
+   * because legacy fiat withdrawal rows were stored negative.
+   */
+  private async releaseWithdrawalReservation(
+    tx: Prisma.TransactionClient,
+    walletId: string,
+    amount: Prisma.Decimal,
+  ): Promise<void> {
+    await tx.$executeRaw`
+      UPDATE "Wallet"
+      SET "reservedBalance" = GREATEST("reservedBalance" - ${amount}, 0)
+      WHERE "id" = ${walletId}::uuid
+    `;
+  }
+
+  /**
+   * True when a withdrawal row's funds were reserved by the withdrawal flows
+   * (fiat transfer / crypto broadcast). Fee-wallet sweeps and rows whose
+   * ledger was settled externally never reserve, so they must never release.
+   */
+  private static withdrawMetadataSaysSkipRelease(metadata: any): boolean {
+    return Boolean(metadata?.sweep || metadata?.ledgerSettled);
+  }
+
+  /**
    * Updates transaction status and creates ledger entry if completed.
+   *
+   * Withdrawal rows additionally release their funds reservation when they
+   * reach a terminal state (COMPLETED = ledger debit, FAILED = funds never
+   * left). The status-transition guard above makes each terminal transition
+   * once-only, so the release cannot double-fire.
    */
   async updateTransactionStatus(transactionId: string, status: string, metadata?: any) {
     let changed = false;
@@ -282,6 +320,16 @@ export class WalletService {
         ...(metadata || {}),
       };
 
+      const isWithdrawal = current.type === LedgerType.WITHDRAWAL;
+      const releasesReservation =
+        isWithdrawal &&
+        (status === 'COMPLETED' || status === 'FAILED') &&
+        !WalletService.withdrawMetadataSaysSkipRelease(updatedMetadata);
+
+      if (releasesReservation) {
+        updatedMetadata.reservationReleasedAt = new Date().toISOString();
+      }
+
       const transaction = await tx.walletTransaction.update({
         where: { id: transactionId },
         data: {
@@ -302,14 +350,27 @@ export class WalletService {
           await this.ledger.createEntry(tx, {
             walletId: transaction.walletId,
             transactionId: transaction.id,
+            // abs(): the ledger debit is always a negative delta. Legacy fiat
+            // rows stored the withdrawal amount negative, so negating the raw
+            // value would credit instead of debit.
             amount: transaction.type === LedgerType.WITHDRAWAL
-              ? -transaction.amount.toNumber()  // Negative for withdrawals
+              ? -Math.abs(transaction.amount.toNumber())
               : transaction.amount.toNumber(),
             type: transaction.type,
             reference: `${transaction.reference}-ledger`,
             metadata: updatedMetadata,
           });
         }
+      }
+
+      // Release the withdrawal reservation on terminal state (see docstring).
+      // After the ledger debit for COMPLETED, after no ledger change for FAILED.
+      if (releasesReservation) {
+        await this.releaseWithdrawalReservation(
+          tx,
+          transaction.walletId,
+          transaction.amount.abs(),
+        );
       }
 
       return transaction;
@@ -323,12 +384,31 @@ export class WalletService {
   }
 
   /**
-   * Reverses a failed transaction by creating an offsetting ledger entry.
+   * Reverses a transaction by creating an offsetting ledger entry.
    * Deposits are reversed by debiting; withdrawals are reversed by crediting.
-   * Uses conditional updateMany to prevent double-refund races.
+   * Uses a conditional update to prevent double-refund races.
+   *
+   * Withdrawal credit safety: the refund credit is only valid when the
+   * withdrawal previously DEBITED the ledger (prior status COMPLETED).
+   * Paystack's transfer.failed / transfer.reversed webhooks arrive while the
+   * row is still PENDING/PROCESSING — the ledger was never debited and only
+   * the reservation is held, so crediting there would mint balance. Those
+   * rows get the reservation released instead. Rows already FAILED were
+   * handled by updateTransactionStatus (released there); REVERSED rows can
+   * never reach this branch (the conditional update matches nothing).
    */
   async reverseTransaction(transactionId: string, reason: string) {
     const reversedTransaction = await this.prisma.$transaction(async (tx) => {
+      // Atomic prior-status read: the row was debited by the ledger only if it
+      // sat in COMPLETED. Combined with the status != 'REVERSED' guard below,
+      // this reads/writes the same row inside one transaction, so webhook
+      // races (transfer.failed + transfer.reversed) cannot double-fire.
+      const prior = await tx.walletTransaction.findUnique({
+        where: { id: transactionId },
+      });
+      if (!prior) return null;
+      const wasDebited = prior.status === 'COMPLETED';
+
       // Conditional update: only transition to REVERSED if not already reversed.
       // This prevents double-refund when Paystack sends both transfer.failed
       // and transfer.reversed for the same event.
@@ -347,7 +427,54 @@ export class WalletService {
       });
       if (!transaction) return null;
 
-      // Reverse direction: deposits (positive amount) → debit; withdrawals (negative impact) → credit
+      const metadata = (transaction.metadata ?? {}) as Record<string, unknown>;
+
+      if (transaction.type === LedgerType.WITHDRAWAL) {
+        const skipReservationHandling =
+          WalletService.withdrawMetadataSaysSkipRelease(metadata);
+
+        if (wasDebited && !skipReservationHandling) {
+          // Prior COMPLETED: the ledger was debited, so the correct reversal
+          // is the refund credit (admin refund path). The reservation was
+          // already released when the row completed.
+          await this.ledger.createEntry(tx, {
+            walletId: transaction.walletId,
+            transactionId: transaction.id,
+            amount: Math.abs(transaction.amount.toNumber()),
+            type: LedgerType.TRADE_REFUND,
+            reference: `${transaction.reference}-rev`,
+            metadata: { reason },
+          });
+        } else if (
+          !wasDebited &&
+          (prior.status === 'PENDING' || prior.status === 'PROCESSING') &&
+          !skipReservationHandling
+        ) {
+          // In-flight row (Paystack transfer.failed / transfer.reversed arrive
+          // here): the ledger was never debited, so crediting would mint
+          // balance. Release the held reservation instead.
+          await this.releaseWithdrawalReservation(
+            tx,
+            transaction.walletId,
+            transaction.amount.abs(),
+          );
+          await tx.$executeRaw`
+            UPDATE "WalletTransaction"
+            SET "metadata" = "metadata" || ${JSON.stringify({
+              reservationReleasedAt: new Date().toISOString(),
+              reservationReleasedVia: 'reverse-of-unsettled',
+            })}::jsonb
+            WHERE "id" = ${transactionId}::uuid
+          `;
+        }
+        // Any other prior state (FAILED, CANCELLED) was already released by
+        // updateTransactionStatus — releasing again could consume another
+        // in-flight withdrawal's reservation, so it is intentionally skipped.
+
+        return transaction;
+      }
+
+      // Reverse direction: deposits (positive amount) → debit
       const depositTypes: string[] = [LedgerType.DEPOSIT, LedgerType.GIFT_CARD_PURCHASE];
       const isDeposit = depositTypes.includes(transaction.type);
       const reverseAmount = isDeposit
