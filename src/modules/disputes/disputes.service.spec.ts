@@ -3,6 +3,7 @@ import { DisputesService } from './disputes.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LedgerService } from '../wallet/ledger.service';
 import { BadRequestException, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { DisputeStatus, OrderStatus } from '@src/generated/client';
 import { DisputeSubjectType } from './dto/create-dispute.dto';
@@ -55,6 +56,7 @@ describe('DisputesService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: UploadService, useValue: mockUploadService },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: LedgerService, useValue: { createEntry: jest.fn() } },
       ],
     }).compile();
 

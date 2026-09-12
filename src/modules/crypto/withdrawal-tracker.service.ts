@@ -28,6 +28,13 @@ function asChain(chain: string): Chain {
  *
  * Fallback path: A 30-second cron polls the chain directly for any pending
  * jobs that were not confirmed via webhook within the expected window.
+ *
+ * Freeze policy: an on-chain revert of a user withdrawal (EVM `status === 0`,
+ * TRON revert, Solana signature error) finalizes the job as FAILED — it does
+ * NOT freeze the wallet. Freezing is reserved for reconciliation rollbacks
+ * (see ReconciliationService.executeRollback), where a previously booked tx
+ * disappears from the chain entirely. A revert is still a ledger-integrity
+ * signal, so a CRITICAL SecurityAlert is raised for the owner either way.
  */
 @Injectable()
 export class WithdrawalTrackerService {
@@ -310,6 +317,56 @@ export class WithdrawalTrackerService {
           : 'unknown';
       this.logger.log(
         `Withdrawal ${job.txHash} ${status === 'CONFIRMED' ? 'confirmed' : 'failed'} (via ${via})`,
+      );
+
+      // A reverted withdrawal is a ledger-integrity signal worth surfacing to
+      // the owner (and admins) even though it does not freeze the wallet.
+      if (status === 'FAILED' && transaction.walletId) {
+        await this.raiseRevertAlert(
+          transaction.walletId,
+          job.txHash,
+          extraMetadata,
+        );
+      }
+    }
+  }
+
+  /**
+   * Raises a CRITICAL SecurityAlert for the wallet owner when a withdrawal
+   * fails on-chain. Best-effort: an alert failure is logged, never re-thrown,
+   * so it cannot corrupt the finalize flow.
+   */
+  private async raiseRevertAlert(
+    walletId: string,
+    txHash: string,
+    extraMetadata: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      const wallet = await this.prisma.wallet.findUnique({
+        where: { id: walletId },
+        select: { userId: true },
+      });
+      if (!wallet) return;
+
+      const reason =
+        typeof extraMetadata.lastError === 'string'
+          ? extraMetadata.lastError
+          : 'transaction failed on-chain';
+
+      await this.prisma.securityAlert.create({
+        data: {
+          userId: wallet.userId,
+          type: 'WITHDRAWAL_FAILED_ON_CHAIN',
+          severity: 'CRITICAL',
+          title: 'Withdrawal failed on-chain',
+          message: `Your withdrawal ${txHash} failed on-chain (${reason}). The transaction is marked FAILED for admin retry — no funds left your wallet on this attempt.`,
+          metadata: { txHash, reason, via: extraMetadata.confirmedVia ?? 'unknown' },
+        },
+      });
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `Failed to raise withdrawal revert alert for ${txHash}: ${err.message ?? 'unknown error'}`,
       );
     }
   }

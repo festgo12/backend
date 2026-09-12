@@ -9,6 +9,8 @@ import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { PlatformService } from './platform.service';
 import { ExchangeRateService } from './exchange-rate.service';
 import { Currency, LedgerType } from '@src/generated/client';
+import { LedgerService } from '../wallet/ledger.service';
+import { WalletTransactionEvent } from '../wallet/wallet.service';
 
 interface ErrorLike {
   message: string;
@@ -37,6 +39,14 @@ export interface SweepRunSummary {
  * is recorded as a DEPOSIT on the platform wallet and tracked by the
  * withdrawal queue. ERC-20 sweeps require ETH at the source address for gas;
  * failures are logged and retried on the next run.
+ *
+ * Ledger fidelity: unlike user deposits (which route through
+ * `walletService.createTransaction` and therefore get a synchronous `LedgerEntry`
+ * + a domain event), a sweep writes its own `WalletTransaction` + a synchronous
+ * `LedgerEntry` via `LedgerService` directly, then enqueues a `WithdrawalJob` so
+ * the on-chain confirmation finalizes the booked balance. A sweep does **not**
+ * emit a user-visible deposit event — it is a platform-internal consolidation,
+ * not a user deposit.
  */
 @Injectable()
 export class SweepService {
@@ -52,6 +62,7 @@ export class SweepService {
     private readonly tracker: WithdrawalTrackerService,
     private readonly platformService: PlatformService,
     private readonly exchangeRate: ExchangeRateService,
+    private readonly ledger: LedgerService,
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -367,7 +378,8 @@ export class SweepService {
       throw new Error(`Platform fee wallet not found for ${currency}/${chain}`);
     }
 
-    await this.prisma.walletTransaction.create({
+    // 1. Create the WalletTransaction (PENDING — finalized on-chain by the tracker).
+    const sweepTx = await this.prisma.walletTransaction.create({
       data: {
         walletId: platformWallet.id,
         type: LedgerType.DEPOSIT,
@@ -384,6 +396,26 @@ export class SweepService {
         },
       },
     });
+
+    // 2. Write a synchronous ledger entry so the platform wallet's ledger is
+    // complete at sweep time (not only after on-chain confirmation). The sweep
+    // is a platform credit, so this is an unconditional increment.
+    await this.ledger.createEntry(this.prisma, {
+      walletId: platformWallet.id,
+      transactionId: sweepTx.id,
+      amount,
+      type: LedgerType.DEPOSIT,
+      reference: `${txHash}-ledger`,
+      metadata: {
+        destination,
+        blockchain: chain,
+        provider: 'alchemy',
+        sweep: true,
+        fromAddress,
+        initiatedAt: new Date().toISOString(),
+      },
+    });
+
     await this.tracker.enqueue({
       txHash,
       walletId: platformWallet.id,

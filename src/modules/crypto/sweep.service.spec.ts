@@ -9,7 +9,8 @@ import { HdWalletService } from './hd-wallet.service';
 import { WithdrawalTrackerService } from './withdrawal-tracker.service';
 import { PlatformService } from './platform.service';
 import { ExchangeRateService } from './exchange-rate.service';
-import { Currency } from '@src/generated/client';
+import { Currency, LedgerType } from '@src/generated/client';
+import { LedgerService } from '../wallet/ledger.service';
 
 describe('SweepService', () => {
   let service: SweepService;
@@ -27,6 +28,10 @@ describe('SweepService', () => {
       findMany: jest.fn(),
       upsert: jest.fn(),
     },
+  };
+
+  const mockLedger = {
+    createEntry: jest.fn(),
   };
 
   const mockDepositRegistry = {
@@ -81,6 +86,7 @@ describe('SweepService', () => {
         { provide: WithdrawalTrackerService, useValue: mockTracker },
         { provide: PlatformService, useValue: mockPlatformService },
         { provide: ExchangeRateService, useValue: mockExchangeRate },
+        { provide: LedgerService, useValue: mockLedger },
       ],
     }).compile();
 
@@ -157,6 +163,7 @@ describe('SweepService', () => {
     mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
       id: 'platform-fee-wallet',
     });
+    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'sweep-tx' });
     mockPrisma.walletTransaction.findMany.mockResolvedValue([
       {
         id: 'deposit-tx',
@@ -190,6 +197,20 @@ describe('SweepService', () => {
           sweepTxHash: '0xsweephash',
         }),
       },
+    });
+    // A sweep writes a synchronous ledger entry at record time (not only via the
+    // withdrawal-tracker finalization path).
+    expect(mockLedger.createEntry).toHaveBeenCalledWith(mockPrisma, {
+      walletId: 'platform-fee-wallet',
+      transactionId: expect.any(String),
+      amount: 100,
+      type: LedgerType.DEPOSIT,
+      reference: expect.stringMatching(/^0xsweephash-ledger$/),
+      metadata: expect.objectContaining({
+        sweep: true,
+        fromAddress: userAddress,
+        blockchain: 'ETH',
+      }),
     });
     expect(summary).toEqual({
       evmSwept: 1,
@@ -264,6 +285,7 @@ describe('SweepService', () => {
       derivationIndex: 1000,
     });
     mockPrisma.walletTransaction.findMany.mockResolvedValue([]);
+    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'sweep-tx' });
     mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
       id: 'platform-fee-wallet',
     });

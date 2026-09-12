@@ -5,7 +5,7 @@ import { AdminSecurityController } from './admin-security.controller';
 import { FraudRulesService } from './fraud-rules.service';
 import { RiskEngineService } from './risk-engine.service';
 import { AlertEngineService } from './alert-engine.service';
-import { CryptoRiskService } from './crypto-risk.service';
+import { CryptoRiskService, SanctionedAddressRepository } from './crypto-risk.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
@@ -16,6 +16,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     FraudRulesService,
     RiskEngineService,
     AlertEngineService,
+    SanctionedAddressRepository,
     CryptoRiskService,
   ],
   exports: [
@@ -23,6 +24,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     FraudRulesService,
     RiskEngineService,
     AlertEngineService,
+    SanctionedAddressRepository,
     CryptoRiskService,
   ],
 })

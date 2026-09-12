@@ -12,6 +12,7 @@ import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { ReconciliationService } from '../crypto/reconciliation.service';
 import { SweepService } from '../crypto/sweep.service';
+import { SanctionedAddressRepository } from '../security/crypto-risk.service';
 import { Currency } from '@src/generated/client';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
 import { Decimal } from '@src/generated/client/runtime/library';
@@ -47,6 +48,8 @@ describe('AdminService', () => {
     confirmationsFor: (chain: string) =>
       chain === 'SOLANA' ? 32 : chain === 'TRON' ? 19 : 0,
     getStablecoinContractFor: jest.fn(),
+    alchemySigningKey: 'global-signing-key',
+    signingKeyForChain: jest.fn().mockReturnValue(null),
   };
   const mockDepositRegistry = { size: 3 };
   const mockHdWallet = {
@@ -70,6 +73,16 @@ describe('AdminService', () => {
   const mockSweepService = {
     manualSweepAll: jest.fn(),
   };
+  const mockSanctions = {
+    getLastRefreshedAt: jest.fn().mockReturnValue(null),
+    getCounts: jest.fn().mockReturnValue({ ethereum: 7, bitcoin: 2 }),
+    refreshFromSource: jest.fn().mockResolvedValue({
+      lastRefreshedAt: new Date('2026-01-01T00:00:00.000Z'),
+      counts: { ethereum: 7, bitcoin: 2 },
+      source: 'defaults',
+      merged: { chainsBefore: { ethereum: 7, bitcoin: 2 }, chainsAfter: { ethereum: 7, bitcoin: 2 } },
+    }),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -86,6 +99,7 @@ describe('AdminService', () => {
         { provide: WalletService, useValue: mockWalletService },
         { provide: ReconciliationService, useValue: mockReconciliationService },
         { provide: SweepService, useValue: mockSweepService },
+        { provide: SanctionedAddressRepository, useValue: mockSanctions },
       ],
     }).compile();
 
@@ -95,6 +109,22 @@ describe('AdminService', () => {
     );
 
     jest.resetAllMocks();
+
+    // resetAllMocks clears module-scope implementations; re-seed the sanctions
+    // repository mocks the crypto-status test relies on.
+    mockSanctions.getLastRefreshedAt.mockReturnValue(null);
+    mockSanctions.getCounts.mockReturnValue({ ethereum: 7, bitcoin: 2 });
+    mockSanctions.refreshFromSource.mockResolvedValue({
+      lastRefreshedAt: new Date('2026-01-01T00:00:00.000Z'),
+      counts: { ethereum: 7, bitcoin: 2 },
+      source: 'defaults',
+      merged: {
+        chainsBefore: { ethereum: 7, bitcoin: 2 },
+        chainsAfter: { ethereum: 7, bitcoin: 2 },
+      },
+    });
+    mockCryptoConfig.signingKeyForChain.mockReturnValue(null);
+    mockCryptoConfig.alchemySigningKey = 'global-signing-key';
   });
 
   describe('getFeeWallets', () => {
@@ -247,9 +277,21 @@ describe('AdminService', () => {
       expect(result.webhookProviders.evm).toBe('alchemy');
       expect(result.webhookProviders.btc).toBe('alchemy');
       expect(result.webhookProviders.tron).toBe('tron_poller');
+      // Per-chain webhook signing keys fall back to the global key when the
+      // per-chain key is unset — coverage must be visible either way.
+      expect(result.webhookSigningCoverage).toEqual({
+        ETH: { configured: true, keySource: 'global-fallback' },
+        BSC: { configured: true, keySource: 'global-fallback' },
+        POLYGON: { configured: true, keySource: 'global-fallback' },
+        SOLANA: { configured: true, keySource: 'global-fallback' },
+      });
       expect(result.confirmations.sol).toBe(32);
       expect(result.confirmations.tron).toBe(19);
       expect(result.registrySize).toBe(3);
+      expect(result.sanctions).toEqual({
+        lastRefreshedAt: null,
+        counts: { ethereum: 7, bitcoin: 2 },
+      });
       expect(result.masterWallets.evm).toBe('0xMaster');
       expect(result.masterWallets.sol).toBe('SolMaster');
       expect(result.masterWallets.tron).toBe('TronMaster');

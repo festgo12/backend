@@ -16,6 +16,7 @@ import { HdWalletService } from '../crypto/hd-wallet.service';
 import { ChainClientService } from '../crypto/chain-client.service';
 import { ReconciliationService } from '../crypto/reconciliation.service';
 import { SweepService } from '../crypto/sweep.service';
+import { SanctionedAddressRepository } from '../security/crypto-risk.service';
 import { PaystackService } from '../paystack/paystack.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PLATFORM_EMAIL } from '../crypto/platform.service';
@@ -39,6 +40,7 @@ export class AdminService {
     private readonly walletService: WalletService,
     private readonly reconciliationService: ReconciliationService,
     private readonly sweepService: SweepService,
+    private readonly sanctions: SanctionedAddressRepository,
   ) {}
 
   // ─── Dashboard Stats ──────────────────────────────────────────────────
@@ -957,6 +959,33 @@ export class AdminService {
       },
     });
 
+    // Per-chain Alchemy webhook signing-key coverage. Each Alchemy Address
+    // Activity webhook is scoped to a single network and signs with its own
+    // key, so a chain whose webhook is the only listener for that chain's
+    // events must have a per-chain key (or the global key must be set as a
+    // back-compat fallback). TRON uses a poller, not a webhook.
+    const webhookSigningCoverage = (() => {
+      const chains: Array<'ETH' | 'BSC' | 'POLYGON' | 'SOLANA'> = [
+        'ETH',
+        'BSC',
+        'POLYGON',
+        'SOLANA',
+      ];
+      const out: Record<string, { configured: boolean; keySource: string }> = {};
+      for (const chain of chains) {
+        const perChain = this.cryptoConfig.signingKeyForChain(chain);
+        const global = this.cryptoConfig.alchemySigningKey;
+        if (perChain) {
+          out[chain] = { configured: true, keySource: 'per-chain' };
+        } else if (global) {
+          out[chain] = { configured: true, keySource: 'global-fallback' };
+        } else {
+          out[chain] = { configured: false, keySource: 'none' };
+        }
+      }
+      return out;
+    })();
+
     return {
       provider: this.cryptoConfig.provider,
       network: this.cryptoConfig.network,
@@ -966,6 +995,7 @@ export class AdminService {
         btc: 'alchemy',
         tron: 'tron_poller',
       },
+      webhookSigningCoverage,
       confirmations: {
         eth: this.cryptoConfig.evmConfirmations,
         btc: this.cryptoConfig.btcConfirmations,
@@ -980,8 +1010,23 @@ export class AdminService {
         sol: this.hdWallet.getMasterAddressForChain('SOLANA'),
         tron: this.hdWallet.getMasterAddressForChain('TRON'),
       },
+      sanctions: {
+        lastRefreshedAt: this.sanctions.getLastRefreshedAt()?.toISOString() ?? null,
+        counts: this.sanctions.getCounts(),
+      },
       recentSweeps,
     };
+  }
+
+  /**
+   * Refreshes the in-memory sanctions address store from its source and reports
+   * the result. Today the source is the hard-coded `DEFAULT_SANCTIONED_ADDRESSES`
+   * (so a missing/empty external feed never silently clears enforcement); replace
+   * the source inside `SanctionedAddressRepository.refreshFromSource` when a live
+   * OFAC SDN CSV / allowlist API is wired.
+   */
+  async refreshSanctions() {
+    return this.sanctions.refreshFromSource();
   }
 
   /**

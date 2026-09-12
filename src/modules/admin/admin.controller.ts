@@ -202,10 +202,20 @@ export class AdminController {
   @Get('crypto/status')
   @ApiOperation({
     summary:
-      'Hybrid webhook crypto system status (providers, registry, sweeps)',
+      'Hybrid webhook crypto system status (providers, registry, sweeps, webhook key coverage, sanctions freshness)',
   })
   getCryptoSystemStatus() {
     return this.adminService.getCryptoSystemStatus();
+  }
+
+  @Post('crypto/sanctions/refresh')
+  @AuditLog('ADMIN_CRYPTO_SANCTIONS_REFRESH', 'SYSTEM')
+  @ApiOperation({
+    summary:
+      'Refresh the in-memory sanctions address store from its source (currently the hard-coded OFAC defaults; replace with a live feed via SanctionedAddressRepository)',
+  })
+  refreshSanctions() {
+    return this.adminService.refreshSanctions();
   }
 
   @Get('crypto/withdrawal-jobs')

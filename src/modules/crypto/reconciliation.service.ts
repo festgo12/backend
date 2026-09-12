@@ -325,7 +325,12 @@ export class ReconciliationService implements OnModuleInit {
       `Rollback detected: ${tx.reference} — reverting ${String(tx.amount)} from wallet ${tx.walletId}`,
     );
 
-    await this.prisma.$transaction(async (prismaTx) => {
+    // Freeze policy: a BTC rollback (tx missing/reverted on-chain after being
+    // booked) is a ledger-integrity violation, so the wallet is frozen outright
+    // and withdrawals are blocked (see CryptoWithdrawalService.processWithdrawal).
+    // EVM/SOLANA/TRON rely on the withdrawal tracker's revert detection instead,
+    // which fails the job without freezing.
+    const frozenUserId = await this.prisma.$transaction(async (prismaTx) => {
       const wallet = await prismaTx.wallet.findUniqueOrThrow({
         where: { id: tx.walletId },
       });
@@ -371,7 +376,36 @@ export class ReconciliationService implements OnModuleInit {
           },
         },
       });
+
+      return wallet.userId;
     });
+
+    // Make the freeze visible: raise a security alert so admins see the freeze
+    // without querying wallets.isFrozen directly. Alert failure must never
+    // abort (or repeat) the freeze itself, hence the catch.
+    try {
+      await this.prisma.securityAlert.create({
+        data: {
+          userId: frozenUserId,
+          type: 'WALLET_FROZEN_BY_RECONCILIATION',
+          severity: 'CRITICAL',
+          title: 'Wallet frozen by reconciliation rollback',
+          message: `A transaction (${tx.reference}) was found missing or reverted on-chain during reconciliation. The wallet was debited ${String(tx.amount)} and frozen pending review. Withdrawals are blocked until support resolves this.`,
+          metadata: {
+            walletId: tx.walletId,
+            reference: tx.reference,
+            amount: String(tx.amount),
+            rollbackReason:
+              'Transaction missing/reverted on-chain during reconciliation',
+          },
+        },
+      });
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.error(
+        `Failed to raise reconciliation freeze alert for wallet ${tx.walletId}: ${err.message ?? 'unknown error'}`,
+      );
+    }
   }
 
   private emptyResult(): ReconciliationResult {

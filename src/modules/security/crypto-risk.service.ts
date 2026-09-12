@@ -7,11 +7,12 @@ import { AlertEngineService } from './alert-engine.service';
 import { LedgerType } from '@src/generated/client';
 
 /**
- * Sanctioned / high-risk address lists.
- * In production, load from OFAC SDN CSV or a maintained allowlist API.
- * These are well-known mixer/tornado-style addresses and OFAC-sanctioned entities.
+ * Default sanctioned address set — hard-coded OFAC/known-bad-actor addresses
+ * that are always enforced even when a live sanctions feed is not configured.
+ * In production, augment/replace this via a maintained OFAC SDN CSV or allowlist
+ * API loaded into `SanctionedAddressRepository` at startup and on a schedule.
  */
-const SANCTIONED_ADDRESSES: Record<string, Set<string>> = {
+export const DEFAULT_SANCTIONED_ADDRESSES: Record<string, Set<string>> = {
   ethereum: new Set([
     // Tornado Cash (OFAC sanctioned) — stored lowercase for case-insensitive lookup
     '0x722122df12d4e14e13ac3b6895a86e84145b6967',
@@ -30,6 +31,120 @@ const SANCTIONED_ADDRESSES: Record<string, Set<string>> = {
     'bc1q056v2m0r8qez9d2y9ax93cx6lq6ln5rhf7kvz3',
   ]),
 };
+
+/**
+ * Lightweight in-memory sanctioned-address store. Starts from the hard-coded
+ * defaults and can be reloaded from a persistent source (DB table or external
+ * feed) via `refreshFromSource` without restarting the process. Case is
+ * normalized at storage time so lookups stay case-insensitive.
+ */
+@Injectable()
+export class SanctionedAddressRepository {
+  private byChain: Record<string, Set<string>> = {};
+  private lastRefreshedAt: Date | null = null;
+
+  constructor() {
+    this.reloadFrom(DEFAULT_SANCTIONED_ADDRESSES);
+  }
+
+  /** Current UTC timestamp of the last successful refresh (null until first load). */
+  getLastRefreshedAt(): Date | null {
+    return this.lastRefreshedAt;
+  }
+
+  /** How many sanctioned addresses are currently loaded, per chain. */
+  getCounts(): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const [chain, set] of Object.entries(this.byChain)) {
+      out[chain] = set.size;
+    }
+    return out;
+  }
+
+  /** Returns true when `address` is sanctioned on `chain` (case-insensitive). */
+  isSanctioned(address: string, chain: string): boolean {
+    const set = this.byChain[chain];
+    if (!set) return false;
+    const key = address.toLowerCase();
+    return set.has(key) || set.has(address);
+  }
+
+  /**
+   * Reloads the in-memory store from a source. The default implementation
+   * re-seeds from the hard-coded defaults (so a missing/empty external feed
+   * never silently clears enforcement). Replace / extend this method when a
+   * live OFAC/allowlist source is wired (DB table, CSV import, provider API).
+   */
+  async refreshFromSource(): Promise<RefreshResult> {
+    const before = this.byChain;
+    this.reloadFrom(DEFAULT_SANCTIONED_ADDRESSES);
+    this.lastRefreshedAt = new Date();
+    return {
+      lastRefreshedAt: this.lastRefreshedAt,
+      counts: this.getCounts(),
+      source: 'defaults',
+      merged: this.mergeReport(before),
+    };
+  }
+
+  /**
+   * Bulk-loads a sanctioned list for a chain, normalizing to lowercase.
+   * Called by the (future) OFAC/allowlist importer.
+   */
+  loadChain(chain: string, addresses: string[]): void {
+    const set = this.byChain[chain] ?? new Set();
+    for (const a of addresses) {
+      if (a && a.trim().length > 0) set.add(a.trim().toLowerCase());
+    }
+    this.byChain[chain] = set;
+  }
+
+  /**
+   * Replaces the in-memory store entirely with `source`. Used by the importer
+   * when a full feed replacement is desired (otherwise use `loadChain` to merge).
+   */
+  replaceFrom(source: Record<string, Set<string>>): void {
+    this.byChain = {};
+    for (const [chain, set] of Object.entries(source)) {
+      this.byChain[chain] = new Set(
+        [...set].map((a) => a.toLowerCase()),
+      );
+    }
+    this.lastRefreshedAt = new Date();
+  }
+
+  private reloadFrom(source: Record<string, Set<string>>): void {
+    this.byChain = {};
+    for (const [chain, set] of Object.entries(source)) {
+      this.byChain[chain] = new Set([...set].map((a) => a.toLowerCase()));
+    }
+    this.lastRefreshedAt = new Date();
+  }
+
+  private mergeReport(before: Record<string, Set<string>>): {
+    chainsBefore: Record<string, number>;
+    chainsAfter: Record<string, number>;
+  } {
+    const chainsBefore: Record<string, number> = {};
+    for (const [chain, set] of Object.entries(before)) {
+      chainsBefore[chain] = set.size;
+    }
+    return {
+      chainsBefore,
+      chainsAfter: this.getCounts(),
+    };
+  }
+}
+
+export interface RefreshResult {
+  lastRefreshedAt: Date | null;
+  counts: Record<string, number>;
+  source: string;
+  merged: {
+    chainsBefore: Record<string, number>;
+    chainsAfter: Record<string, number>;
+  };
+}
 
 /**
  * Configurable risk thresholds (overridable via admin FraudRule table).
@@ -92,6 +207,7 @@ export class CryptoRiskService {
     private readonly riskEngine: RiskEngineService,
     private readonly fraudRules: FraudRulesService,
     private readonly alertEngine: AlertEngineService,
+    private readonly sanctions: SanctionedAddressRepository,
   ) {}
 
   /**
@@ -158,7 +274,7 @@ export class CryptoRiskService {
             severity: 'CRITICAL',
             title: 'Sanctioned address interaction',
             message: `Address ${address.slice(0, 10)}... is on the OFAC sanctions list.`,
-            metadata: { address, chain, context },
+            metadata: { address, chain, context, sanctionsLastRefreshedAt: this.sanctions.getLastRefreshedAt()?.toISOString() ?? null },
           });
           await this.prisma.user.update({
             where: { id: wallet.userId },
@@ -379,12 +495,13 @@ export class CryptoRiskService {
   }
 
   /**
-   * Checks if an address is on the sanctioned list.
+   * Checks whether an address is sanctioned on a chain. Reads from the
+   * refreshable `SanctionedAddressRepository`, which is always seeded from the
+   * hard-coded `DEFAULT_SANCTIONED_ADDRESSES` so enforcement never silently
+   * clears when a live feed is absent / empty.
    */
   private isSanctioned(address: string, chain: string): boolean {
-    const sanctioned = SANCTIONED_ADDRESSES[chain];
-    if (!sanctioned) return false;
-    return sanctioned.has(address.toLowerCase()) || sanctioned.has(address);
+    return this.sanctions.isSanctioned(address, chain);
   }
 
   /**
