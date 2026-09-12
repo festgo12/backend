@@ -254,6 +254,7 @@ exports.Prisma.OrderScalarFieldEnum = {
 exports.Prisma.DisputeScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
+  storeOrderId: 'storeOrderId',
   subjectType: 'subjectType',
   reference: 'reference',
   initiatorId: 'initiatorId',
@@ -478,6 +479,8 @@ exports.Prisma.GiftCardStoreOrderScalarFieldEnum = {
   quantity: 'quantity',
   status: 'status',
   providerOrderId: 'providerOrderId',
+  providerGiftUuid: 'providerGiftUuid',
+  giftLink: 'giftLink',
   costNgn: 'costNgn',
   sellPriceNgn: 'sellPriceNgn',
   feeNgn: 'feeNgn',
@@ -664,7 +667,8 @@ exports.DisputeSubjectType = exports.$Enums.DisputeSubjectType = {
   ORDER: 'ORDER',
   DEPOSIT: 'DEPOSIT',
   WITHDRAWAL: 'WITHDRAWAL',
-  OTHER: 'OTHER'
+  OTHER: 'OTHER',
+  GIFT_CARD_STORE_ORDER: 'GIFT_CARD_STORE_ORDER'
 };
 
 exports.DisputeStatus = exports.$Enums.DisputeStatus = {

@@ -12,13 +12,13 @@ export declare class NotificationsService {
         id: string;
         createdAt: Date;
         userId: string;
-        ipAddress: string | null;
         deviceId: string;
         fingerprint: string;
         deviceName: string | null;
         browser: string | null;
         osVersion: string | null;
         location: string | null;
+        ipAddress: string | null;
         userAgent: string | null;
         fcmToken: string | null;
         lastLogin: Date;
@@ -32,21 +32,21 @@ export declare class NotificationsService {
         customBody?: string;
     }): Promise<{
         title: string;
-        data: Prisma.JsonValue | null;
         id: string;
         createdAt: Date;
+        data: Prisma.JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }>;
     getNotifications(userId: string, limit?: number, offset?: number): Promise<{
         title: string;
-        data: Prisma.JsonValue | null;
         id: string;
         createdAt: Date;
+        data: Prisma.JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }[]>;
     markAsRead(userId: string, notificationId: string): Promise<Prisma.BatchPayload>;
     markAllAsRead(userId: string): Promise<Prisma.BatchPayload>;

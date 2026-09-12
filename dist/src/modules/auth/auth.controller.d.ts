@@ -22,26 +22,24 @@ export declare class AuthController {
     login(dto: LoginDto, req: any): Promise<{
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
-            status: import("@src/generated/client").$Enums.UserStatus;
-            createdAt: Date;
-            updatedAt: Date;
             email: string | null;
             phone: string | null;
+            resetToken: string | null;
             role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
-            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -52,6 +50,8 @@ export declare class AuthController {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;
@@ -67,26 +67,24 @@ export declare class AuthController {
     googleLogin(dto: GoogleLoginDto): Promise<{
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
-            status: import("@src/generated/client").$Enums.UserStatus;
-            createdAt: Date;
-            updatedAt: Date;
             email: string | null;
             phone: string | null;
+            resetToken: string | null;
             role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
-            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -97,6 +95,8 @@ export declare class AuthController {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;
@@ -111,26 +111,24 @@ export declare class AuthController {
     verify2FALogin(dto: TwoFactorLoginDto, req: any): Promise<{
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
             id: string;
-            status: import("@src/generated/client").$Enums.UserStatus;
-            createdAt: Date;
-            updatedAt: Date;
             email: string | null;
             phone: string | null;
+            resetToken: string | null;
             role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
-            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -141,6 +139,8 @@ export declare class AuthController {
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;

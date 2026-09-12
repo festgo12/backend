@@ -11,11 +11,11 @@ export declare class MarketplaceService {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Decimal;
         quantity: Decimal;
+        price: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -28,11 +28,11 @@ export declare class MarketplaceService {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Decimal;
         quantity: Decimal;
+        price: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -44,11 +44,11 @@ export declare class MarketplaceService {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Decimal;
         quantity: Decimal;
+        price: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -60,11 +60,11 @@ export declare class MarketplaceService {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: Decimal;
         quantity: Decimal;
+        price: Decimal;
         minLimit: Decimal;
         maxLimit: Decimal;
         isSponsored: boolean;
@@ -83,8 +83,8 @@ export declare class MarketplaceService {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
-                    kycStatus: string;
                     avatarUrl: string | null;
+                    kycStatus: string;
                 } | null;
                 id: string;
                 devices: {
@@ -98,11 +98,11 @@ export declare class MarketplaceService {
             createdAt: Date;
             updatedAt: Date;
             sellerId: string;
-            chain: string | null;
             version: number;
+            chain: string | null;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: Decimal;
             quantity: Decimal;
+            price: Decimal;
             minLimit: Decimal;
             maxLimit: Decimal;
             isSponsored: boolean;

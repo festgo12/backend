@@ -11,8 +11,8 @@ export declare class MarketplaceController {
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
-                    kycStatus: string;
                     avatarUrl: string | null;
+                    kycStatus: string;
                 } | null;
                 id: string;
                 devices: {
@@ -26,11 +26,11 @@ export declare class MarketplaceController {
             createdAt: Date;
             updatedAt: Date;
             sellerId: string;
-            chain: string | null;
             version: number;
+            chain: string | null;
             asset: import("@src/generated/client").$Enums.Currency;
-            price: import("@src/generated/client/runtime/library").Decimal;
             quantity: import("@src/generated/client/runtime/library").Decimal;
+            price: import("@src/generated/client/runtime/library").Decimal;
             minLimit: import("@src/generated/client/runtime/library").Decimal;
             maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
@@ -49,11 +49,11 @@ export declare class MarketplaceController {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
@@ -65,11 +65,11 @@ export declare class MarketplaceController {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
@@ -81,11 +81,11 @@ export declare class MarketplaceController {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;
@@ -97,11 +97,11 @@ export declare class MarketplaceController {
         createdAt: Date;
         updatedAt: Date;
         sellerId: string;
-        chain: string | null;
         version: number;
+        chain: string | null;
         asset: import("@src/generated/client").$Enums.Currency;
-        price: import("@src/generated/client/runtime/library").Decimal;
         quantity: import("@src/generated/client/runtime/library").Decimal;
+        price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
         maxLimit: import("@src/generated/client/runtime/library").Decimal;
         isSponsored: boolean;

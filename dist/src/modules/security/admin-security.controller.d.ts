@@ -15,11 +15,11 @@ export declare class AdminSecurityController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
-        action: string;
         severity: string;
         code: string;
+        enabled: boolean;
         threshold: number;
+        action: string;
     }[]>;
     updateFraudRule(ruleId: string, dto: UpdateFraudRuleDto): Promise<{
         description: string;
@@ -27,11 +27,11 @@ export declare class AdminSecurityController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
-        action: string;
         severity: string;
         code: string;
+        enabled: boolean;
         threshold: number;
+        action: string;
     } | null>;
     getRiskOverview(): Promise<{
         users: {
@@ -69,10 +69,10 @@ export declare class AdminSecurityController {
             id: string;
             createdAt: Date;
             userId: string;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            message: string;
-            isRead: boolean;
             severity: string;
+            message: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            isRead: boolean;
         })[];
         meta: {
             total: number;
@@ -99,9 +99,9 @@ export declare class AdminSecurityController {
         id: string;
         createdAt: Date;
         userId: string;
-        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-        message: string;
-        isRead: boolean;
         severity: string;
+        message: string;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        isRead: boolean;
     }>;
 }

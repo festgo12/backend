@@ -21,11 +21,11 @@ export declare class FraudRulesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
-        action: string;
         severity: string;
         code: string;
+        enabled: boolean;
         threshold: number;
+        action: string;
     }[]>;
     updateRule(ruleId: string, data: {
         enabled?: boolean;
@@ -38,11 +38,11 @@ export declare class FraudRulesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
-        action: string;
         severity: string;
         code: string;
+        enabled: boolean;
         threshold: number;
+        action: string;
     } | null>;
     getRuleByCode(code: string): Promise<{
         description: string;
@@ -50,11 +50,11 @@ export declare class FraudRulesService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
-        action: string;
         severity: string;
         code: string;
+        enabled: boolean;
         threshold: number;
+        action: string;
     } | null>;
     private enforceAction;
     evaluateMultipleAccountsSameDevice(userId: string, deviceId: string): Promise<void>;

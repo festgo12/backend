@@ -14,10 +14,10 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const upload_service_1 = require("../upload/upload.service");
 const event_emitter_1 = require("@nestjs/event-emitter");
-const client_1 = require("@src/generated/client");
+const client_1 = require("../../generated/client/index.js");
 const wallet_query_util_1 = require("../wallet/wallet-query.util");
 const ledger_service_1 = require("../wallet/ledger.service");
-const client_2 = require("@src/generated/client");
+const client_2 = require("../../generated/client/index.js");
 const VALID_TRANSITIONS = {
     [client_1.DisputeStatus.OPEN]: [
         client_1.DisputeStatus.UNDER_REVIEW,

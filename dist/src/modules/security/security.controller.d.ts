@@ -15,13 +15,13 @@ export declare class SecurityController {
     getDevices(req: any): Promise<{
         id: string;
         createdAt: Date;
-        ipAddress: string | null;
         deviceId: string;
         fingerprint: string;
         deviceName: string | null;
         browser: string | null;
         osVersion: string | null;
         location: string | null;
+        ipAddress: string | null;
         userAgent: string | null;
         lastLogin: Date;
         lastActivity: Date | null;
@@ -30,13 +30,13 @@ export declare class SecurityController {
         id: string;
         createdAt: Date;
         userId: string;
-        ipAddress: string | null;
         deviceId: string;
         fingerprint: string;
         deviceName: string | null;
         browser: string | null;
         osVersion: string | null;
         location: string | null;
+        ipAddress: string | null;
         userAgent: string | null;
         fcmToken: string | null;
         lastLogin: Date;
@@ -67,10 +67,10 @@ export declare class SecurityController {
             id: string;
             createdAt: Date;
             userId: string;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            message: string;
-            isRead: boolean;
             severity: string;
+            message: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            isRead: boolean;
         }[];
         meta: {
             total: number;
@@ -85,10 +85,10 @@ export declare class SecurityController {
         id: string;
         createdAt: Date;
         userId: string;
-        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-        message: string;
-        isRead: boolean;
         severity: string;
+        message: string;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        isRead: boolean;
     }>;
     markAllAlertsRead(req: any): Promise<{
         updatedCount: number;

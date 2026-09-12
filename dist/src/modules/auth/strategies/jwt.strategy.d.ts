@@ -7,28 +7,26 @@ export declare class JwtStrategy extends JwtStrategy_base {
     constructor(configService: ConfigService, usersService: UsersService);
     validate(payload: any): Promise<{
         profile: {
+            firstName: string | null;
+            lastName: string | null;
+            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
-            firstName: string | null;
-            lastName: string | null;
             kycStatus: string;
-            avatarUrl: string | null;
         } | null;
     } & {
         id: string;
-        status: import("@src/generated/client").$Enums.UserStatus;
-        createdAt: Date;
-        updatedAt: Date;
         email: string | null;
         phone: string | null;
+        resetToken: string | null;
         passwordHash: string;
         role: import("@src/generated/client").$Enums.Role;
+        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         twoFactorOtpHash: string | null;
         twoFactorOtpExpires: Date | null;
-        resetToken: string | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -39,6 +37,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         failedLoginAttempts: number;
         lockedUntil: Date | null;
         isSystem: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }
 export {};

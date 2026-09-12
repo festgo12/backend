@@ -125,19 +125,20 @@ export type GiftCardOrder = $Result.DefaultSelection<Prisma.$GiftCardOrderPayloa
 export type GiftCardEvidence = $Result.DefaultSelection<Prisma.$GiftCardEvidencePayload>
 /**
  * Model GiftCardStoreBrand
- * Reloadly brand cache used to power the gift card storefront.
+ * Giftbit brand cache used to power the gift card storefront.
  */
 export type GiftCardStoreBrand = $Result.DefaultSelection<Prisma.$GiftCardStoreBrandPayload>
 /**
  * Model GiftCardStoreProduct
- * Synced Reloadly product cache. Admins enable/disable listings and set a
+ * Synced Giftbit product cache. Admins enable/disable listings and set a
  * per-product markup (%) on top of the provider's NGN cost.
  */
 export type GiftCardStoreProduct = $Result.DefaultSelection<Prisma.$GiftCardStoreProductPayload>
 /**
  * Model GiftCardStoreOrder
- * A platform-sold gift card order fulfilled via Reloadly. Card codes are
- * stored encrypted with the shared GIFT_CARD_ENCRYPTION_KEY.
+ * A platform-sold gift card order fulfilled via the Giftbit embedded
+ * endpoint. Delivery is an embedded claim link (giftLink) instead of a raw
+ * card code: Giftbit never returns card codes to the server.
  */
 export type GiftCardStoreOrder = $Result.DefaultSelection<Prisma.$GiftCardStoreOrderPayload>
 /**
@@ -262,7 +263,8 @@ export const DisputeSubjectType: {
   ORDER: 'ORDER',
   DEPOSIT: 'DEPOSIT',
   WITHDRAWAL: 'WITHDRAWAL',
-  OTHER: 'OTHER'
+  OTHER: 'OTHER',
+  GIFT_CARD_STORE_ORDER: 'GIFT_CARD_STORE_ORDER'
 };
 
 export type DisputeSubjectType = (typeof DisputeSubjectType)[keyof typeof DisputeSubjectType]
@@ -4311,6 +4313,37 @@ export namespace Prisma {
    */
   export type GiftCardStoreProductCountOutputTypeCountOrdersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GiftCardStoreOrderWhereInput
+  }
+
+
+  /**
+   * Count Type GiftCardStoreOrderCountOutputType
+   */
+
+  export type GiftCardStoreOrderCountOutputType = {
+    disputes: number
+  }
+
+  export type GiftCardStoreOrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    disputes?: boolean | GiftCardStoreOrderCountOutputTypeCountDisputesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * GiftCardStoreOrderCountOutputType without action
+   */
+  export type GiftCardStoreOrderCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardStoreOrderCountOutputType
+     */
+    select?: GiftCardStoreOrderCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * GiftCardStoreOrderCountOutputType without action
+   */
+  export type GiftCardStoreOrderCountOutputTypeCountDisputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DisputeWhereInput
   }
 
 
@@ -14429,6 +14462,7 @@ export namespace Prisma {
   export type DisputeMinAggregateOutputType = {
     id: string | null
     orderId: string | null
+    storeOrderId: string | null
     subjectType: $Enums.DisputeSubjectType | null
     reference: string | null
     initiatorId: string | null
@@ -14445,6 +14479,7 @@ export namespace Prisma {
   export type DisputeMaxAggregateOutputType = {
     id: string | null
     orderId: string | null
+    storeOrderId: string | null
     subjectType: $Enums.DisputeSubjectType | null
     reference: string | null
     initiatorId: string | null
@@ -14461,6 +14496,7 @@ export namespace Prisma {
   export type DisputeCountAggregateOutputType = {
     id: number
     orderId: number
+    storeOrderId: number
     subjectType: number
     reference: number
     initiatorId: number
@@ -14479,6 +14515,7 @@ export namespace Prisma {
   export type DisputeMinAggregateInputType = {
     id?: true
     orderId?: true
+    storeOrderId?: true
     subjectType?: true
     reference?: true
     initiatorId?: true
@@ -14495,6 +14532,7 @@ export namespace Prisma {
   export type DisputeMaxAggregateInputType = {
     id?: true
     orderId?: true
+    storeOrderId?: true
     subjectType?: true
     reference?: true
     initiatorId?: true
@@ -14511,6 +14549,7 @@ export namespace Prisma {
   export type DisputeCountAggregateInputType = {
     id?: true
     orderId?: true
+    storeOrderId?: true
     subjectType?: true
     reference?: true
     initiatorId?: true
@@ -14600,6 +14639,7 @@ export namespace Prisma {
   export type DisputeGroupByOutputType = {
     id: string
     orderId: string | null
+    storeOrderId: string | null
     subjectType: $Enums.DisputeSubjectType
     reference: string | null
     initiatorId: string
@@ -14633,6 +14673,7 @@ export namespace Prisma {
   export type DisputeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
+    storeOrderId?: boolean
     subjectType?: boolean
     reference?: boolean
     initiatorId?: boolean
@@ -14645,6 +14686,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | Dispute$orderArgs<ExtArgs>
+    storeOrder?: boolean | Dispute$storeOrderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
     evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
@@ -14654,6 +14696,7 @@ export namespace Prisma {
   export type DisputeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     orderId?: boolean
+    storeOrderId?: boolean
     subjectType?: boolean
     reference?: boolean
     initiatorId?: boolean
@@ -14666,6 +14709,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | Dispute$orderArgs<ExtArgs>
+    storeOrder?: boolean | Dispute$storeOrderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }, ExtArgs["result"]["dispute"]>
@@ -14673,6 +14717,7 @@ export namespace Prisma {
   export type DisputeSelectScalar = {
     id?: boolean
     orderId?: boolean
+    storeOrderId?: boolean
     subjectType?: boolean
     reference?: boolean
     initiatorId?: boolean
@@ -14688,6 +14733,7 @@ export namespace Prisma {
 
   export type DisputeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | Dispute$orderArgs<ExtArgs>
+    storeOrder?: boolean | Dispute$storeOrderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
     evidence?: boolean | Dispute$evidenceArgs<ExtArgs>
@@ -14695,6 +14741,7 @@ export namespace Prisma {
   }
   export type DisputeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | Dispute$orderArgs<ExtArgs>
+    storeOrder?: boolean | Dispute$storeOrderArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     assignee?: boolean | Dispute$assigneeArgs<ExtArgs>
   }
@@ -14703,6 +14750,7 @@ export namespace Prisma {
     name: "Dispute"
     objects: {
       order: Prisma.$OrderPayload<ExtArgs> | null
+      storeOrder: Prisma.$GiftCardStoreOrderPayload<ExtArgs> | null
       initiator: Prisma.$UserPayload<ExtArgs>
       assignee: Prisma.$UserPayload<ExtArgs> | null
       evidence: Prisma.$EvidencePayload<ExtArgs>[]
@@ -14710,6 +14758,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       orderId: string | null
+      storeOrderId: string | null
       subjectType: $Enums.DisputeSubjectType
       reference: string | null
       initiatorId: string
@@ -15086,6 +15135,7 @@ export namespace Prisma {
   export interface Prisma__DisputeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends Dispute$orderArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$orderArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    storeOrder<T extends Dispute$storeOrderArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$storeOrderArgs<ExtArgs>>): Prisma__GiftCardStoreOrderClient<$Result.GetResult<Prisma.$GiftCardStoreOrderPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     initiator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     assignee<T extends Dispute$assigneeArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$assigneeArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     evidence<T extends Dispute$evidenceArgs<ExtArgs> = {}>(args?: Subset<T, Dispute$evidenceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvidencePayload<ExtArgs>, T, "findMany"> | Null>
@@ -15120,6 +15170,7 @@ export namespace Prisma {
   interface DisputeFieldRefs {
     readonly id: FieldRef<"Dispute", 'String'>
     readonly orderId: FieldRef<"Dispute", 'String'>
+    readonly storeOrderId: FieldRef<"Dispute", 'String'>
     readonly subjectType: FieldRef<"Dispute", 'DisputeSubjectType'>
     readonly reference: FieldRef<"Dispute", 'String'>
     readonly initiatorId: FieldRef<"Dispute", 'String'>
@@ -15461,6 +15512,21 @@ export namespace Prisma {
      */
     include?: OrderInclude<ExtArgs> | null
     where?: OrderWhereInput
+  }
+
+  /**
+   * Dispute.storeOrder
+   */
+  export type Dispute$storeOrderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GiftCardStoreOrder
+     */
+    select?: GiftCardStoreOrderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GiftCardStoreOrderInclude<ExtArgs> | null
+    where?: GiftCardStoreOrderWhereInput
   }
 
   /**
@@ -27750,23 +27816,13 @@ export namespace Prisma {
 
   export type AggregateGiftCardStoreBrand = {
     _count: GiftCardStoreBrandCountAggregateOutputType | null
-    _avg: GiftCardStoreBrandAvgAggregateOutputType | null
-    _sum: GiftCardStoreBrandSumAggregateOutputType | null
     _min: GiftCardStoreBrandMinAggregateOutputType | null
     _max: GiftCardStoreBrandMaxAggregateOutputType | null
   }
 
-  export type GiftCardStoreBrandAvgAggregateOutputType = {
-    providerBrandId: number | null
-  }
-
-  export type GiftCardStoreBrandSumAggregateOutputType = {
-    providerBrandId: number | null
-  }
-
   export type GiftCardStoreBrandMinAggregateOutputType = {
     id: string | null
-    providerBrandId: number | null
+    providerBrandId: string | null
     brandName: string | null
     logoUrl: string | null
     backgroundColor: string | null
@@ -27777,7 +27833,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandMaxAggregateOutputType = {
     id: string | null
-    providerBrandId: number | null
+    providerBrandId: string | null
     brandName: string | null
     logoUrl: string | null
     backgroundColor: string | null
@@ -27798,14 +27854,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type GiftCardStoreBrandAvgAggregateInputType = {
-    providerBrandId?: true
-  }
-
-  export type GiftCardStoreBrandSumAggregateInputType = {
-    providerBrandId?: true
-  }
 
   export type GiftCardStoreBrandMinAggregateInputType = {
     id?: true
@@ -27879,18 +27927,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: GiftCardStoreBrandAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: GiftCardStoreBrandSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: GiftCardStoreBrandMinAggregateInputType
@@ -27921,15 +27957,13 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: GiftCardStoreBrandCountAggregateInputType | true
-    _avg?: GiftCardStoreBrandAvgAggregateInputType
-    _sum?: GiftCardStoreBrandSumAggregateInputType
     _min?: GiftCardStoreBrandMinAggregateInputType
     _max?: GiftCardStoreBrandMaxAggregateInputType
   }
 
   export type GiftCardStoreBrandGroupByOutputType = {
     id: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl: string | null
     backgroundColor: string | null
@@ -27937,8 +27971,6 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     _count: GiftCardStoreBrandCountAggregateOutputType | null
-    _avg: GiftCardStoreBrandAvgAggregateOutputType | null
-    _sum: GiftCardStoreBrandSumAggregateOutputType | null
     _min: GiftCardStoreBrandMinAggregateOutputType | null
     _max: GiftCardStoreBrandMaxAggregateOutputType | null
   }
@@ -28005,7 +28037,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      providerBrandId: number
+      providerBrandId: string
       brandName: string
       logoUrl: string | null
       backgroundColor: string | null
@@ -28407,7 +28439,7 @@ export namespace Prisma {
    */ 
   interface GiftCardStoreBrandFieldRefs {
     readonly id: FieldRef<"GiftCardStoreBrand", 'String'>
-    readonly providerBrandId: FieldRef<"GiftCardStoreBrand", 'Int'>
+    readonly providerBrandId: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly brandName: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly logoUrl: FieldRef<"GiftCardStoreBrand", 'String'>
     readonly backgroundColor: FieldRef<"GiftCardStoreBrand", 'String'>
@@ -28775,7 +28807,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductAvgAggregateOutputType = {
-    providerProductId: number | null
     minDenomination: Decimal | null
     maxDenomination: Decimal | null
     senderFee: Decimal | null
@@ -28785,7 +28816,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumAggregateOutputType = {
-    providerProductId: number | null
     minDenomination: Decimal | null
     maxDenomination: Decimal | null
     senderFee: Decimal | null
@@ -28796,7 +28826,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductMinAggregateOutputType = {
     id: string | null
-    providerProductId: number | null
+    providerProductId: string | null
     productName: string | null
     brandId: string | null
     countryCode: string | null
@@ -28816,7 +28846,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductMaxAggregateOutputType = {
     id: string | null
-    providerProductId: number | null
+    providerProductId: string | null
     productName: string | null
     brandId: string | null
     countryCode: string | null
@@ -28859,7 +28889,6 @@ export namespace Prisma {
 
 
   export type GiftCardStoreProductAvgAggregateInputType = {
-    providerProductId?: true
     minDenomination?: true
     maxDenomination?: true
     senderFee?: true
@@ -28869,7 +28898,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumAggregateInputType = {
-    providerProductId?: true
     minDenomination?: true
     maxDenomination?: true
     senderFee?: true
@@ -29029,7 +29057,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductGroupByOutputType = {
     id: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId: string | null
     countryCode: string
@@ -29155,7 +29183,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      providerProductId: number
+      providerProductId: string
       productName: string
       brandId: string | null
       countryCode: string
@@ -29569,7 +29597,7 @@ export namespace Prisma {
    */ 
   interface GiftCardStoreProductFieldRefs {
     readonly id: FieldRef<"GiftCardStoreProduct", 'String'>
-    readonly providerProductId: FieldRef<"GiftCardStoreProduct", 'Int'>
+    readonly providerProductId: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly productName: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly brandId: FieldRef<"GiftCardStoreProduct", 'String'>
     readonly countryCode: FieldRef<"GiftCardStoreProduct", 'String'>
@@ -29993,6 +30021,8 @@ export namespace Prisma {
     quantity: number | null
     status: $Enums.GiftCardStoreOrderStatus | null
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal | null
     sellPriceNgn: Decimal | null
     feeNgn: Decimal | null
@@ -30014,6 +30044,8 @@ export namespace Prisma {
     quantity: number | null
     status: $Enums.GiftCardStoreOrderStatus | null
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal | null
     sellPriceNgn: Decimal | null
     feeNgn: Decimal | null
@@ -30035,6 +30067,8 @@ export namespace Prisma {
     quantity: number
     status: number
     providerOrderId: number
+    providerGiftUuid: number
+    giftLink: number
     costNgn: number
     sellPriceNgn: number
     feeNgn: number
@@ -30077,6 +30111,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30098,6 +30134,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30119,6 +30157,8 @@ export namespace Prisma {
     quantity?: true
     status?: true
     providerOrderId?: true
+    providerGiftUuid?: true
+    giftLink?: true
     costNgn?: true
     sellPriceNgn?: true
     feeNgn?: true
@@ -30228,6 +30268,8 @@ export namespace Prisma {
     quantity: number
     status: $Enums.GiftCardStoreOrderStatus
     providerOrderId: string | null
+    providerGiftUuid: string | null
+    giftLink: string | null
     costNgn: Decimal
     sellPriceNgn: Decimal
     feeNgn: Decimal
@@ -30269,6 +30311,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30282,6 +30326,8 @@ export namespace Prisma {
     version?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | GiftCardStoreProductDefaultArgs<ExtArgs>
+    disputes?: boolean | GiftCardStoreOrder$disputesArgs<ExtArgs>
+    _count?: boolean | GiftCardStoreOrderCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["giftCardStoreOrder"]>
 
   export type GiftCardStoreOrderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -30293,6 +30339,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30317,6 +30365,8 @@ export namespace Prisma {
     quantity?: boolean
     status?: boolean
     providerOrderId?: boolean
+    providerGiftUuid?: boolean
+    giftLink?: boolean
     costNgn?: boolean
     sellPriceNgn?: boolean
     feeNgn?: boolean
@@ -30333,6 +30383,8 @@ export namespace Prisma {
   export type GiftCardStoreOrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | GiftCardStoreProductDefaultArgs<ExtArgs>
+    disputes?: boolean | GiftCardStoreOrder$disputesArgs<ExtArgs>
+    _count?: boolean | GiftCardStoreOrderCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GiftCardStoreOrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -30344,6 +30396,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       product: Prisma.$GiftCardStoreProductPayload<ExtArgs>
+      disputes: Prisma.$DisputePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30354,6 +30407,8 @@ export namespace Prisma {
       quantity: number
       status: $Enums.GiftCardStoreOrderStatus
       providerOrderId: string | null
+      providerGiftUuid: string | null
+      giftLink: string | null
       costNgn: Prisma.Decimal
       sellPriceNgn: Prisma.Decimal
       feeNgn: Prisma.Decimal
@@ -30731,6 +30786,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     product<T extends GiftCardStoreProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardStoreProductDefaultArgs<ExtArgs>>): Prisma__GiftCardStoreProductClient<$Result.GetResult<Prisma.$GiftCardStoreProductPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    disputes<T extends GiftCardStoreOrder$disputesArgs<ExtArgs> = {}>(args?: Subset<T, GiftCardStoreOrder$disputesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DisputePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30768,6 +30824,8 @@ export namespace Prisma {
     readonly quantity: FieldRef<"GiftCardStoreOrder", 'Int'>
     readonly status: FieldRef<"GiftCardStoreOrder", 'GiftCardStoreOrderStatus'>
     readonly providerOrderId: FieldRef<"GiftCardStoreOrder", 'String'>
+    readonly providerGiftUuid: FieldRef<"GiftCardStoreOrder", 'String'>
+    readonly giftLink: FieldRef<"GiftCardStoreOrder", 'String'>
     readonly costNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
     readonly sellPriceNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
     readonly feeNgn: FieldRef<"GiftCardStoreOrder", 'Decimal'>
@@ -31094,6 +31152,26 @@ export namespace Prisma {
      * Filter which GiftCardStoreOrders to delete
      */
     where?: GiftCardStoreOrderWhereInput
+  }
+
+  /**
+   * GiftCardStoreOrder.disputes
+   */
+  export type GiftCardStoreOrder$disputesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Dispute
+     */
+    select?: DisputeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DisputeInclude<ExtArgs> | null
+    where?: DisputeWhereInput
+    orderBy?: DisputeOrderByWithRelationInput | DisputeOrderByWithRelationInput[]
+    cursor?: DisputeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DisputeScalarFieldEnum | DisputeScalarFieldEnum[]
   }
 
   /**
@@ -39017,6 +39095,7 @@ export namespace Prisma {
   export const DisputeScalarFieldEnum: {
     id: 'id',
     orderId: 'orderId',
+    storeOrderId: 'storeOrderId',
     subjectType: 'subjectType',
     reference: 'reference',
     initiatorId: 'initiatorId',
@@ -39286,6 +39365,8 @@ export namespace Prisma {
     quantity: 'quantity',
     status: 'status',
     providerOrderId: 'providerOrderId',
+    providerGiftUuid: 'providerGiftUuid',
+    giftLink: 'giftLink',
     costNgn: 'costNgn',
     sellPriceNgn: 'sellPriceNgn',
     feeNgn: 'feeNgn',
@@ -40659,6 +40740,7 @@ export namespace Prisma {
     NOT?: DisputeWhereInput | DisputeWhereInput[]
     id?: UuidFilter<"Dispute"> | string
     orderId?: UuidNullableFilter<"Dispute"> | string | null
+    storeOrderId?: UuidNullableFilter<"Dispute"> | string | null
     subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
     reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
@@ -40671,6 +40753,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
     order?: XOR<OrderNullableRelationFilter, OrderWhereInput> | null
+    storeOrder?: XOR<GiftCardStoreOrderNullableRelationFilter, GiftCardStoreOrderWhereInput> | null
     initiator?: XOR<UserRelationFilter, UserWhereInput>
     assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     evidence?: EvidenceListRelationFilter
@@ -40679,6 +40762,7 @@ export namespace Prisma {
   export type DisputeOrderByWithRelationInput = {
     id?: SortOrder
     orderId?: SortOrderInput | SortOrder
+    storeOrderId?: SortOrderInput | SortOrder
     subjectType?: SortOrder
     reference?: SortOrderInput | SortOrder
     initiatorId?: SortOrder
@@ -40691,6 +40775,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
+    storeOrder?: GiftCardStoreOrderOrderByWithRelationInput
     initiator?: UserOrderByWithRelationInput
     assignee?: UserOrderByWithRelationInput
     evidence?: EvidenceOrderByRelationAggregateInput
@@ -40702,6 +40787,7 @@ export namespace Prisma {
     OR?: DisputeWhereInput[]
     NOT?: DisputeWhereInput | DisputeWhereInput[]
     orderId?: UuidNullableFilter<"Dispute"> | string | null
+    storeOrderId?: UuidNullableFilter<"Dispute"> | string | null
     subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
     reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
@@ -40714,6 +40800,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Dispute"> | Date | string
     updatedAt?: DateTimeFilter<"Dispute"> | Date | string
     order?: XOR<OrderNullableRelationFilter, OrderWhereInput> | null
+    storeOrder?: XOR<GiftCardStoreOrderNullableRelationFilter, GiftCardStoreOrderWhereInput> | null
     initiator?: XOR<UserRelationFilter, UserWhereInput>
     assignee?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     evidence?: EvidenceListRelationFilter
@@ -40722,6 +40809,7 @@ export namespace Prisma {
   export type DisputeOrderByWithAggregationInput = {
     id?: SortOrder
     orderId?: SortOrderInput | SortOrder
+    storeOrderId?: SortOrderInput | SortOrder
     subjectType?: SortOrder
     reference?: SortOrderInput | SortOrder
     initiatorId?: SortOrder
@@ -40744,6 +40832,7 @@ export namespace Prisma {
     NOT?: DisputeScalarWhereWithAggregatesInput | DisputeScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Dispute"> | string
     orderId?: UuidNullableWithAggregatesFilter<"Dispute"> | string | null
+    storeOrderId?: UuidNullableWithAggregatesFilter<"Dispute"> | string | null
     subjectType?: EnumDisputeSubjectTypeWithAggregatesFilter<"Dispute"> | $Enums.DisputeSubjectType
     reference?: StringNullableWithAggregatesFilter<"Dispute"> | string | null
     initiatorId?: UuidWithAggregatesFilter<"Dispute"> | string
@@ -41813,7 +41902,7 @@ export namespace Prisma {
     OR?: GiftCardStoreBrandWhereInput[]
     NOT?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
     id?: UuidFilter<"GiftCardStoreBrand"> | string
-    providerBrandId?: IntFilter<"GiftCardStoreBrand"> | number
+    providerBrandId?: StringFilter<"GiftCardStoreBrand"> | string
     brandName?: StringFilter<"GiftCardStoreBrand"> | string
     logoUrl?: StringNullableFilter<"GiftCardStoreBrand"> | string | null
     backgroundColor?: StringNullableFilter<"GiftCardStoreBrand"> | string | null
@@ -41837,7 +41926,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    providerBrandId?: number
+    providerBrandId?: string
     AND?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
     OR?: GiftCardStoreBrandWhereInput[]
     NOT?: GiftCardStoreBrandWhereInput | GiftCardStoreBrandWhereInput[]
@@ -41860,10 +41949,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GiftCardStoreBrandCountOrderByAggregateInput
-    _avg?: GiftCardStoreBrandAvgOrderByAggregateInput
     _max?: GiftCardStoreBrandMaxOrderByAggregateInput
     _min?: GiftCardStoreBrandMinOrderByAggregateInput
-    _sum?: GiftCardStoreBrandSumOrderByAggregateInput
   }
 
   export type GiftCardStoreBrandScalarWhereWithAggregatesInput = {
@@ -41871,7 +41958,7 @@ export namespace Prisma {
     OR?: GiftCardStoreBrandScalarWhereWithAggregatesInput[]
     NOT?: GiftCardStoreBrandScalarWhereWithAggregatesInput | GiftCardStoreBrandScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"GiftCardStoreBrand"> | string
-    providerBrandId?: IntWithAggregatesFilter<"GiftCardStoreBrand"> | number
+    providerBrandId?: StringWithAggregatesFilter<"GiftCardStoreBrand"> | string
     brandName?: StringWithAggregatesFilter<"GiftCardStoreBrand"> | string
     logoUrl?: StringNullableWithAggregatesFilter<"GiftCardStoreBrand"> | string | null
     backgroundColor?: StringNullableWithAggregatesFilter<"GiftCardStoreBrand"> | string | null
@@ -41885,7 +41972,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductWhereInput[]
     NOT?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
     id?: UuidFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringFilter<"GiftCardStoreProduct"> | string
     productName?: StringFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringFilter<"GiftCardStoreProduct"> | string
@@ -41933,7 +42020,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    providerProductId?: number
+    providerProductId?: string
     AND?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
     OR?: GiftCardStoreProductWhereInput[]
     NOT?: GiftCardStoreProductWhereInput | GiftCardStoreProductWhereInput[]
@@ -41990,7 +42077,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductScalarWhereWithAggregatesInput[]
     NOT?: GiftCardStoreProductScalarWhereWithAggregatesInput | GiftCardStoreProductScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntWithAggregatesFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
     productName?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableWithAggregatesFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringWithAggregatesFilter<"GiftCardStoreProduct"> | string
@@ -42022,6 +42109,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -42035,6 +42124,7 @@ export namespace Prisma {
     version?: IntFilter<"GiftCardStoreOrder"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
     product?: XOR<GiftCardStoreProductRelationFilter, GiftCardStoreProductWhereInput>
+    disputes?: DisputeListRelationFilter
   }
 
   export type GiftCardStoreOrderOrderByWithRelationInput = {
@@ -42046,6 +42136,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrderInput | SortOrder
+    providerGiftUuid?: SortOrderInput | SortOrder
+    giftLink?: SortOrderInput | SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -42059,6 +42151,7 @@ export namespace Prisma {
     version?: SortOrder
     user?: UserOrderByWithRelationInput
     product?: GiftCardStoreProductOrderByWithRelationInput
+    disputes?: DisputeOrderByRelationAggregateInput
   }
 
   export type GiftCardStoreOrderWhereUniqueInput = Prisma.AtLeast<{
@@ -42073,6 +42166,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -42086,6 +42181,7 @@ export namespace Prisma {
     version?: IntFilter<"GiftCardStoreOrder"> | number
     user?: XOR<UserRelationFilter, UserWhereInput>
     product?: XOR<GiftCardStoreProductRelationFilter, GiftCardStoreProductWhereInput>
+    disputes?: DisputeListRelationFilter
   }, "id">
 
   export type GiftCardStoreOrderOrderByWithAggregationInput = {
@@ -42097,6 +42193,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrderInput | SortOrder
+    providerGiftUuid?: SortOrderInput | SortOrder
+    giftLink?: SortOrderInput | SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -42127,6 +42225,8 @@ export namespace Prisma {
     quantity?: IntWithAggregatesFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusWithAggregatesFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableWithAggregatesFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalWithAggregatesFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -43737,6 +43837,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order?: OrderCreateNestedOneWithoutDisputesInput
+    storeOrder?: GiftCardStoreOrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
@@ -43745,6 +43846,7 @@ export namespace Prisma {
   export type DisputeUncheckedCreateInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -43771,6 +43873,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneWithoutDisputesNestedInput
+    storeOrder?: GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
@@ -43779,6 +43882,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -43796,6 +43900,7 @@ export namespace Prisma {
   export type DisputeCreateManyInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -43825,6 +43930,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -45016,7 +45122,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45028,7 +45134,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedCreateInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45040,7 +45146,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45052,7 +45158,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45064,7 +45170,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateManyInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -45075,7 +45181,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45086,7 +45192,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45097,7 +45203,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -45120,7 +45226,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -45143,7 +45249,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -45166,7 +45272,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -45189,7 +45295,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateManyInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -45211,7 +45317,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -45232,7 +45338,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -45259,6 +45365,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45272,6 +45380,7 @@ export namespace Prisma {
     version?: number
     user: UserCreateNestedOneWithoutGiftCardStoreOrdersInput
     product: GiftCardStoreProductCreateNestedOneWithoutOrdersInput
+    disputes?: DisputeCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderUncheckedCreateInput = {
@@ -45283,6 +45392,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45294,6 +45405,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     version?: number
+    disputes?: DisputeUncheckedCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderUpdateInput = {
@@ -45303,6 +45415,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45316,6 +45430,7 @@ export namespace Prisma {
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutGiftCardStoreOrdersNestedInput
     product?: GiftCardStoreProductUpdateOneRequiredWithoutOrdersNestedInput
+    disputes?: DisputeUpdateManyWithoutStoreOrderNestedInput
   }
 
   export type GiftCardStoreOrderUncheckedUpdateInput = {
@@ -45327,6 +45442,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45338,6 +45455,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
+    disputes?: DisputeUncheckedUpdateManyWithoutStoreOrderNestedInput
   }
 
   export type GiftCardStoreOrderCreateManyInput = {
@@ -45349,6 +45467,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -45369,6 +45489,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -45391,6 +45513,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -47180,6 +47304,11 @@ export namespace Prisma {
     not?: NestedEnumDisputeStatusFilter<$PrismaModel> | $Enums.DisputeStatus
   }
 
+  export type GiftCardStoreOrderNullableRelationFilter = {
+    is?: GiftCardStoreOrderWhereInput | null
+    isNot?: GiftCardStoreOrderWhereInput | null
+  }
+
   export type UserNullableRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -47188,6 +47317,7 @@ export namespace Prisma {
   export type DisputeCountOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    storeOrderId?: SortOrder
     subjectType?: SortOrder
     reference?: SortOrder
     initiatorId?: SortOrder
@@ -47204,6 +47334,7 @@ export namespace Prisma {
   export type DisputeMaxOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    storeOrderId?: SortOrder
     subjectType?: SortOrder
     reference?: SortOrder
     initiatorId?: SortOrder
@@ -47220,6 +47351,7 @@ export namespace Prisma {
   export type DisputeMinOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
+    storeOrderId?: SortOrder
     subjectType?: SortOrder
     reference?: SortOrder
     initiatorId?: SortOrder
@@ -47923,10 +48055,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type GiftCardStoreBrandAvgOrderByAggregateInput = {
-    providerBrandId?: SortOrder
-  }
-
   export type GiftCardStoreBrandMaxOrderByAggregateInput = {
     id?: SortOrder
     providerBrandId?: SortOrder
@@ -47947,10 +48075,6 @@ export namespace Prisma {
     enabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type GiftCardStoreBrandSumOrderByAggregateInput = {
-    providerBrandId?: SortOrder
   }
 
   export type EnumGiftCardDenominationTypeFilter<$PrismaModel = never> = {
@@ -47999,7 +48123,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductAvgOrderByAggregateInput = {
-    providerProductId?: SortOrder
     minDenomination?: SortOrder
     maxDenomination?: SortOrder
     senderFee?: SortOrder
@@ -48049,7 +48172,6 @@ export namespace Prisma {
   }
 
   export type GiftCardStoreProductSumOrderByAggregateInput = {
-    providerProductId?: SortOrder
     minDenomination?: SortOrder
     maxDenomination?: SortOrder
     senderFee?: SortOrder
@@ -48105,6 +48227,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -48136,6 +48260,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -48157,6 +48283,8 @@ export namespace Prisma {
     quantity?: SortOrder
     status?: SortOrder
     providerOrderId?: SortOrder
+    providerGiftUuid?: SortOrder
+    giftLink?: SortOrder
     costNgn?: SortOrder
     sellPriceNgn?: SortOrder
     feeNgn?: SortOrder
@@ -50001,6 +50129,12 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput
   }
 
+  export type GiftCardStoreOrderCreateNestedOneWithoutDisputesInput = {
+    create?: XOR<GiftCardStoreOrderCreateWithoutDisputesInput, GiftCardStoreOrderUncheckedCreateWithoutDisputesInput>
+    connectOrCreate?: GiftCardStoreOrderCreateOrConnectWithoutDisputesInput
+    connect?: GiftCardStoreOrderWhereUniqueInput
+  }
+
   export type UserCreateNestedOneWithoutInitiatedDisputesInput = {
     create?: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
     connectOrCreate?: UserCreateOrConnectWithoutInitiatedDisputesInput
@@ -50043,6 +50177,16 @@ export namespace Prisma {
     delete?: OrderWhereInput | boolean
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutDisputesInput, OrderUpdateWithoutDisputesInput>, OrderUncheckedUpdateWithoutDisputesInput>
+  }
+
+  export type GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput = {
+    create?: XOR<GiftCardStoreOrderCreateWithoutDisputesInput, GiftCardStoreOrderUncheckedCreateWithoutDisputesInput>
+    connectOrCreate?: GiftCardStoreOrderCreateOrConnectWithoutDisputesInput
+    upsert?: GiftCardStoreOrderUpsertWithoutDisputesInput
+    disconnect?: GiftCardStoreOrderWhereInput | boolean
+    delete?: GiftCardStoreOrderWhereInput | boolean
+    connect?: GiftCardStoreOrderWhereUniqueInput
+    update?: XOR<XOR<GiftCardStoreOrderUpdateToOneWithWhereWithoutDisputesInput, GiftCardStoreOrderUpdateWithoutDisputesInput>, GiftCardStoreOrderUncheckedUpdateWithoutDisputesInput>
   }
 
   export type UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput = {
@@ -50531,6 +50675,20 @@ export namespace Prisma {
     connect?: GiftCardStoreProductWhereUniqueInput
   }
 
+  export type DisputeCreateNestedManyWithoutStoreOrderInput = {
+    create?: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput> | DisputeCreateWithoutStoreOrderInput[] | DisputeUncheckedCreateWithoutStoreOrderInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutStoreOrderInput | DisputeCreateOrConnectWithoutStoreOrderInput[]
+    createMany?: DisputeCreateManyStoreOrderInputEnvelope
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+  }
+
+  export type DisputeUncheckedCreateNestedManyWithoutStoreOrderInput = {
+    create?: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput> | DisputeCreateWithoutStoreOrderInput[] | DisputeUncheckedCreateWithoutStoreOrderInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutStoreOrderInput | DisputeCreateOrConnectWithoutStoreOrderInput[]
+    createMany?: DisputeCreateManyStoreOrderInputEnvelope
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+  }
+
   export type EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput = {
     set?: $Enums.GiftCardStoreOrderStatus
   }
@@ -50549,6 +50707,34 @@ export namespace Prisma {
     upsert?: GiftCardStoreProductUpsertWithoutOrdersInput
     connect?: GiftCardStoreProductWhereUniqueInput
     update?: XOR<XOR<GiftCardStoreProductUpdateToOneWithWhereWithoutOrdersInput, GiftCardStoreProductUpdateWithoutOrdersInput>, GiftCardStoreProductUncheckedUpdateWithoutOrdersInput>
+  }
+
+  export type DisputeUpdateManyWithoutStoreOrderNestedInput = {
+    create?: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput> | DisputeCreateWithoutStoreOrderInput[] | DisputeUncheckedCreateWithoutStoreOrderInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutStoreOrderInput | DisputeCreateOrConnectWithoutStoreOrderInput[]
+    upsert?: DisputeUpsertWithWhereUniqueWithoutStoreOrderInput | DisputeUpsertWithWhereUniqueWithoutStoreOrderInput[]
+    createMany?: DisputeCreateManyStoreOrderInputEnvelope
+    set?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    disconnect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    delete?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    update?: DisputeUpdateWithWhereUniqueWithoutStoreOrderInput | DisputeUpdateWithWhereUniqueWithoutStoreOrderInput[]
+    updateMany?: DisputeUpdateManyWithWhereWithoutStoreOrderInput | DisputeUpdateManyWithWhereWithoutStoreOrderInput[]
+    deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
+  }
+
+  export type DisputeUncheckedUpdateManyWithoutStoreOrderNestedInput = {
+    create?: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput> | DisputeCreateWithoutStoreOrderInput[] | DisputeUncheckedCreateWithoutStoreOrderInput[]
+    connectOrCreate?: DisputeCreateOrConnectWithoutStoreOrderInput | DisputeCreateOrConnectWithoutStoreOrderInput[]
+    upsert?: DisputeUpsertWithWhereUniqueWithoutStoreOrderInput | DisputeUpsertWithWhereUniqueWithoutStoreOrderInput[]
+    createMany?: DisputeCreateManyStoreOrderInputEnvelope
+    set?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    disconnect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    delete?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    connect?: DisputeWhereUniqueInput | DisputeWhereUniqueInput[]
+    update?: DisputeUpdateWithWhereUniqueWithoutStoreOrderInput | DisputeUpdateWithWhereUniqueWithoutStoreOrderInput[]
+    updateMany?: DisputeUpdateManyWithWhereWithoutStoreOrderInput | DisputeUpdateManyWithWhereWithoutStoreOrderInput[]
+    deleteMany?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
   }
 
   export type WalletCreateNestedOneWithoutWithdrawalJobsInput = {
@@ -51529,6 +51715,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order?: OrderCreateNestedOneWithoutDisputesInput
+    storeOrder?: GiftCardStoreOrderCreateNestedOneWithoutDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
@@ -51536,6 +51723,7 @@ export namespace Prisma {
   export type DisputeUncheckedCreateWithoutInitiatorInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     reason: string
@@ -51571,6 +51759,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order?: OrderCreateNestedOneWithoutDisputesInput
+    storeOrder?: GiftCardStoreOrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
   }
@@ -51578,6 +51767,7 @@ export namespace Prisma {
   export type DisputeUncheckedCreateWithoutAssigneeInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -51844,6 +52034,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -51856,6 +52048,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     version?: number
     product: GiftCardStoreProductCreateNestedOneWithoutOrdersInput
+    disputes?: DisputeCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderUncheckedCreateWithoutUserInput = {
@@ -51866,6 +52059,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -51877,6 +52072,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     version?: number
+    disputes?: DisputeUncheckedCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderCreateOrConnectWithoutUserInput = {
@@ -52296,6 +52492,7 @@ export namespace Prisma {
     NOT?: DisputeScalarWhereInput | DisputeScalarWhereInput[]
     id?: UuidFilter<"Dispute"> | string
     orderId?: UuidNullableFilter<"Dispute"> | string | null
+    storeOrderId?: UuidNullableFilter<"Dispute"> | string | null
     subjectType?: EnumDisputeSubjectTypeFilter<"Dispute"> | $Enums.DisputeSubjectType
     reference?: StringNullableFilter<"Dispute"> | string | null
     initiatorId?: UuidFilter<"Dispute"> | string
@@ -52516,6 +52713,8 @@ export namespace Prisma {
     quantity?: IntFilter<"GiftCardStoreOrder"> | number
     status?: EnumGiftCardStoreOrderStatusFilter<"GiftCardStoreOrder"> | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    providerGiftUuid?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
+    giftLink?: StringNullableFilter<"GiftCardStoreOrder"> | string | null
     costNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFilter<"GiftCardStoreOrder"> | Decimal | DecimalJsLike | number | string
@@ -54461,6 +54660,7 @@ export namespace Prisma {
     deadline?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    storeOrder?: GiftCardStoreOrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
     evidence?: EvidenceCreateNestedManyWithoutDisputeInput
@@ -54468,6 +54668,7 @@ export namespace Prisma {
 
   export type DisputeUncheckedCreateWithoutOrderInput = {
     id?: string
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -54816,6 +55017,59 @@ export namespace Prisma {
     create: XOR<OrderCreateWithoutDisputesInput, OrderUncheckedCreateWithoutDisputesInput>
   }
 
+  export type GiftCardStoreOrderCreateWithoutDisputesInput = {
+    id?: string
+    denomination: Decimal | DecimalJsLike | number | string
+    currencyCode: string
+    quantity?: number
+    status?: $Enums.GiftCardStoreOrderStatus
+    providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
+    costNgn: Decimal | DecimalJsLike | number | string
+    sellPriceNgn: Decimal | DecimalJsLike | number | string
+    feeNgn?: Decimal | DecimalJsLike | number | string
+    recipientEmail?: string | null
+    cardCode?: string | null
+    cardPin?: string | null
+    failureMessage?: string | null
+    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+    user: UserCreateNestedOneWithoutGiftCardStoreOrdersInput
+    product: GiftCardStoreProductCreateNestedOneWithoutOrdersInput
+  }
+
+  export type GiftCardStoreOrderUncheckedCreateWithoutDisputesInput = {
+    id?: string
+    userId: string
+    productId: string
+    denomination: Decimal | DecimalJsLike | number | string
+    currencyCode: string
+    quantity?: number
+    status?: $Enums.GiftCardStoreOrderStatus
+    providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
+    costNgn: Decimal | DecimalJsLike | number | string
+    sellPriceNgn: Decimal | DecimalJsLike | number | string
+    feeNgn?: Decimal | DecimalJsLike | number | string
+    recipientEmail?: string | null
+    cardCode?: string | null
+    cardPin?: string | null
+    failureMessage?: string | null
+    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    version?: number
+  }
+
+  export type GiftCardStoreOrderCreateOrConnectWithoutDisputesInput = {
+    where: GiftCardStoreOrderWhereUniqueInput
+    create: XOR<GiftCardStoreOrderCreateWithoutDisputesInput, GiftCardStoreOrderUncheckedCreateWithoutDisputesInput>
+  }
+
   export type UserCreateWithoutInitiatedDisputesInput = {
     id?: string
     email?: string | null
@@ -55087,6 +55341,65 @@ export namespace Prisma {
     ledgerEntries?: LedgerEntryUncheckedUpdateManyWithoutOrderNestedInput
   }
 
+  export type GiftCardStoreOrderUpsertWithoutDisputesInput = {
+    update: XOR<GiftCardStoreOrderUpdateWithoutDisputesInput, GiftCardStoreOrderUncheckedUpdateWithoutDisputesInput>
+    create: XOR<GiftCardStoreOrderCreateWithoutDisputesInput, GiftCardStoreOrderUncheckedCreateWithoutDisputesInput>
+    where?: GiftCardStoreOrderWhereInput
+  }
+
+  export type GiftCardStoreOrderUpdateToOneWithWhereWithoutDisputesInput = {
+    where?: GiftCardStoreOrderWhereInput
+    data: XOR<GiftCardStoreOrderUpdateWithoutDisputesInput, GiftCardStoreOrderUncheckedUpdateWithoutDisputesInput>
+  }
+
+  export type GiftCardStoreOrderUpdateWithoutDisputesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
+    providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
+    costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    recipientEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    cardCode?: NullableStringFieldUpdateOperationsInput | string | null
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    user?: UserUpdateOneRequiredWithoutGiftCardStoreOrdersNestedInput
+    product?: GiftCardStoreProductUpdateOneRequiredWithoutOrdersNestedInput
+  }
+
+  export type GiftCardStoreOrderUncheckedUpdateWithoutDisputesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    productId?: StringFieldUpdateOperationsInput | string
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
+    providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
+    costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    recipientEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    cardCode?: NullableStringFieldUpdateOperationsInput | string | null
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+  }
+
   export type UserUpsertWithoutInitiatedDisputesInput = {
     update: XOR<UserUpdateWithoutInitiatedDisputesInput, UserUncheckedUpdateWithoutInitiatedDisputesInput>
     create: XOR<UserCreateWithoutInitiatedDisputesInput, UserUncheckedCreateWithoutInitiatedDisputesInput>
@@ -55321,6 +55634,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order?: OrderCreateNestedOneWithoutDisputesInput
+    storeOrder?: GiftCardStoreOrderCreateNestedOneWithoutDisputesInput
     initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
     assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
   }
@@ -55328,6 +55642,7 @@ export namespace Prisma {
   export type DisputeUncheckedCreateWithoutEvidenceInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -55466,6 +55781,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneWithoutDisputesNestedInput
+    storeOrder?: GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
   }
@@ -55473,6 +55789,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateWithoutEvidenceInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -58081,7 +58398,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateWithoutBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58103,7 +58420,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateWithoutBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58154,7 +58471,7 @@ export namespace Prisma {
     OR?: GiftCardStoreProductScalarWhereInput[]
     NOT?: GiftCardStoreProductScalarWhereInput | GiftCardStoreProductScalarWhereInput[]
     id?: UuidFilter<"GiftCardStoreProduct"> | string
-    providerProductId?: IntFilter<"GiftCardStoreProduct"> | number
+    providerProductId?: StringFilter<"GiftCardStoreProduct"> | string
     productName?: StringFilter<"GiftCardStoreProduct"> | string
     brandId?: UuidNullableFilter<"GiftCardStoreProduct"> | string | null
     countryCode?: StringFilter<"GiftCardStoreProduct"> | string
@@ -58176,7 +58493,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandCreateWithoutProductsInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -58187,7 +58504,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedCreateWithoutProductsInput = {
     id?: string
-    providerBrandId: number
+    providerBrandId: string
     brandName: string
     logoUrl?: string | null
     backgroundColor?: string | null
@@ -58208,6 +58525,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -58220,6 +58539,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     version?: number
     user: UserCreateNestedOneWithoutGiftCardStoreOrdersInput
+    disputes?: DisputeCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderUncheckedCreateWithoutProductInput = {
@@ -58230,6 +58550,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -58241,6 +58563,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     version?: number
+    disputes?: DisputeUncheckedCreateNestedManyWithoutStoreOrderInput
   }
 
   export type GiftCardStoreOrderCreateOrConnectWithoutProductInput = {
@@ -58266,7 +58589,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58277,7 +58600,7 @@ export namespace Prisma {
 
   export type GiftCardStoreBrandUncheckedUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerBrandId?: IntFieldUpdateOperationsInput | number
+    providerBrandId?: StringFieldUpdateOperationsInput | string
     brandName?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     backgroundColor?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58401,7 +58724,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateWithoutOrdersInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -58423,7 +58746,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedCreateWithoutOrdersInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     brandId?: string | null
     countryCode: string
@@ -58446,6 +58769,50 @@ export namespace Prisma {
   export type GiftCardStoreProductCreateOrConnectWithoutOrdersInput = {
     where: GiftCardStoreProductWhereUniqueInput
     create: XOR<GiftCardStoreProductCreateWithoutOrdersInput, GiftCardStoreProductUncheckedCreateWithoutOrdersInput>
+  }
+
+  export type DisputeCreateWithoutStoreOrderInput = {
+    id?: string
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order?: OrderCreateNestedOneWithoutDisputesInput
+    initiator: UserCreateNestedOneWithoutInitiatedDisputesInput
+    assignee?: UserCreateNestedOneWithoutAssignedDisputesInput
+    evidence?: EvidenceCreateNestedManyWithoutDisputeInput
+  }
+
+  export type DisputeUncheckedCreateWithoutStoreOrderInput = {
+    id?: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
+    initiatorId: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    evidence?: EvidenceUncheckedCreateNestedManyWithoutDisputeInput
+  }
+
+  export type DisputeCreateOrConnectWithoutStoreOrderInput = {
+    where: DisputeWhereUniqueInput
+    create: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput>
+  }
+
+  export type DisputeCreateManyStoreOrderInputEnvelope = {
+    data: DisputeCreateManyStoreOrderInput | DisputeCreateManyStoreOrderInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutGiftCardStoreOrdersInput = {
@@ -58564,7 +58931,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -58586,7 +58953,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateWithoutOrdersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     brandId?: NullableStringFieldUpdateOperationsInput | string | null
     countryCode?: StringFieldUpdateOperationsInput | string
@@ -58604,6 +58971,22 @@ export namespace Prisma {
     lastSyncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DisputeUpsertWithWhereUniqueWithoutStoreOrderInput = {
+    where: DisputeWhereUniqueInput
+    update: XOR<DisputeUpdateWithoutStoreOrderInput, DisputeUncheckedUpdateWithoutStoreOrderInput>
+    create: XOR<DisputeCreateWithoutStoreOrderInput, DisputeUncheckedCreateWithoutStoreOrderInput>
+  }
+
+  export type DisputeUpdateWithWhereUniqueWithoutStoreOrderInput = {
+    where: DisputeWhereUniqueInput
+    data: XOR<DisputeUpdateWithoutStoreOrderInput, DisputeUncheckedUpdateWithoutStoreOrderInput>
+  }
+
+  export type DisputeUpdateManyWithWhereWithoutStoreOrderInput = {
+    where: DisputeScalarWhereInput
+    data: XOR<DisputeUpdateManyMutationInput, DisputeUncheckedUpdateManyWithoutStoreOrderInput>
   }
 
   export type WalletCreateWithoutWithdrawalJobsInput = {
@@ -58806,6 +59189,7 @@ export namespace Prisma {
   export type DisputeCreateManyInitiatorInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     reason: string
@@ -58821,6 +59205,7 @@ export namespace Prisma {
   export type DisputeCreateManyAssigneeInput = {
     id?: string
     orderId?: string | null
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -58925,6 +59310,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -59334,6 +59721,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneWithoutDisputesNestedInput
+    storeOrder?: GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
@@ -59341,6 +59729,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
@@ -59357,6 +59746,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateManyWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
@@ -59381,6 +59771,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneWithoutDisputesNestedInput
+    storeOrder?: GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
   }
@@ -59388,6 +59779,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateWithoutAssigneeInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -59404,6 +59796,7 @@ export namespace Prisma {
   export type DisputeUncheckedUpdateManyWithoutAssigneeInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -59683,6 +60076,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -59695,6 +60090,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     product?: GiftCardStoreProductUpdateOneRequiredWithoutOrdersNestedInput
+    disputes?: DisputeUpdateManyWithoutStoreOrderNestedInput
   }
 
   export type GiftCardStoreOrderUncheckedUpdateWithoutUserInput = {
@@ -59705,6 +60101,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -59716,6 +60114,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
+    disputes?: DisputeUncheckedUpdateManyWithoutStoreOrderNestedInput
   }
 
   export type GiftCardStoreOrderUncheckedUpdateManyWithoutUserInput = {
@@ -59726,6 +60125,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60140,6 +60541,7 @@ export namespace Prisma {
 
   export type DisputeCreateManyOrderInput = {
     id?: string
+    storeOrderId?: string | null
     subjectType?: $Enums.DisputeSubjectType
     reference?: string | null
     initiatorId: string
@@ -60200,6 +60602,7 @@ export namespace Prisma {
     deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    storeOrder?: GiftCardStoreOrderUpdateOneWithoutDisputesNestedInput
     initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
     assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
     evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
@@ -60207,6 +60610,7 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -60223,6 +60627,7 @@ export namespace Prisma {
 
   export type DisputeUncheckedUpdateManyWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
+    storeOrderId?: NullableStringFieldUpdateOperationsInput | string | null
     subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
     reference?: NullableStringFieldUpdateOperationsInput | string | null
     initiatorId?: StringFieldUpdateOperationsInput | string
@@ -60370,7 +60775,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductCreateManyBrandInput = {
     id?: string
-    providerProductId: number
+    providerProductId: string
     productName: string
     countryCode: string
     currencyCode: string
@@ -60391,7 +60796,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUpdateWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60413,7 +60818,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60435,7 +60840,7 @@ export namespace Prisma {
 
   export type GiftCardStoreProductUncheckedUpdateManyWithoutBrandInput = {
     id?: StringFieldUpdateOperationsInput | string
-    providerProductId?: IntFieldUpdateOperationsInput | number
+    providerProductId?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     countryCode?: StringFieldUpdateOperationsInput | string
     currencyCode?: StringFieldUpdateOperationsInput | string
@@ -60462,6 +60867,8 @@ export namespace Prisma {
     quantity?: number
     status?: $Enums.GiftCardStoreOrderStatus
     providerOrderId?: string | null
+    providerGiftUuid?: string | null
+    giftLink?: string | null
     costNgn: Decimal | DecimalJsLike | number | string
     sellPriceNgn: Decimal | DecimalJsLike | number | string
     feeNgn?: Decimal | DecimalJsLike | number | string
@@ -60482,6 +60889,8 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60494,6 +60903,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     version?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutGiftCardStoreOrdersNestedInput
+    disputes?: DisputeUpdateManyWithoutStoreOrderNestedInput
   }
 
   export type GiftCardStoreOrderUncheckedUpdateWithoutProductInput = {
@@ -60504,6 +60914,32 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
     providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
+    costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    recipientEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    cardCode?: NullableStringFieldUpdateOperationsInput | string | null
+    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
+    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    version?: IntFieldUpdateOperationsInput | number
+    disputes?: DisputeUncheckedUpdateManyWithoutStoreOrderNestedInput
+  }
+
+  export type GiftCardStoreOrderUncheckedUpdateManyWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    quantity?: IntFieldUpdateOperationsInput | number
+    status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
+    providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerGiftUuid?: NullableStringFieldUpdateOperationsInput | string | null
+    giftLink?: NullableStringFieldUpdateOperationsInput | string | null
     costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -60517,25 +60953,70 @@ export namespace Prisma {
     version?: IntFieldUpdateOperationsInput | number
   }
 
-  export type GiftCardStoreOrderUncheckedUpdateManyWithoutProductInput = {
+  export type DisputeCreateManyStoreOrderInput = {
+    id?: string
+    orderId?: string | null
+    subjectType?: $Enums.DisputeSubjectType
+    reference?: string | null
+    initiatorId: string
+    reason: string
+    description?: string | null
+    status?: $Enums.DisputeStatus
+    assigneeId?: string | null
+    resolution?: string | null
+    deadline?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DisputeUpdateWithoutStoreOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    denomination?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    currencyCode?: StringFieldUpdateOperationsInput | string
-    quantity?: IntFieldUpdateOperationsInput | number
-    status?: EnumGiftCardStoreOrderStatusFieldUpdateOperationsInput | $Enums.GiftCardStoreOrderStatus
-    providerOrderId?: NullableStringFieldUpdateOperationsInput | string | null
-    costNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    sellPriceNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    feeNgn?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    recipientEmail?: NullableStringFieldUpdateOperationsInput | string | null
-    cardCode?: NullableStringFieldUpdateOperationsInput | string | null
-    cardPin?: NullableStringFieldUpdateOperationsInput | string | null
-    failureMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    providerResponse?: NullableJsonNullValueInput | InputJsonValue
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    version?: IntFieldUpdateOperationsInput | number
+    order?: OrderUpdateOneWithoutDisputesNestedInput
+    initiator?: UserUpdateOneRequiredWithoutInitiatedDisputesNestedInput
+    assignee?: UserUpdateOneWithoutAssignedDisputesNestedInput
+    evidence?: EvidenceUpdateManyWithoutDisputeNestedInput
+  }
+
+  export type DisputeUncheckedUpdateWithoutStoreOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evidence?: EvidenceUncheckedUpdateManyWithoutDisputeNestedInput
+  }
+
+  export type DisputeUncheckedUpdateManyWithoutStoreOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: NullableStringFieldUpdateOperationsInput | string | null
+    subjectType?: EnumDisputeSubjectTypeFieldUpdateOperationsInput | $Enums.DisputeSubjectType
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    initiatorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus
+    assigneeId?: NullableStringFieldUpdateOperationsInput | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    deadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
@@ -60579,6 +61060,10 @@ export namespace Prisma {
      * @deprecated Use GiftCardStoreProductCountOutputTypeDefaultArgs instead
      */
     export type GiftCardStoreProductCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardStoreProductCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use GiftCardStoreOrderCountOutputTypeDefaultArgs instead
+     */
+    export type GiftCardStoreOrderCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GiftCardStoreOrderCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */

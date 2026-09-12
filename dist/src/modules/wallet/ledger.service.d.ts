@@ -13,14 +13,14 @@ export declare class LedgerService {
         metadata?: any;
     }): Promise<{
         type: import("@src/generated/client").$Enums.LedgerType;
-        orderId: string | null;
-        reference: string;
         id: string;
         createdAt: Date;
-        amount: Prisma.Decimal;
-        balanceAfter: Prisma.Decimal;
         metadata: Prisma.JsonValue | null;
+        amount: Prisma.Decimal;
         walletId: string;
         transactionId: string | null;
+        orderId: string | null;
+        reference: string;
+        balanceAfter: Prisma.Decimal;
     }>;
 }

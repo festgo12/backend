@@ -7,12 +7,12 @@ export declare class NotificationsController {
     constructor(notificationsService: NotificationsService, notificationsQueue: NotificationsQueue);
     getMyNotifications(user: User, limit?: number, offset?: number): Promise<{
         title: string;
-        data: import("@src/generated/client/runtime/library").JsonValue | null;
         id: string;
         createdAt: Date;
+        data: import("@src/generated/client/runtime/library").JsonValue | null;
         userId: string;
-        body: string;
         isRead: boolean;
+        body: string;
     }[]>;
     markAsRead(user: User, id: string): Promise<{
         success: boolean;

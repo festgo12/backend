@@ -100,9 +100,9 @@ export declare class GiftCardStoreController {
             status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             version: number;
             quantity: number;
-            userId: string;
             productId: string;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             currencyCode: string;
@@ -133,9 +133,9 @@ export declare class GiftCardStoreController {
             status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             version: number;
             quantity: number;
-            userId: string;
             productId: string;
             denomination: import("@src/generated/client/runtime/library").Decimal;
             currencyCode: string;
