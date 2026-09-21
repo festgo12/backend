@@ -29,7 +29,7 @@ describe('ChainClientService', () => {
   const mockConfig = {
     isTestnet: true,
     alchemyEthHttpUrl: 'https://eth-sepolia.g.alchemy.com/v2/test',
-    alchemyBtcHttpUrl: 'https://btc-testnet.g.alchemy.com/v2/test',
+    alchemyBtcHttpUrl: 'https://bitcoin-testnet4.g.alchemy.com/v2/test',
     isAlchemy: true,
     getStablecoinContract: jest.fn(),
   };

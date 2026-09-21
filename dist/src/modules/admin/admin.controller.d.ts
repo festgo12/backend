@@ -19,19 +19,18 @@ export declare class AdminController {
     getUsers(page?: string, limit?: string, search?: string): Promise<{
         users: ({
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -39,19 +38,23 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
-            email: string | null;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            isSystem: boolean;
             phone: string | null;
-            resetToken: string | null;
+            email: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -61,9 +64,6 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
-            isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -74,26 +74,29 @@ export declare class AdminController {
     }>;
     updateUserStatus(userId: string, status: UserStatus): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            lastName: string | null;
+            firstName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
     } & {
         id: string;
-        email: string | null;
+        status: import("@src/generated/client").$Enums.UserStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        isSystem: boolean;
         phone: string | null;
-        resetToken: string | null;
+        email: string | null;
         passwordHash: string;
         role: import("@src/generated/client").$Enums.Role;
-        status: import("@src/generated/client").$Enums.UserStatus;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         twoFactorOtpHash: string | null;
         twoFactorOtpExpires: Date | null;
+        resetToken: string | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -103,25 +106,21 @@ export declare class AdminController {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
-        isSystem: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getUserDetail(userId: string): Promise<{
         profile: {
-            firstName: string | null;
-            lastName: string | null;
-            avatarUrl: string | null;
             id: string;
             updatedAt: Date;
             userId: string;
+            lastName: string | null;
+            firstName: string | null;
             kycStatus: string;
+            avatarUrl: string | null;
         } | null;
         wallets: {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -129,33 +128,34 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         }[];
         devices: {
             id: string;
             createdAt: Date;
             userId: string;
+            ipAddress: string | null;
             deviceId: string;
             fingerprint: string;
             deviceName: string | null;
             browser: string | null;
             osVersion: string | null;
             location: string | null;
-            ipAddress: string | null;
             userAgent: string | null;
             fcmToken: string | null;
             lastLogin: Date;
             lastActivity: Date | null;
         }[];
         securityLogs: {
-            device: string | null;
             id: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            success: boolean;
-            resource: string | null;
+            device: string | null;
             action: string;
+            resource: string | null;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: import("@src/generated/client/runtime/library").JsonValue | null;
@@ -163,15 +163,18 @@ export declare class AdminController {
             errorMessage: string | null;
         }[];
         id: string;
-        email: string | null;
-        phone: string | null;
-        resetToken: string | null;
-        role: import("@src/generated/client").$Enums.Role;
         status: import("@src/generated/client").$Enums.UserStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        isSystem: boolean;
+        phone: string | null;
+        email: string | null;
+        role: import("@src/generated/client").$Enums.Role;
         twoFactorEnabled: boolean;
         twoFactorSecret: string | null;
         twoFactorOtpHash: string | null;
         twoFactorOtpExpires: Date | null;
+        resetToken: string | null;
         resetTokenExpires: Date | null;
         emailVerificationToken: string | null;
         emailVerificationExpires: Date | null;
@@ -181,34 +184,34 @@ export declare class AdminController {
         phoneVerified: boolean;
         failedLoginAttempts: number;
         lockedUntil: Date | null;
-        isSystem: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getAllWallets(page?: string, limit?: string, search?: string, currency?: string, chain?: string): Promise<{
         wallets: ({
             user: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
-                email: string | null;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                isSystem: boolean;
                 phone: string | null;
-                resetToken: string | null;
+                email: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -218,15 +221,11 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
-                isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -234,6 +233,7 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         })[];
         meta: {
             total: number;
@@ -243,28 +243,57 @@ export declare class AdminController {
         };
     }>;
     getWalletDetail(walletId: string): Promise<{
-        user: {
-            profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
+        ledgerEntries: ({
+            transaction: {
                 id: string;
+                walletId: string;
+                type: import("@src/generated/client").$Enums.LedgerType;
+                status: string;
+                amount: import("@src/generated/client/runtime/library").Decimal;
+                fee: import("@src/generated/client/runtime/library").Decimal;
+                reference: string;
+                metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+                resolvedAt: Date | null;
+                createdAt: Date;
                 updatedAt: Date;
-                userId: string;
-                kycStatus: string;
             } | null;
         } & {
             id: string;
-            email: string | null;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
+            transactionId: string | null;
+            orderId: string | null;
+        })[];
+        user: {
+            profile: {
+                id: string;
+                updatedAt: Date;
+                userId: string;
+                lastName: string | null;
+                firstName: string | null;
+                kycStatus: string;
+                avatarUrl: string | null;
+            } | null;
+        } & {
+            id: string;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            isSystem: boolean;
             phone: string | null;
-            resetToken: string | null;
+            email: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -274,48 +303,18 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
-            isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
-        ledgerEntries: ({
-            transaction: {
-                type: import("@src/generated/client").$Enums.LedgerType;
-                id: string;
-                status: string;
-                createdAt: Date;
-                updatedAt: Date;
-                metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-                amount: import("@src/generated/client/runtime/library").Decimal;
-                fee: import("@src/generated/client/runtime/library").Decimal;
-                walletId: string;
-                reference: string;
-                resolvedAt: Date | null;
-            } | null;
-        } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
-            id: string;
-            createdAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            amount: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
-            transactionId: string | null;
-            orderId: string | null;
-            reference: string;
-            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
-        })[];
         snapshots: {
             id: string;
+            walletId: string;
             createdAt: Date;
             balance: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             ledgerId: string | null;
         }[];
     } & {
         id: string;
         updatedAt: Date;
         userId: string;
-        version: number;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -323,32 +322,36 @@ export declare class AdminController {
         derivationIndex: number | null;
         chain: string | null;
         isFrozen: boolean;
+        version: number;
     }>;
     getAllTransactions(page?: string, limit?: string, currency?: string, chain?: string): Promise<{
         transactions: ({
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
-                    email: string | null;
+                    status: import("@src/generated/client").$Enums.UserStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isSystem: boolean;
                     phone: string | null;
-                    resetToken: string | null;
+                    email: string | null;
                     passwordHash: string;
                     role: import("@src/generated/client").$Enums.Role;
-                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     twoFactorOtpHash: string | null;
                     twoFactorOtpExpires: Date | null;
+                    resetToken: string | null;
                     resetTokenExpires: Date | null;
                     emailVerificationToken: string | null;
                     emailVerificationExpires: Date | null;
@@ -358,15 +361,11 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
-                    isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -374,19 +373,20 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
             status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             resolvedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -398,15 +398,15 @@ export declare class AdminController {
     getAllOrders(page?: string, limit?: string, search?: string, chain?: string): Promise<{
         orders: ({
             ad: {
-                type: import("@src/generated/client").$Enums.AdType;
                 id: string;
+                type: import("@src/generated/client").$Enums.AdType;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                sellerId: string;
-                version: number;
                 chain: string | null;
+                version: number;
                 asset: import("@src/generated/client").$Enums.Currency;
+                sellerId: string;
                 quantity: import("@src/generated/client/runtime/library").Decimal;
                 price: import("@src/generated/client/runtime/library").Decimal;
                 minLimit: import("@src/generated/client/runtime/library").Decimal;
@@ -415,26 +415,29 @@ export declare class AdminController {
             };
             buyer: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
-                email: string | null;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                isSystem: boolean;
                 phone: string | null;
-                resetToken: string | null;
+                email: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -444,32 +447,32 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
-                isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
             seller: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
-                email: string | null;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                isSystem: boolean;
                 phone: string | null;
-                resetToken: string | null;
+                email: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -479,25 +482,22 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
-                isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             status: import("@src/generated/client").$Enums.OrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            expiresAt: Date;
-            fraudFlagged: boolean;
-            sellerId: string;
-            buyerId: string;
-            version: number;
             chain: string | null;
+            version: number;
+            adId: string;
+            buyerId: string;
+            sellerId: string;
             fiatAmount: import("@src/generated/client/runtime/library").Decimal;
             cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
             feeAmount: import("@src/generated/client/runtime/library").Decimal;
-            adId: string;
+            expiresAt: Date;
+            fraudFlagged: boolean;
         })[];
         meta: {
             total: number;
@@ -507,63 +507,62 @@ export declare class AdminController {
         };
     }>;
     getOrderDetail(orderId: string): Promise<{
-        ad: {
-            type: import("@src/generated/client").$Enums.AdType;
+        ledgerEntries: ({
+            wallet: {
+                id: string;
+                updatedAt: Date;
+                userId: string;
+                currency: import("@src/generated/client").$Enums.Currency;
+                balance: import("@src/generated/client/runtime/library").Decimal;
+                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
+                address: string | null;
+                derivationIndex: number | null;
+                chain: string | null;
+                isFrozen: boolean;
+                version: number;
+            };
+        } & {
             id: string;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
+            transactionId: string | null;
+            orderId: string | null;
+        })[];
+        ad: {
+            id: string;
+            type: import("@src/generated/client").$Enums.AdType;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
-            version: number;
             chain: string | null;
+            version: number;
             asset: import("@src/generated/client").$Enums.Currency;
+            sellerId: string;
             quantity: import("@src/generated/client/runtime/library").Decimal;
             price: import("@src/generated/client/runtime/library").Decimal;
             minLimit: import("@src/generated/client/runtime/library").Decimal;
             maxLimit: import("@src/generated/client/runtime/library").Decimal;
             isSponsored: boolean;
         };
-        ledgerEntries: ({
-            wallet: {
-                id: string;
-                updatedAt: Date;
-                userId: string;
-                version: number;
-                currency: import("@src/generated/client").$Enums.Currency;
-                balance: import("@src/generated/client/runtime/library").Decimal;
-                reservedBalance: import("@src/generated/client/runtime/library").Decimal;
-                address: string | null;
-                derivationIndex: number | null;
-                chain: string | null;
-                isFrozen: boolean;
-            };
-        } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
-            id: string;
-            createdAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            amount: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
-            transactionId: string | null;
-            orderId: string | null;
-            reference: string;
-            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
-        })[];
         buyer: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -571,19 +570,23 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
-            email: string | null;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            isSystem: boolean;
             phone: string | null;
-            resetToken: string | null;
+            email: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -593,25 +596,21 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
-            isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         seller: {
             profile: {
-                firstName: string | null;
-                lastName: string | null;
-                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
+                lastName: string | null;
+                firstName: string | null;
                 kycStatus: string;
+                avatarUrl: string | null;
             } | null;
             wallets: {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -619,19 +618,23 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             }[];
         } & {
             id: string;
-            email: string | null;
+            status: import("@src/generated/client").$Enums.UserStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            isSystem: boolean;
             phone: string | null;
-            resetToken: string | null;
+            email: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
             twoFactorOtpExpires: Date | null;
+            resetToken: string | null;
             resetTokenExpires: Date | null;
             emailVerificationToken: string | null;
             emailVerificationExpires: Date | null;
@@ -641,68 +644,65 @@ export declare class AdminController {
             phoneVerified: boolean;
             failedLoginAttempts: number;
             lockedUntil: Date | null;
-            isSystem: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
-        buyerId: string;
-        version: number;
         chain: string | null;
+        version: number;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     flagOrder(orderId: string): Promise<{
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
-        buyerId: string;
-        version: number;
         chain: string | null;
+        version: number;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     releaseOrder(orderId: string): Promise<{
         id: string;
         status: import("@src/generated/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        expiresAt: Date;
-        fraudFlagged: boolean;
-        sellerId: string;
-        buyerId: string;
-        version: number;
         chain: string | null;
+        version: number;
+        adId: string;
+        buyerId: string;
+        sellerId: string;
         fiatAmount: import("@src/generated/client/runtime/library").Decimal;
         cryptoAmount: import("@src/generated/client/runtime/library").Decimal;
         feeAmount: import("@src/generated/client/runtime/library").Decimal;
-        adId: string;
+        expiresAt: Date;
+        fraudFlagged: boolean;
     }>;
     adminUpdateAd(adId: string, dto: AdminUpdateAdDto): Promise<{
-        type: import("@src/generated/client").$Enums.AdType;
         id: string;
+        type: import("@src/generated/client").$Enums.AdType;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        version: number;
         chain: string | null;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
+        sellerId: string;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
@@ -710,15 +710,15 @@ export declare class AdminController {
         isSponsored: boolean;
     }>;
     adminDeleteAd(adId: string): Promise<{
-        type: import("@src/generated/client").$Enums.AdType;
         id: string;
+        type: import("@src/generated/client").$Enums.AdType;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        version: number;
         chain: string | null;
+        version: number;
         asset: import("@src/generated/client").$Enums.Currency;
+        sellerId: string;
         quantity: import("@src/generated/client/runtime/library").Decimal;
         price: import("@src/generated/client/runtime/library").Decimal;
         minLimit: import("@src/generated/client/runtime/library").Decimal;
@@ -745,26 +745,29 @@ export declare class AdminController {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
-                    email: string | null;
+                    status: import("@src/generated/client").$Enums.UserStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isSystem: boolean;
                     phone: string | null;
-                    resetToken: string | null;
+                    email: string | null;
                     passwordHash: string;
                     role: import("@src/generated/client").$Enums.Role;
-                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     twoFactorOtpHash: string | null;
                     twoFactorOtpExpires: Date | null;
+                    resetToken: string | null;
                     resetTokenExpires: Date | null;
                     emailVerificationToken: string | null;
                     emailVerificationExpires: Date | null;
@@ -774,15 +777,11 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
-                    isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -790,19 +789,20 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
             status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             resolvedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -816,26 +816,29 @@ export declare class AdminController {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
-                    email: string | null;
+                    status: import("@src/generated/client").$Enums.UserStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isSystem: boolean;
                     phone: string | null;
-                    resetToken: string | null;
+                    email: string | null;
                     passwordHash: string;
                     role: import("@src/generated/client").$Enums.Role;
-                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     twoFactorOtpHash: string | null;
                     twoFactorOtpExpires: Date | null;
+                    resetToken: string | null;
                     resetTokenExpires: Date | null;
                     emailVerificationToken: string | null;
                     emailVerificationExpires: Date | null;
@@ -845,15 +848,11 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
-                    isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -861,19 +860,20 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
             status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             resolvedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -918,30 +918,30 @@ export declare class AdminController {
             counts: Record<string, number>;
         };
         recentSweeps: {
+            id: string;
+            status: string;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            reference: string;
+            createdAt: Date;
             wallet: {
                 currency: import("@src/generated/client").$Enums.Currency;
             };
-            id: string;
-            status: string;
-            createdAt: Date;
-            amount: import("@src/generated/client/runtime/library").Decimal;
-            reference: string;
         }[];
     }>;
     refreshSanctions(): Promise<import("../security/crypto-risk.service").RefreshResult>;
     getWithdrawalJobs(page?: string, limit?: string, status?: string): Promise<{
         jobs: {
             id: string;
+            walletId: string;
             status: string;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             createdAt: Date;
             updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             currency: import("@src/generated/client").$Enums.Currency;
             chain: string | null;
-            destination: string;
-            amount: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             txHash: string;
+            destination: string;
             attempts: number;
             nextPollAt: Date;
         }[];
@@ -966,7 +966,7 @@ export declare class AdminController {
             balance: number;
             error: string;
         } | {
-            chain: "BSC" | "POLYGON" | "ETH";
+            chain: "ETH" | "BSC" | "POLYGON";
             currency: import("@src/generated/client").$Enums.Currency;
             address: string;
             balance: number;
@@ -1009,15 +1009,15 @@ export declare class AdminController {
         transactions: {
             dbMatch: boolean;
             dbTransaction: {
-                wallet: {
-                    user: {
-                        email: string | null;
-                    };
-                    currency: import("@src/generated/client").$Enums.Currency;
-                };
                 status: string;
                 amount: import("@src/generated/client/runtime/library").Decimal;
                 reference: string;
+                wallet: {
+                    currency: import("@src/generated/client").$Enums.Currency;
+                    user: {
+                        email: string | null;
+                    };
+                };
             } | null;
             txid: string;
             amount: number;
@@ -1045,15 +1045,15 @@ export declare class AdminController {
             blockNum: number;
             dbMatch: boolean;
             dbTransaction: {
-                wallet: {
-                    user: {
-                        email: string | null;
-                    };
-                    currency: import("@src/generated/client").$Enums.Currency;
-                };
                 status: string;
                 amount: import("@src/generated/client/runtime/library").Decimal;
                 reference: string;
+                wallet: {
+                    currency: import("@src/generated/client").$Enums.Currency;
+                    user: {
+                        email: string | null;
+                    };
+                };
             } | null;
         }[];
         page: number;
@@ -1110,17 +1110,17 @@ export declare class AdminController {
         status: string;
     }>;
     creditTestFunds(dto: CreditTestFundsDto): Promise<{
-        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
+        walletId: string;
+        type: import("@src/generated/client").$Enums.LedgerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         amount: import("@src/generated/client/runtime/library").Decimal;
         fee: import("@src/generated/client/runtime/library").Decimal;
-        walletId: string;
         reference: string;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         resolvedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getPaymentStats(): Promise<{
         totalDeposits: number | import("@src/generated/client/runtime/library").Decimal;
@@ -1131,26 +1131,29 @@ export declare class AdminController {
             wallet: {
                 user: {
                     profile: {
-                        firstName: string | null;
-                        lastName: string | null;
-                        avatarUrl: string | null;
                         id: string;
                         updatedAt: Date;
                         userId: string;
+                        lastName: string | null;
+                        firstName: string | null;
                         kycStatus: string;
+                        avatarUrl: string | null;
                     } | null;
                 } & {
                     id: string;
-                    email: string | null;
+                    status: import("@src/generated/client").$Enums.UserStatus;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isSystem: boolean;
                     phone: string | null;
-                    resetToken: string | null;
+                    email: string | null;
                     passwordHash: string;
                     role: import("@src/generated/client").$Enums.Role;
-                    status: import("@src/generated/client").$Enums.UserStatus;
                     twoFactorEnabled: boolean;
                     twoFactorSecret: string | null;
                     twoFactorOtpHash: string | null;
                     twoFactorOtpExpires: Date | null;
+                    resetToken: string | null;
                     resetTokenExpires: Date | null;
                     emailVerificationToken: string | null;
                     emailVerificationExpires: Date | null;
@@ -1160,15 +1163,11 @@ export declare class AdminController {
                     phoneVerified: boolean;
                     failedLoginAttempts: number;
                     lockedUntil: Date | null;
-                    isSystem: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
             } & {
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                version: number;
                 currency: import("@src/generated/client").$Enums.Currency;
                 balance: import("@src/generated/client/runtime/library").Decimal;
                 reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -1176,19 +1175,20 @@ export declare class AdminController {
                 derivationIndex: number | null;
                 chain: string | null;
                 isFrozen: boolean;
+                version: number;
             };
         } & {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
+            walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
             status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
-            walletId: string;
             reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             resolvedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -1201,26 +1201,29 @@ export declare class AdminController {
         wallet: {
             user: {
                 profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
+                    lastName: string | null;
+                    firstName: string | null;
                     kycStatus: string;
+                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
-                email: string | null;
+                status: import("@src/generated/client").$Enums.UserStatus;
+                createdAt: Date;
+                updatedAt: Date;
+                isSystem: boolean;
                 phone: string | null;
-                resetToken: string | null;
+                email: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
                 twoFactorOtpExpires: Date | null;
+                resetToken: string | null;
                 resetTokenExpires: Date | null;
                 emailVerificationToken: string | null;
                 emailVerificationExpires: Date | null;
@@ -1230,15 +1233,11 @@ export declare class AdminController {
                 phoneVerified: boolean;
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
-                isSystem: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             };
         } & {
             id: string;
             updatedAt: Date;
             userId: string;
-            version: number;
             currency: import("@src/generated/client").$Enums.Currency;
             balance: import("@src/generated/client/runtime/library").Decimal;
             reservedBalance: import("@src/generated/client/runtime/library").Decimal;
@@ -1246,31 +1245,32 @@ export declare class AdminController {
             derivationIndex: number | null;
             chain: string | null;
             isFrozen: boolean;
+            version: number;
         };
         ledgerEntries: {
-            type: import("@src/generated/client").$Enums.LedgerType;
             id: string;
-            createdAt: Date;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            amount: import("@src/generated/client/runtime/library").Decimal;
             walletId: string;
+            type: import("@src/generated/client").$Enums.LedgerType;
+            amount: import("@src/generated/client/runtime/library").Decimal;
+            reference: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
             transactionId: string | null;
             orderId: string | null;
-            reference: string;
-            balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         }[];
     } & {
-        type: import("@src/generated/client").$Enums.LedgerType;
         id: string;
+        walletId: string;
+        type: import("@src/generated/client").$Enums.LedgerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         amount: import("@src/generated/client/runtime/library").Decimal;
         fee: import("@src/generated/client/runtime/library").Decimal;
-        walletId: string;
         reference: string;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         resolvedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getExchangeRates(): {
         rates: Record<string, number>;
@@ -1287,23 +1287,23 @@ export declare class AdminController {
     getAuditLogs(page?: string, limit?: string, action?: string, resource?: string, userId?: string, success?: string, startDate?: string, endDate?: string, search?: string): Promise<{
         logs: ({
             user: {
-                profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                } | null;
                 id: string;
+                profile: {
+                    lastName: string | null;
+                    firstName: string | null;
+                } | null;
                 email: string | null;
             };
         } & {
-            device: string | null;
             id: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            success: boolean;
-            resource: string | null;
+            device: string | null;
             action: string;
+            resource: string | null;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: import("@src/generated/client/runtime/library").JsonValue | null;
@@ -1334,23 +1334,23 @@ export declare class AdminController {
     getUserAuditTrail(userId: string, page?: string, limit?: string): Promise<{
         logs: ({
             user: {
-                profile: {
-                    firstName: string | null;
-                    lastName: string | null;
-                } | null;
                 id: string;
+                profile: {
+                    lastName: string | null;
+                    firstName: string | null;
+                } | null;
                 email: string | null;
             };
         } & {
-            device: string | null;
             id: string;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             createdAt: Date;
             userId: string;
-            ipAddress: string | null;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            success: boolean;
-            resource: string | null;
+            device: string | null;
             action: string;
+            resource: string | null;
+            success: boolean;
+            ipAddress: string | null;
             actorId: string | null;
             resourceId: string | null;
             oldValue: import("@src/generated/client/runtime/library").JsonValue | null;

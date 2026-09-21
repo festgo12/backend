@@ -9,7 +9,7 @@ import * as bip39 from 'bip39';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as ecc from 'tiny-secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import { encode as bs58encode } from 'bs58';
+import { encode as bs58encode, decode as bs58decode } from 'bs58';
 import { Keypair } from '@solana/web3.js';
 import { derivePath } from 'ed25519-hd-key';
 import { Currency } from '@src/generated/client';
@@ -494,6 +494,41 @@ export class HdWalletService {
     const hash2 = crypto.createHash('sha256').update(hash1).digest();
     const checksum = hash2.subarray(0, 4);
     return bs58encode(Buffer.concat([payload, checksum]));
+  }
+
+  /**
+   * Converts a 0x EVM-style address (as exposed by Alchemy's EVM JSON-RPC
+   * facade for TRON) into the canonical base58check T-address. Alchemy TRON
+   * represents the 21-byte TRON address as a 0x-prefixed hex string whose
+   * payload byte is the TRON 0x41 prefix.
+   */
+  tronHexToBase58(hexAddress: string): string {
+    const hex = (hexAddress || '').toLowerCase().replace(/^0x/, '').padStart(42, '0');
+    const bytes = Buffer.from(hex, 'hex').subarray(-21);
+    const body = Buffer.concat([Buffer.from([TRON_ADDRESS_PREFIX]), bytes.subarray(1)]);
+    return this.base58Check(body);
+  }
+
+  /**
+   * Converts a canonical base58check T-address into the 0x-prefixed hex form
+   * used by Alchemy's EVM JSON-RPC facade for TRON (topics, eth_call args).
+   */
+  tronBase58ToHex(address: string): string {
+    const decoded = bs58decode(address);
+    if (decoded.length !== 25 || decoded[0] !== TRON_ADDRESS_PREFIX) {
+      throw new InternalServerErrorException(
+        `Invalid TRON address for hex conversion: ${address}`,
+      );
+    }
+    const payload = decoded.subarray(0, 21);
+    const hash1 = crypto.createHash('sha256').update(payload).digest();
+    const hash2 = crypto.createHash('sha256').update(hash1).digest();
+    if (!hash2.subarray(0, 4).equals(decoded.subarray(21))) {
+      throw new InternalServerErrorException(
+        `TRON address checksum failed: ${address}`,
+      );
+    }
+    return '0x' + payload.toString('hex');
   }
 
   private deriveBtcAddress(index: number): string {

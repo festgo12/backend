@@ -1,6 +1,7 @@
 # compiled output
 # /dist
 /node_modules
+/uploads
 /build
 # Allow Prisma's custom output folder to be committed
 !src/generated/client/

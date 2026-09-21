@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getAddress } from 'ethers';
 
 export const STABLECOIN_CONTRACTS_MAINNET: Record<string, string> = {
   USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -12,9 +13,10 @@ export const STABLECOIN_CONTRACTS_TESTNET: Record<string, string> = {
 };
 
 /**
- * Per-chain stablecoin TRC-20/SPL contract addresses. Keyed by chain then
- * token symbol. EVM-family chains resolve via STABLECOIN_CONTRACTS_* plus an
- * optional ALCHEMY_<CHAIN>_<TOKEN>_CONTRACT override.
+ * Per-chain stablecoin TRC-20/SPL contract addresses (MAINNET). Keyed by
+ * chain then token symbol. EVM-family chains resolve via
+ * STABLECOIN_CONTRACTS_* plus an optional ALCHEMY_<CHAIN>_<TOKEN>_CONTRACT
+ * override.
  */
 export const STABLECOIN_CONTRACTS_BY_CHAIN: Record<
   string,
@@ -28,7 +30,8 @@ export const STABLECOIN_CONTRACTS_BY_CHAIN: Record<
   // Polygon PoS (ERC-20)
   POLYGON: {
     USDT: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-    USDC: '0x2791BcA1f2de4661ED88A30C99A7a9449Aa84174',
+    // Bridged USDC.e — canonical checksummed form (EIP-55).
+    USDC: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
   },
   // TRON (TRC-20) — T... smart-contract addresses
   TRON: {
@@ -37,10 +40,44 @@ export const STABLECOIN_CONTRACTS_BY_CHAIN: Record<
   },
 };
 
+/**
+ * Per-chain stablecoin contracts for TESTNET networks (ALCHEMY_NETWORK !=
+ * mainnet). Chains without a listed testnet token fall back to the global
+ * Sepolia set, which matches the Alchemy testnet endpoints used here
+ * (eth-sepolia / bsc-sapolia / polygon-amoy).
+ */
+export const STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET: Record<
+  string,
+  Record<string, string>
+> = {
+  // BSC testnet (BEP-20)
+  BSC: {
+    USDT: '0x337610d27c682E347C9cD60bD4b3b107C9d34Ddd',
+    USDC: '0x64544968ed7ebF5f9bf05F3147e679D48a2491e4',
+  },
+  // Polygon Amoy (ERC-20)
+  POLYGON: {
+    USDT: '0x0Fa810dBd9A10Dd4B9C7C660D2c44dA31F9a7A6C',
+    // Circle-native USDC on Amoy (proxy).
+    USDC: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+  },
+};
+
 // Solana uses program/mint addresses, not the standard 0x contract format.
 export const STABLECOIN_MINTS_SOLANA: Record<string, string> = {
   USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
   USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+};
+
+/**
+ * Solana devnet mints. There is no official devnet USDT mint; USDC is
+ * Circle's devnet faucet mint. USDT intentionally resolves to null on
+ * devnet so callers report "mint not configured" instead of querying a
+ * nonexistent mainnet mint (which previously crashed with "Token mint
+ * could not be unpacked").
+ */
+export const STABLECOIN_MINTS_SOLANA_TESTNET: Record<string, string> = {
+  USDC: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
 };
 
 export type CryptoProvider = 'alchemy';
@@ -105,6 +142,50 @@ export class CryptoConfigService implements OnModuleInit {
       this.logger.warn(
         'ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.',
       );
+    }
+    this.validateConfiguredContracts();
+  }
+
+  /**
+   * EIP-55 checksum-validates every contract address this service can emit
+   * (built-in maps + env overrides) so a mistyped address surfaces as a
+   * loud boot warning instead of a runtime "bad address checksum" error
+   * deep inside a balance query.
+   */
+  private validateConfiguredContracts(): void {
+    const candidates: Array<[string, string, string | null]> = [];
+    const sets: Array<Record<string, string>> = [
+      ...Object.values(STABLECOIN_CONTRACTS_BY_CHAIN),
+      ...Object.values(STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET),
+      STABLECOIN_CONTRACTS_MAINNET,
+      STABLECOIN_CONTRACTS_TESTNET,
+    ];
+    for (const set of sets) {
+      for (const [token, address] of Object.entries(set)) {
+        if (address.startsWith('0x')) candidates.push([token, address, address]);
+      }
+    }
+    for (const chain of this.supportedChains) {
+      for (const token of ['USDT', 'USDC']) {
+        const override = this.configService.get<string>(
+          `ALCHEMY_${chain}_${token}_CONTRACT`,
+        );
+        if (override) candidates.push([`${chain}/${token}`, override, override]);
+      }
+    }
+    for (const [label, raw, address] of candidates) {
+      if (!address) continue;
+      try {
+        if (getAddress(address) !== address) {
+          this.logger.warn(
+            `Stablecoin contract for ${label} has invalid EIP-55 checksum: ${address} (expected ${getAddress(address)})`,
+          );
+        }
+      } catch {
+        this.logger.warn(
+          `Stablecoin contract for ${label} is not a valid 0x address: ${raw}`,
+        );
+      }
     }
   }
 
@@ -486,12 +567,17 @@ export class CryptoConfigService implements OnModuleInit {
   getStablecoinContractFor(chain: string, currency: string): string | null {
     const upper = (currency || '').toUpperCase();
     if (chain === 'SOLANA') {
+      if (this.isTestnet) {
+        return STABLECOIN_MINTS_SOLANA_TESTNET[upper] || null;
+      }
       return STABLECOIN_MINTS_SOLANA[upper] || null;
     }
     const overrideKey = `ALCHEMY_${chain}_${upper}_CONTRACT`;
     const override = this.configService.get<string>(overrideKey);
     if (override) return override;
-    const byChain = STABLECOIN_CONTRACTS_BY_CHAIN[chain];
+    const byChain = this.isTestnet
+      ? STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET[chain]
+      : STABLECOIN_CONTRACTS_BY_CHAIN[chain];
     if (byChain && byChain[upper]) return byChain[upper];
     if (this.isEvmChain(chain)) {
       return this.getStablecoinContract(upper);

@@ -14,16 +14,15 @@ exports.TronDepositPollerService = void 0;
 const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const cron_1 = require("cron");
-const axios_1 = require("@nestjs/axios");
-const rxjs_1 = require("rxjs");
 const prisma_service_1 = require("../../core/database/prisma.service");
 const crypto_config_service_1 = require("./crypto-config.service");
 const deposit_address_registry_service_1 = require("./deposit-address-registry.service");
 const webhook_processor_service_1 = require("./webhook-processor.service");
+const chain_client_service_1 = require("./chain-client.service");
 const client_1 = require("../../generated/client/index.js");
 let TronDepositPollerService = class TronDepositPollerService {
     static { TronDepositPollerService_1 = this; }
-    httpService;
+    chainClient;
     config;
     depositRegistry;
     prisma;
@@ -32,8 +31,8 @@ let TronDepositPollerService = class TronDepositPollerService {
     logger = new common_1.Logger(TronDepositPollerService_1.name);
     isRunning = false;
     static JOB_NAME = 'tron_deposit_poller';
-    constructor(httpService, config, depositRegistry, prisma, webhookProcessor, schedulerRegistry) {
-        this.httpService = httpService;
+    constructor(chainClient, config, depositRegistry, prisma, webhookProcessor, schedulerRegistry) {
+        this.chainClient = chainClient;
         this.config = config;
         this.depositRegistry = depositRegistry;
         this.prisma = prisma;
@@ -61,25 +60,35 @@ let TronDepositPollerService = class TronDepositPollerService {
                 this.logger.debug('No active TRON deposit addresses to poll');
                 return;
             }
-            const active = new Set(addresses.map((a) => a.toLowerCase()));
-            const cursor = await this.getCursor();
+            const active = new Set(addresses);
+            const cursor = await this.getCursorBlock();
             for (const currency of [client_1.Currency.USDT, client_1.Currency.USDC]) {
                 const contract = this.config.getStablecoinContractFor('TRON', currency);
                 if (!contract)
                     continue;
-                const transfers = await this.queryTrc20Transfers(contract, active, cursor.lastPolledAt);
-                for (const transfer of transfers) {
-                    const event = this.normalize(transfer, contract, currency);
+                let logs;
+                try {
+                    logs = await this.chainClient.fetchTronTransferLogs(contract, addresses, 200, cursor.lastBlock);
+                }
+                catch (error) {
+                    const err = error;
+                    this.logger.warn(`TRON TRC-20 log query failed for ${currency}: ${err.message}`);
+                    continue;
+                }
+                for (const log of logs) {
+                    if (!active.has(log.to))
+                        continue;
+                    const event = this.normalize(log, currency);
                     if (!event)
                         continue;
                     await this.webhookProcessor.processEvent(event);
                 }
-                const lastTs = transfers.reduce((max, t) => Math.max(max, t.block_timestamp), cursor.lastPolledAt);
-                if (lastTs > cursor.lastPolledAt) {
+                const lastBlock = logs.reduce((max, l) => Math.max(max, l.blockNumber), cursor.lastBlock);
+                if (lastBlock > cursor.lastBlock) {
                     await this.prisma.chainCursor.upsert({
                         where: { chain: 'TRON' },
-                        update: { lastBlock: Math.floor(lastTs / 1000) },
-                        create: { chain: 'TRON', lastBlock: Math.floor(lastTs / 1000) },
+                        update: { lastBlock },
+                        create: { chain: 'TRON', lastBlock },
                     });
                 }
             }
@@ -92,76 +101,31 @@ let TronDepositPollerService = class TronDepositPollerService {
             this.isRunning = false;
         }
     }
-    async getCursor() {
+    async getCursorBlock() {
         const row = await this.prisma.chainCursor.findUnique({
             where: { chain: 'TRON' },
         });
         if (row && row.lastBlock > 0) {
-            return { lastPolledAt: row.lastBlock * 1000 };
+            return { lastBlock: row.lastBlock };
         }
-        return { lastPolledAt: Date.now() - 24 * 60 * 60 * 1000 };
+        return { lastBlock: 0 };
     }
-    async queryTrc20Transfers(contract, active, minTimestamp) {
-        const baseUrl = this.config.httpUrlForChain('TRON');
-        if (!baseUrl) {
-            this.logger.warn('ALCHEMY_TRON_HTTP_URL not configured; skipping poll');
-            return [];
-        }
-        const seen = new Set();
-        const out = [];
-        const lowerContract = contract.toLowerCase();
-        for (const address of active) {
-            try {
-                const url = `${baseUrl.replace(/\/+$/, '')}/v1/accounts/${address}/transactions/trc20`;
-                const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
-                    params: {
-                        contract_address: contract,
-                        min_timestamp: minTimestamp,
-                        limit: 200,
-                    },
-                    timeout: 20_000,
-                }));
-                const data = Array.isArray(res.data?.data) ? res.data.data : [];
-                for (const tx of data) {
-                    if (tx.type !== 'Transfer')
-                        continue;
-                    const txContract = (tx.token_info?.address || '').toLowerCase();
-                    if (txContract && txContract !== lowerContract)
-                        continue;
-                    const to = (tx.to || '').toLowerCase();
-                    if (!active.has(to))
-                        continue;
-                    if (seen.has(tx.transaction_id))
-                        continue;
-                    seen.add(tx.transaction_id);
-                    out.push(tx);
-                }
-            }
-            catch (error) {
-                const err = error;
-                this.logger.warn(`TRON trc20 query failed for ${address}: ${err.message}`);
-            }
-        }
-        return out;
-    }
-    normalize(tx, contract, currency) {
-        if (!tx.transaction_id)
+    normalize(log, currency) {
+        if (!log.txHash)
             return null;
-        const value = Number(tx.value ?? 0) / 1e6;
-        if (!Number.isFinite(value) || value <= 0)
+        if (!Number.isFinite(log.amount) || log.amount <= 0)
             return null;
-        const blockTimestamp = Math.floor((tx.block_timestamp || 0) / 1000);
         return {
             provider: 'tron_poller',
             chain: 'TRON',
             family: 'TRON',
             direction: 'INBOUND',
-            txHash: tx.transaction_id,
-            fromAddress: tx.from || '',
-            toAddress: tx.to || '',
+            txHash: log.txHash,
+            fromAddress: log.from || '',
+            toAddress: log.to || '',
             asset: currency,
-            amount: value,
-            blockNumber: blockTimestamp,
+            amount: log.amount,
+            blockNumber: log.blockNumber,
             logIndex: undefined,
         };
     }
@@ -169,7 +133,7 @@ let TronDepositPollerService = class TronDepositPollerService {
 exports.TronDepositPollerService = TronDepositPollerService;
 exports.TronDepositPollerService = TronDepositPollerService = TronDepositPollerService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [axios_1.HttpService,
+    __metadata("design:paramtypes", [chain_client_service_1.ChainClientService,
         crypto_config_service_1.CryptoConfigService,
         deposit_address_registry_service_1.DepositAddressRegistry,
         prisma_service_1.PrismaService,

@@ -10,9 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var CryptoConfigService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CryptoConfigService = exports.EVM_CHAINS = exports.STABLECOIN_MINTS_SOLANA = exports.STABLECOIN_CONTRACTS_BY_CHAIN = exports.STABLECOIN_CONTRACTS_TESTNET = exports.STABLECOIN_CONTRACTS_MAINNET = void 0;
+exports.CryptoConfigService = exports.EVM_CHAINS = exports.STABLECOIN_MINTS_SOLANA_TESTNET = exports.STABLECOIN_MINTS_SOLANA = exports.STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET = exports.STABLECOIN_CONTRACTS_BY_CHAIN = exports.STABLECOIN_CONTRACTS_TESTNET = exports.STABLECOIN_CONTRACTS_MAINNET = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const ethers_1 = require("ethers");
 exports.STABLECOIN_CONTRACTS_MAINNET = {
     USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
     USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -28,16 +29,29 @@ exports.STABLECOIN_CONTRACTS_BY_CHAIN = {
     },
     POLYGON: {
         USDT: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
-        USDC: '0x2791BcA1f2de4661ED88A30C99A7a9449Aa84174',
+        USDC: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
     },
     TRON: {
         USDT: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
         USDC: 'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
     },
 };
+exports.STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET = {
+    BSC: {
+        USDT: '0x337610d27c682E347C9cD60bD4b3b107C9d34Ddd',
+        USDC: '0x64544968ed7ebF5f9bf05F3147e679D48a2491e4',
+    },
+    POLYGON: {
+        USDT: '0x0Fa810dBd9A10Dd4B9C7C660D2c44dA31F9a7A6C',
+        USDC: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+    },
+};
 exports.STABLECOIN_MINTS_SOLANA = {
     USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+};
+exports.STABLECOIN_MINTS_SOLANA_TESTNET = {
+    USDC: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
 };
 exports.EVM_CHAINS = ['ETH', 'BSC', 'POLYGON'];
 let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
@@ -65,6 +79,41 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         }
         if (!this.alchemySigningKey) {
             this.logger.warn('ALCHEMY_SIGNING_KEY is not set; Alchemy webhook signature verification will fail.');
+        }
+        this.validateConfiguredContracts();
+    }
+    validateConfiguredContracts() {
+        const candidates = [];
+        const sets = [
+            ...Object.values(exports.STABLECOIN_CONTRACTS_BY_CHAIN),
+            ...Object.values(exports.STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET),
+            exports.STABLECOIN_CONTRACTS_MAINNET,
+            exports.STABLECOIN_CONTRACTS_TESTNET,
+        ];
+        for (const set of sets) {
+            for (const [token, address] of Object.entries(set)) {
+                if (address.startsWith('0x'))
+                    candidates.push([token, address, address]);
+            }
+        }
+        for (const chain of this.supportedChains) {
+            for (const token of ['USDT', 'USDC']) {
+                const override = this.configService.get(`ALCHEMY_${chain}_${token}_CONTRACT`);
+                if (override)
+                    candidates.push([`${chain}/${token}`, override, override]);
+            }
+        }
+        for (const [label, raw, address] of candidates) {
+            if (!address)
+                continue;
+            try {
+                if ((0, ethers_1.getAddress)(address) !== address) {
+                    this.logger.warn(`Stablecoin contract for ${label} has invalid EIP-55 checksum: ${address} (expected ${(0, ethers_1.getAddress)(address)})`);
+                }
+            }
+            catch {
+                this.logger.warn(`Stablecoin contract for ${label} is not a valid 0x address: ${raw}`);
+            }
         }
     }
     get supportedChains() {
@@ -299,13 +348,18 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
     getStablecoinContractFor(chain, currency) {
         const upper = (currency || '').toUpperCase();
         if (chain === 'SOLANA') {
+            if (this.isTestnet) {
+                return exports.STABLECOIN_MINTS_SOLANA_TESTNET[upper] || null;
+            }
             return exports.STABLECOIN_MINTS_SOLANA[upper] || null;
         }
         const overrideKey = `ALCHEMY_${chain}_${upper}_CONTRACT`;
         const override = this.configService.get(overrideKey);
         if (override)
             return override;
-        const byChain = exports.STABLECOIN_CONTRACTS_BY_CHAIN[chain];
+        const byChain = this.isTestnet
+            ? exports.STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET[chain]
+            : exports.STABLECOIN_CONTRACTS_BY_CHAIN[chain];
         if (byChain && byChain[upper])
             return byChain[upper];
         if (this.isEvmChain(chain)) {

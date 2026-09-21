@@ -20,19 +20,19 @@ export declare class WithdrawalTrackerService {
         destination: string;
         metadata?: Record<string, unknown>;
     }): Promise<{
-        id: string;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        metadata: Prisma.JsonValue | null;
+        txHash: string;
+        walletId: string;
         currency: import("@src/generated/client").$Enums.Currency;
         chain: string | null;
-        destination: string;
         amount: Prisma.Decimal;
-        walletId: string;
-        txHash: string;
+        destination: string;
+        metadata: Prisma.JsonValue | null;
+        id: string;
         attempts: number;
         nextPollAt: Date;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     confirmFromWebhook(txHash: string, requiredConfirmations: number): Promise<void>;
     processQueue(): Promise<void>;

@@ -350,6 +350,25 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         const checksum = hash2.subarray(0, 4);
         return (0, bs58_1.encode)(Buffer.concat([payload, checksum]));
     }
+    tronHexToBase58(hexAddress) {
+        const hex = (hexAddress || '').toLowerCase().replace(/^0x/, '').padStart(42, '0');
+        const bytes = Buffer.from(hex, 'hex').subarray(-21);
+        const body = Buffer.concat([Buffer.from([TRON_ADDRESS_PREFIX]), bytes.subarray(1)]);
+        return this.base58Check(body);
+    }
+    tronBase58ToHex(address) {
+        const decoded = (0, bs58_1.decode)(address);
+        if (decoded.length !== 25 || decoded[0] !== TRON_ADDRESS_PREFIX) {
+            throw new common_1.InternalServerErrorException(`Invalid TRON address for hex conversion: ${address}`);
+        }
+        const payload = decoded.subarray(0, 21);
+        const hash1 = crypto.createHash('sha256').update(payload).digest();
+        const hash2 = crypto.createHash('sha256').update(hash1).digest();
+        if (!hash2.subarray(0, 4).equals(decoded.subarray(21))) {
+            throw new common_1.InternalServerErrorException(`TRON address checksum failed: ${address}`);
+        }
+        return '0x' + payload.toString('hex');
+    }
     deriveBtcAddress(index) {
         const node = this.btcNode(index);
         const payment = bitcoin.payments.p2wpkh({

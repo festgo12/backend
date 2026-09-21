@@ -230,9 +230,15 @@ export class ReconciliationService implements OnModuleInit {
         totalPages = data.totalPages || 1;
         page++;
       } catch (error) {
-        const err = error as ErrorLike;
+        const err = error as ErrorLike & { cause?: { code?: string } };
+        let host = '';
+        try {
+          host = new URL(url).host;
+        } catch {
+          host = url;
+        }
         this.logger.error(
-          `BTC xpub fetch failed (page ${page}): ${err.message}`,
+          `BTC xpub fetch failed (page ${page}, host ${host}): ${err.message}${err.cause?.code ? ` (cause: ${err.cause.code})` : ''}`,
         );
         break;
       }

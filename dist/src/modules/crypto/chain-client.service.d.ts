@@ -44,7 +44,6 @@ export declare class ChainClientService {
     private readonly logger;
     private readonly evmProviders;
     private readonly solanaConnections;
-    private readonly tronWebClients;
     private readonly evmNonceLocks;
     constructor(httpService: HttpService, config: CryptoConfigService, hdWallet: HdWalletService);
     private withNonceLock;
@@ -52,7 +51,12 @@ export declare class ChainClientService {
     providerForChain(chain: string): JsonRpcProvider;
     private solanaUrl;
     private solanaConnection;
-    private tronWebRead;
+    private tronRpc;
+    tronAddressToHex(address: string): string;
+    tronHexToAddress(hexAddress: string): string;
+    private static readonly BALANCE_OF_SELECTOR;
+    private static readonly TRC20_TRANSFER_SELECTOR;
+    private static readonly TRC20_TRANSFER_TOPIC;
     chainFamily(chain: Chain): ChainFamily;
     private get btcRpcUrl();
     private get btcNetwork();
@@ -77,7 +81,9 @@ export declare class ChainClientService {
     getSolanaSignatureStatuses(sig: string): Promise<number | null>;
     getTrxBalance(address: string): Promise<number>;
     getTronTokenBalance(contract: string, address: string): Promise<number>;
-    private tronWebSigner;
+    private resolveTronContractHex;
+    private tronEvmSigner;
+    private sendTronEvmTx;
     broadcastTronToken(currency: Currency, fromIndex: number, to: string, amount: number): Promise<string>;
     broadcastTronNative(fromIndex: number, to: string, amountTrx: number): Promise<string>;
     getTronReceipt(txHash: string): Promise<{
@@ -100,6 +106,14 @@ export declare class ChainClientService {
         to: string;
         blockNumber: number;
         tokenSymbol: string | null;
+    }>>;
+    fetchTronTransferLogs(contract: string, toAddresses: string[], maxLogs?: number, fromBlock?: number | 'latest'): Promise<Array<{
+        txHash: string;
+        amount: number;
+        from: string;
+        to: string;
+        blockNumber: number;
+        blockTimestampMs: number | null;
     }>>;
     broadcastBtc(fromIndex: number, to: string, amountBtc: number, feePerByte: number): Promise<string>;
     private evmSigner;

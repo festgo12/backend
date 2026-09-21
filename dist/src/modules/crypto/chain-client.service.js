@@ -50,7 +50,6 @@ const rxjs_1 = require("rxjs");
 const ethers_1 = require("ethers");
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
-const tronweb_1 = require("tronweb");
 const bitcoin = __importStar(require("bitcoinjs-lib"));
 const client_1 = require("../../generated/client/index.js");
 const crypto_config_service_1 = require("./crypto-config.service");
@@ -59,14 +58,15 @@ const ERC20_ABI = [
     'function transfer(address to, uint256 amount) returns (bool)',
     'function balanceOf(address owner) view returns (uint256)',
 ];
-let ChainClientService = ChainClientService_1 = class ChainClientService {
+const TRON_LOG_BLOCK_SPAN = 20_000;
+let ChainClientService = class ChainClientService {
+    static { ChainClientService_1 = this; }
     httpService;
     config;
     hdWallet;
     logger = new common_1.Logger(ChainClientService_1.name);
     evmProviders = new Map();
     solanaConnections = new Map();
-    tronWebClients = new Map();
     evmNonceLocks = new Map();
     constructor(httpService, config, hdWallet) {
         this.httpService = httpService;
@@ -118,18 +118,26 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         this.solanaConnections.set(url, connection);
         return connection;
     }
-    tronWebRead() {
+    async tronRpc(method, params) {
         const url = this.config.httpUrlForChain('TRON');
         if (!url) {
             throw new common_1.InternalServerErrorException('ALCHEMY_TRON_HTTP_URL is not configured');
         }
-        const existing = this.tronWebClients.get(url);
-        if (existing)
-            return existing;
-        const client = new tronweb_1.TronWeb({ fullHost: url });
-        this.tronWebClients.set(url, client);
-        return client;
+        const res = await (0, rxjs_1.lastValueFrom)(this.httpService.post(url, { jsonrpc: '2.0', id: 1, method, params }, { timeout: 20_000, headers: { 'Content-Type': 'application/json' } }));
+        if (res.data.error) {
+            throw new Error(`TRON RPC ${method} failed: ${res.data.error.message} (code ${res.data.error.code})`);
+        }
+        return res.data.result;
     }
+    tronAddressToHex(address) {
+        return this.hdWallet.tronBase58ToHex(address);
+    }
+    tronHexToAddress(hexAddress) {
+        return this.hdWallet.tronHexToBase58(hexAddress);
+    }
+    static BALANCE_OF_SELECTOR = '0x70a08231';
+    static TRC20_TRANSFER_SELECTOR = '0xa9059cbb';
+    static TRC20_TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
     chainFamily(chain) {
         return this.config.chainFamily(chain);
     }
@@ -412,48 +420,88 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         return status.confirmationStatus === 'processed' ? 0 : 1;
     }
     async getTrxBalance(address) {
-        const client = this.tronWebRead();
-        const sun = await client.trx.getBalance(address);
+        const hexAddress = this.hdWallet.tronBase58ToHex(address);
+        const weiHex = await this.tronRpc('eth_getBalance', [
+            hexAddress,
+            'latest',
+        ]);
+        const sun = BigInt(weiHex ?? '0x0');
         return Number((Number(sun) / 1e6).toFixed(6));
     }
     async getTronTokenBalance(contract, address) {
-        const client = this.tronWebRead();
-        const tokenContract = (await client
-            .contract()
-            .at(contract));
-        const raw = await tokenContract.balanceOf(address).call();
-        return Number((Number(raw.toString()) / 1e6).toFixed(6));
+        const contractHex = this.resolveTronContractHex(contract);
+        const ownerHex = this.hdWallet.tronBase58ToHex(address).replace(/^0x/, '');
+        const data = `${ChainClientService_1.BALANCE_OF_SELECTOR}${'0'.repeat(24)}${ownerHex}`;
+        const raw = await this.tronRpc('eth_call', [
+            { to: contractHex, data },
+            'latest',
+        ]);
+        const amount = BigInt(raw && raw !== '0x' ? raw : '0x0');
+        return Number((Number(amount) / 1e6).toFixed(6));
     }
-    tronWebSigner(fromIndex) {
-        const url = this.config.httpUrlForChain('TRON');
-        if (!url) {
-            throw new common_1.InternalServerErrorException('ALCHEMY_TRON_HTTP_URL is not configured');
+    resolveTronContractHex(contract) {
+        if (/^0x[0-9a-fA-F]{40}$/.test(contract))
+            return contract.toLowerCase();
+        if (/^(0x)?[0-9a-fA-F]{42}$/.test(contract)) {
+            const hex = contract.toLowerCase().replace(/^0x/, '');
+            return `0x${hex.replace(/^(0x)?/, '')}`.slice(0, 42);
         }
+        return this.hdWallet.tronBase58ToHex(contract);
+    }
+    tronEvmSigner(fromIndex) {
         const privateKey = this.hdWallet.derivePrivateKeyForChain('TRON', fromIndex);
-        const cacheKey = `${url}:${fromIndex}`;
-        const existing = this.tronWebClients.get(cacheKey);
-        if (existing)
-            return existing;
-        const client = new tronweb_1.TronWeb({ fullHost: url, privateKey });
-        this.tronWebClients.set(cacheKey, client);
-        return client;
+        return new ethers_1.Wallet(privateKey);
+    }
+    async sendTronEvmTx(fromIndex, tx) {
+        const signer = this.tronEvmSigner(fromIndex);
+        const fromHex = this.hdWallet.tronBase58ToHex(signer.address);
+        const [nonce, gasPrice, chainId] = await Promise.all([
+            this.tronRpc('eth_getTransactionCount', [fromHex, 'pending']),
+            this.tronRpc('eth_gasPrice', []),
+            this.tronRpc('eth_chainId', []),
+        ]);
+        const gas = await this.tronRpc('eth_estimateGas', [
+            {
+                from: fromHex,
+                to: tx.to,
+                data: tx.data,
+                ...(tx.value ? { value: `0x${tx.value.toString(16)}` } : {}),
+            },
+        ]).catch(() => '0xf424');
+        const signed = await signer.signTransaction({
+            to: tx.to,
+            data: tx.data,
+            nonce: parseInt(nonce ?? '0x0', 16),
+            gasLimit: BigInt(gas && gas !== '0x' ? gas : '0xf424'),
+            gasPrice: BigInt(gasPrice ?? '0x0'),
+            chainId: parseInt(chainId ?? '0x0', 16),
+            ...(tx.value ? { value: tx.value } : {}),
+        });
+        const txHash = await this.tronRpc('eth_sendRawTransaction', [
+            signed,
+        ]);
+        return txHash;
     }
     async broadcastTronToken(currency, fromIndex, to, amount) {
         const contract = this.config.getStablecoinContractFor('TRON', currency);
         if (!contract) {
             throw new common_1.InternalServerErrorException(`No ${currency} TRC-20 contract configured for TRON`);
         }
-        const client = this.tronWebSigner(fromIndex);
         try {
-            const rawAmount = Math.round(amount * 1e6).toString();
-            const tokenContract = (await client
-                .contract()
-                .at(contract));
-            const txId = await tokenContract
-                .transfer(to, rawAmount)
-                .send({ feeLimit: 25_000_000 });
-            this.logger.log(`TRON ${currency} broadcast: ${amount} ${to} (TX: ${txId})`);
-            return txId;
+            const contractHex = this.resolveTronContractHex(contract);
+            const toHex = this.hdWallet.tronBase58ToHex(to).replace(/^0x/, '');
+            const rawAmount = BigInt(Math.round(amount * 1e6));
+            const paddedAmount = rawAmount.toString(16).padStart(64, '0');
+            const data = ChainClientService_1.TRC20_TRANSFER_SELECTOR +
+                '0'.repeat(24) +
+                toHex +
+                paddedAmount;
+            const txHash = await this.sendTronEvmTx(fromIndex, {
+                to: contractHex,
+                data,
+            });
+            this.logger.log(`TRON ${currency} broadcast: ${amount} ${to} (TX: ${txHash})`);
+            return txHash;
         }
         catch (error) {
             const err = error;
@@ -462,13 +510,15 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         }
     }
     async broadcastTronNative(fromIndex, to, amountTrx) {
-        const client = this.tronWebSigner(fromIndex);
         try {
-            const sun = Math.round(Number(amountTrx) * 1e6);
-            const res = await client.trx.sendTransaction(to, sun);
-            const txId = String(res.txid ?? res);
-            this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txId})`);
-            return txId;
+            const sun = BigInt(Math.round(Number(amountTrx) * 1e6));
+            const txHash = await this.sendTronEvmTx(fromIndex, {
+                to: this.hdWallet.tronBase58ToHex(to),
+                data: '0x',
+                value: sun,
+            });
+            this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txHash})`);
+            return txHash;
         }
         catch (error) {
             const err = error;
@@ -477,21 +527,17 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         }
     }
     async getTronReceipt(txHash) {
-        const client = this.tronWebRead();
         try {
-            const info = (await client.trx.getTransactionInfo(txHash));
-            if (!info || typeof info.blockNumber !== 'number') {
+            const receipt = await this.tronRpc('eth_getTransactionReceipt', [txHash]);
+            if (!receipt || !receipt.blockNumber)
                 return null;
-            }
-            const failed = info.receipt?.result === 'REVERT' || info.receipt?.result === 'FAILED';
-            return {
-                confirmed: !failed,
-                blockNumber: info.blockNumber,
-            };
+            const blockNumber = parseInt(receipt.blockNumber, 16);
+            const failed = receipt.status && receipt.status !== '0x1';
+            return { confirmed: !failed, blockNumber };
         }
         catch (error) {
             const err = error;
-            this.logger.warn(`TRON getTransactionInfo failed for ${txHash}: ${err.message}`);
+            this.logger.warn(`TRON eth_getTransactionReceipt failed for ${txHash}: ${err.message}`);
             return null;
         }
     }
@@ -569,32 +615,53 @@ let ChainClientService = ChainClientService_1 = class ChainClientService {
         return events;
     }
     async getTronTransfers(address, contract, limit = 50) {
-        const baseUrl = this.config.httpUrlForChain('TRON');
-        if (!baseUrl) {
-            throw new common_1.InternalServerErrorException('ALCHEMY_TRON_HTTP_URL is not configured');
-        }
-        const url = `${baseUrl.replace(/\/+$/, '')}/v1/accounts/${address}/transactions/trc20`;
-        const res = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
-            params: {
-                contract_address: contract,
-                limit: Math.min(200, limit),
-                order_by: 'block_timestamp,desc',
+        const logs = await this.fetchTronTransferLogs(contract, [address], limit);
+        return logs.map((log) => ({
+            txHash: log.txHash,
+            amount: log.amount,
+            from: log.from,
+            to: log.to,
+            blockNumber: log.blockNumber,
+            tokenSymbol: null,
+        }));
+    }
+    async fetchTronTransferLogs(contract, toAddresses, maxLogs = 200, fromBlock = 'latest') {
+        const contractHex = this.resolveTronContractHex(contract);
+        const padded = toAddresses.map((a) => '0x' +
+            '0'.repeat(24) +
+            this.hdWallet
+                .tronBase58ToHex(a)
+                .toLowerCase()
+                .replace(/^0x/, ''));
+        const toBlock = await this.tronRpc('eth_blockNumber', []);
+        const toBlockNum = parseInt(toBlock ?? '0x0', 16);
+        const fromBlockNum = fromBlock === 'latest'
+            ? Math.max(0, toBlockNum - TRON_LOG_BLOCK_SPAN)
+            : fromBlock;
+        const rawLogs = await this.tronRpc('eth_getLogs', [
+            {
+                fromBlock: `0x${fromBlockNum.toString(16)}`,
+                toBlock: 'latest',
+                address: contractHex,
+                topics: [
+                    ChainClientService_1.TRC20_TRANSFER_TOPIC,
+                    null,
+                    padded,
+                ],
             },
-            timeout: 20_000,
+        ]);
+        const logs = (Array.isArray(rawLogs) ? rawLogs : [])
+            .filter((l) => Array.isArray(l.topics) && l.topics.length >= 3)
+            .map((l) => ({
+            txHash: l.transactionHash,
+            from: this.hdWallet.tronHexToBase58(l.topics[1]),
+            to: this.hdWallet.tronHexToBase58(l.topics[2]),
+            amount: Number(BigInt(l.data && l.data !== '0x' ? l.data : '0x0')) / 1e6,
+            blockNumber: parseInt(l.blockNumber ?? '0x0', 16),
+            blockTimestampMs: null,
         }));
-        const items = Array.isArray(res.data?.data) ? res.data.data : [];
-        const lower = address.toLowerCase();
-        return items
-            .filter((t) => t.type === 'Transfer' && (t.to || '').toLowerCase() === lower)
-            .slice(0, limit)
-            .map((t) => ({
-            txHash: t.transaction_id,
-            amount: Number(t.value ?? 0) / 1e6,
-            from: t.from || '',
-            to: (t.to || '').toLowerCase(),
-            blockNumber: Math.floor((t.block_timestamp || 0) / 1000),
-            tokenSymbol: t.token_info?.symbol ?? null,
-        }));
+        logs.sort((a, b) => b.blockNumber - a.blockNumber);
+        return logs.slice(0, maxLogs);
     }
     async broadcastBtc(fromIndex, to, amountBtc, feePerByte) {
         const valueSat = Math.floor(amountBtc * 1e8);

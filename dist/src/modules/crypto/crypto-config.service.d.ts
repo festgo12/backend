@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 export declare const STABLECOIN_CONTRACTS_MAINNET: Record<string, string>;
 export declare const STABLECOIN_CONTRACTS_TESTNET: Record<string, string>;
 export declare const STABLECOIN_CONTRACTS_BY_CHAIN: Record<string, Record<string, string>>;
+export declare const STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET: Record<string, Record<string, string>>;
 export declare const STABLECOIN_MINTS_SOLANA: Record<string, string>;
+export declare const STABLECOIN_MINTS_SOLANA_TESTNET: Record<string, string>;
 export type CryptoProvider = 'alchemy';
 export type ChainKind = 'EVM' | 'BTC';
 export type Chain = 'ETH' | 'BSC' | 'POLYGON' | 'SOLANA' | 'TRON';
@@ -14,6 +16,7 @@ export declare class CryptoConfigService implements OnModuleInit {
     private readonly logger;
     constructor(configService: ConfigService);
     onModuleInit(): void;
+    private validateConfiguredContracts;
     get supportedChains(): readonly Chain[];
     chainFamily(chain: string): ChainFamily;
     isEvmChain(chain: string): boolean;

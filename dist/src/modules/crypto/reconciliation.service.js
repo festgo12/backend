@@ -157,7 +157,14 @@ let ReconciliationService = class ReconciliationService {
             }
             catch (error) {
                 const err = error;
-                this.logger.error(`BTC xpub fetch failed (page ${page}): ${err.message}`);
+                let host = '';
+                try {
+                    host = new URL(url).host;
+                }
+                catch {
+                    host = url;
+                }
+                this.logger.error(`BTC xpub fetch failed (page ${page}, host ${host}): ${err.message}${err.cause?.code ? ` (cause: ${err.cause.code})` : ''}`);
                 break;
             }
         } while (page <= totalPages);

@@ -28,15 +28,8 @@ import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import { TronWeb } from 'tronweb';
 import * as bitcoin from 'bitcoinjs-lib';
 
-/** Minimal typed contract surface used for read-only TRC-20 calls. */
-type TronWebContract = {
-  balanceOf(address: string): { call(): Promise<{ toString(): string }> };
-  symbol(): { call(): Promise<{ toString(): string }> };
-  decimals(): { call(): Promise<{ toString(): string }> };
-};
 import { Currency } from '@src/generated/client';
 import {
   ChainFamily,
@@ -50,6 +43,14 @@ const ERC20_ABI = [
   'function transfer(address to, uint256 amount) returns (bool)',
   'function balanceOf(address owner) view returns (uint256)',
 ];
+
+/**
+ * Default block span for TRC-20 eth_getLogs queries on the TRON EVM facade.
+ * TRON blocks are ~3s, so 20k blocks ≈ 17h of history — well within what a
+ * poller on a multi-hour cron needs, and small enough to stay within
+ * provider range limits.
+ */
+const TRON_LOG_BLOCK_SPAN = 20_000;
 
 interface JsonRpcResponse<T = unknown> {
   jsonrpc: string;
@@ -123,8 +124,6 @@ export class ChainClientService {
   private readonly evmProviders = new Map<string, JsonRpcProvider>();
   /** Solana Connection per network URL (typically a single cluster). */
   private readonly solanaConnections = new Map<string, Connection>();
-  /** TronWeb instances per HTTP URL (read-only, no private key). */
-  private readonly tronWebClients = new Map<string, TronWeb>();
 
   /** Per-index async locks ensuring one EVM broadcast at a time per signer. */
   private readonly evmNonceLocks = new Map<number, Promise<void>>();
@@ -213,22 +212,59 @@ export class ChainClientService {
   }
 
   /**
-   * Read-only TronWeb client for the configured TRON RPC URL.
-   * Broadcasts use a separate PrivateKey-attached instance (see below).
+   * Raw EVM-style JSON-RPC call against the TRON endpoint. Alchemy serves
+   * TRON through an EVM-compatible JSON-RPC facade (eth_call, eth_getLogs,
+   * eth_getTransactionReceipt, eth_sendRawTransaction) rather than the
+   * TronGrid full-node HTTP API, so every TRON interaction goes through
+   * this helper with the standard jsonrpc envelope.
    */
-  private tronWebRead(): TronWeb {
+  private async tronRpc<T>(method: string, params: unknown[]): Promise<T> {
     const url = this.config.httpUrlForChain('TRON');
     if (!url) {
       throw new InternalServerErrorException(
         'ALCHEMY_TRON_HTTP_URL is not configured',
       );
     }
-    const existing = this.tronWebClients.get(url);
-    if (existing) return existing;
-    const client = new TronWeb({ fullHost: url });
-    this.tronWebClients.set(url, client);
-    return client;
+    const res = await lastValueFrom(
+      this.httpService.post<JsonRpcResponse<T>>(
+        url,
+        { jsonrpc: '2.0', id: 1, method, params },
+        { timeout: 20_000, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    if (res.data.error) {
+      throw new Error(
+        `TRON RPC ${method} failed: ${res.data.error.message} (code ${res.data.error.code})`,
+      );
+    }
+    return res.data.result as T;
   }
+
+  /**
+   * Converts a base58check T-address into the 0x-prefixed hex form used in
+   * eth_call/eth_getLogs arguments on the TRON EVM facade.
+   */
+  tronAddressToHex(address: string): string {
+    return this.hdWallet.tronBase58ToHex(address);
+  }
+
+  /**
+   * Converts a 0x-prefixed hex address (log topics/values on the TRON EVM
+   * facade) back into the canonical base58check T-address.
+   */
+  tronHexToAddress(hexAddress: string): string {
+    return this.hdWallet.tronHexToBase58(hexAddress);
+  }
+
+  /** balanceOf(address) selector hash: keccak256("balanceOf(address)")[0..4]. */
+  private static readonly BALANCE_OF_SELECTOR = '0x70a08231';
+
+  /** transfer(address,uint256) selector hash: keccak256("transfer(address,uint256)")[0..4]. */
+  private static readonly TRC20_TRANSFER_SELECTOR = '0xa9059cbb';
+
+  /** Transfer(address,address,uint256) topic0 (keccak256, hex-padded). */
+  private static readonly TRC20_TRANSFER_TOPIC =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
   /** Underlying chain family for a Chain. */
   chainFamily(chain: Chain): ChainFamily {
@@ -711,52 +747,114 @@ export class ChainClientService {
 
   // ─── TRON Read + Broadcast ────────────────────────────────────────────
 
-  /** Native TRX balance (sun / 1e6) for an address. */
+  /**
+   * Native TRX balance (TRX / 1e6) for a T-address via eth_getBalance on
+   * Alchemy's TRON EVM facade. TRON balances use 6 decimals (sun).
+   */
   async getTrxBalance(address: string): Promise<number> {
-    const client = this.tronWebRead();
-    const sun = await client.trx.getBalance(address);
+    const hexAddress = this.hdWallet.tronBase58ToHex(address);
+    const weiHex = await this.tronRpc<string>('eth_getBalance', [
+      hexAddress,
+      'latest',
+    ]);
+    // On TRON the base unit (sun) already has 6 decimals; eth_getBalance
+    // returns the raw sun amount, so no 10^18 scaling applies.
+    const sun = BigInt(weiHex ?? '0x0');
     return Number((Number(sun) / 1e6).toFixed(6));
   }
 
-  /** TRC-20 token balance for an address given the contract address. */
+  /**
+   * TRC-20 token balance for a T-address via eth_call(balanceOf) on
+   * Alchemy's TRON EVM facade. TRC-20 USDT/USDC use 6 decimals.
+   */
   async getTronTokenBalance(
     contract: string,
     address: string,
   ): Promise<number> {
-    const client = this.tronWebRead();
-    // tronweb's contract/CHAINSCAN accessors are loosely typed (any); the
-    // result is normalized here so the rest of the code stays type-safe.
-    const tokenContract = (await client
-      .contract()
-      .at(contract)) as unknown as TronWebContract;
-    const raw = await tokenContract.balanceOf(address).call();
-    return Number((Number(raw.toString()) / 1e6).toFixed(6));
+    const contractHex = this.resolveTronContractHex(contract);
+    const ownerHex = this.hdWallet.tronBase58ToHex(address).replace(
+      /^0x/,
+      '',
+    );
+    const data = `${ChainClientService.BALANCE_OF_SELECTOR}${'0'.repeat(24)}${ownerHex}`;
+    const raw = await this.tronRpc<string>('eth_call', [
+      { to: contractHex, data },
+      'latest',
+    ]);
+    const amount = BigInt(raw && raw !== '0x' ? raw : '0x0');
+    return Number((Number(amount) / 1e6).toFixed(6));
   }
 
   /**
-   * TronWeb client bound to a private key for signing TRC-20 / TRX sends.
-   * Cached per (url, address) so repeated broadcasts reuse the client.
+   * Normalizes a TRC-20 contract id (base58 T-address or already-hex form)
+   * to the 0x-prefixed hex form the EVM facade expects.
    */
-  private tronWebSigner(fromIndex: number): TronWeb {
-    const url = this.config.httpUrlForChain('TRON');
-    if (!url) {
-      throw new InternalServerErrorException(
-        'ALCHEMY_TRON_HTTP_URL is not configured',
-      );
+  private resolveTronContractHex(contract: string): string {
+    if (/^0x[0-9a-fA-F]{40}$/.test(contract)) return contract.toLowerCase();
+    if (/^(0x)?[0-9a-fA-F]{42}$/.test(contract)) {
+      const hex = contract.toLowerCase().replace(/^0x/, '');
+      return `0x${hex.replace(/^(0x)?/, '')}`.slice(0, 42);
     }
+    return this.hdWallet.tronBase58ToHex(contract);
+  }
+
+  /**
+   * Ethers signer bound to the TRON-derived private key for building and
+   * signing transactions against Alchemy's TRON EVM facade.
+   */
+  private tronEvmSigner(fromIndex: number): Wallet {
     const privateKey = this.hdWallet.derivePrivateKeyForChain(
       'TRON',
       fromIndex,
     );
-    const cacheKey = `${url}:${fromIndex}`;
-    const existing = this.tronWebClients.get(cacheKey);
-    if (existing) return existing;
-    const client = new TronWeb({ fullHost: url, privateKey });
-    this.tronWebClients.set(cacheKey, client);
-    return client;
+    return new Wallet(privateKey);
   }
 
-  /** Broadcasts a TRC-20 token transfer (USDT/USDC) on TRON. */
+  /**
+   * Builds, signs and broadcasts an EVM-style transaction on the TRON facade.
+   * Returns the transaction hash.
+   */
+  private async sendTronEvmTx(
+    fromIndex: number,
+    tx: { to: string; data: string; value?: bigint },
+  ): Promise<string> {
+    const signer = this.tronEvmSigner(fromIndex);
+    const fromHex = this.hdWallet.tronBase58ToHex(signer.address);
+    const [nonce, gasPrice, chainId] = await Promise.all([
+      this.tronRpc<string>('eth_getTransactionCount', [fromHex, 'pending']),
+      this.tronRpc<string>('eth_gasPrice', []),
+      this.tronRpc<string>('eth_chainId', []),
+    ]);
+    // TRC-20 transfer costs ~65k energy; use a ceiling similar to the old
+    // feeLimit of 25M sun-equivalent energy budget.
+    const gas = await this.tronRpc<string>('eth_estimateGas', [
+      {
+        from: fromHex,
+        to: tx.to,
+        data: tx.data,
+        ...(tx.value ? { value: `0x${tx.value.toString(16)}` } : {}),
+      },
+    ]).catch(() => '0xf424'); // 62500 fallback
+    const signed = await signer.signTransaction({
+      to: tx.to,
+      data: tx.data,
+      nonce: parseInt(nonce ?? '0x0', 16),
+      gasLimit: BigInt(gas && gas !== '0x' ? gas : '0xf424'),
+      gasPrice: BigInt(gasPrice ?? '0x0'),
+      chainId: parseInt(chainId ?? '0x0', 16),
+      ...(tx.value ? { value: tx.value } : {}),
+    });
+    const txHash = await this.tronRpc<string>('eth_sendRawTransaction', [
+      signed,
+    ]);
+    return txHash;
+  }
+
+  /**
+   * Broadcasts a TRC-20 token transfer (USDT/USDC) on TRON via the EVM
+   * facade: builds + signs a `transfer(address,uint256)` call with the
+   * TRON-derived private key and submits through eth_sendRawTransaction.
+   */
   async broadcastTronToken(
     currency: Currency,
     fromIndex: number,
@@ -769,24 +867,25 @@ export class ChainClientService {
         `No ${currency} TRC-20 contract configured for TRON`,
       );
     }
-    const client = this.tronWebSigner(fromIndex);
     try {
+      const contractHex = this.resolveTronContractHex(contract);
+      const toHex = this.hdWallet.tronBase58ToHex(to).replace(/^0x/, '');
       // TRC-20 USDT/USDC use 6 decimals.
-      const rawAmount = Math.round(amount * 1e6).toString();
-      const tokenContract = (await client
-        .contract()
-        .at(contract)) as unknown as {
-        transfer(to: string, amount: string): {
-          send(options?: { feeLimit?: number }): Promise<string>;
-        };
-      };
-      const txId = await tokenContract
-        .transfer(to, rawAmount)
-        .send({ feeLimit: 25_000_000 });
+      const rawAmount = BigInt(Math.round(amount * 1e6));
+      const paddedAmount = rawAmount.toString(16).padStart(64, '0');
+      const data =
+        ChainClientService.TRC20_TRANSFER_SELECTOR +
+        '0'.repeat(24) +
+        toHex +
+        paddedAmount;
+      const txHash = await this.sendTronEvmTx(fromIndex, {
+        to: contractHex,
+        data,
+      });
       this.logger.log(
-        `TRON ${currency} broadcast: ${amount} ${to} (TX: ${txId})`,
+        `TRON ${currency} broadcast: ${amount} ${to} (TX: ${txHash})`,
       );
-      return txId;
+      return txHash;
     } catch (error) {
       const err = error as Error;
       this.logger.error(`TRON ${currency} broadcast failed: ${err.message}`);
@@ -796,21 +895,24 @@ export class ChainClientService {
     }
   }
 
-  /** Broadcasts a native TRX transfer on TRON. */
+  /**
+   * Broadcasts a native TRX transfer on TRON via the EVM facade
+   * (plain value tx; sun have 6 decimals on TRON).
+   */
   async broadcastTronNative(
     fromIndex: number,
     to: string,
     amountTrx: number,
   ): Promise<string> {
-    const client = this.tronWebSigner(fromIndex);
     try {
-      const sun = Math.round(Number(amountTrx) * 1e6);
-      // tronweb's return type is a generic SignedTransaction object; the txid
-      // is accessible via the transaction id. Normalize to string here.
-      const res = await client.trx.sendTransaction(to, sun);
-      const txId = String((res as unknown as { txid?: string }).txid ?? res);
-      this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txId})`);
-      return txId;
+      const sun = BigInt(Math.round(Number(amountTrx) * 1e6));
+      const txHash = await this.sendTronEvmTx(fromIndex, {
+        to: this.hdWallet.tronBase58ToHex(to),
+        data: '0x',
+        value: sun,
+      });
+      this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txHash})`);
+      return txHash;
     } catch (error) {
       const err = error as Error;
       this.logger.error(`TRON native broadcast failed: ${err.message}`);
@@ -821,32 +923,27 @@ export class ChainClientService {
   }
 
   /**
-   * Confirmation status for a TRON tx. Returns null if the tx is not yet
-   * on-chain; otherwise the block number and whether it is confirmed.
+   * Confirmation status for a TRON tx via eth_getTransactionReceipt on
+   * Alchemy's TRON EVM facade. Returns null if the tx is not yet on-chain;
+   * otherwise the block number and whether it is confirmed.
    */
   async getTronReceipt(txHash: string): Promise<{
     confirmed: boolean;
     blockNumber: number;
   } | null> {
-    const client = this.tronWebRead();
     try {
-      const info = (await client.trx.getTransactionInfo(txHash)) as unknown as {
-        blockNumber?: number;
-        receipt?: { result?: string };
-      };
-      if (!info || typeof info.blockNumber !== 'number') {
-        return null;
-      }
-      const failed =
-        info.receipt?.result === 'REVERT' || info.receipt?.result === 'FAILED';
-      return {
-        confirmed: !failed,
-        blockNumber: info.blockNumber,
-      };
+      const receipt = await this.tronRpc<{
+        blockNumber?: string | null;
+        status?: string | null;
+      } | null>('eth_getTransactionReceipt', [txHash]);
+      if (!receipt || !receipt.blockNumber) return null;
+      const blockNumber = parseInt(receipt.blockNumber, 16);
+      const failed = receipt.status && receipt.status !== '0x1';
+      return { confirmed: !failed, blockNumber };
     } catch (error) {
       const err = error as Error;
       this.logger.warn(
-        `TRON getTransactionInfo failed for ${txHash}: ${err.message}`,
+        `TRON eth_getTransactionReceipt failed for ${txHash}: ${err.message}`,
       );
       return null;
     }
@@ -961,7 +1058,12 @@ export class ChainClientService {
     return events;
   }
 
-  /** Minimal shape of a TronGrid v1 TRC-20 transfer entry. */
+  /**
+   * Recent inbound TRC-20 transfers to a T-address via eth_getLogs on
+   * Alchemy's TRON EVM facade (replaces the TronGrid v1 endpoint, which the
+   * facade does not serve). Returns transfers decoded from the standard
+   * Transfer(address,address,uint256) event.
+   */
   async getTronTransfers(
     address: string,
     contract: string,
@@ -976,53 +1078,90 @@ export class ChainClientService {
       tokenSymbol: string | null;
     }>
   > {
-    const baseUrl = this.config.httpUrlForChain('TRON');
-    if (!baseUrl) {
-      throw new InternalServerErrorException(
-        'ALCHEMY_TRON_HTTP_URL is not configured',
-      );
-    }
-    const url = `${baseUrl.replace(/\/+$/, '')}/v1/accounts/${address}/transactions/trc20`;
-    const res = await lastValueFrom(
-      this.httpService.get<{
-        data?: Array<{
-          transaction_id: string;
-          type: string;
-          to: string | null;
-          from: string | null;
-          value: string | null;
-          block_timestamp: number | null;
-          token_info?: {
-            address?: string;
-            symbol?: string;
-            decimals?: number;
-          };
-        }>;
-      }>(url, {
-        params: {
-          contract_address: contract,
-          limit: Math.min(200, limit),
-          order_by: 'block_timestamp,desc',
-        },
-        timeout: 20_000,
-      }),
+    const logs = await this.fetchTronTransferLogs(
+      contract,
+      [address],
+      limit,
     );
-    const items = Array.isArray(res.data?.data) ? res.data.data : [];
-    const lower = address.toLowerCase();
-    return items
-      .filter(
-        (t) =>
-          t.type === 'Transfer' && (t.to || '').toLowerCase() === lower,
-      )
-      .slice(0, limit)
-      .map((t) => ({
-        txHash: t.transaction_id,
-        amount: Number(t.value ?? 0) / 1e6,
-        from: t.from || '',
-        to: (t.to || '').toLowerCase(),
-        blockNumber: Math.floor((t.block_timestamp || 0) / 1000),
-        tokenSymbol: t.token_info?.symbol ?? null,
+    return logs.map((log) => ({
+      txHash: log.txHash,
+      amount: log.amount,
+      from: log.from,
+      to: log.to,
+      blockNumber: log.blockNumber,
+      tokenSymbol: null,
+    }));
+  }
+
+  /**
+   * Fetches TRC-20 Transfer logs to any of `toAddresses` (base58 T-addresses)
+   * for `contract`, decoded and newest-first. Shared by the admin history
+   * pull and the deposit poller.
+   */
+  async fetchTronTransferLogs(
+    contract: string,
+    toAddresses: string[],
+    maxLogs = 200,
+    fromBlock: number | 'latest' = 'latest',
+  ): Promise<
+    Array<{
+      txHash: string;
+      amount: number;
+      from: string;
+      to: string;
+      blockNumber: number;
+      blockTimestampMs: number | null;
+    }>
+  > {
+    const contractHex = this.resolveTronContractHex(contract);
+    const padded = toAddresses.map(
+      (a) =>
+        '0x' +
+        '0'.repeat(24) +
+        this.hdWallet
+          .tronBase58ToHex(a)
+          .toLowerCase()
+          .replace(/^0x/, ''),
+    );
+    const toBlock = await this.tronRpc<string>('eth_blockNumber', []);
+    const toBlockNum = parseInt(toBlock ?? '0x0', 16);
+    const fromBlockNum =
+      fromBlock === 'latest'
+        ? Math.max(0, toBlockNum - TRON_LOG_BLOCK_SPAN)
+        : fromBlock;
+    const rawLogs = await this.tronRpc<
+      Array<{
+        transactionHash: string;
+        blockNumber: string;
+        topics: string[];
+        data: string;
+      }>
+    >('eth_getLogs', [
+      {
+        fromBlock: `0x${fromBlockNum.toString(16)}`,
+        toBlock: 'latest',
+        address: contractHex,
+        topics: [
+          ChainClientService.TRC20_TRANSFER_TOPIC,
+          null,
+          padded,
+        ],
+      },
+    ]);
+
+    const logs = (Array.isArray(rawLogs) ? rawLogs : [])
+      .filter((l) => Array.isArray(l.topics) && l.topics.length >= 3)
+      .map((l) => ({
+        txHash: l.transactionHash,
+        from: this.hdWallet.tronHexToBase58(l.topics[1]),
+        to: this.hdWallet.tronHexToBase58(l.topics[2]),
+        amount: Number(BigInt(l.data && l.data !== '0x' ? l.data : '0x0')) / 1e6,
+        blockNumber: parseInt(l.blockNumber ?? '0x0', 16),
+        blockTimestampMs: null as number | null,
       }));
+    // Newest first (approximation by block number descending).
+    logs.sort((a, b) => b.blockNumber - a.blockNumber);
+    return logs.slice(0, maxLogs);
   }
 
   // ─── BTC Broadcast (Alchemy RPC) ──────────────────────────────────────

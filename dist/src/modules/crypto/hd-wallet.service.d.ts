@@ -43,6 +43,8 @@ export declare class HdWalletService {
     private deriveSolanaAddress;
     private deriveTronAddress;
     private base58Check;
+    tronHexToBase58(hexAddress: string): string;
+    tronBase58ToHex(address: string): string;
     private deriveBtcAddress;
     private get btcNetwork();
 }
