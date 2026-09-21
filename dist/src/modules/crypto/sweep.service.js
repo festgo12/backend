@@ -215,8 +215,32 @@ let SweepService = SweepService_1 = class SweepService {
                         continue;
                     }
                 }
-                this.logger.log(`${chain} sweep candidate: ${balance} ${wallet.currency} (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`);
-                await this.sweepChainCurrency(chain, wallet.currency, wallet.derivationIndex, address, balance, result);
+                let sweepAmount = balance;
+                if (this.config.isEvmChain(chain) && wallet.currency === client_1.Currency.ETH) {
+                    const gasCost = await this.chainClient.estimateNativeTransferGasCost(chain, address);
+                    if (gasCost > 0) {
+                        if (balance <= gasCost) {
+                            result.skipped += 1;
+                            result.errors.push(`${chain} ETH ${address}: balance ${balance} does not cover the ~${gasCost} ETH transfer gas; skipping`);
+                            continue;
+                        }
+                        sweepAmount = balance - gasCost;
+                    }
+                }
+                if (chain === 'BTC' && wallet.currency === client_1.Currency.BTC) {
+                    const feePerByte = await this.chainClient.getBtcRecommendedFee();
+                    const feeBtc = await this.chainClient.estimateBtcSweepFee(address, feePerByte);
+                    if (feeBtc > 0) {
+                        if (balance <= feeBtc) {
+                            result.skipped += 1;
+                            result.errors.push(`${chain} BTC ${address}: balance ${balance} does not cover the ~${feeBtc} BTC miner fee; skipping`);
+                            continue;
+                        }
+                        sweepAmount = balance - feeBtc;
+                    }
+                }
+                this.logger.log(`${chain} sweep candidate: ${sweepAmount} ${wallet.currency} of ${balance} total (~$${balanceUsd.toFixed(2)}) ≥ $${thresholdUsd}`);
+                await this.sweepChainCurrency(chain, wallet.currency, wallet.derivationIndex, address, sweepAmount, result);
             }
         }
         return result;

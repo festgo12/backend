@@ -73,6 +73,9 @@ export declare class ChainClientService {
     getBtcUtxos(address: string): Promise<BtcUtxo[]>;
     estimateTokenTransferGasCost(chain: string, fromAddress: string, currency: Currency): Promise<number>;
     getNativeGasBalance(chain: string, address: string): Promise<number>;
+    private static readonly NATIVE_TRANSFER_GAS;
+    estimateNativeTransferGasCost(chain: string, fromAddress: string): Promise<number>;
+    estimateBtcSweepFee(address: string, feePerByte: number): Promise<number>;
     broadcastEvmNative(fromIndex: number, to: string, amount: number, chain?: string): Promise<string>;
     broadcastEvmToken(currency: Currency, fromIndex: number, to: string, amount: number, chain?: string): Promise<string>;
     getSolBalance(address: string): Promise<number>;

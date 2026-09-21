@@ -32,6 +32,8 @@ describe('ChainClientService', () => {
     alchemyBtcHttpUrl: 'https://bitcoin-testnet4.g.alchemy.com/v2/test',
     isAlchemy: true,
     getStablecoinContract: jest.fn(),
+    isEvmChain: (chain: string) =>
+      chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON',
   };
 
   const mockHdWallet = {
@@ -351,6 +353,79 @@ describe('ChainClientService', () => {
       const balance = await service.getEvmBalance('0xabc', Currency.ETH);
 
       expect(balance).toBe(0.123);
+    });
+  });
+
+  describe('estimateNativeTransferGasCost', () => {
+    it('multiplies live gas price by 21,000 transfer gas', async () => {
+      // 20 gwei * 21,000 = 420,000 gwei = 0.00042 ETH.
+      const fakeProvider = {
+        getFeeData: jest
+          .fn()
+          .mockResolvedValue({ gasPrice: 20_000_000_000n }),
+      };
+      const testService = service as unknown as {
+        evmProviders: Map<string, unknown>;
+      };
+      testService.evmProviders.set('ETH', fakeProvider);
+
+      const cost = await service.estimateNativeTransferGasCost('ETH', '0xabc');
+
+      expect(cost).toBeCloseTo(0.00042, 12);
+    });
+
+    it('returns 0 when the provider reports no gas price', async () => {
+      const fakeProvider = {
+        getFeeData: jest.fn().mockResolvedValue({ gasPrice: null }),
+      };
+      const testService = service as unknown as {
+        evmProviders: Map<string, unknown>;
+      };
+      testService.evmProviders.set('ETH', fakeProvider);
+
+      const cost = await service.estimateNativeTransferGasCost('ETH', '0xabc');
+
+      expect(cost).toBe(0);
+    });
+
+    it('returns 0 for non-EVM chains', async () => {
+      const cost = await service.estimateNativeTransferGasCost(
+        'BTC',
+        'bc1qabc',
+      );
+      expect(cost).toBe(0);
+    });
+  });
+
+  describe('estimateBtcSweepFee', () => {
+    it('mirrors broadcastBtc sizing for the current utxo set', async () => {
+      (http.post as jest.Mock).mockReturnValue(
+        of({
+          data: {
+            jsonrpc: '2.0',
+            id: 1,
+            result: [
+              { txid: 'aa', vout: 0, amount: 0.001, confirmations: 6 },
+              { txid: 'bb', vout: 0, amount: 0.002, confirmations: 6 },
+            ],
+          },
+        }),
+      );
+
+      // 2 inputs: (10 + 68*2 + 31*2) = 208 bytes * 5 sat/vB = 1040 sats.
+      const fee = await service.estimateBtcSweepFee('tb1abc', 5);
+
+      expect(fee).toBeCloseTo(1040 / 1e8, 12);
+    });
+
+    it('returns 0 when the utxo lookup fails so the sweep falls back', async () => {
+      (http.post as jest.Mock).mockImplementation(() => {
+        throw new Error('rpc down');
+      });
+
+      const fee = await service.estimateBtcSweepFee('tb1abc', 5);
+
+      expect(fee).toBe(0);
     });
   });
 });

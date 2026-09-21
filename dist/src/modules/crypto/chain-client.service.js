@@ -332,6 +332,39 @@ let ChainClientService = class ChainClientService {
             return this.getTrxBalance(address);
         return 0;
     }
+    static NATIVE_TRANSFER_GAS = 21000n;
+    async estimateNativeTransferGasCost(chain, fromAddress) {
+        if (!this.config.isEvmChain(chain))
+            return 0;
+        try {
+            const provider = this.providerForChain(chain);
+            const feeData = await provider.getFeeData();
+            const gasPrice = feeData.gasPrice ?? 0n;
+            if (gasPrice === 0n)
+                return 0;
+            const wei = gasPrice * ChainClientService_1.NATIVE_TRANSFER_GAS;
+            return Number((0, ethers_1.formatEther)(wei));
+        }
+        catch (error) {
+            const err = error;
+            this.logger.warn(`Native gas estimation failed for ${chain}: ${err.message}`);
+            return 0;
+        }
+    }
+    async estimateBtcSweepFee(address, feePerByte) {
+        try {
+            const utxos = await this.getBtcUtxos(address);
+            const inputs = Math.max(1, utxos.length);
+            const size = 10 + 68 * inputs + 31 * 2;
+            const feeSat = Math.max(1, Math.round(size * feePerByte));
+            return feeSat / 1e8;
+        }
+        catch (error) {
+            const err = error;
+            this.logger.warn(`BTC sweep fee estimation failed for ${address}: ${err.message}`);
+            return 0;
+        }
+    }
     async broadcastEvmNative(fromIndex, to, amount, chain = 'ETH') {
         return this.withNonceLock(fromIndex, async () => {
             const signer = this.evmSigner(fromIndex, chain);

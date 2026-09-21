@@ -52,6 +52,8 @@ describe('SweepService', () => {
     broadcastTronToken: jest.fn(),
     estimateTokenTransferGasCost: jest.fn(),
     getNativeGasBalance: jest.fn(),
+    estimateNativeTransferGasCost: jest.fn(),
+    estimateBtcSweepFee: jest.fn(),
   };
 
   const mockConfig = {
@@ -86,6 +88,10 @@ describe('SweepService', () => {
     // Default: gas pre-flight passes (estimate > 0, balance covers it).
     mockChainClient.estimateTokenTransferGasCost.mockResolvedValue(0.001);
     mockChainClient.getNativeGasBalance.mockResolvedValue(1);
+    // Native-sweep fee reservation: default estimates resolve to 0 (sweep
+    // the full balance) — native-specific tests override these.
+    mockChainClient.estimateNativeTransferGasCost.mockResolvedValue(0);
+    mockChainClient.estimateBtcSweepFee.mockResolvedValue(0);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -476,7 +482,7 @@ describe('SweepService', () => {
     expect(summary.errors[0]).toContain('insufficient native gas');
   });
 
-  it('does not pre-flight gas for native ETH sweeps (gas is paid from the swept balance)', async () => {
+  it('does not pre-flight token gas for native ETH sweeps but reserves transfer gas out of the amount', async () => {
     mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
       chain === 'ETH' ? ['0xUserDeposit'] : [],
     );
@@ -489,6 +495,8 @@ describe('SweepService', () => {
       derivationIndex: 1000,
     });
     mockChainClient.getEvmBalance.mockResolvedValue(1);
+    // Transfer gas is estimated and deducted from the swept amount.
+    mockChainClient.estimateNativeTransferGasCost.mockResolvedValue(0.000042);
     mockChainClient.broadcastEvmNative.mockResolvedValue('0xethsweep');
     mockPrisma.wallet.findFirst.mockResolvedValue({
       id: 'user-wallet',
@@ -507,6 +515,106 @@ describe('SweepService', () => {
       mockChainClient.estimateTokenTransferGasCost,
     ).not.toHaveBeenCalled();
     expect(mockChainClient.getNativeGasBalance).not.toHaveBeenCalled();
-    expect(mockChainClient.broadcastEvmNative).toHaveBeenCalled();
+    // Net amount = balance - gas reservation, NOT the full balance.
+    expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
+      1000,
+      '0xMaster',
+      0.999958,
+      'ETH',
+    );
+  });
+
+  it('skips a native ETH sweep whose balance cannot cover the transfer gas', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'ETH' ? ['0xUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.ETH,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(0.00001);
+    mockChainClient.estimateNativeTransferGasCost.mockResolvedValue(0.000042);
+
+    const summary = await service.manualSweepChain('ETH');
+
+    expect(mockChainClient.broadcastEvmNative).not.toHaveBeenCalled();
+    expect(summary.evmSwept).toBe(0);
+    expect(summary.evmSkipped).toBe(1);
+    expect(summary.errors[0]).toContain('does not cover the');
+    expect(summary.errors[0]).toContain('transfer gas');
+  });
+
+  it('deducts the estimated miner fee from a native BTC sweep amount', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'BTC' ? ['bc1UserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'BTC', walletId: 'btc-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'btc-user-wallet',
+      currency: Currency.BTC,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getBtcUtxos.mockResolvedValue([
+      { txid: 'a', vout: 0, value: 100000, blockHeight: 1 },
+    ]);
+    mockChainClient.getBtcRecommendedFee.mockResolvedValue(5);
+    // Fee mirrors broadcastBtc sizing: (10 + 68*1 + 31*2) * 5 = 700 sats.
+    mockChainClient.estimateBtcSweepFee.mockResolvedValue(700 / 1e8);
+    mockChainClient.broadcastBtc.mockResolvedValue('btctxid');
+    mockPrisma.wallet.findFirst.mockResolvedValue({
+      id: 'btc-user-wallet',
+      currency: Currency.BTC,
+      derivationIndex: 1000,
+    });
+    mockPrisma.walletTransaction.findMany.mockResolvedValue([]);
+    mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'sweep-tx' });
+    mockPlatformService.getPlatformFeeWallet.mockResolvedValue({
+      id: 'platform-fee-wallet',
+    });
+
+    const summary = await service.manualSweepChain('BTC');
+
+    // Net amount = 0.001 - 0.000007 = 0.000993 BTC.
+    expect(mockChainClient.broadcastBtc).toHaveBeenCalledWith(
+      1000,
+      expect.any(String),
+      0.000993,
+      5,
+    );
+    expect(summary.btcSwept).toBe(1);
+    expect(summary.errors).toHaveLength(0);
+  });
+
+  it('skips a native BTC sweep whose balance cannot cover the miner fee', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'BTC' ? ['bc1UserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'BTC', walletId: 'btc-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'btc-user-wallet',
+      currency: Currency.BTC,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getBtcUtxos.mockResolvedValue([
+      { txid: 'a', vout: 0, value: 300, blockHeight: 1 },
+    ]);
+    mockChainClient.getBtcRecommendedFee.mockResolvedValue(5);
+    // Fee (700 sats) exceeds the 300-sat balance.
+    mockChainClient.estimateBtcSweepFee.mockResolvedValue(700 / 1e8);
+
+    const summary = await service.manualSweepChain('BTC');
+
+    expect(mockChainClient.broadcastBtc).not.toHaveBeenCalled();
+    expect(summary.btcSwept).toBe(0);
+    expect(summary.btcSkipped).toBe(1);
+    expect(summary.errors[0]).toContain('miner fee');
   });
 });

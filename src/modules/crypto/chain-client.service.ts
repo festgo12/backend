@@ -577,6 +577,63 @@ export class ChainClientService {
     return 0;
   }
 
+  /**
+   * Gas units a native (ETH) transfer consumes. 21,000 standard.
+   */
+  private static readonly NATIVE_TRANSFER_GAS = 21_000n;
+
+  /**
+   * Estimates the native-gas cost (in the chain's native units) of sweeping
+   * a NATIVE asset (ETH) from `fromAddress` on `chain`. Used by the sweeper
+   * to reserve gas out of the swept balance. Returns 0 when estimation is
+   * unavailable (caller then sweeps the full balance).
+   */
+  async estimateNativeTransferGasCost(
+    chain: string,
+    fromAddress: string,
+  ): Promise<number> {
+    if (!this.config.isEvmChain(chain)) return 0;
+    try {
+      const provider = this.providerForChain(chain);
+      const feeData = await provider.getFeeData();
+      const gasPrice = feeData.gasPrice ?? 0n;
+      if (gasPrice === 0n) return 0;
+      const wei = gasPrice * ChainClientService.NATIVE_TRANSFER_GAS;
+      return Number(formatEther(wei));
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `Native gas estimation failed for ${chain}: ${err.message}`,
+      );
+      return 0;
+    }
+  }
+
+  /**
+   * Estimates the miner fee (BTC) for sweeping all confirmed utxos of an
+   * address at `feePerByte`. Mirrors broadcastBtc's sizing so the sweeper
+   * can deduct the fee up front. Returns 0 when estimation is unavailable.
+   */
+  async estimateBtcSweepFee(
+    address: string,
+    feePerByte: number,
+  ): Promise<number> {
+    try {
+      const utxos = await this.getBtcUtxos(address);
+      const inputs = Math.max(1, utxos.length);
+      // 2 outputs: destination + optional change.
+      const size = 10 + 68 * inputs + 31 * 2;
+      const feeSat = Math.max(1, Math.round(size * feePerByte));
+      return feeSat / 1e8;
+    } catch (error) {
+      const err = error as ErrorLike;
+      this.logger.warn(
+        `BTC sweep fee estimation failed for ${address}: ${err.message}`,
+      );
+      return 0;
+    }
+  }
+
   // ─── EVM Broadcast ─────────────────────────────────────────────────────
 
   async broadcastEvmNative(
