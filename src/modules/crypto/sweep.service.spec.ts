@@ -511,15 +511,14 @@ describe('SweepService', () => {
 
     await service.manualSweepChain('ETH');
 
-    expect(
-      mockChainClient.estimateTokenTransferGasCost,
-    ).not.toHaveBeenCalled();
+    expect(mockChainClient.estimateTokenTransferGasCost).not.toHaveBeenCalled();
     expect(mockChainClient.getNativeGasBalance).not.toHaveBeenCalled();
-    // Net amount = balance - gas reservation, NOT the full balance.
+    // Net amount = balance - gas reservation × 1.25 safety buffer,
+    // NOT the full balance. 0.000042 × 1.25 = 0.0000525.
     expect(mockChainClient.broadcastEvmNative).toHaveBeenCalledWith(
       1000,
       '0xMaster',
-      0.999958,
+      1 - 0.0000525,
       'ETH',
     );
   });
@@ -580,11 +579,11 @@ describe('SweepService', () => {
 
     const summary = await service.manualSweepChain('BTC');
 
-    // Net amount = 0.001 - 0.000007 = 0.000993 BTC.
+    // Net amount = 0.001 - (0.000007 × 1.25 buffer) = 0.00099125 BTC.
     expect(mockChainClient.broadcastBtc).toHaveBeenCalledWith(
       1000,
       expect.any(String),
-      0.000993,
+      0.001 - (700 / 1e8) * 1.25,
       5,
     );
     expect(summary.btcSwept).toBe(1);
@@ -616,5 +615,84 @@ describe('SweepService', () => {
     expect(summary.btcSwept).toBe(0);
     expect(summary.btcSkipped).toBe(1);
     expect(summary.errors[0]).toContain('miner fee');
+  });
+
+  it('skips a zero-balance address without broadcasting', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'ETH' ? ['0xUserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDT,
+      derivationIndex: 1000,
+    });
+    mockChainClient.getEvmBalance.mockResolvedValue(0);
+    // convertToUsd default returns 50 which would pass the threshold — a
+    // zero on-chain balance must short-circuit before any broadcast.
+
+    const summary = await service.manualSweepChain('ETH');
+
+    expect(mockChainClient.broadcastEvmToken).not.toHaveBeenCalled();
+    expect(mockChainClient.estimateTokenTransferGasCost).not.toHaveBeenCalled();
+    expect(summary.evmSwept).toBe(0);
+    expect(summary.evmSkipped).toBe(0);
+    expect(summary.errors).toHaveLength(0);
+  });
+
+  it('skips an address whose balance read fails and continues the chain', async () => {
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'ETH' ? ['0xBadContract'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'ETH', walletId: 'user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'user-wallet',
+      currency: Currency.USDC,
+      derivationIndex: 1000,
+    });
+    // Simulates ethers BAD_DATA: undeployed/wrong contract returns 0x.
+    mockChainClient.getEvmBalance.mockRejectedValue(
+      new Error('could not decode result data (value="0x")'),
+    );
+
+    const summary = await service.manualSweepChain('ETH');
+
+    expect(mockChainClient.broadcastEvmToken).not.toHaveBeenCalled();
+    expect(summary.evmSwept).toBe(0);
+    expect(summary.evmSkipped).toBe(1);
+    expect(summary.errors[0]).toContain('balance read failed');
+  });
+
+  it('continues the sweep run when one chain fails at the chain level', async () => {
+    // BTC chain blows up before any address loop (e.g. RPC provider outage,
+    // disabled provider add-on → thrown from a chain-level call)...
+    mockDepositRegistry.addressesForChain.mockImplementation((chain: string) =>
+      chain === 'BTC' ? ['bc1UserDeposit'] : [],
+    );
+    mockDepositRegistry.lookup.mockReturnValue([
+      { chain: 'BTC', walletId: 'btc-user-wallet' },
+    ]);
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'btc-user-wallet',
+      currency: Currency.BTC,
+      derivationIndex: 1000,
+    });
+    // Chain-level infrastructure failure: the sweep config read itself dies.
+    mockPrisma.sweepConfig.findUnique.mockRejectedValue(
+      new Error('RPC provider unavailable'),
+    );
+
+    const summary = await service.manualSweepAll();
+
+    // The failure is contained: logged as a per-chain error, not thrown.
+    expect(summary.errors.some((e) => e.startsWith('BTC:'))).toBe(true);
+    // The run completed — every chain still has an entry in the summary.
+    expect(summary.sweptByChain).toHaveProperty('ETH');
+    expect(summary.sweptByChain).toHaveProperty('BTC');
+    expect(summary.skippedByChain).toHaveProperty('BTC');
   });
 });

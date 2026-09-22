@@ -10,11 +10,19 @@ import { PlatformService } from './platform.service';
 import { ExchangeRateService } from './exchange-rate.service';
 import { Currency, LedgerType } from '@src/generated/client';
 import { LedgerService } from '../wallet/ledger.service';
-import { WalletTransactionEvent } from '../wallet/wallet.service';
 
 interface ErrorLike {
   message: string;
 }
+
+/**
+ * Safety multiplier applied to every gas/miner-fee estimate before it is
+ * used (as a deduction from a native sweep amount, or as a pre-flight
+ * requirement). Covers fee spikes between estimation and broadcast — the
+ * node validates the tx against maxFeePerGas, which can exceed the
+ * gasPrice captured at estimate time.
+ */
+const GAS_SAFETY_FACTOR = 1.25;
 
 export interface SweepRunSummary {
   evmSwept: number;
@@ -127,7 +135,8 @@ export class SweepService {
       };
       const res = await this.sweepChain(chain);
       summary.errors.push(...res.errors);
-      summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
+      summary.sweptByChain[chain] =
+        (summary.sweptByChain[chain] ?? 0) + res.swept;
       summary.skippedByChain[chain] =
         (summary.skippedByChain[chain] ?? 0) + res.skipped;
       if (chain === 'BTC') {
@@ -174,11 +183,26 @@ export class SweepService {
         sweptByChain: {},
         skippedByChain: {},
       };
-      // Sweep every supported chain plus the standalone BTC chain.
+      // Sweep every supported chain plus the standalone BTC chain. A
+      // chain-level failure (RPC outage, disabled provider add-on) must not
+      // abort the remaining chains — log and continue.
       for (const chain of this.registryChains()) {
-        const res = await this.sweepChain(chain);
+        let res: { swept: number; skipped: number; errors: string[] };
+        try {
+          res = await this.sweepChain(chain);
+        } catch (error) {
+          const err = error as ErrorLike;
+          this.logger.warn(
+            `${chain} sweep run failed; skipping the chain: ${err.message}`,
+          );
+          summary.errors.push(`${chain}: ${err.message}`);
+          summary.sweptByChain[chain] = summary.sweptByChain[chain] ?? 0;
+          summary.skippedByChain[chain] = summary.skippedByChain[chain] ?? 0;
+          continue;
+        }
         summary.errors.push(...res.errors);
-        summary.sweptByChain[chain] = (summary.sweptByChain[chain] ?? 0) + res.swept;
+        summary.sweptByChain[chain] =
+          (summary.sweptByChain[chain] ?? 0) + res.swept;
         summary.skippedByChain[chain] =
           (summary.skippedByChain[chain] ?? 0) + res.skipped;
         if (chain === 'BTC') {
@@ -213,7 +237,9 @@ export class SweepService {
 
     const chainConfig = await this.sweepConfigFor(chain);
     if (!chainConfig.enabled) {
-      this.logger.log(`${chain} sweep disabled by config; skipping ${addresses.length} addresses`);
+      this.logger.log(
+        `${chain} sweep disabled by config; skipping ${addresses.length} addresses`,
+      );
       return { swept: 0, skipped: addresses.length, errors: [] };
     }
     const thresholdUsd =
@@ -243,7 +269,24 @@ export class SweepService {
           continue;
         }
 
-        const balance = await this.chainBalance(chain, wallet.currency, address);
+        // A failed balance read (RPC error, undeployed/wrong token contract
+        // returning 0x) must skip the address, not crash the whole sweep.
+        let balance: number;
+        try {
+          balance = await this.chainBalance(chain, wallet.currency, address);
+        } catch (error) {
+          const err = error as ErrorLike;
+          result.skipped += 1;
+          result.errors.push(
+            `${chain} ${wallet.currency} ${address}: balance read failed; skipping (${err.message})`,
+          );
+          this.logger.warn(
+            `${chain} balance read failed for ${address} (${wallet.currency}): ${err.message}`,
+          );
+          continue;
+        }
+        // Nothing to move — never broadcast a zero-amount transfer.
+        if (balance <= 0) continue;
         const balanceUsd = this.exchangeRate.convertToUsd(
           balance,
           wallet.currency,
@@ -262,6 +305,7 @@ export class SweepService {
             wallet.currency,
             address,
             balance,
+            GAS_SAFETY_FACTOR,
           );
           if (!gasOk) {
             result.skipped += 1;
@@ -278,10 +322,8 @@ export class SweepService {
         // fails with insufficient funds.
         let sweepAmount = balance;
         if (this.config.isEvmChain(chain) && wallet.currency === Currency.ETH) {
-          const gasCost = await this.chainClient.estimateNativeTransferGasCost(
-            chain,
-            address,
-          );
+          const gasCost =
+            await this.chainClient.estimateNativeTransferGasCost(chain);
           if (gasCost > 0) {
             if (balance <= gasCost) {
               result.skipped += 1;
@@ -290,22 +332,33 @@ export class SweepService {
               );
               continue;
             }
-            sweepAmount = balance - gasCost;
+            const gasCostBuffered = gasCost * GAS_SAFETY_FACTOR;
+            if (balance <= gasCostBuffered) {
+              result.skipped += 1;
+              result.errors.push(
+                `${chain} ETH ${address}: balance ${balance} does not cover the ~${gasCostBuffered} ETH transfer gas (incl. ${GAS_SAFETY_FACTOR}x safety buffer); skipping`,
+              );
+              continue;
+            }
+            sweepAmount = balance - gasCostBuffered;
           }
         }
         if (chain === 'BTC' && wallet.currency === Currency.BTC) {
           const feePerByte = await this.chainClient.getBtcRecommendedFee();
-          const feeBtc =
-            await this.chainClient.estimateBtcSweepFee(address, feePerByte);
+          const feeBtc = await this.chainClient.estimateBtcSweepFee(
+            address,
+            feePerByte,
+          );
           if (feeBtc > 0) {
-            if (balance <= feeBtc) {
+            const feeBtcBuffered = feeBtc * GAS_SAFETY_FACTOR;
+            if (balance <= feeBtcBuffered) {
               result.skipped += 1;
               result.errors.push(
-                `${chain} BTC ${address}: balance ${balance} does not cover the ~${feeBtc} BTC miner fee; skipping`,
+                `${chain} BTC ${address}: balance ${balance} does not cover the ~${feeBtcBuffered} BTC miner fee (incl. ${GAS_SAFETY_FACTOR}x safety buffer); skipping`,
               );
               continue;
             }
-            sweepAmount = balance - feeBtc;
+            sweepAmount = balance - feeBtcBuffered;
           }
         }
 
@@ -336,6 +389,7 @@ export class SweepService {
     currency: Currency,
     address: string,
     tokenBalance: number,
+    safetyFactor = 1,
   ): Promise<boolean> {
     try {
       const gasCost = await this.chainClient.estimateTokenTransferGasCost(
@@ -348,7 +402,9 @@ export class SweepService {
         chain,
         address,
       );
-      if (gasBalance >= gasCost) return true;
+      // Require the balance to cover the estimate × safety factor so a fee
+      // spike between pre-flight and broadcast cannot strand the sweep.
+      if (gasBalance >= gasCost * safetyFactor) return true;
       this.logger.warn(
         `${chain} sweep pre-flight: ${address} has ${gasBalance} native but needs ~${gasCost} for the ${currency} sweep (${tokenBalance} ${currency} will be skipped)`,
       );
@@ -431,7 +487,8 @@ export class SweepService {
   /** The platform master address to sweep funds into for a chain. */
   private destinationAddress(chain: string): string {
     if (chain === 'BTC') return this.hdWallet.getMasterAddress('BTC');
-    if (this.config.isEvmChain(chain)) return this.hdWallet.getMasterAddress('EVM');
+    if (this.config.isEvmChain(chain))
+      return this.hdWallet.getMasterAddress('EVM');
     return this.hdWallet.getMasterAddressForChain(chain);
   }
 
@@ -450,13 +507,29 @@ export class SweepService {
     if (this.config.isEvmChain(chain)) {
       return currency === Currency.ETH
         ? this.chainClient.broadcastEvmNative(fromIndex, to, amount, chain)
-        : this.chainClient.broadcastEvmToken(currency, fromIndex, to, amount, chain);
+        : this.chainClient.broadcastEvmToken(
+            currency,
+            fromIndex,
+            to,
+            amount,
+            chain,
+          );
     }
     if (chain === 'SOLANA') {
-      return this.chainClient.broadcastSolanaToken(currency, fromIndex, to, amount);
+      return this.chainClient.broadcastSolanaToken(
+        currency,
+        fromIndex,
+        to,
+        amount,
+      );
     }
     if (chain === 'TRON') {
-      return this.chainClient.broadcastTronToken(currency, fromIndex, to, amount);
+      return this.chainClient.broadcastTronToken(
+        currency,
+        fromIndex,
+        to,
+        amount,
+      );
     }
     throw new Error(`Unsupported sweep chain: ${chain}`);
   }
@@ -645,7 +718,9 @@ export class SweepService {
       create: { chain, ...data },
       update: data,
     });
-    this.logger.log(`Sweep config updated for ${chain}: ${JSON.stringify(data)}`);
+    this.logger.log(
+      `Sweep config updated for ${chain}: ${JSON.stringify(data)}`,
+    );
     return {
       chain: row.chain,
       enabled: row.enabled,

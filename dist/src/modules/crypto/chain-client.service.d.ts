@@ -37,6 +37,21 @@ export interface BtcTxStatus {
     blockHeight: number | null;
     error?: string;
 }
+export interface SolanaTokenBalance {
+    mint: string;
+    owner?: string;
+    uiTokenAmount?: {
+        uiAmount: number | null;
+    };
+}
+export interface SolanaParsedTransaction {
+    slot: number;
+    confirmationStatus?: string;
+    meta?: {
+        preTokenBalances?: SolanaTokenBalance[];
+        postTokenBalances?: SolanaTokenBalance[];
+    };
+}
 export declare class ChainClientService {
     private readonly httpService;
     private readonly config;
@@ -74,7 +89,7 @@ export declare class ChainClientService {
     estimateTokenTransferGasCost(chain: string, fromAddress: string, currency: Currency): Promise<number>;
     getNativeGasBalance(chain: string, address: string): Promise<number>;
     private static readonly NATIVE_TRANSFER_GAS;
-    estimateNativeTransferGasCost(chain: string, fromAddress: string): Promise<number>;
+    estimateNativeTransferGasCost(chain: string): Promise<number>;
     estimateBtcSweepFee(address: string, feePerByte: number): Promise<number>;
     broadcastEvmNative(fromIndex: number, to: string, amount: number, chain?: string): Promise<string>;
     broadcastEvmToken(currency: Currency, fromIndex: number, to: string, amount: number, chain?: string): Promise<string>;

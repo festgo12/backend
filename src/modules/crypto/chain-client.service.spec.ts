@@ -360,16 +360,14 @@ describe('ChainClientService', () => {
     it('multiplies live gas price by 21,000 transfer gas', async () => {
       // 20 gwei * 21,000 = 420,000 gwei = 0.00042 ETH.
       const fakeProvider = {
-        getFeeData: jest
-          .fn()
-          .mockResolvedValue({ gasPrice: 20_000_000_000n }),
+        getFeeData: jest.fn().mockResolvedValue({ gasPrice: 20_000_000_000n }),
       };
       const testService = service as unknown as {
         evmProviders: Map<string, unknown>;
       };
       testService.evmProviders.set('ETH', fakeProvider);
 
-      const cost = await service.estimateNativeTransferGasCost('ETH', '0xabc');
+      const cost = await service.estimateNativeTransferGasCost('ETH');
 
       expect(cost).toBeCloseTo(0.00042, 12);
     });
@@ -383,16 +381,13 @@ describe('ChainClientService', () => {
       };
       testService.evmProviders.set('ETH', fakeProvider);
 
-      const cost = await service.estimateNativeTransferGasCost('ETH', '0xabc');
+      const cost = await service.estimateNativeTransferGasCost('ETH');
 
       expect(cost).toBe(0);
     });
 
     it('returns 0 for non-EVM chains', async () => {
-      const cost = await service.estimateNativeTransferGasCost(
-        'BTC',
-        'bc1qabc',
-      );
+      const cost = await service.estimateNativeTransferGasCost('BTC');
       expect(cost).toBe(0);
     });
   });

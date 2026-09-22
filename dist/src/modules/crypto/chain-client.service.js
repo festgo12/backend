@@ -302,7 +302,7 @@ let ChainClientService = class ChainClientService {
             if (this.config.isEvmChain(chain)) {
                 const provider = this.providerForChain(chain);
                 const feeData = await provider.getFeeData();
-                const gasPrice = feeData.gasPrice ?? 0n;
+                const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice ?? 0n;
                 if (gasPrice === 0n)
                     return 0;
                 const wei = gasPrice * 65000n;
@@ -333,13 +333,13 @@ let ChainClientService = class ChainClientService {
         return 0;
     }
     static NATIVE_TRANSFER_GAS = 21000n;
-    async estimateNativeTransferGasCost(chain, fromAddress) {
+    async estimateNativeTransferGasCost(chain) {
         if (!this.config.isEvmChain(chain))
             return 0;
         try {
             const provider = this.providerForChain(chain);
             const feeData = await provider.getFeeData();
-            const gasPrice = feeData.gasPrice ?? 0n;
+            const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice ?? 0n;
             if (gasPrice === 0n)
                 return 0;
             const wei = gasPrice * ChainClientService_1.NATIVE_TRANSFER_GAS;
@@ -598,11 +598,11 @@ let ChainClientService = class ChainClientService {
         }
         const events = [];
         for (const signature of [...signatures].slice(0, limit)) {
-            let parsed;
+            let parsed = null;
             try {
-                parsed = await connection.getParsedTransaction(signature, {
+                parsed = (await connection.getParsedTransaction(signature, {
                     maxSupportedTransactionVersion: 0,
-                });
+                }));
             }
             catch (error) {
                 const err = error;
@@ -662,10 +662,7 @@ let ChainClientService = class ChainClientService {
         const contractHex = this.resolveTronContractHex(contract);
         const padded = toAddresses.map((a) => '0x' +
             '0'.repeat(24) +
-            this.hdWallet
-                .tronBase58ToHex(a)
-                .toLowerCase()
-                .replace(/^0x/, ''));
+            this.hdWallet.tronBase58ToHex(a).toLowerCase().replace(/^0x/, ''));
         const toBlock = await this.tronRpc('eth_blockNumber', []);
         const toBlockNum = parseInt(toBlock ?? '0x0', 16);
         const fromBlockNum = fromBlock === 'latest'
@@ -676,11 +673,7 @@ let ChainClientService = class ChainClientService {
                 fromBlock: `0x${fromBlockNum.toString(16)}`,
                 toBlock: 'latest',
                 address: contractHex,
-                topics: [
-                    ChainClientService_1.TRC20_TRANSFER_TOPIC,
-                    null,
-                    padded,
-                ],
+                topics: [ChainClientService_1.TRC20_TRANSFER_TOPIC, null, padded],
             },
         ]);
         const logs = (Array.isArray(rawLogs) ? rawLogs : [])

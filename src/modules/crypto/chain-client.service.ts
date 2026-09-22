@@ -106,6 +106,26 @@ export interface BtcTxStatus {
   error?: string;
 }
 
+/** One entry of a parsed Solana transaction's pre/post token-balance list. */
+export interface SolanaTokenBalance {
+  mint: string;
+  owner?: string;
+  uiTokenAmount?: { uiAmount: number | null };
+}
+
+/**
+ * Subset of the SPL-token-relevant fields of the response from
+ * Connection.getParsedTransaction (the library returns it loosely typed).
+ */
+export interface SolanaParsedTransaction {
+  slot: number;
+  confirmationStatus?: string;
+  meta?: {
+    preTokenBalances?: SolanaTokenBalance[];
+    postTokenBalances?: SolanaTokenBalance[];
+  };
+}
+
 /**
  * Low-level chain access for the hybrid provider architecture:
  *   - EVM: ethers JsonRpcProvider over Alchemy HTTP URL for RPC + broadcast.
@@ -543,7 +563,9 @@ export class ChainClientService {
         // ERC-20 transfer: ~65k gas ceiling. Read fee data + native price.
         const provider = this.providerForChain(chain);
         const feeData = await provider.getFeeData();
-        const gasPrice = feeData.gasPrice ?? 0n;
+        // Use maxFeePerGas — the ceiling the node actually validates the
+        // broadcast against — falling back to gasPrice on legacy chains.
+        const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice ?? 0n;
         if (gasPrice === 0n) return 0;
         const wei = gasPrice * 65_000n;
         return Number(formatEther(wei));
@@ -583,20 +605,19 @@ export class ChainClientService {
   private static readonly NATIVE_TRANSFER_GAS = 21_000n;
 
   /**
-   * Estimates the native-gas cost (in the chain's native units) of sweeping
-   * a NATIVE asset (ETH) from `fromAddress` on `chain`. Used by the sweeper
-   * to reserve gas out of the swept balance. Returns 0 when estimation is
-   * unavailable (caller then sweeps the full balance).
+   * Estimates the native-gas cost (in the chain's native units) of a
+   * NATIVE asset (ETH) transfer on `chain`. Used by the sweeper to reserve
+   * gas out of the swept balance. Returns 0 when estimation is unavailable
+   * (caller then sweeps the full balance).
    */
-  async estimateNativeTransferGasCost(
-    chain: string,
-    fromAddress: string,
-  ): Promise<number> {
+  async estimateNativeTransferGasCost(chain: string): Promise<number> {
     if (!this.config.isEvmChain(chain)) return 0;
     try {
       const provider = this.providerForChain(chain);
       const feeData = await provider.getFeeData();
-      const gasPrice = feeData.gasPrice ?? 0n;
+      // Use maxFeePerGas — the ceiling the node actually validates the
+      // broadcast against — falling back to gasPrice on legacy chains.
+      const gasPrice = feeData.maxFeePerGas ?? feeData.gasPrice ?? 0n;
       if (gasPrice === 0n) return 0;
       const wei = gasPrice * ChainClientService.NATIVE_TRANSFER_GAS;
       return Number(formatEther(wei));
@@ -829,10 +850,7 @@ export class ChainClientService {
     address: string,
   ): Promise<number> {
     const contractHex = this.resolveTronContractHex(contract);
-    const ownerHex = this.hdWallet.tronBase58ToHex(address).replace(
-      /^0x/,
-      '',
-    );
+    const ownerHex = this.hdWallet.tronBase58ToHex(address).replace(/^0x/, '');
     const data = `${ChainClientService.BALANCE_OF_SELECTOR}${'0'.repeat(24)}${ownerHex}`;
     const raw = await this.tronRpc<string>('eth_call', [
       { to: contractHex, data },
@@ -968,7 +986,9 @@ export class ChainClientService {
         data: '0x',
         value: sun,
       });
-      this.logger.log(`TRON native broadcast: ${amountTrx} TRX (TX: ${txHash})`);
+      this.logger.log(
+        `TRON native broadcast: ${amountTrx} TRX (TX: ${txHash})`,
+      );
       return txHash;
     } catch (error) {
       const err = error as Error;
@@ -1066,11 +1086,11 @@ export class ChainClientService {
       confirmed: boolean;
     }> = [];
     for (const signature of [...signatures].slice(0, limit)) {
-      let parsed;
+      let parsed: SolanaParsedTransaction | null = null;
       try {
-        parsed = await connection.getParsedTransaction(signature, {
+        parsed = (await connection.getParsedTransaction(signature, {
           maxSupportedTransactionVersion: 0,
-        });
+        })) as SolanaParsedTransaction | null;
       } catch (error) {
         const err = error as Error;
         this.logger.warn(
@@ -1135,11 +1155,7 @@ export class ChainClientService {
       tokenSymbol: string | null;
     }>
   > {
-    const logs = await this.fetchTronTransferLogs(
-      contract,
-      [address],
-      limit,
-    );
+    const logs = await this.fetchTronTransferLogs(contract, [address], limit);
     return logs.map((log) => ({
       txHash: log.txHash,
       amount: log.amount,
@@ -1175,10 +1191,7 @@ export class ChainClientService {
       (a) =>
         '0x' +
         '0'.repeat(24) +
-        this.hdWallet
-          .tronBase58ToHex(a)
-          .toLowerCase()
-          .replace(/^0x/, ''),
+        this.hdWallet.tronBase58ToHex(a).toLowerCase().replace(/^0x/, ''),
     );
     const toBlock = await this.tronRpc<string>('eth_blockNumber', []);
     const toBlockNum = parseInt(toBlock ?? '0x0', 16);
@@ -1198,11 +1211,7 @@ export class ChainClientService {
         fromBlock: `0x${fromBlockNum.toString(16)}`,
         toBlock: 'latest',
         address: contractHex,
-        topics: [
-          ChainClientService.TRC20_TRANSFER_TOPIC,
-          null,
-          padded,
-        ],
+        topics: [ChainClientService.TRC20_TRANSFER_TOPIC, null, padded],
       },
     ]);
 
@@ -1212,7 +1221,8 @@ export class ChainClientService {
         txHash: l.transactionHash,
         from: this.hdWallet.tronHexToBase58(l.topics[1]),
         to: this.hdWallet.tronHexToBase58(l.topics[2]),
-        amount: Number(BigInt(l.data && l.data !== '0x' ? l.data : '0x0')) / 1e6,
+        amount:
+          Number(BigInt(l.data && l.data !== '0x' ? l.data : '0x0')) / 1e6,
         blockNumber: parseInt(l.blockNumber ?? '0x0', 16),
         blockTimestampMs: null as number | null,
       }));

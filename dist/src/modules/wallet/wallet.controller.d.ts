@@ -24,13 +24,13 @@ export declare class WalletController {
         id: string;
         chain: string | null;
         updatedAt: Date;
-        version: number;
         userId: string;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
         derivationIndex: number | null;
         isFrozen: boolean;
+        version: number;
     }[]>;
     getHistory(user: User, walletId?: string, limit?: number, offset?: number): Promise<({
         wallet: {
@@ -40,24 +40,24 @@ export declare class WalletController {
             status: string;
             id: string;
             updatedAt: Date;
-            amount: import("@src/generated/client/runtime/library").Decimal;
             type: import("@src/generated/client").$Enums.LedgerType;
-            createdAt: Date;
+            amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
             reference: string;
             metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             resolvedAt: Date | null;
+            createdAt: Date;
             walletId: string;
         } | null;
     } & {
         id: string;
-        amount: import("@src/generated/client/runtime/library").Decimal;
         type: import("@src/generated/client").$Enums.LedgerType;
-        balanceAfter: import("@src/generated/client/runtime/library").Decimal;
-        createdAt: Date;
+        amount: import("@src/generated/client/runtime/library").Decimal;
         reference: string;
         metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        createdAt: Date;
         walletId: string;
+        balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         transactionId: string | null;
         orderId: string | null;
     })[]>;
@@ -76,13 +76,13 @@ export declare class WalletController {
         id: string;
         chain: string | null;
         updatedAt: Date;
-        version: number;
         userId: string;
         currency: import("@src/generated/client").$Enums.Currency;
         balance: import("@src/generated/client/runtime/library").Decimal;
         reservedBalance: import("@src/generated/client/runtime/library").Decimal;
         derivationIndex: number | null;
         isFrozen: boolean;
+        version: number;
     }>;
     private ensureChainDeposit;
     private ensureMultichainWallet;
