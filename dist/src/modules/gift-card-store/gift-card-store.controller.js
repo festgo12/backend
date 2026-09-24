@@ -27,6 +27,26 @@ let GiftCardStoreController = class GiftCardStoreController {
     getBrands() {
         return this.storeService.getBrands();
     }
+    async proxyBrandImage(url, res) {
+        if (!url) {
+            return res.status(400).json({ message: 'url query param is required' });
+        }
+        try {
+            const image = await this.storeService.proxyBrandImage(url);
+            res.setHeader('Content-Type', image.contentType);
+            res.setHeader('Cache-Control', image.cacheControl);
+            if (image.contentLength) {
+                res.setHeader('Content-Length', image.contentLength);
+            }
+            image.stream.pipe(res);
+        }
+        catch (error) {
+            const status = error instanceof Error && error.message.includes('not allowed') ? 400 : 502;
+            return res.status(status).json({
+                message: error instanceof Error ? error.message : 'Image proxy failed',
+            });
+        }
+    }
     getProducts(dto) {
         return this.storeService.listProducts(dto);
     }
@@ -51,6 +71,15 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], GiftCardStoreController.prototype, "getBrands", null);
+__decorate([
+    (0, common_1.Get)('brand-image'),
+    (0, swagger_1.ApiOperation)({ summary: 'Proxy a whitelisted Giftbit brand image' }),
+    __param(0, (0, common_1.Query)('url')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], GiftCardStoreController.prototype, "proxyBrandImage", null);
 __decorate([
     (0, common_1.Get)('products'),
     (0, swagger_1.ApiOperation)({ summary: 'Browse available gift card store products' }),

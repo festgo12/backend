@@ -5,9 +5,11 @@ import {
   Body,
   Param,
   Query,
+  Res,
   UseGuards,
   Request,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,6 +31,31 @@ export class GiftCardStoreController {
   @ApiOperation({ summary: 'List gift card store brands' })
   getBrands() {
     return this.storeService.getBrands();
+  }
+
+  // ─── PUBLIC: Brand Image Proxy ──────────────────────────────────────────
+  // The Giftbit CDN sends no CORS headers, so Flutter web cannot load brand
+  // images directly. Stream them same-origin instead (host-whitelisted).
+  @Get('brand-image')
+  @ApiOperation({ summary: 'Proxy a whitelisted Giftbit brand image' })
+  async proxyBrandImage(@Query('url') url: string, @Res() res: Response) {
+    if (!url) {
+      return res.status(400).json({ message: 'url query param is required' });
+    }
+    try {
+      const image = await this.storeService.proxyBrandImage(url);
+      res.setHeader('Content-Type', image.contentType);
+      res.setHeader('Cache-Control', image.cacheControl);
+      if (image.contentLength) {
+        res.setHeader('Content-Length', image.contentLength);
+      }
+      image.stream.pipe(res);
+    } catch (error) {
+      const status = error instanceof Error && error.message.includes('not allowed') ? 400 : 502;
+      return res.status(status).json({
+        message: error instanceof Error ? error.message : 'Image proxy failed',
+      });
+    }
   }
 
   // ─── PUBLIC: Store Products ─────────────────────────────────────────────

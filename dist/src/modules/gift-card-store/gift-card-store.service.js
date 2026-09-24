@@ -19,6 +19,9 @@ const event_emitter_1 = require("@nestjs/event-emitter");
 const client_1 = require("../../generated/client/index.js");
 const giftbit_client_1 = require("./giftbit.client");
 const wallet_query_util_1 = require("../wallet/wallet-query.util");
+const axios_1 = require("@nestjs/axios");
+const rxjs_1 = require("rxjs");
+const stream_1 = require("stream");
 const DEFAULT_NGN_PER_USD = 1550;
 const PENDING_ORDER_SWEEP_MS = 5 * 60 * 1000;
 const PENDING_ORDER_STARTUP_DELAY_MS = 10 * 1000;
@@ -29,14 +32,16 @@ let GiftCardStoreService = GiftCardStoreService_1 = class GiftCardStoreService {
     exchangeRateService;
     eventEmitter;
     giftbit;
+    httpService;
     logger = new common_1.Logger(GiftCardStoreService_1.name);
     pollTimer;
-    constructor(prisma, ledgerService, exchangeRateService, eventEmitter, giftbit) {
+    constructor(prisma, ledgerService, exchangeRateService, eventEmitter, giftbit, httpService) {
         this.prisma = prisma;
         this.ledgerService = ledgerService;
         this.exchangeRateService = exchangeRateService;
         this.eventEmitter = eventEmitter;
         this.giftbit = giftbit;
+        this.httpService = httpService;
     }
     onModuleInit() {
         if (!this.giftbit.isConfigured()) {
@@ -244,6 +249,35 @@ let GiftCardStoreService = GiftCardStoreService_1 = class GiftCardStoreService {
                 _count: { select: { products: { where: { enabled: true } } } },
             },
         });
+    }
+    async proxyBrandImage(url) {
+        let parsed;
+        try {
+            parsed = new URL(url);
+        }
+        catch {
+            throw new common_1.BadRequestException('Invalid image URL');
+        }
+        const allowedHosts = [
+            'uploadedimagestestbed.giftbit.com',
+            'uploadedimages.giftbit.com',
+        ];
+        if (!allowedHosts.includes(parsed.hostname) || parsed.protocol !== 'https:') {
+            throw new common_1.BadRequestException('Image host not allowed');
+        }
+        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(parsed.toString(), {
+            responseType: 'stream',
+            timeout: 15000,
+        }));
+        const axiosRes = response;
+        const stream = new stream_1.PassThrough();
+        axiosRes.data.pipe(stream);
+        return {
+            stream,
+            contentType: String(axiosRes.headers['content-type'] || 'image/png'),
+            contentLength: axiosRes.headers['content-length']?.toString(),
+            cacheControl: 'public, max-age=86400',
+        };
     }
     async preview(userId, dto) {
         const product = await this.prisma.giftCardStoreProduct.findUnique({
@@ -962,6 +996,7 @@ exports.GiftCardStoreService = GiftCardStoreService = GiftCardStoreService_1 = _
         ledger_service_1.LedgerService,
         exchange_rate_service_1.ExchangeRateService,
         event_emitter_1.EventEmitter2,
-        giftbit_client_1.GiftbitClient])
+        giftbit_client_1.GiftbitClient,
+        axios_1.HttpService])
 ], GiftCardStoreService);
 //# sourceMappingURL=gift-card-store.service.js.map

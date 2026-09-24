@@ -30,6 +30,10 @@ import { ListStoreProductsDto } from './dto/list-store-products.dto';
 import { ListStoreOrdersDto } from './dto/list-store-orders.dto';
 import { UpdateStoreProductDto } from './dto/update-store-product.dto';
 import { primaryWalletWhere } from '../wallet/wallet-query.util';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { AxiosResponse } from 'axios';
+import { PassThrough } from 'stream';
 
 const DEFAULT_NGN_PER_USD = 1550;
 const PENDING_ORDER_SWEEP_MS = 5 * 60 * 1000;
@@ -78,6 +82,7 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
     private readonly exchangeRateService: ExchangeRateService,
     private readonly eventEmitter: EventEmitter2,
     private readonly giftbit: GiftbitClient,
+    private readonly httpService: HttpService,
   ) {}
 
   onModuleInit() {
@@ -343,6 +348,52 @@ export class GiftCardStoreService implements OnModuleInit, OnModuleDestroy {
         _count: { select: { products: { where: { enabled: true } } } },
       },
     });
+  }
+
+  /**
+   * Streams a whitelisted provider (Giftbit CDN) brand image through this
+   * server. The CDN sends no Access-Control-Allow-Origin, so Flutter web's
+   * Image.network cannot load it cross-origin — proxying it same-origin makes
+   * the card images render on web while remaining open to native clients.
+   */
+  async proxyBrandImage(url: string): Promise<{
+    stream: PassThrough;
+    contentType: string;
+    contentLength?: string;
+    cacheControl: string;
+  }> {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new BadRequestException('Invalid image URL');
+    }
+
+    const allowedHosts = [
+      'uploadedimagestestbed.giftbit.com',
+      'uploadedimages.giftbit.com',
+    ];
+    if (!allowedHosts.includes(parsed.hostname) || parsed.protocol !== 'https:') {
+      throw new BadRequestException('Image host not allowed');
+    }
+
+    const response = await firstValueFrom(
+      this.httpService.get(parsed.toString(), {
+        responseType: 'stream',
+        timeout: 15000,
+      }),
+    );
+    const axiosRes = response as AxiosResponse;
+
+    const stream = new PassThrough();
+    axiosRes.data.pipe(stream);
+
+    return {
+      stream,
+      contentType: String(axiosRes.headers['content-type'] || 'image/png'),
+      contentLength: axiosRes.headers['content-length']?.toString(),
+      cacheControl: 'public, max-age=86400',
+    };
   }
 
   /**

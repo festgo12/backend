@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { Request as ExpressRequest } from 'express';
 import { GiftCardStoreService } from './gift-card-store.service';
 import { ListStoreProductsDto } from './dto/list-store-products.dto';
@@ -17,14 +18,15 @@ export declare class GiftCardStoreController {
         };
     } & {
         id: string;
+        enabled: boolean;
         createdAt: Date;
         updatedAt: Date;
-        enabled: boolean;
         providerBrandId: string;
         brandName: string;
         logoUrl: string | null;
         backgroundColor: string | null;
     })[]>;
+    proxyBrandImage(url: string, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     getProducts(dto: ListStoreProductsDto): Promise<{
         data: {
             id: string;
@@ -97,15 +99,12 @@ export declare class GiftCardStoreController {
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            currencyCode: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
-            version: number;
-            quantity: number;
-            productId: string;
             denomination: import("@src/generated/client/runtime/library").Decimal;
-            currencyCode: string;
+            quantity: number;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: import("@src/generated/client/runtime/library").Decimal;
@@ -113,6 +112,9 @@ export declare class GiftCardStoreController {
             feeNgn: import("@src/generated/client/runtime/library").Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
+            version: number;
+            userId: string;
+            productId: string;
         };
     }>;
     getMyOrders(req: AuthenticatedRequest, page?: number, limit?: number): Promise<{
@@ -130,15 +132,12 @@ export declare class GiftCardStoreController {
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            currencyCode: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
-            version: number;
-            quantity: number;
-            productId: string;
             denomination: import("@src/generated/client/runtime/library").Decimal;
-            currencyCode: string;
+            quantity: number;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: import("@src/generated/client/runtime/library").Decimal;
@@ -146,6 +145,9 @@ export declare class GiftCardStoreController {
             feeNgn: import("@src/generated/client/runtime/library").Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
+            version: number;
+            userId: string;
+            productId: string;
         }[];
         meta: {
             total: number;
