@@ -1114,14 +1114,20 @@ export class AdminService {
     });
 
     // Every EVM chain the sweeper runs on shares the same master address but
-    // has its own token contracts — show each as a separate entry.
+    // has its own token contracts — show each as a separate entry. The native
+    // asset row (ETH) only exists on the Ethereum chain: BSC/POLYGON rows list
+    // their stablecoin tokens (USDT/USDC) only, since their native assets are
+    // BNB/POL and must not be mislabeled as ETH.
     const evmChains = ['ETH', 'BSC', 'POLYGON'] as const;
-    const evmCurrencies: Currency[] = [Currency.ETH, Currency.USDT, Currency.USDC];
+    const evmCurrenciesFor = (chain: string): Currency[] =>
+      chain === 'ETH'
+        ? [Currency.ETH, Currency.USDT, Currency.USDC]
+        : [Currency.USDT, Currency.USDC];
     const currencies: Currency[] = ['BTC', 'ETH', 'USDT', 'USDC'];
 
     const evmBalances = await Promise.all(
       evmChains.flatMap((chain) =>
-        evmCurrencies.map(async (currency) => {
+        evmCurrenciesFor(chain).map(async (currency) => {
           if (!evmMaster) return missingAddress(chain, currency);
           try {
             return {
@@ -1158,15 +1164,9 @@ export class AdminService {
               'SOLANA',
               currency,
             );
-            if (!mint) {
-              return {
-                chain: 'SOLANA',
-                currency,
-                address: solMaster,
-                balance: 0,
-                error: 'SOLANA mint not configured',
-              };
-            }
+            // No official devnet USDT mint exists; skip the entry instead of
+            // rendering a red error row on the Treasury card.
+            if (!mint) return null;
             return {
               chain: 'SOLANA',
               currency,
@@ -1199,15 +1199,9 @@ export class AdminService {
               'TRON',
               currency,
             );
-            if (!contract) {
-              return {
-                chain: 'TRON',
-                currency,
-                address: tronMaster,
-                balance: 0,
-                error: 'TRON contract not configured',
-              };
-            }
+            // No official TRON testnet TRC-20 contracts exist; skip the entry
+            // instead of rendering a red error row on the Treasury card.
+            if (!contract) return null;
             return {
               chain: 'TRON',
               currency,
@@ -1259,7 +1253,9 @@ export class AdminService {
         sol: solMaster,
         tron: tronMaster,
       },
-      balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances],
+      balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances].filter(
+        (b): b is NonNullable<typeof b> => b !== null,
+      ),
     };
   }
 

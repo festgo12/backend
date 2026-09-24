@@ -4,12 +4,12 @@ export declare class OrdersController {
     private readonly ordersService;
     constructor(ordersService: OrdersService);
     create(req: any, createOrderDto: CreateOrderDto): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -21,13 +21,13 @@ export declare class OrdersController {
     }>;
     findAll(req: any): Promise<({
         ad: {
+            status: string;
             chain: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             type: import("@src/generated/client").$Enums.AdType;
-            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
             sellerId: string;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -37,12 +37,12 @@ export declare class OrdersController {
             isSponsored: boolean;
         };
     } & {
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -54,13 +54,13 @@ export declare class OrdersController {
     })[]>;
     findOne(id: string, req: any): Promise<{
         ad: {
+            status: string;
             chain: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             type: import("@src/generated/client").$Enums.AdType;
-            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
             sellerId: string;
             quantity: import("@src/generated/client/runtime/library").Decimal;
@@ -70,6 +70,7 @@ export declare class OrdersController {
             isSponsored: boolean;
         };
         buyer: {
+            status: import("@src/generated/client").$Enums.UserStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -78,7 +79,6 @@ export declare class OrdersController {
             resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
@@ -95,6 +95,7 @@ export declare class OrdersController {
             isSystem: boolean;
         };
         seller: {
+            status: import("@src/generated/client").$Enums.UserStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -103,7 +104,6 @@ export declare class OrdersController {
             resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
@@ -120,12 +120,12 @@ export declare class OrdersController {
             isSystem: boolean;
         };
     } & {
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -136,12 +136,12 @@ export declare class OrdersController {
         fraudFlagged: boolean;
     }>;
     approve(id: string, req: any): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -152,12 +152,12 @@ export declare class OrdersController {
         fraudFlagged: boolean;
     }>;
     decline(id: string, req: any): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -168,12 +168,12 @@ export declare class OrdersController {
         fraudFlagged: boolean;
     }>;
     flagFraud(id: string, req: any): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;

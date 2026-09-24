@@ -15,12 +15,12 @@ export declare class OrdersService {
     private getFeePercent;
     private resolveRoles;
     createOrder(buyerId: string, dto: CreateOrderDto): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -31,12 +31,12 @@ export declare class OrdersService {
         fraudFlagged: boolean;
     }>;
     approveOrder(orderId: string, sellerId: string): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -47,12 +47,12 @@ export declare class OrdersService {
         fraudFlagged: boolean;
     }>;
     declineOrder(orderId: string, initiatorId: string): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -63,12 +63,12 @@ export declare class OrdersService {
         fraudFlagged: boolean;
     }>;
     expireOrder(orderId: string): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -79,12 +79,12 @@ export declare class OrdersService {
         fraudFlagged: boolean;
     }>;
     flagFraud(orderId: string, initiatorId: string): Promise<{
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -96,13 +96,13 @@ export declare class OrdersService {
     }>;
     getOrder(orderId: string, userId: string): Promise<{
         ad: {
+            status: string;
             chain: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             type: import("@src/generated/client").$Enums.AdType;
-            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
             sellerId: string;
             quantity: Decimal;
@@ -112,6 +112,7 @@ export declare class OrdersService {
             isSponsored: boolean;
         };
         buyer: {
+            status: import("@src/generated/client").$Enums.UserStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -120,7 +121,6 @@ export declare class OrdersService {
             resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
@@ -137,6 +137,7 @@ export declare class OrdersService {
             isSystem: boolean;
         };
         seller: {
+            status: import("@src/generated/client").$Enums.UserStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -145,7 +146,6 @@ export declare class OrdersService {
             resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
-            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
@@ -162,12 +162,12 @@ export declare class OrdersService {
             isSystem: boolean;
         };
     } & {
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;
@@ -179,13 +179,13 @@ export declare class OrdersService {
     }>;
     listUserOrders(userId: string): Promise<({
         ad: {
+            status: string;
             chain: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             version: number;
             type: import("@src/generated/client").$Enums.AdType;
-            status: string;
             asset: import("@src/generated/client").$Enums.Currency;
             sellerId: string;
             quantity: Decimal;
@@ -195,12 +195,12 @@ export declare class OrdersService {
             isSponsored: boolean;
         };
     } & {
+        status: import("@src/generated/client").$Enums.OrderStatus;
         chain: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         version: number;
-        status: import("@src/generated/client").$Enums.OrderStatus;
         adId: string;
         buyerId: string;
         sellerId: string;

@@ -50,14 +50,18 @@ export const STABLECOIN_CONTRACTS_BY_CHAIN_TESTNET: Record<
   string,
   Record<string, string>
 > = {
-  // BSC testnet (BEP-20)
+  // BSC testnet (BEP-20). USDC verified on-chain via eth_getCode +
+  // balanceOf (the previously listed 0x6454...491e4 address was corrupt and
+  // had no contract code, breaking balanceOf with BAD_DATA).
   BSC: {
     USDT: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd',
-    USDC: '0x64544968ED7Ebf5f9Bf05f3147E679D48A2491e4',
+    USDC: '0x64544969ed7EBf5f083679233325356EbE738930',
   },
-  // Polygon Amoy (ERC-20)
+  // Polygon Amoy (ERC-20). No mock USDT is deployed on Amoy — the previous
+  // entry had no contract code (eth_getCode returned 0x) and broke balanceOf
+  // with BAD_DATA, so it is intentionally omitted; ALCHEMY_POLYGON_USDT_CONTRACT
+  // can still override it.
   POLYGON: {
-    USDT: '0x0Fa810dbd9A10dD4B9C7c660D2c44dA31F9A7A6c',
     // Circle-native USDC on Amoy (proxy).
     USDC: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
   },

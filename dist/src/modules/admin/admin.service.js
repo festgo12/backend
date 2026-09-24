@@ -915,9 +915,11 @@ let AdminService = class AdminService {
             error: 'Master wallet not configured (missing HD mnemonic)',
         });
         const evmChains = ['ETH', 'BSC', 'POLYGON'];
-        const evmCurrencies = [client_1.Currency.ETH, client_1.Currency.USDT, client_1.Currency.USDC];
+        const evmCurrenciesFor = (chain) => chain === 'ETH'
+            ? [client_1.Currency.ETH, client_1.Currency.USDT, client_1.Currency.USDC]
+            : [client_1.Currency.USDT, client_1.Currency.USDC];
         const currencies = ['BTC', 'ETH', 'USDT', 'USDC'];
-        const evmBalances = await Promise.all(evmChains.flatMap((chain) => evmCurrencies.map(async (currency) => {
+        const evmBalances = await Promise.all(evmChains.flatMap((chain) => evmCurrenciesFor(chain).map(async (currency) => {
             if (!evmMaster)
                 return missingAddress(chain, currency);
             try {
@@ -946,15 +948,8 @@ let AdminService = class AdminService {
                 return missingAddress('SOLANA', currency);
             try {
                 const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
-                if (!mint) {
-                    return {
-                        chain: 'SOLANA',
-                        currency,
-                        address: solMaster,
-                        balance: 0,
-                        error: 'SOLANA mint not configured',
-                    };
-                }
+                if (!mint)
+                    return null;
                 return {
                     chain: 'SOLANA',
                     currency,
@@ -980,15 +975,8 @@ let AdminService = class AdminService {
                 return missingAddress('TRON', currency);
             try {
                 const contract = this.cryptoConfig.getStablecoinContractFor('TRON', currency);
-                if (!contract) {
-                    return {
-                        chain: 'TRON',
-                        currency,
-                        address: tronMaster,
-                        balance: 0,
-                        error: 'TRON contract not configured',
-                    };
-                }
+                if (!contract)
+                    return null;
                 return {
                     chain: 'TRON',
                     currency,
@@ -1037,7 +1025,7 @@ let AdminService = class AdminService {
                 sol: solMaster,
                 tron: tronMaster,
             },
-            balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances],
+            balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances].filter((b) => b !== null),
         };
     }
     async reconcileAll() {

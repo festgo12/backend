@@ -113,9 +113,9 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         };
     } & {
         id: string;
-        enabled: boolean;
         createdAt: Date;
         updatedAt: Date;
+        enabled: boolean;
         providerBrandId: string;
         brandName: string;
         logoUrl: string | null;
@@ -143,12 +143,15 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            currencyCode: string;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            denomination: Prisma.Decimal;
+            userId: string;
+            version: number;
             quantity: number;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            productId: string;
+            denomination: Prisma.Decimal;
+            currencyCode: string;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: Prisma.Decimal;
@@ -156,9 +159,6 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             feeNgn: Prisma.Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
-            version: number;
-            userId: string;
-            productId: string;
         };
     }>;
     getMyOrders(userId: string, page?: number, limit?: number): Promise<{
@@ -176,12 +176,15 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            currencyCode: string;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            denomination: Prisma.Decimal;
+            userId: string;
+            version: number;
             quantity: number;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            productId: string;
+            denomination: Prisma.Decimal;
+            currencyCode: string;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: Prisma.Decimal;
@@ -189,9 +192,6 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             feeNgn: Prisma.Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
-            version: number;
-            userId: string;
-            productId: string;
         }[];
         meta: {
             total: number;
@@ -290,9 +290,9 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
     updateProduct(productId: string, dto: UpdateStoreProductDto): Promise<{
         brand: {
             id: string;
-            enabled: boolean;
             createdAt: Date;
             updatedAt: Date;
+            enabled: boolean;
             providerBrandId: string;
             brandName: string;
             logoUrl: string | null;
@@ -300,24 +300,24 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         } | null;
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        currencyCode: string;
+        providerResponse: Prisma.JsonValue | null;
+        denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+        markupPercent: Prisma.Decimal;
         providerProductId: string;
         productName: string;
         brandId: string | null;
         countryCode: string;
-        currencyCode: string;
-        denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
         fixedDenominations: Prisma.JsonValue | null;
         minDenomination: Prisma.Decimal | null;
         maxDenomination: Prisma.Decimal | null;
         senderFee: Prisma.Decimal;
         discountPercentage: Prisma.Decimal;
         providerPriceNgn: Prisma.Decimal;
-        enabled: boolean;
-        markupPercent: Prisma.Decimal;
-        providerResponse: Prisma.JsonValue | null;
         lastSyncedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getAllOrdersAdmin(dto: ListStoreOrdersDto): Promise<{
         data: {
@@ -325,24 +325,22 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             cardPin: string | null;
             user: {
                 profile: {
+                    firstName: string | null;
+                    lastName: string | null;
+                    avatarUrl: string | null;
                     id: string;
                     updatedAt: Date;
                     userId: string;
-                    firstName: string | null;
-                    lastName: string | null;
                     kycStatus: string;
-                    avatarUrl: string | null;
                 } | null;
             } & {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                status: import("@src/generated/client").$Enums.UserStatus;
                 email: string | null;
                 phone: string | null;
                 resetToken: string | null;
                 passwordHash: string;
                 role: import("@src/generated/client").$Enums.Role;
+                status: import("@src/generated/client").$Enums.UserStatus;
                 twoFactorEnabled: boolean;
                 twoFactorSecret: string | null;
                 twoFactorOtpHash: string | null;
@@ -357,13 +355,15 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
                 failedLoginAttempts: number;
                 lockedUntil: Date | null;
                 isSystem: boolean;
+                createdAt: Date;
+                updatedAt: Date;
             };
             product: {
                 brand: {
                     id: string;
-                    enabled: boolean;
                     createdAt: Date;
                     updatedAt: Date;
+                    enabled: boolean;
                     providerBrandId: string;
                     brandName: string;
                     logoUrl: string | null;
@@ -371,33 +371,35 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
                 } | null;
             } & {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                enabled: boolean;
+                currencyCode: string;
+                providerResponse: Prisma.JsonValue | null;
+                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+                markupPercent: Prisma.Decimal;
                 providerProductId: string;
                 productName: string;
                 brandId: string | null;
                 countryCode: string;
-                currencyCode: string;
-                denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 fixedDenominations: Prisma.JsonValue | null;
                 minDenomination: Prisma.Decimal | null;
                 maxDenomination: Prisma.Decimal | null;
                 senderFee: Prisma.Decimal;
                 discountPercentage: Prisma.Decimal;
                 providerPriceNgn: Prisma.Decimal;
-                enabled: boolean;
-                markupPercent: Prisma.Decimal;
-                providerResponse: Prisma.JsonValue | null;
                 lastSyncedAt: Date | null;
-                createdAt: Date;
-                updatedAt: Date;
             };
             id: string;
-            currencyCode: string;
-            providerResponse: Prisma.JsonValue | null;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            denomination: Prisma.Decimal;
+            userId: string;
+            version: number;
             quantity: number;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            productId: string;
+            denomination: Prisma.Decimal;
+            currencyCode: string;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             giftLink: string | null;
@@ -406,9 +408,7 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             feeNgn: Prisma.Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
-            version: number;
-            userId: string;
-            productId: string;
+            providerResponse: Prisma.JsonValue | null;
         }[];
         meta: {
             total: number;
@@ -422,24 +422,22 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         cardPin: string | null;
         user: {
             profile: {
+                firstName: string | null;
+                lastName: string | null;
+                avatarUrl: string | null;
                 id: string;
                 updatedAt: Date;
                 userId: string;
-                firstName: string | null;
-                lastName: string | null;
                 kycStatus: string;
-                avatarUrl: string | null;
             } | null;
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("@src/generated/client").$Enums.UserStatus;
             email: string | null;
             phone: string | null;
             resetToken: string | null;
             passwordHash: string;
             role: import("@src/generated/client").$Enums.Role;
+            status: import("@src/generated/client").$Enums.UserStatus;
             twoFactorEnabled: boolean;
             twoFactorSecret: string | null;
             twoFactorOtpHash: string | null;
@@ -454,13 +452,15 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             failedLoginAttempts: number;
             lockedUntil: Date | null;
             isSystem: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
         product: {
             brand: {
                 id: string;
-                enabled: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                enabled: boolean;
                 providerBrandId: string;
                 brandName: string;
                 logoUrl: string | null;
@@ -468,33 +468,35 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             } | null;
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            enabled: boolean;
+            currencyCode: string;
+            providerResponse: Prisma.JsonValue | null;
+            denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+            markupPercent: Prisma.Decimal;
             providerProductId: string;
             productName: string;
             brandId: string | null;
             countryCode: string;
-            currencyCode: string;
-            denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
             fixedDenominations: Prisma.JsonValue | null;
             minDenomination: Prisma.Decimal | null;
             maxDenomination: Prisma.Decimal | null;
             senderFee: Prisma.Decimal;
             discountPercentage: Prisma.Decimal;
             providerPriceNgn: Prisma.Decimal;
-            enabled: boolean;
-            markupPercent: Prisma.Decimal;
-            providerResponse: Prisma.JsonValue | null;
             lastSyncedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         id: string;
-        currencyCode: string;
-        providerResponse: Prisma.JsonValue | null;
+        status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
         createdAt: Date;
         updatedAt: Date;
-        denomination: Prisma.Decimal;
+        userId: string;
+        version: number;
         quantity: number;
-        status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+        productId: string;
+        denomination: Prisma.Decimal;
+        currencyCode: string;
         providerOrderId: string | null;
         providerGiftUuid: string | null;
         giftLink: string | null;
@@ -503,9 +505,7 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         feeNgn: Prisma.Decimal;
         recipientEmail: string | null;
         failureMessage: string | null;
-        version: number;
-        userId: string;
-        productId: string;
+        providerResponse: Prisma.JsonValue | null;
     }>;
     getStats(): Promise<{
         totalProducts: number;

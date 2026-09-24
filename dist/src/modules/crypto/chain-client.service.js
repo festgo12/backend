@@ -182,8 +182,18 @@ let ChainClientService = class ChainClientService {
         if (!contract)
             return 0;
         const token = new ethers_1.Contract(contract, ERC20_ABI, provider);
-        const raw = (await token.balanceOf(address));
-        return Number((0, ethers_1.formatUnits)(raw, this.decimalsFor(currency)));
+        try {
+            const raw = (await token.balanceOf(address));
+            return Number((0, ethers_1.formatUnits)(raw, this.decimalsFor(currency)));
+        }
+        catch (error) {
+            const err = error;
+            if (err?.message?.includes('BAD_DATA') || err?.code === 'BAD_DATA') {
+                this.logger.warn(`balanceOf returned empty data for ${currency} on ${chain} (dead or misconfigured contract ${contract}); reporting 0`);
+                return 0;
+            }
+            throw error;
+        }
     }
     async getAssetTransfers(provider, params) {
         const { fromBlock, toBlock, categories = ['external', 'erc20'] } = params;

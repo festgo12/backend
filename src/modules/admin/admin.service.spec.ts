@@ -349,9 +349,10 @@ describe('AdminService', () => {
       expect(result.balances).toEqual([
         { chain: 'BTC', currency: Currency.BTC, address: 'bc1btcmaster', balance: 0.00005 },
         // EVM entries: one per EVM chain (ETH/BSC/POLYGON) — the master address
-        // is shared but each chain has its own token contracts.
+        // is shared but each chain has its own token contracts. The native ETH
+        // row exists only on the Ethereum chain; BSC/POLYGON list USDT/USDC only.
+        { chain: 'ETH', currency: Currency.ETH, address: '0xEvmMaster', balance: 2.5 },
         ...(['ETH', 'BSC', 'POLYGON'] as const).flatMap((chain) => [
-          { chain, currency: Currency.ETH, address: '0xEvmMaster', balance: 2.5 },
           { chain, currency: Currency.USDT, address: '0xEvmMaster', balance: 2.5 },
           { chain, currency: Currency.USDC, address: '0xEvmMaster', balance: 2.5 },
         ]),

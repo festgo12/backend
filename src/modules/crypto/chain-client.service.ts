@@ -357,8 +357,23 @@ export class ChainClientService {
     const contract = this.config.getStablecoinContractFor(chain, currency);
     if (!contract) return 0;
     const token = new Contract(contract, ERC20_ABI, provider);
-    const raw = (await token.balanceOf(address)) as bigint;
-    return Number(formatUnits(raw, this.decimalsFor(currency)));
+    try {
+      const raw = (await token.balanceOf(address)) as bigint;
+      return Number(formatUnits(raw, this.decimalsFor(currency)));
+    } catch (error) {
+      const err = error as ErrorLike;
+      // A dead/misconfigured testnet token contract answers balanceOf with
+      // empty data, which ethers surfaces as BAD_DATA instead of a network
+      // error. Treat it as an empty balance so one bad contract address
+      // cannot break balance aggregation for the whole chain.
+      if (err?.message?.includes('BAD_DATA') || (err as { code?: string })?.code === 'BAD_DATA') {
+        this.logger.warn(
+          `balanceOf returned empty data for ${currency} on ${chain} (dead or misconfigured contract ${contract}); reporting 0`,
+        );
+        return 0;
+      }
+      throw error;
+    }
   }
 
   /**

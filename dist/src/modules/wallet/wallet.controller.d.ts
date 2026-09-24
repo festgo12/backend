@@ -21,8 +21,8 @@ export declare class WalletController {
             ledgerEntries: number;
         };
         address: string | null;
-        id: string;
         chain: string | null;
+        id: string;
         updatedAt: Date;
         userId: string;
         currency: import("@src/generated/client").$Enums.Currency;
@@ -39,24 +39,24 @@ export declare class WalletController {
         transaction: {
             status: string;
             id: string;
+            createdAt: Date;
             updatedAt: Date;
             type: import("@src/generated/client").$Enums.LedgerType;
+            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
             amount: import("@src/generated/client/runtime/library").Decimal;
             fee: import("@src/generated/client/runtime/library").Decimal;
-            reference: string;
-            metadata: import("@src/generated/client/runtime/library").JsonValue | null;
-            resolvedAt: Date | null;
-            createdAt: Date;
             walletId: string;
+            reference: string;
+            resolvedAt: Date | null;
         } | null;
     } & {
         id: string;
-        type: import("@src/generated/client").$Enums.LedgerType;
-        amount: import("@src/generated/client/runtime/library").Decimal;
-        reference: string;
-        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
         createdAt: Date;
+        type: import("@src/generated/client").$Enums.LedgerType;
+        metadata: import("@src/generated/client/runtime/library").JsonValue | null;
+        amount: import("@src/generated/client/runtime/library").Decimal;
         walletId: string;
+        reference: string;
         balanceAfter: import("@src/generated/client/runtime/library").Decimal;
         transactionId: string | null;
         orderId: string | null;
@@ -73,8 +73,8 @@ export declare class WalletController {
     }>;
     initWallet(user: User, currency: Currency, chain?: string): Promise<{
         address: string | null;
-        id: string;
         chain: string | null;
+        id: string;
         updatedAt: Date;
         userId: string;
         currency: import("@src/generated/client").$Enums.Currency;

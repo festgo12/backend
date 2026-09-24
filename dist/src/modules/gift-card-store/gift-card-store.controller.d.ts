@@ -18,9 +18,9 @@ export declare class GiftCardStoreController {
         };
     } & {
         id: string;
-        enabled: boolean;
         createdAt: Date;
         updatedAt: Date;
+        enabled: boolean;
         providerBrandId: string;
         brandName: string;
         logoUrl: string | null;
@@ -99,12 +99,15 @@ export declare class GiftCardStoreController {
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            currencyCode: string;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            denomination: import("@src/generated/client/runtime/library").Decimal;
+            userId: string;
+            version: number;
             quantity: number;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            productId: string;
+            denomination: import("@src/generated/client/runtime/library").Decimal;
+            currencyCode: string;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: import("@src/generated/client/runtime/library").Decimal;
@@ -112,9 +115,6 @@ export declare class GiftCardStoreController {
             feeNgn: import("@src/generated/client/runtime/library").Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
-            version: number;
-            userId: string;
-            productId: string;
         };
     }>;
     getMyOrders(req: AuthenticatedRequest, page?: number, limit?: number): Promise<{
@@ -132,12 +132,15 @@ export declare class GiftCardStoreController {
             cardPin: null;
             providerResponse: undefined;
             id: string;
-            currencyCode: string;
+            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
             createdAt: Date;
             updatedAt: Date;
-            denomination: import("@src/generated/client/runtime/library").Decimal;
+            userId: string;
+            version: number;
             quantity: number;
-            status: import("@src/generated/client").$Enums.GiftCardStoreOrderStatus;
+            productId: string;
+            denomination: import("@src/generated/client/runtime/library").Decimal;
+            currencyCode: string;
             providerOrderId: string | null;
             providerGiftUuid: string | null;
             costNgn: import("@src/generated/client/runtime/library").Decimal;
@@ -145,9 +148,6 @@ export declare class GiftCardStoreController {
             feeNgn: import("@src/generated/client/runtime/library").Decimal;
             recipientEmail: string | null;
             failureMessage: string | null;
-            version: number;
-            userId: string;
-            productId: string;
         }[];
         meta: {
             total: number;

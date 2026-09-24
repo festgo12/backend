@@ -21,16 +21,16 @@ export declare class WithdrawalTrackerService {
         metadata?: Record<string, unknown>;
     }): Promise<{
         status: string;
-        id: string;
         chain: string | null;
+        id: string;
+        createdAt: Date;
         updatedAt: Date;
         currency: import("@src/generated/client").$Enums.Currency;
-        amount: Prisma.Decimal;
         metadata: Prisma.JsonValue | null;
-        createdAt: Date;
-        walletId: string;
         destination: string;
+        amount: Prisma.Decimal;
         txHash: string;
+        walletId: string;
         attempts: number;
         nextPollAt: Date;
     }>;
