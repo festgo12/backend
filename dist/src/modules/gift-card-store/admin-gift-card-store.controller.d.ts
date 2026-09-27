@@ -2,6 +2,8 @@ import { GiftCardStoreService } from './gift-card-store.service';
 import { ListStoreProductsDto } from './dto/list-store-products.dto';
 import { ListStoreOrdersDto } from './dto/list-store-orders.dto';
 import { UpdateStoreProductDto } from './dto/update-store-product.dto';
+import { CreateStoreProductDto } from './dto/create-store-product.dto';
+import { CreateStoreBrandDto } from './dto/create-store-brand.dto';
 export declare class AdminGiftCardStoreController {
     private readonly storeService;
     constructor(storeService: GiftCardStoreService);
@@ -53,6 +55,9 @@ export declare class AdminGiftCardStoreController {
             discountPercentage: import("@src/generated/client/runtime/library").Decimal;
             providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
             markupPercent: import("@src/generated/client/runtime/library").Decimal;
+            ngnPerUsd: number;
+            indicativePriceUsd: number | null;
+            indicativePriceNgn: import("@src/generated/client/runtime/library").Decimal;
             enabled: boolean;
             lastSyncedAt: Date | null;
         }[];
@@ -63,16 +68,40 @@ export declare class AdminGiftCardStoreController {
             totalPages: number;
         };
     }>;
-    updateProduct(id: string, dto: UpdateStoreProductDto): Promise<{
+    getBrands(): Promise<({
+        _count: {
+            products: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        brandName: string;
+        logoUrl: string | null;
+        backgroundColor: string | null;
+        providerBrandId: string;
+    })[]>;
+    createBrand(dto: CreateStoreBrandDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        brandName: string;
+        logoUrl: string | null;
+        backgroundColor: string | null;
+        providerBrandId: string;
+    }>;
+    createProduct(dto: CreateStoreProductDto): Promise<{
         brand: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             enabled: boolean;
-            providerBrandId: string;
             brandName: string;
             logoUrl: string | null;
             backgroundColor: string | null;
+            providerBrandId: string;
         } | null;
     } & {
         id: string;
@@ -83,17 +112,53 @@ export declare class AdminGiftCardStoreController {
         providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
         denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
         markupPercent: import("@src/generated/client/runtime/library").Decimal;
-        providerProductId: string;
         productName: string;
-        brandId: string | null;
         countryCode: string;
         fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
         minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
         maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
         senderFee: import("@src/generated/client/runtime/library").Decimal;
+        providerProductId: string;
+        brandId: string | null;
         discountPercentage: import("@src/generated/client/runtime/library").Decimal;
         providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
         lastSyncedAt: Date | null;
+    }>;
+    updateProduct(id: string, dto: UpdateStoreProductDto): Promise<{
+        brand: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            enabled: boolean;
+            brandName: string;
+            logoUrl: string | null;
+            backgroundColor: string | null;
+            providerBrandId: string;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        currencyCode: string;
+        providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
+        denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+        markupPercent: import("@src/generated/client/runtime/library").Decimal;
+        productName: string;
+        countryCode: string;
+        fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
+        minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
+        maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
+        senderFee: import("@src/generated/client/runtime/library").Decimal;
+        providerProductId: string;
+        brandId: string | null;
+        discountPercentage: import("@src/generated/client/runtime/library").Decimal;
+        providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
+        lastSyncedAt: Date | null;
+    }>;
+    deleteProduct(id: string): Promise<{
+        deleted: boolean;
+        id: string;
     }>;
     getAllOrders(dto: ListStoreOrdersDto): Promise<{
         data: {
@@ -140,10 +205,10 @@ export declare class AdminGiftCardStoreController {
                     createdAt: Date;
                     updatedAt: Date;
                     enabled: boolean;
-                    providerBrandId: string;
                     brandName: string;
                     logoUrl: string | null;
                     backgroundColor: string | null;
+                    providerBrandId: string;
                 } | null;
             } & {
                 id: string;
@@ -154,14 +219,14 @@ export declare class AdminGiftCardStoreController {
                 providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
                 denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 markupPercent: import("@src/generated/client/runtime/library").Decimal;
-                providerProductId: string;
                 productName: string;
-                brandId: string | null;
                 countryCode: string;
                 fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                 minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 senderFee: import("@src/generated/client/runtime/library").Decimal;
+                providerProductId: string;
+                brandId: string | null;
                 discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                 providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
                 lastSyncedAt: Date | null;
@@ -237,10 +302,10 @@ export declare class AdminGiftCardStoreController {
                 createdAt: Date;
                 updatedAt: Date;
                 enabled: boolean;
-                providerBrandId: string;
                 brandName: string;
                 logoUrl: string | null;
                 backgroundColor: string | null;
+                providerBrandId: string;
             } | null;
         } & {
             id: string;
@@ -251,14 +316,14 @@ export declare class AdminGiftCardStoreController {
             providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
             denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
             markupPercent: import("@src/generated/client/runtime/library").Decimal;
-            providerProductId: string;
             productName: string;
-            brandId: string | null;
             countryCode: string;
             fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
             minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
             maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
             senderFee: import("@src/generated/client/runtime/library").Decimal;
+            providerProductId: string;
+            brandId: string | null;
             discountPercentage: import("@src/generated/client/runtime/library").Decimal;
             providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
             lastSyncedAt: Date | null;

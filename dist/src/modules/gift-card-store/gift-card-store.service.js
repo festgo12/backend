@@ -671,12 +671,158 @@ let GiftCardStoreService = GiftCardStoreService_1 = class GiftCardStoreService {
         });
         if (!product)
             throw new common_1.NotFoundException('Gift card product not found');
+        if (dto.denominationType === client_1.GiftCardDenominationType.FIXED &&
+            (!dto.fixedDenominations || dto.fixedDenominations.length === 0) &&
+            (!product.fixedDenominations ||
+                product.fixedDenominations.length === 0)) {
+            throw new common_1.BadRequestException('FIXED products require at least one fixed denomination');
+        }
+        if (dto.denominationType === client_1.GiftCardDenominationType.RANGE &&
+            dto.minDenomination === undefined &&
+            dto.maxDenomination === undefined &&
+            !product.minDenomination) {
+            throw new common_1.BadRequestException('RANGE products require a minimum denomination');
+        }
+        const nextDenominationType = dto.denominationType ?? product.denominationType;
+        const indicativeDenomination = dto.fixedDenominations && dto.fixedDenominations.length > 0
+            ? dto.fixedDenominations[0]
+            : dto.minDenomination ?? product.minDenomination?.toNumber() ?? 5;
+        const indicativeNgn = new client_1.Prisma.Decimal(indicativeDenomination).mul(this.ngnPerUsd());
         return this.prisma.giftCardStoreProduct.update({
             where: { id: productId },
             data: {
                 ...(dto.enabled !== undefined && { enabled: dto.enabled }),
                 ...(dto.markupPercent !== undefined && {
                     markupPercent: new client_1.Prisma.Decimal(dto.markupPercent),
+                }),
+                ...(dto.productName !== undefined && {
+                    productName: dto.productName,
+                }),
+                ...(dto.countryCode !== undefined && {
+                    countryCode: dto.countryCode,
+                }),
+                ...(dto.denominationType !== undefined && {
+                    denominationType: dto.denominationType,
+                }),
+                ...(dto.fixedDenominations !== undefined && {
+                    fixedDenominations: dto.fixedDenominations,
+                }),
+                ...(dto.minDenomination !== undefined && {
+                    minDenomination: new client_1.Prisma.Decimal(dto.minDenomination),
+                }),
+                ...(dto.maxDenomination !== undefined && {
+                    maxDenomination: new client_1.Prisma.Decimal(dto.maxDenomination),
+                }),
+                ...(dto.senderFee !== undefined && {
+                    senderFee: new client_1.Prisma.Decimal(dto.senderFee),
+                }),
+                providerPriceNgn: indicativeNgn,
+            },
+            include: { brand: true },
+        });
+    }
+    async deleteProduct(productId) {
+        const product = await this.prisma.giftCardStoreProduct.findUnique({
+            where: { id: productId },
+            include: { _count: { select: { orders: true } } },
+        });
+        if (!product)
+            throw new common_1.NotFoundException('Gift card product not found');
+        if (product._count.orders > 0) {
+            throw new common_1.ConflictException('This product has orders and cannot be deleted. Disable it instead.');
+        }
+        await this.prisma.giftCardStoreProduct.delete({
+            where: { id: productId },
+        });
+        return { deleted: true, id: productId };
+    }
+    async getAllBrandsAdmin() {
+        return this.prisma.giftCardStoreBrand.findMany({
+            orderBy: { brandName: 'asc' },
+            include: { _count: { select: { products: true } } },
+        });
+    }
+    async createBrand(dto) {
+        const slug = dto.brandName
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        const providerBrandId = `CUSTOM-${slug || 'BRAND'}`;
+        const existing = await this.prisma.giftCardStoreBrand.findUnique({
+            where: { providerBrandId },
+        });
+        if (existing) {
+            throw new common_1.ConflictException(`A brand named "${dto.brandName}" already exists`);
+        }
+        return this.prisma.giftCardStoreBrand.create({
+            data: {
+                providerBrandId,
+                brandName: dto.brandName.trim(),
+                logoUrl: dto.logoUrl || null,
+                backgroundColor: dto.backgroundColor || null,
+            },
+        });
+    }
+    async createProduct(dto) {
+        const existing = await this.prisma.giftCardStoreProduct.findUnique({
+            where: { providerProductId: dto.providerProductId },
+        });
+        if (existing) {
+            throw new common_1.ConflictException('A product with this Giftbit brand code already exists. Edit it instead.');
+        }
+        if (dto.denominationType === client_1.GiftCardDenominationType.FIXED) {
+            if (!dto.fixedDenominations || dto.fixedDenominations.length === 0) {
+                throw new common_1.BadRequestException('FIXED products require at least one fixed denomination');
+            }
+        }
+        if (dto.denominationType === client_1.GiftCardDenominationType.RANGE) {
+            if (dto.minDenomination === undefined) {
+                throw new common_1.BadRequestException('RANGE products require a minimum denomination');
+            }
+            if (dto.maxDenomination !== undefined &&
+                dto.maxDenomination <= dto.minDenomination) {
+                throw new common_1.BadRequestException('Maximum denomination must be greater than the minimum');
+            }
+        }
+        let brandId = dto.brandId || null;
+        if (brandId) {
+            const brand = await this.prisma.giftCardStoreBrand.findUnique({
+                where: { id: brandId },
+            });
+            if (!brand)
+                throw new common_1.BadRequestException('Selected brand not found');
+        }
+        const indicativeDenomination = dto.denominationType === client_1.GiftCardDenominationType.FIXED
+            ? dto.fixedDenominations[0]
+            : dto.minDenomination ?? 5;
+        const indicativeNgn = new client_1.Prisma.Decimal(indicativeDenomination).mul(this.ngnPerUsd());
+        return this.prisma.giftCardStoreProduct.create({
+            data: {
+                providerProductId: dto.providerProductId,
+                productName: dto.productName,
+                brandId,
+                countryCode: dto.countryCode || 'US',
+                currencyCode: dto.currencyCode || 'USD',
+                denominationType: dto.denominationType,
+                ...(dto.fixedDenominations && {
+                    fixedDenominations: dto.fixedDenominations,
+                }),
+                ...(dto.minDenomination !== undefined && {
+                    minDenomination: new client_1.Prisma.Decimal(dto.minDenomination),
+                }),
+                ...(dto.maxDenomination !== undefined && {
+                    maxDenomination: new client_1.Prisma.Decimal(dto.maxDenomination),
+                }),
+                senderFee: new client_1.Prisma.Decimal(dto.senderFee ?? 0),
+                discountPercentage: new client_1.Prisma.Decimal(0),
+                providerPriceNgn: indicativeNgn,
+                enabled: false,
+                markupPercent: new client_1.Prisma.Decimal(dto.markupPercent ?? 5),
+                providerResponse: this.toJson({
+                    source: 'admin',
+                    createdAt: new Date().toISOString(),
+                    ...(dto.providerResponse || {}),
                 }),
             },
             include: { brand: true },
@@ -899,6 +1045,13 @@ let GiftCardStoreService = GiftCardStoreService_1 = class GiftCardStoreService {
         };
     }
     formatProduct(product) {
+        const ngnPerUsd = this.ngnPerUsd();
+        const firstDenomination = Array.isArray(product.fixedDenominations) &&
+            product.fixedDenominations.length
+            ? Number(product.fixedDenominations[0])
+            : product.minDenomination
+                ? product.minDenomination.toNumber()
+                : null;
         return {
             id: product.id,
             providerProductId: product.providerProductId,
@@ -922,6 +1075,11 @@ let GiftCardStoreService = GiftCardStoreService_1 = class GiftCardStoreService {
             discountPercentage: product.discountPercentage,
             providerPriceNgn: product.providerPriceNgn,
             markupPercent: product.markupPercent,
+            ngnPerUsd,
+            indicativePriceUsd: firstDenomination,
+            indicativePriceNgn: firstDenomination
+                ? new client_1.Prisma.Decimal(firstDenomination).mul(ngnPerUsd).toDecimalPlaces(2)
+                : product.providerPriceNgn,
             enabled: product.enabled,
             lastSyncedAt: product.lastSyncedAt,
         };

@@ -1,43 +1,49 @@
 import {
-  IsBoolean,
   IsArray,
   IsEnum,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
   Min,
   Max,
   ArrayMaxSize,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { GiftCardDenominationType } from '@src/generated/client';
 
-export class UpdateStoreProductDto {
-  @IsOptional()
-  @IsBoolean()
-  enabled?: boolean;
+export class CreateStoreProductDto {
+  /**
+   * Must be a real Giftbit brand code (e.g. from the synced catalog) —
+   * customer purchases are fulfilled by Giftbit, so made-up codes will
+   * create products that cannot be delivered.
+   */
+  @IsString()
+  @MaxLength(100)
+  providerProductId: string;
 
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  markupPercent?: number;
+  @IsString()
+  @MaxLength(150)
+  productName: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(150)
-  productName?: string;
+  brandId?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(10)
-  countryCode?: string;
+  countryCode?: string = 'US';
 
   @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  currencyCode?: string = 'USD';
+
   @IsEnum(GiftCardDenominationType)
-  denominationType?: GiftCardDenominationType;
+  denominationType: GiftCardDenominationType;
 
   @IsOptional()
   @IsArray()
@@ -63,4 +69,15 @@ export class UpdateStoreProductDto {
   @IsNumber()
   @Min(0)
   senderFee?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  markupPercent?: number;
+
+  @IsOptional()
+  @IsObject()
+  providerResponse?: Record<string, unknown>;
 }

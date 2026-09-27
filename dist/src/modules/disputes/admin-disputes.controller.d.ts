@@ -71,10 +71,10 @@ export declare class AdminDisputesController {
                         createdAt: Date;
                         updatedAt: Date;
                         enabled: boolean;
-                        providerBrandId: string;
                         brandName: string;
                         logoUrl: string | null;
                         backgroundColor: string | null;
+                        providerBrandId: string;
                     } | null;
                 } & {
                     id: string;
@@ -85,14 +85,14 @@ export declare class AdminDisputesController {
                     providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
                     denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                     markupPercent: import("@src/generated/client/runtime/library").Decimal;
-                    providerProductId: string;
                     productName: string;
-                    brandId: string | null;
                     countryCode: string;
                     fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                     minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                     maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                     senderFee: import("@src/generated/client/runtime/library").Decimal;
+                    providerProductId: string;
+                    brandId: string | null;
                     discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                     providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
                     lastSyncedAt: Date | null;
@@ -374,10 +374,10 @@ export declare class AdminDisputesController {
                     createdAt: Date;
                     updatedAt: Date;
                     enabled: boolean;
-                    providerBrandId: string;
                     brandName: string;
                     logoUrl: string | null;
                     backgroundColor: string | null;
+                    providerBrandId: string;
                 } | null;
             } & {
                 id: string;
@@ -388,14 +388,14 @@ export declare class AdminDisputesController {
                 providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
                 denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 markupPercent: import("@src/generated/client/runtime/library").Decimal;
-                providerProductId: string;
                 productName: string;
-                brandId: string | null;
                 countryCode: string;
                 fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                 minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 senderFee: import("@src/generated/client/runtime/library").Decimal;
+                providerProductId: string;
+                brandId: string | null;
                 discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                 providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
                 lastSyncedAt: Date | null;
@@ -598,10 +598,10 @@ export declare class AdminDisputesController {
                     createdAt: Date;
                     updatedAt: Date;
                     enabled: boolean;
-                    providerBrandId: string;
                     brandName: string;
                     logoUrl: string | null;
                     backgroundColor: string | null;
+                    providerBrandId: string;
                 } | null;
             } & {
                 id: string;
@@ -612,14 +612,14 @@ export declare class AdminDisputesController {
                 providerResponse: import("@src/generated/client/runtime/library").JsonValue | null;
                 denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 markupPercent: import("@src/generated/client/runtime/library").Decimal;
-                providerProductId: string;
                 productName: string;
-                brandId: string | null;
                 countryCode: string;
                 fixedDenominations: import("@src/generated/client/runtime/library").JsonValue | null;
                 minDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 maxDenomination: import("@src/generated/client/runtime/library").Decimal | null;
                 senderFee: import("@src/generated/client/runtime/library").Decimal;
+                providerProductId: string;
+                brandId: string | null;
                 discountPercentage: import("@src/generated/client/runtime/library").Decimal;
                 providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
                 lastSyncedAt: Date | null;

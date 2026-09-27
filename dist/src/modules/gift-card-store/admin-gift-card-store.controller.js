@@ -23,6 +23,8 @@ const gift_card_store_service_1 = require("./gift-card-store.service");
 const list_store_products_dto_1 = require("./dto/list-store-products.dto");
 const list_store_orders_dto_1 = require("./dto/list-store-orders.dto");
 const update_store_product_dto_1 = require("./dto/update-store-product.dto");
+const create_store_product_dto_1 = require("./dto/create-store-product.dto");
+const create_store_brand_dto_1 = require("./dto/create-store-brand.dto");
 let AdminGiftCardStoreController = class AdminGiftCardStoreController {
     storeService;
     constructor(storeService) {
@@ -40,8 +42,20 @@ let AdminGiftCardStoreController = class AdminGiftCardStoreController {
     getAllProducts(dto) {
         return this.storeService.getAllProductsAdmin(dto);
     }
+    getBrands() {
+        return this.storeService.getAllBrandsAdmin();
+    }
+    createBrand(dto) {
+        return this.storeService.createBrand(dto);
+    }
+    createProduct(dto) {
+        return this.storeService.createProduct(dto);
+    }
     updateProduct(id, dto) {
         return this.storeService.updateProduct(id, dto);
+    }
+    deleteProduct(id) {
+        return this.storeService.deleteProduct(id);
     }
     getAllOrders(dto) {
         return this.storeService.getAllOrdersAdmin(dto);
@@ -83,14 +97,51 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminGiftCardStoreController.prototype, "getAllProducts", null);
 __decorate([
+    (0, common_1.Get)('brands'),
+    (0, swagger_1.ApiOperation)({ summary: 'List all store brands (admin)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminGiftCardStoreController.prototype, "getBrands", null);
+__decorate([
+    (0, common_1.Post)('brands'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a custom store brand' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_store_brand_dto_1.CreateStoreBrandDto]),
+    __metadata("design:returntype", void 0)
+], AdminGiftCardStoreController.prototype, "createBrand", null);
+__decorate([
+    (0, common_1.Post)('products'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Create a store product (Giftbit brand code required)',
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_store_product_dto_1.CreateStoreProductDto]),
+    __metadata("design:returntype", void 0)
+], AdminGiftCardStoreController.prototype, "createProduct", null);
+__decorate([
     (0, common_1.Patch)('products/:id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Enable/disable a product or set its markup' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update a product (enable/markup/name/denominations/fees) or set its markup',
+    }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_store_product_dto_1.UpdateStoreProductDto]),
     __metadata("design:returntype", void 0)
 ], AdminGiftCardStoreController.prototype, "updateProduct", null);
+__decorate([
+    (0, common_1.Delete)('products/:id'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Delete a product (blocked when orders exist — disable instead)',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminGiftCardStoreController.prototype, "deleteProduct", null);
 __decorate([
     (0, common_1.Get)('orders'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all gift card store orders (admin)' }),

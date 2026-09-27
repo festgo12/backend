@@ -9,6 +9,8 @@ import { PurchaseStoreGiftCardDto } from './dto/purchase-store-gift-card.dto';
 import { ListStoreProductsDto } from './dto/list-store-products.dto';
 import { ListStoreOrdersDto } from './dto/list-store-orders.dto';
 import { UpdateStoreProductDto } from './dto/update-store-product.dto';
+import { CreateStoreProductDto } from './dto/create-store-product.dto';
+import { CreateStoreBrandDto } from './dto/create-store-brand.dto';
 import { HttpService } from '@nestjs/axios';
 import { PassThrough } from 'stream';
 type StoreProductWithBrand = Prisma.GiftCardStoreProductGetPayload<{
@@ -73,6 +75,9 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             discountPercentage: Prisma.Decimal;
             providerPriceNgn: Prisma.Decimal;
             markupPercent: Prisma.Decimal;
+            ngnPerUsd: number;
+            indicativePriceUsd: number | null;
+            indicativePriceNgn: Prisma.Decimal;
             enabled: boolean;
             lastSyncedAt: Date | null;
         }[];
@@ -104,6 +109,9 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         discountPercentage: Prisma.Decimal;
         providerPriceNgn: Prisma.Decimal;
         markupPercent: Prisma.Decimal;
+        ngnPerUsd: number;
+        indicativePriceUsd: number | null;
+        indicativePriceNgn: Prisma.Decimal;
         enabled: boolean;
         lastSyncedAt: Date | null;
     }>;
@@ -116,10 +124,10 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         createdAt: Date;
         updatedAt: Date;
         enabled: boolean;
-        providerBrandId: string;
         brandName: string;
         logoUrl: string | null;
         backgroundColor: string | null;
+        providerBrandId: string;
     })[]>;
     proxyBrandImage(url: string): Promise<{
         stream: PassThrough;
@@ -277,6 +285,9 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             discountPercentage: Prisma.Decimal;
             providerPriceNgn: Prisma.Decimal;
             markupPercent: Prisma.Decimal;
+            ngnPerUsd: number;
+            indicativePriceUsd: number | null;
+            indicativePriceNgn: Prisma.Decimal;
             enabled: boolean;
             lastSyncedAt: Date | null;
         }[];
@@ -293,10 +304,10 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             createdAt: Date;
             updatedAt: Date;
             enabled: boolean;
-            providerBrandId: string;
             brandName: string;
             logoUrl: string | null;
             backgroundColor: string | null;
+            providerBrandId: string;
         } | null;
     } & {
         id: string;
@@ -307,14 +318,74 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
         providerResponse: Prisma.JsonValue | null;
         denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
         markupPercent: Prisma.Decimal;
-        providerProductId: string;
         productName: string;
-        brandId: string | null;
         countryCode: string;
         fixedDenominations: Prisma.JsonValue | null;
         minDenomination: Prisma.Decimal | null;
         maxDenomination: Prisma.Decimal | null;
         senderFee: Prisma.Decimal;
+        providerProductId: string;
+        brandId: string | null;
+        discountPercentage: Prisma.Decimal;
+        providerPriceNgn: Prisma.Decimal;
+        lastSyncedAt: Date | null;
+    }>;
+    deleteProduct(productId: string): Promise<{
+        deleted: boolean;
+        id: string;
+    }>;
+    getAllBrandsAdmin(): Promise<({
+        _count: {
+            products: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        brandName: string;
+        logoUrl: string | null;
+        backgroundColor: string | null;
+        providerBrandId: string;
+    })[]>;
+    createBrand(dto: CreateStoreBrandDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        brandName: string;
+        logoUrl: string | null;
+        backgroundColor: string | null;
+        providerBrandId: string;
+    }>;
+    createProduct(dto: CreateStoreProductDto): Promise<{
+        brand: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            enabled: boolean;
+            brandName: string;
+            logoUrl: string | null;
+            backgroundColor: string | null;
+            providerBrandId: string;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        enabled: boolean;
+        currencyCode: string;
+        providerResponse: Prisma.JsonValue | null;
+        denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
+        markupPercent: Prisma.Decimal;
+        productName: string;
+        countryCode: string;
+        fixedDenominations: Prisma.JsonValue | null;
+        minDenomination: Prisma.Decimal | null;
+        maxDenomination: Prisma.Decimal | null;
+        senderFee: Prisma.Decimal;
+        providerProductId: string;
+        brandId: string | null;
         discountPercentage: Prisma.Decimal;
         providerPriceNgn: Prisma.Decimal;
         lastSyncedAt: Date | null;
@@ -364,10 +435,10 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
                     createdAt: Date;
                     updatedAt: Date;
                     enabled: boolean;
-                    providerBrandId: string;
                     brandName: string;
                     logoUrl: string | null;
                     backgroundColor: string | null;
+                    providerBrandId: string;
                 } | null;
             } & {
                 id: string;
@@ -378,14 +449,14 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
                 providerResponse: Prisma.JsonValue | null;
                 denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
                 markupPercent: Prisma.Decimal;
-                providerProductId: string;
                 productName: string;
-                brandId: string | null;
                 countryCode: string;
                 fixedDenominations: Prisma.JsonValue | null;
                 minDenomination: Prisma.Decimal | null;
                 maxDenomination: Prisma.Decimal | null;
                 senderFee: Prisma.Decimal;
+                providerProductId: string;
+                brandId: string | null;
                 discountPercentage: Prisma.Decimal;
                 providerPriceNgn: Prisma.Decimal;
                 lastSyncedAt: Date | null;
@@ -461,10 +532,10 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
                 createdAt: Date;
                 updatedAt: Date;
                 enabled: boolean;
-                providerBrandId: string;
                 brandName: string;
                 logoUrl: string | null;
                 backgroundColor: string | null;
+                providerBrandId: string;
             } | null;
         } & {
             id: string;
@@ -475,14 +546,14 @@ export declare class GiftCardStoreService implements OnModuleInit, OnModuleDestr
             providerResponse: Prisma.JsonValue | null;
             denominationType: import("@src/generated/client").$Enums.GiftCardDenominationType;
             markupPercent: Prisma.Decimal;
-            providerProductId: string;
             productName: string;
-            brandId: string | null;
             countryCode: string;
             fixedDenominations: Prisma.JsonValue | null;
             minDenomination: Prisma.Decimal | null;
             maxDenomination: Prisma.Decimal | null;
             senderFee: Prisma.Decimal;
+            providerProductId: string;
+            brandId: string | null;
             discountPercentage: Prisma.Decimal;
             providerPriceNgn: Prisma.Decimal;
             lastSyncedAt: Date | null;

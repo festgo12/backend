@@ -21,10 +21,10 @@ export declare class GiftCardStoreController {
         createdAt: Date;
         updatedAt: Date;
         enabled: boolean;
-        providerBrandId: string;
         brandName: string;
         logoUrl: string | null;
         backgroundColor: string | null;
+        providerBrandId: string;
     })[]>;
     proxyBrandImage(url: string, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     getProducts(dto: ListStoreProductsDto): Promise<{
@@ -49,6 +49,9 @@ export declare class GiftCardStoreController {
             discountPercentage: import("@src/generated/client/runtime/library").Decimal;
             providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
             markupPercent: import("@src/generated/client/runtime/library").Decimal;
+            ngnPerUsd: number;
+            indicativePriceUsd: number | null;
+            indicativePriceNgn: import("@src/generated/client/runtime/library").Decimal;
             enabled: boolean;
             lastSyncedAt: Date | null;
         }[];
@@ -80,6 +83,9 @@ export declare class GiftCardStoreController {
         discountPercentage: import("@src/generated/client/runtime/library").Decimal;
         providerPriceNgn: import("@src/generated/client/runtime/library").Decimal;
         markupPercent: import("@src/generated/client/runtime/library").Decimal;
+        ngnPerUsd: number;
+        indicativePriceUsd: number | null;
+        indicativePriceNgn: import("@src/generated/client/runtime/library").Decimal;
         enabled: boolean;
         lastSyncedAt: Date | null;
     }>;

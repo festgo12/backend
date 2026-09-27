@@ -9,52 +9,56 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateStoreProductDto = void 0;
+exports.CreateStoreProductDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const client_1 = require("../../../generated/client/index.js");
-class UpdateStoreProductDto {
-    enabled;
-    markupPercent;
+class CreateStoreProductDto {
+    providerProductId;
     productName;
-    countryCode;
+    brandId;
+    countryCode = 'US';
+    currencyCode = 'USD';
     denominationType;
     fixedDenominations;
     minDenomination;
     maxDenomination;
     senderFee;
+    markupPercent;
+    providerResponse;
 }
-exports.UpdateStoreProductDto = UpdateStoreProductDto;
+exports.CreateStoreProductDto = CreateStoreProductDto;
 __decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsBoolean)(),
-    __metadata("design:type", Boolean)
-], UpdateStoreProductDto.prototype, "enabled", void 0);
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], CreateStoreProductDto.prototype, "providerProductId", void 0);
 __decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    (0, class_validator_1.Max)(100),
-    __metadata("design:type", Number)
-], UpdateStoreProductDto.prototype, "markupPercent", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MaxLength)(150),
     __metadata("design:type", String)
-], UpdateStoreProductDto.prototype, "productName", void 0);
+], CreateStoreProductDto.prototype, "productName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateStoreProductDto.prototype, "brandId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MaxLength)(10),
     __metadata("design:type", String)
-], UpdateStoreProductDto.prototype, "countryCode", void 0);
+], CreateStoreProductDto.prototype, "countryCode", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(10),
+    __metadata("design:type", String)
+], CreateStoreProductDto.prototype, "currencyCode", void 0);
+__decorate([
     (0, class_validator_1.IsEnum)(client_1.GiftCardDenominationType),
     __metadata("design:type", String)
-], UpdateStoreProductDto.prototype, "denominationType", void 0);
+], CreateStoreProductDto.prototype, "denominationType", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
@@ -62,26 +66,39 @@ __decorate([
     (0, class_validator_1.IsNumber)({}, { each: true }),
     (0, class_validator_1.Min)(0.01, { each: true }),
     __metadata("design:type", Array)
-], UpdateStoreProductDto.prototype, "fixedDenominations", void 0);
+], CreateStoreProductDto.prototype, "fixedDenominations", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
-], UpdateStoreProductDto.prototype, "minDenomination", void 0);
+], CreateStoreProductDto.prototype, "minDenomination", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
-], UpdateStoreProductDto.prototype, "maxDenomination", void 0);
+], CreateStoreProductDto.prototype, "maxDenomination", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
-], UpdateStoreProductDto.prototype, "senderFee", void 0);
-//# sourceMappingURL=update-store-product.dto.js.map
+], CreateStoreProductDto.prototype, "senderFee", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], CreateStoreProductDto.prototype, "markupPercent", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], CreateStoreProductDto.prototype, "providerResponse", void 0);
+//# sourceMappingURL=create-store-product.dto.js.map
