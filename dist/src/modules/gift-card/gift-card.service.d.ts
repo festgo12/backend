@@ -516,6 +516,8 @@ export declare class GiftCardService {
         totalVolumeNgn: number | Prisma.Decimal;
     }>;
     private stripSensitive;
+    private normalizeListingEvidence;
+    private normalizeEvidenceFields;
     private stripEvidence;
     private formatOrderForBuyer;
     private formatOrderForSeller;

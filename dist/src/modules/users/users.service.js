@@ -12,10 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../core/database/prisma.service");
+const upload_service_1 = require("../upload/upload.service");
 let UsersService = class UsersService {
     prisma;
-    constructor(prisma) {
+    uploadService;
+    constructor(prisma, uploadService) {
         this.prisma = prisma;
+        this.uploadService = uploadService;
     }
     async findMe(userId) {
         const user = await this.prisma.user.findUnique({
@@ -29,6 +32,12 @@ let UsersService = class UsersService {
         if (!user)
             throw new common_1.NotFoundException('User not found');
         const { passwordHash, ...result } = user;
+        if (result.profile?.avatarUrl) {
+            result.profile = {
+                ...result.profile,
+                avatarUrl: this.uploadService.normalizeStoredFileUrl(result.profile.avatarUrl),
+            };
+        }
         return result;
     }
     async updateProfile(userId, dto) {
@@ -83,6 +92,7 @@ let UsersService = class UsersService {
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        upload_service_1.UploadService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

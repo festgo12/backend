@@ -1,8 +1,10 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { UpdateProfileDto, UpdatePreferencesDto } from './dto/update-user.dto';
+import { UploadService } from '../upload/upload.service';
 export declare class UsersService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private readonly uploadService;
+    constructor(prisma: PrismaService, uploadService: UploadService);
     findMe(userId: string): Promise<{
         profile: {
             firstName: string | null;

@@ -47,6 +47,13 @@ let NotificationsController = class NotificationsController {
         await this.notificationsService.registerFcmToken(user.id, deviceId, fcmToken);
         return { success: true };
     }
+    async unregisterFcmToken(user, deviceId) {
+        if (!deviceId) {
+            return { success: false, message: 'deviceId is required.' };
+        }
+        await this.notificationsService.unregisterFcmToken(user.id, deviceId);
+        return { success: true };
+    }
     async getSystemLogs(limit = 50, offset = 0) {
         return this.notificationsService.getLogs(limit, offset);
     }
@@ -102,6 +109,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], NotificationsController.prototype, "registerFcmToken", null);
+__decorate([
+    (0, common_1.Post)('fcm-token/unregister'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Remove the FCM push token for this device (called on logout)' }),
+    __param(0, (0, get_user_decorator_1.GetUser)()),
+    __param(1, (0, common_1.Body)('deviceId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "unregisterFcmToken", null);
 __decorate([
     (0, common_1.Get)('admin/logs'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),

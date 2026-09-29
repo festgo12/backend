@@ -480,11 +480,11 @@ export class GiftCardService {
     }
 
     // Admin gets decrypted card codes
-    return {
+    return this.normalizeListingEvidence({
       ...listing,
       cardCode: this.encryption.decrypt(listing.cardCode),
       cardPin: listing.cardPin ? this.encryption.decrypt(listing.cardPin) : null,
-    };
+    });
   }
 
   async getAllListingsAdmin(dto: ListGiftCardListingsDto) {
@@ -519,7 +519,7 @@ export class GiftCardService {
     ]);
 
     return {
-      data: listings.map((l) => this.stripSensitive(l)),
+      data: listings.map((l) => this.normalizeListingEvidence(this.stripSensitive(l))),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -610,7 +610,7 @@ export class GiftCardService {
     }
 
     // Admin gets decrypted card codes
-    return {
+    return this.normalizeListingEvidence({
       ...order,
       listing: {
         ...order.listing,
@@ -619,7 +619,7 @@ export class GiftCardService {
           ? this.encryption.decrypt(order.listing.cardPin)
           : null,
       },
-    };
+    });
   }
 
   async getStats() {
@@ -656,6 +656,54 @@ export class GiftCardService {
   private stripSensitive(listing: any) {
     const { cardCode, cardPin, ...safe } = listing;
     return safe;
+  }
+
+  /**
+   * Re-anchors stored evidence URLs onto the currently configured public
+   * origin so legacy rows persisted with a stale base (e.g.
+   * http://localhost:3000 from a dev environment) still resolve.
+   */
+  private normalizeListingEvidence<T>(entry: T): T {
+    const result: T = this.normalizeEvidenceFields(
+      entry as Record<string, unknown>,
+    ) as T;
+
+    // Nested shape (e.g. admin order detail: order.listing.evidenceUrls)
+    const nestedListing = (result as { listing?: unknown }).listing;
+    if (
+      nestedListing &&
+      typeof nestedListing === 'object' &&
+      ('evidenceUrls' in nestedListing || 'evidenceRecords' in nestedListing)
+    ) {
+      (result as { listing?: unknown }).listing = this.normalizeEvidenceFields(
+        nestedListing as Record<string, unknown>,
+      );
+    }
+
+    return result;
+  }
+
+  private normalizeEvidenceFields(entry: Record<string, unknown>): Record<string, unknown> {
+    const result = { ...entry };
+    if (Array.isArray(result.evidenceUrls)) {
+      result.evidenceUrls = (
+        result.evidenceUrls as unknown[]
+      ).map((url) =>
+        typeof url === 'string' ? this.uploadService.normalizeStoredFileUrl(url) : url,
+      );
+    }
+    if (Array.isArray(result.evidenceRecords)) {
+      result.evidenceRecords = (
+        result.evidenceRecords as Array<Record<string, unknown>>
+      ).map((record) => ({
+        ...record,
+        fileUrl:
+          typeof record?.fileUrl === 'string'
+            ? this.uploadService.normalizeStoredFileUrl(record.fileUrl)
+            : record?.fileUrl,
+      }));
+    }
+    return result;
   }
 
   // Strips card codes AND any evidence (proof photos are admin-only). Used

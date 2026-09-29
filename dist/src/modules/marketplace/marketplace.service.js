@@ -15,10 +15,13 @@ const prisma_service_1 = require("../../core/database/prisma.service");
 const client_1 = require("../../generated/client/index.js");
 const library_1 = require("../../generated/client/runtime/library");
 const wallet_query_util_1 = require("../wallet/wallet-query.util");
+const upload_service_1 = require("../upload/upload.service");
 let MarketplaceService = class MarketplaceService {
     prisma;
-    constructor(prisma) {
+    uploadService;
+    constructor(prisma, uploadService) {
         this.prisma = prisma;
+        this.uploadService = uploadService;
     }
     async createAd(userId, dto) {
         if (dto.type === client_1.AdType.SELL) {
@@ -192,6 +195,12 @@ let MarketplaceService = class MarketplaceService {
                 ...item,
                 seller: {
                     ...item.seller,
+                    profile: item.seller.profile?.avatarUrl
+                        ? {
+                            ...item.seller.profile,
+                            avatarUrl: this.uploadService.normalizeStoredFileUrl(item.seller.profile.avatarUrl),
+                        }
+                        : item.seller.profile,
                     totalOrders: stats.totalOrders,
                     completionRate: stats.completionRate,
                 },
@@ -217,6 +226,7 @@ let MarketplaceService = class MarketplaceService {
 exports.MarketplaceService = MarketplaceService;
 exports.MarketplaceService = MarketplaceService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        upload_service_1.UploadService])
 ], MarketplaceService);
 //# sourceMappingURL=marketplace.service.js.map

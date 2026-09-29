@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { UpdateProfileDto, UpdatePreferencesDto } from './dto/update-user.dto';
+import { UploadService } from '../upload/upload.service';
 
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   async findMe(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -20,6 +24,19 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     const { passwordHash, ...result } = user;
+
+    // Legacy rows can hold an absolute dev origin (e.g.
+    // "http://localhost:3000/uploads/avatars/...") — rewrite onto the
+    // currently configured public origin so clients prefix the right base.
+    if (result.profile?.avatarUrl) {
+      result.profile = {
+        ...result.profile,
+        avatarUrl: this.uploadService.normalizeStoredFileUrl(
+          result.profile.avatarUrl,
+        ),
+      };
+    }
+
     return result;
   }
 

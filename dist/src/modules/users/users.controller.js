@@ -53,8 +53,18 @@ let UsersController = class UsersController {
                 const currentProfile = await this.usersService.findMe(userId);
                 const oldAvatar = currentProfile
                     ?.profile?.avatarUrl;
-                if (oldAvatar && oldAvatar.startsWith('/uploads/avatars/')) {
-                    const oldPath = (0, path_1.join)(process.cwd(), oldAvatar);
+                const oldAvatarPath = oldAvatar?.startsWith('http')
+                    ? (() => {
+                        try {
+                            return new URL(oldAvatar).pathname;
+                        }
+                        catch (_) {
+                            return null;
+                        }
+                    })()
+                    : oldAvatar;
+                if (oldAvatarPath && oldAvatarPath.startsWith('/uploads/avatars/')) {
+                    const oldPath = (0, path_1.join)(process.cwd(), oldAvatarPath);
                     await (0, promises_1.unlink)(oldPath).catch(() => { });
                 }
             }

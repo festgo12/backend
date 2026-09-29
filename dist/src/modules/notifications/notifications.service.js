@@ -28,6 +28,13 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
     }
     async registerFcmToken(userId, deviceId, fcmToken) {
         this.logger.log(`Registering FCM to device: ${deviceId} for user: ${userId}`);
+        const stolen = await this.prisma.device.updateMany({
+            where: { fcmToken, userId: { not: userId } },
+            data: { fcmToken: null },
+        });
+        if (stolen.count > 0) {
+            this.logger.log(`FCM token re-assigned: cleared from ${stolen.count} device row(s) of other users before re-binding to user ${userId}.`);
+        }
         return this.prisma.device.upsert({
             where: {
                 userId_deviceId: { userId, deviceId },
@@ -44,8 +51,16 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             },
         });
     }
+    async unregisterFcmToken(userId, deviceId) {
+        this.logger.log(`Unregistering FCM from device: ${deviceId} for user: ${userId}`);
+        return this.prisma.device.updateMany({
+            where: { userId, deviceId },
+            data: { fcmToken: null },
+        });
+    }
     async notifyUser(params) {
         const { userId, type, data = {}, customTitle, customBody } = params;
+        const payloadData = { ...data, type };
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -79,7 +94,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                 userId,
                 title: inAppTitle,
                 body: inAppBody,
-                data: data ? data : undefined,
+                data: payloadData,
             },
         });
         await this.prisma.notificationLog.create({
@@ -126,7 +141,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                             body: pushBody,
                             status: client_1.NotificationStatus.PENDING,
                             nextTryAt: new Date(),
-                            metadata: data ? data : undefined,
+                            metadata: payloadData,
                         },
                     });
                 }

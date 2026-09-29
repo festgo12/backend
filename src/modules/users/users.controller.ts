@@ -98,8 +98,19 @@ export class UsersController implements OnModuleInit {
         const currentProfile = await this.usersService.findMe(userId);
         const oldAvatar = (currentProfile as { profile?: { avatarUrl?: string | null } })
           ?.profile?.avatarUrl;
-        if (oldAvatar && oldAvatar.startsWith('/uploads/avatars/')) {
-          const oldPath = join(process.cwd(), oldAvatar);
+        // findMe may return an absolute URL (normalized onto the public
+        // origin) — reduce it to the relative /uploads/... path for deletion.
+        const oldAvatarPath = oldAvatar?.startsWith('http')
+          ? (() => {
+              try {
+                return new URL(oldAvatar).pathname;
+              } catch (_) {
+                return null;
+              }
+            })()
+          : oldAvatar;
+        if (oldAvatarPath && oldAvatarPath.startsWith('/uploads/avatars/')) {
+          const oldPath = join(process.cwd(), oldAvatarPath);
           await unlink(oldPath).catch(() => {});
         }
       } catch (_) {}

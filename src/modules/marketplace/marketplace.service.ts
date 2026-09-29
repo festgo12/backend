@@ -4,10 +4,14 @@ import { CreateAdDto, UpdateAdDto, SearchAdsDto } from './dto/ad.dto';
 import { AdType, Currency } from '@src/generated/client';
 import { Decimal } from '@src/generated/client/runtime/library';
 import { primaryWalletWhere, resolveChainWallet } from '../wallet/wallet-query.util';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class MarketplaceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   async createAd(userId: string, dto: CreateAdDto) {
     if (dto.type === AdType.SELL) {
@@ -208,6 +212,16 @@ export class MarketplaceService {
         ...item,
         seller: {
           ...item.seller,
+          // Rewrite stale absolute dev-origin avatar URLs onto the currently
+          // configured public origin so client-side base-prefixing works.
+          profile: item.seller.profile?.avatarUrl
+            ? {
+                ...item.seller.profile,
+                avatarUrl: this.uploadService.normalizeStoredFileUrl(
+                  item.seller.profile.avatarUrl,
+                ),
+              }
+            : item.seller.profile,
           totalOrders: stats.totalOrders,
           completionRate: stats.completionRate,
         },

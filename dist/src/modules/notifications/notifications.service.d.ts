@@ -24,6 +24,7 @@ export declare class NotificationsService {
         lastLogin: Date;
         lastActivity: Date | null;
     }>;
+    unregisterFcmToken(userId: string, deviceId: string): Promise<Prisma.BatchPayload>;
     notifyUser(params: {
         userId: string;
         type: string;
@@ -34,8 +35,8 @@ export declare class NotificationsService {
         title: string;
         id: string;
         createdAt: Date;
-        data: Prisma.JsonValue | null;
         userId: string;
+        data: Prisma.JsonValue | null;
         isRead: boolean;
         body: string;
     }>;
@@ -43,8 +44,8 @@ export declare class NotificationsService {
         title: string;
         id: string;
         createdAt: Date;
-        data: Prisma.JsonValue | null;
         userId: string;
+        data: Prisma.JsonValue | null;
         isRead: boolean;
         body: string;
     }[]>;

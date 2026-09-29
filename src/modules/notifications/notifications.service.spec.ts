@@ -38,6 +38,7 @@ describe('NotificationsService', () => {
   const mockPrismaService = {
     device: {
       upsert: jest.fn(),
+      updateMany: jest.fn(),
     },
     user: {
       findUnique: jest.fn(),
@@ -87,9 +88,16 @@ describe('NotificationsService', () => {
 
   describe('registerFcmToken', () => {
     it('should upsert FCM token for user device', async () => {
+      mockPrismaService.device.updateMany.mockResolvedValue({ count: 0 });
       mockPrismaService.device.upsert.mockResolvedValue({ id: 'device-uuid' });
 
       await service.registerFcmToken('user-uuid', 'dev-123', 'fcm-token-val');
+
+      // Strips the token from any OTHER user's devices first (single-owner invariant)
+      expect(mockPrismaService.device.updateMany).toHaveBeenCalledWith({
+        where: { fcmToken: 'fcm-token-val', userId: { not: 'user-uuid' } },
+        data: { fcmToken: null },
+      });
 
       expect(mockPrismaService.device.upsert).toHaveBeenCalledWith({
         where: {
@@ -105,6 +113,19 @@ describe('NotificationsService', () => {
           fcmToken: 'fcm-token-val',
           fingerprint: 'mobile-fcm-reg',
         },
+      });
+    });
+  });
+
+  describe('unregisterFcmToken', () => {
+    it('should null the FCM token for the user device without deleting the row', async () => {
+      mockPrismaService.device.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.unregisterFcmToken('user-uuid', 'dev-123');
+
+      expect(mockPrismaService.device.updateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-uuid', deviceId: 'dev-123' },
+        data: { fcmToken: null },
       });
     });
   });
@@ -129,13 +150,14 @@ describe('NotificationsService', () => {
         data: { username: 'john_doe', time: '12:00 PM' },
       });
 
-      // Assert In-app notification creation
+      // Assert In-app notification creation (type is merged into the payload
+      // so the app can categorize + deep-link)
       expect(mockPrismaService.notification.create).toHaveBeenCalledWith({
         data: {
           userId: 'user-uuid',
           title: 'New login detected',
           body: 'Hello john_doe, a new login was detected on your account.',
-          data: { username: 'john_doe', time: '12:00 PM' },
+          data: { username: 'john_doe', time: '12:00 PM', type: 'AUTH_LOGIN' },
         },
       });
 

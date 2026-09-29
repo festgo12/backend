@@ -1,9 +1,11 @@
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateAdDto, UpdateAdDto, SearchAdsDto } from './dto/ad.dto';
 import { Decimal } from '@src/generated/client/runtime/library';
+import { UploadService } from '../upload/upload.service';
 export declare class MarketplaceService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private readonly uploadService;
+    constructor(prisma: PrismaService, uploadService: UploadService);
     createAd(userId: string, dto: CreateAdDto): Promise<{
         type: import("@src/generated/client").$Enums.AdType;
         id: string;
@@ -78,14 +80,14 @@ export declare class MarketplaceService {
     searchAds(dto: SearchAdsDto): Promise<{
         items: {
             seller: {
-                totalOrders: number;
-                completionRate: number;
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
                     avatarUrl: string | null;
                     kycStatus: string;
                 } | null;
+                totalOrders: number;
+                completionRate: number;
                 id: string;
                 devices: {
                     lastLogin: Date;

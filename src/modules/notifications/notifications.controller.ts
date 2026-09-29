@@ -62,6 +62,20 @@ export class NotificationsController {
     return { success: true };
   }
 
+  @Post('fcm-token/unregister')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remove the FCM push token for this device (called on logout)' })
+  async unregisterFcmToken(
+    @GetUser() user: User,
+    @Body('deviceId') deviceId: string,
+  ) {
+    if (!deviceId) {
+      return { success: false, message: 'deviceId is required.' };
+    }
+    await this.notificationsService.unregisterFcmToken(user.id, deviceId);
+    return { success: true };
+  }
+
   // --- Admin Endpoints ---
 
   @Get('admin/logs')

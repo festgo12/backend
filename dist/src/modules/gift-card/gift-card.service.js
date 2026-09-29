@@ -378,11 +378,11 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
         if (!listing) {
             throw new common_1.NotFoundException('Listing not found');
         }
-        return {
+        return this.normalizeListingEvidence({
             ...listing,
             cardCode: this.encryption.decrypt(listing.cardCode),
             cardPin: listing.cardPin ? this.encryption.decrypt(listing.cardPin) : null,
-        };
+        });
     }
     async getAllListingsAdmin(dto) {
         const where = {};
@@ -413,7 +413,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
             this.prisma.giftCardListing.count({ where }),
         ]);
         return {
-            data: listings.map((l) => this.stripSensitive(l)),
+            data: listings.map((l) => this.normalizeListingEvidence(this.stripSensitive(l))),
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
         };
     }
@@ -488,7 +488,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
         if (!order) {
             throw new common_1.NotFoundException('Order not found');
         }
-        return {
+        return this.normalizeListingEvidence({
             ...order,
             listing: {
                 ...order.listing,
@@ -497,7 +497,7 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
                     ? this.encryption.decrypt(order.listing.cardPin)
                     : null,
             },
-        };
+        });
     }
     async getStats() {
         const now = new Date();
@@ -525,6 +525,31 @@ let GiftCardService = GiftCardService_1 = class GiftCardService {
     stripSensitive(listing) {
         const { cardCode, cardPin, ...safe } = listing;
         return safe;
+    }
+    normalizeListingEvidence(entry) {
+        const result = this.normalizeEvidenceFields(entry);
+        const nestedListing = result.listing;
+        if (nestedListing &&
+            typeof nestedListing === 'object' &&
+            ('evidenceUrls' in nestedListing || 'evidenceRecords' in nestedListing)) {
+            result.listing = this.normalizeEvidenceFields(nestedListing);
+        }
+        return result;
+    }
+    normalizeEvidenceFields(entry) {
+        const result = { ...entry };
+        if (Array.isArray(result.evidenceUrls)) {
+            result.evidenceUrls = result.evidenceUrls.map((url) => typeof url === 'string' ? this.uploadService.normalizeStoredFileUrl(url) : url);
+        }
+        if (Array.isArray(result.evidenceRecords)) {
+            result.evidenceRecords = result.evidenceRecords.map((record) => ({
+                ...record,
+                fileUrl: typeof record?.fileUrl === 'string'
+                    ? this.uploadService.normalizeStoredFileUrl(record.fileUrl)
+                    : record?.fileUrl,
+            }));
+        }
+        return result;
     }
     stripEvidence(listing) {
         const { cardCode, cardPin, evidenceUrls, evidenceRecords, ...safe } = listing;

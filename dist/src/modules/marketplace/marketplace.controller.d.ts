@@ -6,14 +6,14 @@ export declare class MarketplaceController {
     searchAds(dto: SearchAdsDto): Promise<{
         items: {
             seller: {
-                totalOrders: number;
-                completionRate: number;
                 profile: {
                     firstName: string | null;
                     lastName: string | null;
                     avatarUrl: string | null;
                     kycStatus: string;
                 } | null;
+                totalOrders: number;
+                completionRate: number;
                 id: string;
                 devices: {
                     lastLogin: Date;

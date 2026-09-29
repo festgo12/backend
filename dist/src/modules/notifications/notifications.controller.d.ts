@@ -9,8 +9,8 @@ export declare class NotificationsController {
         title: string;
         id: string;
         createdAt: Date;
-        data: import("@src/generated/client/runtime/library").JsonValue | null;
         userId: string;
+        data: import("@src/generated/client/runtime/library").JsonValue | null;
         isRead: boolean;
         body: string;
     }[]>;
@@ -21,6 +21,13 @@ export declare class NotificationsController {
         success: boolean;
     }>;
     registerFcmToken(user: User, deviceId: string, fcmToken: string): Promise<{
+        success: boolean;
+        message: string;
+    } | {
+        success: boolean;
+        message?: undefined;
+    }>;
+    unregisterFcmToken(user: User, deviceId: string): Promise<{
         success: boolean;
         message: string;
     } | {

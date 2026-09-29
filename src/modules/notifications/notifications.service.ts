@@ -16,9 +16,26 @@ export class NotificationsService {
 
   /**
    * Registers or updates client device FCM push parameters.
+   *
+   * FCM tokens are unique per app installation: if the same token already
+   * belongs to a DIFFERENT user's device row (e.g. a new account logged in on
+   * a device whose previous owner never unregistered), it is nulled there
+   * first so push notifications are never delivered to the wrong user.
    */
   async registerFcmToken(userId: string, deviceId: string, fcmToken: string) {
     this.logger.log(`Registering FCM to device: ${deviceId} for user: ${userId}`);
+
+    // Single-owner invariant: strip the token from any other user's devices.
+    const stolen = await this.prisma.device.updateMany({
+      where: { fcmToken, userId: { not: userId } },
+      data: { fcmToken: null },
+    });
+    if (stolen.count > 0) {
+      this.logger.log(
+        `FCM token re-assigned: cleared from ${stolen.count} device row(s) of other users before re-binding to user ${userId}.`,
+      );
+    }
+
     return this.prisma.device.upsert({
       where: {
         userId_deviceId: { userId, deviceId },
@@ -37,6 +54,19 @@ export class NotificationsService {
   }
 
   /**
+   * Removes this device's FCM token (called on logout) so the backend stops
+   * targeting it for this user. The device row itself is kept for the
+   * security/device-management screens.
+   */
+  async unregisterFcmToken(userId: string, deviceId: string) {
+    this.logger.log(`Unregistering FCM from device: ${deviceId} for user: ${userId}`);
+    return this.prisma.device.updateMany({
+      where: { userId, deviceId },
+      data: { fcmToken: null },
+    });
+  }
+
+  /**
    * Enqueues or dispatches notification variants for a user based on a template.
    */
   async notifyUser(params: {
@@ -47,6 +77,10 @@ export class NotificationsService {
     customBody?: string;
   }) {
     const { userId, type, data = {}, customTitle, customBody } = params;
+
+    // The notification type is embedded in the payload so the mobile app can
+    // categorize the notification and deep-link to the relevant screen.
+    const payloadData: Record<string, any> = { ...data, type };
 
     // 1. Fetch recipient user preferences & profiles
     const user = await this.prisma.user.findUnique({
@@ -89,7 +123,7 @@ export class NotificationsService {
         userId,
         title: inAppTitle,
         body: inAppBody,
-        data: data ? (data as Prisma.InputJsonValue) : undefined,
+        data: payloadData as Prisma.InputJsonValue,
       },
     });
 
@@ -144,7 +178,7 @@ export class NotificationsService {
               body: pushBody,
               status: NotificationStatus.PENDING,
               nextTryAt: new Date(),
-              metadata: data ? (data as Prisma.InputJsonValue) : undefined,
+              metadata: payloadData as Prisma.InputJsonValue,
             },
           });
         }
