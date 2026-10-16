@@ -19,7 +19,10 @@ describe('CryptoWithdrawalService', () => {
 
   const mockPrisma = {
     wallet: { findUnique: jest.fn(), update: jest.fn() },
-    walletTransaction: { create: jest.fn(), updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+    walletTransaction: {
+      create: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   };
@@ -114,7 +117,9 @@ describe('CryptoWithdrawalService', () => {
     mockPrisma.$executeRaw.mockResolvedValue(1);
     mockChainClient.broadcastEvmNative.mockResolvedValue('0xtxhash');
     mockPrisma.walletTransaction.create.mockResolvedValue({ id: 'wt-1' });
-    mockPrisma.walletTransaction.updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    mockPrisma.walletTransaction.updateMany = jest
+      .fn()
+      .mockResolvedValue({ count: 1 });
     mockTracker.enqueue.mockResolvedValue({});
 
     const result = await service.processWithdrawal({
@@ -258,7 +263,8 @@ describe('CryptoWithdrawalService', () => {
     expect(mockPrisma.walletTransaction.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          walletId: 'w-fee',          type: LedgerType.WITHDRAWAL,
+          walletId: 'w-fee',
+          type: LedgerType.WITHDRAWAL,
           status: 'PENDING',
           reference: '0xsweephash',
           metadata: expect.objectContaining({

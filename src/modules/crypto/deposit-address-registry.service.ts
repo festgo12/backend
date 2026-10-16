@@ -4,7 +4,6 @@ import { PrismaService } from '../../core/database/prisma.service';
 import {
   Chain,
   ChainFamily,
-  ChainKind,
   CryptoConfigService,
 } from './crypto-config.service';
 import { AddressRegistrationService } from './address-registration.service';

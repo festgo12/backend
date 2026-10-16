@@ -1,11 +1,31 @@
-import { IsString, IsOptional, IsNumber, IsEnum, IsIn, Min, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+  IsIn,
+  Min,
+  IsBoolean,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Currency } from '@src/generated/client';
 
-const ALLOWED_AD_FIELDS = ['status', 'quantity', 'price', 'minLimit', 'maxLimit', 'paymentMethods', 'description'] as const;
+const ALLOWED_AD_FIELDS = [
+  'status',
+  'quantity',
+  'price',
+  'minLimit',
+  'maxLimit',
+  'paymentMethods',
+  'description',
+] as const;
 
 export class AdminUpdateAdDto {
-  @ApiPropertyOptional({ enum: ALLOWED_AD_FIELDS, isArray: true, description: 'Only whitelisted fields are accepted' })
+  @ApiPropertyOptional({
+    enum: ALLOWED_AD_FIELDS,
+    isArray: true,
+    description: 'Only whitelisted fields are accepted',
+  })
   @IsOptional()
   @IsIn(ALLOWED_AD_FIELDS, { each: true })
   status?: string;
@@ -45,7 +65,9 @@ export class SweepFeeWalletDto {
   @IsString()
   address!: string;
 
-  @ApiPropertyOptional({ description: 'Amount to sweep (omit for full balance)' })
+  @ApiPropertyOptional({
+    description: 'Amount to sweep (omit for full balance)',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -61,7 +83,9 @@ export class SweepFeeWalletDto {
 }
 
 export class SweepConfigDto {
-  @ApiPropertyOptional({ description: 'Enable/disable sweeping for this chain' })
+  @ApiPropertyOptional({
+    description: 'Enable/disable sweeping for this chain',
+  })
   @IsOptional()
   @IsBoolean()
   enabled?: boolean;

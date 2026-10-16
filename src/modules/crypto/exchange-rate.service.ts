@@ -83,54 +83,56 @@ export class ExchangeRateService implements OnApplicationBootstrap {
           }),
         );
 
-      const data = response.data as Record<
-        string,
-        { ngn?: number; usd?: number }
-      >;
-      const ngn: Record<string, number> = { NGN: 1.0 };
-      const usd: Record<string, number> = { NGN: 1.0 };
+        const data = response.data as Record<
+          string,
+          { ngn?: number; usd?: number }
+        >;
+        const ngn: Record<string, number> = { NGN: 1.0 };
+        const usd: Record<string, number> = { NGN: 1.0 };
 
-      for (const [currency, coinId] of Object.entries(this.COINGECKO_MAP)) {
-        const ngnPrice = data[coinId]?.ngn;
-        const usdPrice = data[coinId]?.usd;
-        if (ngnPrice && typeof ngnPrice === 'number' && ngnPrice > 0) {
-          ngn[currency] = ngnPrice;
-        } else {
-          ngn[currency] = this.FALLBACK_RATES[currency as Currency] || 0;
-          this.logger.warn(
-            `Using fallback NGN rate for ${currency}: ${ngn[currency]}`,
-          );
+        for (const [currency, coinId] of Object.entries(this.COINGECKO_MAP)) {
+          const ngnPrice = data[coinId]?.ngn;
+          const usdPrice = data[coinId]?.usd;
+          if (ngnPrice && typeof ngnPrice === 'number' && ngnPrice > 0) {
+            ngn[currency] = ngnPrice;
+          } else {
+            ngn[currency] = this.FALLBACK_RATES[currency as Currency] || 0;
+            this.logger.warn(
+              `Using fallback NGN rate for ${currency}: ${ngn[currency]}`,
+            );
+          }
+          if (usdPrice && typeof usdPrice === 'number' && usdPrice > 0) {
+            usd[currency] = usdPrice;
+          } else {
+            usd[currency] = this.FALLBACK_RATES[currency as Currency]
+              ? this.FALLBACK_RATES[currency as Currency] / 1550
+              : 0;
+            this.logger.warn(
+              `Using fallback USD rate for ${currency}: ${usd[currency]}`,
+            );
+          }
         }
-        if (usdPrice && typeof usdPrice === 'number' && usdPrice > 0) {
-          usd[currency] = usdPrice;
-        } else {
-          usd[currency] = this.FALLBACK_RATES[currency as Currency]
-            ? this.FALLBACK_RATES[currency as Currency] / 1550
-            : 0;
-          this.logger.warn(
-            `Using fallback USD rate for ${currency}: ${usd[currency]}`,
-          );
+
+        this.cache = { ngn, usd, lastUpdated: new Date() };
+        this.logger.log(
+          `Exchange rates updated: BTC=$${usd.BTC} / ₦${ngn.BTC}, ETH=$${usd.ETH} / ₦${ngn.ETH}`,
+        );
+        return ngn;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `CoinGecko fetch attempt ${attempt}/${MAX_RETRIES} failed: ${message}`,
+        );
+        if (attempt < MAX_RETRIES) {
+          const delay = 2000 * attempt;
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
-
-      this.cache = { ngn, usd, lastUpdated: new Date() };
-      this.logger.log(
-        `Exchange rates updated: BTC=$${usd.BTC} / ₦${ngn.BTC}, ETH=$${usd.ETH} / ₦${ngn.ETH}`,
-      );
-      return ngn;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `CoinGecko fetch attempt ${attempt}/${MAX_RETRIES} failed: ${message}`,
-      );
-      if (attempt < MAX_RETRIES) {
-        const delay = 2000 * attempt;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
     }
 
-    this.logger.error('All CoinGecko retry attempts exhausted, using fallback rates');
+    this.logger.error(
+      'All CoinGecko retry attempts exhausted, using fallback rates',
+    );
     const ngnFallback: Record<string, number> = {};
     const usdFallback: Record<string, number> = {};
     for (const [currency, rate] of Object.entries(this.FALLBACK_RATES)) {

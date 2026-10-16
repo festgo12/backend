@@ -503,9 +503,15 @@ export class HdWalletService {
    * payload byte is the TRON 0x41 prefix.
    */
   tronHexToBase58(hexAddress: string): string {
-    const hex = (hexAddress || '').toLowerCase().replace(/^0x/, '').padStart(42, '0');
+    const hex = (hexAddress || '')
+      .toLowerCase()
+      .replace(/^0x/, '')
+      .padStart(42, '0');
     const bytes = Buffer.from(hex, 'hex').subarray(-21);
-    const body = Buffer.concat([Buffer.from([TRON_ADDRESS_PREFIX]), bytes.subarray(1)]);
+    const body = Buffer.concat([
+      Buffer.from([TRON_ADDRESS_PREFIX]),
+      bytes.subarray(1),
+    ]);
     return this.base58Check(body);
   }
 

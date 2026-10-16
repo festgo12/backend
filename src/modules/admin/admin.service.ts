@@ -468,11 +468,7 @@ export class AdminService {
       : {};
     if (chain) {
       const existingOr = where.OR ?? [];
-      where.OR = [
-        ...existingOr,
-        { chain },
-        { ad: { chain } },
-      ];
+      where.OR = [...existingOr, { chain }, { ad: { chain } }];
     }
 
     const [orders, total] = await Promise.all([
@@ -995,7 +991,8 @@ export class AdminService {
         'POLYGON',
         'SOLANA',
       ];
-      const out: Record<string, { configured: boolean; keySource: string }> = {};
+      const out: Record<string, { configured: boolean; keySource: string }> =
+        {};
       for (const chain of chains) {
         const perChain = this.cryptoConfig.signingKeyForChain(chain);
         const global = this.cryptoConfig.alchemySigningKey;
@@ -1035,7 +1032,8 @@ export class AdminService {
         tron: this.hdWallet.getMasterAddressForChain('TRON'),
       },
       sanctions: {
-        lastRefreshedAt: this.sanctions.getLastRefreshedAt()?.toISOString() ?? null,
+        lastRefreshedAt:
+          this.sanctions.getLastRefreshedAt()?.toISOString() ?? null,
         counts: this.sanctions.getCounts(),
       },
       recentSweeps,
@@ -1253,20 +1251,31 @@ export class AdminService {
         sol: solMaster,
         tron: tronMaster,
       },
-      balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances].filter(
-        (b): b is NonNullable<typeof b> => b !== null,
-      ),
+      balances: [
+        btcBalance,
+        ...evmBalances,
+        ...solanaBalances,
+        ...tronBalances,
+      ].filter((b): b is NonNullable<typeof b> => b !== null),
     };
   }
 
   // ─── Reconciliation ────────────────────────────────────────────────────
 
-  /** Triggers full reconciliation across all chains. */
+  /**
+   * Triggers on-demand BTC-only reconciliation. This service reconciles only
+   * BTC (the chain with a webhook + xpub backstop); every other chain has its
+   * own deposit-detection path and is not reconciled here.
+   */
   async reconcileAll() {
     return this.reconciliationService.reconcileAll();
   }
 
-  /** Triggers reconciliation for a specific currency. */
+  /**
+   * Triggers on-demand reconciliation for a specific currency. Only BTC is
+   * supported; all other currencies return an empty result because they are not
+   * reconciled by this service.
+   */
   async reconcileCurrency(currency: Currency) {
     return this.reconciliationService.reconcileCurrency(currency);
   }
@@ -1450,10 +1459,7 @@ export class AdminService {
 
   /** Triggers a manual sweep of deposit addresses for a single chain. */
   async triggerSweepChain(chain: string) {
-    const valid = [
-      ...(this.cryptoConfig.supportedChains as string[]),
-      'BTC',
-    ];
+    const valid = [...(this.cryptoConfig.supportedChains as string[]), 'BTC'];
     if (!valid.includes(chain)) {
       throw new BadRequestException(
         `Unsupported sweep chain: ${chain}. Expected ${valid.join(', ')}.`,
@@ -1546,7 +1552,7 @@ export class AdminService {
         currency,
       );
       if (!mint) continue;
-      const transfers = await this.chainClient.getSolanaTransfers(
+      const transfers = await this.chainClient.getSolanaHistoryTransfers(
         address,
         mint,
         limit,
@@ -1581,10 +1587,7 @@ export class AdminService {
       }
     }
 
-    all.sort(
-      (a, b) =>
-        (b.blockNumber as number) - (a.blockNumber as number),
-    );
+    all.sort((a, b) => (b.blockNumber as number) - (a.blockNumber as number));
     const start = (page - 1) * limit;
     return {
       address,
@@ -1762,5 +1765,157 @@ export class AdminService {
       return walletChain === eventChain || walletChain === 'EVM';
     }
     return walletChain === eventChain;
+  }
+
+  // ─── Manual Solana Deposit Pull / Ingest ─────────────────────────────────
+
+  /**
+   * Scans a Solana deposit address via Alchemy getSignaturesForAddress +
+   * getParsedTransaction and credits any SPL deposit (USDT/USDC) that is
+   * confirmed on-chain but missing from the DB. Solves the missing Solana
+   * deposit path: Solana is webhook-push only in the live path, so a dropped
+   * webhook leaves the deposit unrecovered unless an admin backfills it here.
+   *
+   * Uses the same attribution and dedup rules as the webhook processor: a
+   * WalletTransaction.reference is the tx signature, and the receiving wallet
+   * must already have a Solana deposit address matching the transaction's
+   * recipient ATA. Calls ChainClientService.getSolanaTransfers (multi-mint)
+   * so the RPC-shape knowledge stays in the chain client.
+   */
+  async pullSolDeposits(address: string) {
+    const normalizedAddress = address;
+    const supportedMints = [
+      this.cryptoConfig.getStablecoinContractFor('SOLANA', Currency.USDT),
+      this.cryptoConfig.getStablecoinContractFor('SOLANA', Currency.USDC),
+    ].filter((m): m is string => Boolean(m));
+
+    if (supportedMints.length === 0) {
+      return {
+        chain: 'SOLANA',
+        address: normalizedAddress,
+        found: 0,
+        credited: 0,
+        alreadyRecorded: 0,
+        skipped: ['No Solana SPL mints configured for USDT/USDC'],
+        errors: [],
+      };
+    }
+
+    const transfers = await this.chainClient.getSolanaTransfers(
+      normalizedAddress,
+      supportedMints,
+      100,
+    );
+
+    // Map mint address -> Currency for the configured SPL tokens.
+    const mintToCurrency: Record<string, Currency> = {};
+    for (const currency of [Currency.USDT, Currency.USDC] as const) {
+      const mint = this.cryptoConfig.getStablecoinContractFor(
+        'SOLANA',
+        currency,
+      );
+      if (mint) mintToCurrency[mint.toUpperCase()] = currency;
+    }
+
+    const summary = {
+      chain: 'SOLANA',
+      address: normalizedAddress,
+      found: 0,
+      credited: 0,
+      alreadyRecorded: 0,
+      skipped: [] as string[],
+      errors: [] as string[],
+    };
+
+    const seen = new Set<string>();
+    for (const tx of transfers) {
+      if (seen.has(tx.signature)) continue;
+      seen.add(tx.signature);
+
+      // Only credit inbound transfers to our address.
+      if (tx.to !== normalizedAddress) continue;
+
+      const currency = mintToCurrency[tx.mint.toUpperCase()];
+      if (!currency) {
+        summary.skipped.push(
+          `${tx.signature}: unsupported SPL asset ${tx.mint}`,
+        );
+        continue;
+      }
+
+      const amount =
+        Number.isFinite(tx.amount) && tx.amount > 0 ? tx.amount : 0;
+      if (amount <= 0) continue;
+
+      summary.found += 1;
+
+      // Find the wallet(s) that own this deposit address on Solana.
+      const registrations = this.depositRegistry.lookup(
+        normalizedAddress,
+        'SOLANA',
+      );
+      let matched = false;
+      for (const reg of registrations) {
+        const wallet = await this.prisma.wallet.findUnique({
+          where: { id: reg.walletId },
+        });
+        if (!wallet || wallet.currency !== currency) continue;
+        matched = true;
+
+        const existing = await this.prisma.walletTransaction.findUnique({
+          where: { reference: tx.signature },
+        });
+        if (existing) {
+          summary.alreadyRecorded += 1;
+          continue;
+        }
+
+        const metadata = {
+          source: 'ADMIN_MANUAL_PULL',
+          listener: 'ADMIN_SOL_PULL',
+          chain: 'SOLANA',
+          blockTxId: tx.signature,
+          asset: currency,
+          address: normalizedAddress,
+          sourceAddress: tx.from ?? '',
+          blockNumber: tx.slot ?? 0,
+          confirmations: this.cryptoConfig.confirmationsFor('SOLANA'),
+          receivedAt: new Date().toISOString(),
+          swept: false,
+        };
+        try {
+          await this.walletService.createTransaction({
+            walletId: wallet.id,
+            type: LedgerType.DEPOSIT,
+            amount,
+            reference: tx.signature,
+            status: 'COMPLETED',
+            metadata,
+          });
+          const created = await this.prisma.walletTransaction.findUnique({
+            where: { reference: tx.signature },
+          });
+          if (created && !created.resolvedAt) {
+            await this.prisma.walletTransaction.update({
+              where: { id: created.id },
+              data: { resolvedAt: new Date() },
+            });
+          }
+          summary.credited += 1;
+        } catch (error) {
+          const err = error as { code?: string; message?: string };
+          if (err.code === 'P2002') {
+            summary.alreadyRecorded += 1;
+          } else {
+            summary.errors.push(`${tx.signature}: ${err.message}`);
+          }
+        }
+      }
+      if (!matched) {
+        summary.skipped.push(`${tx.signature}: no matching wallet on SOLANA`);
+      }
+    }
+
+    return summary;
   }
 }

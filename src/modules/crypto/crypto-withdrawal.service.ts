@@ -369,11 +369,7 @@ export class CryptoWithdrawalService {
     return { txId: txHash, status: 'PENDING' };
   }
 
-  private validateAddress(
-    currency: Currency,
-    chain: string,
-    address: string,
-  ) {
+  private validateAddress(currency: Currency, chain: string, address: string) {
     if (!address || typeof address !== 'string') {
       throw new BadRequestException('Invalid destination address');
     }
@@ -466,10 +462,21 @@ export class CryptoWithdrawalService {
     }
     if (this.cryptoConfig.isEvmChain(chain)) {
       if (currency === Currency.ETH) {
-        return this.chainClient.broadcastEvmNative(fromIndex, to, amount, chain);
+        return this.chainClient.broadcastEvmNative(
+          fromIndex,
+          to,
+          amount,
+          chain,
+        );
       }
       if (currency === Currency.USDT || currency === Currency.USDC) {
-        return this.chainClient.broadcastEvmToken(currency, fromIndex, to, amount, chain);
+        return this.chainClient.broadcastEvmToken(
+          currency,
+          fromIndex,
+          to,
+          amount,
+          chain,
+        );
       }
       throw new BadRequestException(
         `Withdrawals not supported for ${currency} on ${chain}`,
@@ -477,7 +484,12 @@ export class CryptoWithdrawalService {
     }
     if (chain === 'SOLANA') {
       if (currency === Currency.USDT || currency === Currency.USDC) {
-        return this.chainClient.broadcastSolanaToken(currency, fromIndex, to, amount);
+        return this.chainClient.broadcastSolanaToken(
+          currency,
+          fromIndex,
+          to,
+          amount,
+        );
       }
       throw new BadRequestException(
         `Withdrawals not supported for ${currency} on SOLANA`,
@@ -485,7 +497,12 @@ export class CryptoWithdrawalService {
     }
     if (chain === 'TRON') {
       if (currency === Currency.USDT || currency === Currency.USDC) {
-        return this.chainClient.broadcastTronToken(currency, fromIndex, to, amount);
+        return this.chainClient.broadcastTronToken(
+          currency,
+          fromIndex,
+          to,
+          amount,
+        );
       }
       throw new BadRequestException(
         `Withdrawals not supported for ${currency} on TRON`,
@@ -511,12 +528,18 @@ export class CryptoWithdrawalService {
       return this.chainClient.getEvmBalance(address, currency, chain);
     }
     if (chain === 'SOLANA') {
-      const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
+      const mint = this.cryptoConfig.getStablecoinContractFor(
+        'SOLANA',
+        currency,
+      );
       if (!mint) return 0;
       return this.chainClient.getSolanaTokenBalance(mint, address);
     }
     if (chain === 'TRON') {
-      const contract = this.cryptoConfig.getStablecoinContractFor('TRON', currency);
+      const contract = this.cryptoConfig.getStablecoinContractFor(
+        'TRON',
+        currency,
+      );
       if (!contract) return 0;
       return this.chainClient.getTronTokenBalance(contract, address);
     }
@@ -530,14 +553,30 @@ export class CryptoWithdrawalService {
     derivationIndex: number;
   } {
     if (chain === 'BTC') {
-      return { chain: 'BTC', address: this.hdWallet.getMasterAddress('BTC'), derivationIndex: 0 };
+      return {
+        chain: 'BTC',
+        address: this.hdWallet.getMasterAddress('BTC'),
+        derivationIndex: 0,
+      };
     }
     if (chain === 'SOLANA') {
-      return { chain: 'SOLANA', address: this.hdWallet.getMasterAddressForChain('SOLANA'), derivationIndex: 0 };
+      return {
+        chain: 'SOLANA',
+        address: this.hdWallet.getMasterAddressForChain('SOLANA'),
+        derivationIndex: 0,
+      };
     }
     if (chain === 'TRON') {
-      return { chain: 'TRON', address: this.hdWallet.getMasterAddressForChain('TRON'), derivationIndex: 0 };
+      return {
+        chain: 'TRON',
+        address: this.hdWallet.getMasterAddressForChain('TRON'),
+        derivationIndex: 0,
+      };
     }
-    return { chain, address: this.hdWallet.getMasterAddress('EVM'), derivationIndex: 0 };
+    return {
+      chain,
+      address: this.hdWallet.getMasterAddress('EVM'),
+      derivationIndex: 0,
+    };
   }
 }

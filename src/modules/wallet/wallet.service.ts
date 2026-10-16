@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/database/prisma.service';
 import { LedgerService } from './ledger.service';
@@ -123,7 +127,11 @@ export class WalletService {
    *
    * `chain` values: ETH | BSC | POLYGON | SOLANA | TRON | BTC.
    */
-  async getOrCreateChainWallet(userId: string, currency: Currency, chain: string) {
+  async getOrCreateChainWallet(
+    userId: string,
+    currency: Currency,
+    chain: string,
+  ) {
     if (currency === Currency.NGN) {
       return this.getOrCreateWallet(userId, currency);
     }
@@ -148,7 +156,11 @@ export class WalletService {
   /**
    * Returns transaction history (from LedgerEntry) for a wallet.
    */
-  async getWalletHistory(walletId: string, limit: number = 20, offset: number = 0) {
+  async getWalletHistory(
+    walletId: string,
+    limit: number = 20,
+    offset: number = 0,
+  ) {
     return this.prisma.ledgerEntry.findMany({
       where: { walletId },
       orderBy: { createdAt: 'desc' },
@@ -186,7 +198,6 @@ export class WalletService {
       },
     });
   }
-
 
   /**
    * Initiates a wallet transaction (e.g. Deposit, Withdrawal) and creates ledger entries.
@@ -237,7 +248,14 @@ export class WalletService {
    * alerted about deposits and withdrawals (crypto + Paystack unified).
    */
   private emitTransactionEvent(
-    transaction: { id: string; walletId: string; type: string; reference: string; amount: Prisma.Decimal; status: string },
+    transaction: {
+      id: string;
+      walletId: string;
+      type: string;
+      reference: string;
+      amount: Prisma.Decimal;
+      status: string;
+    },
     status: string,
   ): void {
     const payload: WalletTransactionEvent = {
@@ -257,7 +275,10 @@ export class WalletService {
       } else {
         this.eventEmitter.emit('wallet.withdrawal.initiated', payload);
       }
-    } else if (transaction.type === LedgerType.DEPOSIT && status === 'COMPLETED') {
+    } else if (
+      transaction.type === LedgerType.DEPOSIT &&
+      status === 'COMPLETED'
+    ) {
       this.eventEmitter.emit('wallet.deposit.confirmed', payload);
     }
   }
@@ -347,7 +368,11 @@ export class WalletService {
    * left). The status-transition guard above makes each terminal transition
    * once-only, so the release cannot double-fire.
    */
-  async updateTransactionStatus(transactionId: string, status: string, metadata?: any) {
+  async updateTransactionStatus(
+    transactionId: string,
+    status: string,
+    metadata?: any,
+  ) {
     let changed = false;
 
     const transaction = await this.prisma.$transaction(async (tx) => {
@@ -376,7 +401,7 @@ export class WalletService {
       changed = true;
 
       const updatedMetadata = {
-        ...(current.metadata as any || {}),
+        ...((current.metadata as any) || {}),
         ...(metadata || {}),
       };
 
@@ -413,9 +438,10 @@ export class WalletService {
             // abs(): the ledger debit is always a negative delta. Legacy fiat
             // rows stored the withdrawal amount negative, so negating the raw
             // value would credit instead of debit.
-            amount: transaction.type === LedgerType.WITHDRAWAL
-              ? -Math.abs(transaction.amount.toNumber())
-              : transaction.amount.toNumber(),
+            amount:
+              transaction.type === LedgerType.WITHDRAWAL
+                ? -Math.abs(transaction.amount.toNumber())
+                : transaction.amount.toNumber(),
             type: transaction.type,
             reference: `${transaction.reference}-ledger`,
             metadata: updatedMetadata,
@@ -535,7 +561,10 @@ export class WalletService {
       }
 
       // Reverse direction: deposits (positive amount) → debit
-      const depositTypes: string[] = [LedgerType.DEPOSIT, LedgerType.GIFT_CARD_PURCHASE];
+      const depositTypes: string[] = [
+        LedgerType.DEPOSIT,
+        LedgerType.GIFT_CARD_PURCHASE,
+      ];
       const isDeposit = depositTypes.includes(transaction.type);
       const reverseAmount = isDeposit
         ? -Math.abs(transaction.amount.toNumber())

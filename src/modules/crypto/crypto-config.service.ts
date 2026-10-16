@@ -88,12 +88,7 @@ export type CryptoProvider = 'alchemy';
 export type ChainKind = 'EVM' | 'BTC';
 
 /** Canonical on-chain chain identifiers supported across the system. */
-export type Chain =
-  | 'ETH'
-  | 'BSC'
-  | 'POLYGON'
-  | 'SOLANA'
-  | 'TRON';
+export type Chain = 'ETH' | 'BSC' | 'POLYGON' | 'SOLANA' | 'TRON';
 
 /** Underlying address/key family that a chain uses. */
 export type ChainFamily = 'EVM' | 'BTC' | 'SOLANA' | 'TRON';
@@ -166,7 +161,8 @@ export class CryptoConfigService implements OnModuleInit {
     ];
     for (const set of sets) {
       for (const [token, address] of Object.entries(set)) {
-        if (address.startsWith('0x')) candidates.push([token, address, address]);
+        if (address.startsWith('0x'))
+          candidates.push([token, address, address]);
       }
     }
     for (const chain of this.supportedChains) {
@@ -174,7 +170,8 @@ export class CryptoConfigService implements OnModuleInit {
         const override = this.configService.get<string>(
           `ALCHEMY_${chain}_${token}_CONTRACT`,
         );
-        if (override) candidates.push([`${chain}/${token}`, override, override]);
+        if (override)
+          candidates.push([`${chain}/${token}`, override, override]);
       }
     }
     for (const [label, raw, address] of candidates) {
@@ -367,8 +364,10 @@ export class CryptoConfigService implements OnModuleInit {
   /** Solana Ed25519 derivation: m/44'/501'/{account}'/0'/{index}. */
   get solDerivationPath(): string {
     return (
-      this.configService.get<string>('HD_SOL_DERIVATION_PATH', "m/44'/501'/0'/0'") ||
-      "m/44'/501'/0'/0'"
+      this.configService.get<string>(
+        'HD_SOL_DERIVATION_PATH',
+        "m/44'/501'/0'/0'",
+      ) || "m/44'/501'/0'/0'"
     );
   }
 
@@ -389,8 +388,10 @@ export class CryptoConfigService implements OnModuleInit {
   /** TRON BIP-44 derivation: m/44'/195'/0'/0/{index}. */
   get tronDerivationPath(): string {
     return (
-      this.configService.get<string>('HD_TRON_DERIVATION_PATH', "m/44'/195'/0'/0") ||
-      "m/44'/195'/0'/0"
+      this.configService.get<string>(
+        'HD_TRON_DERIVATION_PATH',
+        "m/44'/195'/0'/0",
+      ) || "m/44'/195'/0'/0"
     );
   }
 

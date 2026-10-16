@@ -109,7 +109,10 @@ export class WalletController {
 
   @Post('init')
   @AuditLog('WALLET_CREATION', 'WALLET')
-  @ApiOperation({ summary: 'Initialize a wallet for a specific currency (optionally per-chain)' })
+  @ApiOperation({
+    summary:
+      'Initialize a wallet for a specific currency (optionally per-chain)',
+  })
   async initWallet(
     @GetUser() user: User,
     @Body('currency') currency: Currency,
@@ -119,7 +122,8 @@ export class WalletController {
       return this.walletService.getOrCreateWallet(user.id, currency);
     }
 
-    const isEvmChain = chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON';
+    const isEvmChain =
+      chain === 'ETH' || chain === 'BSC' || chain === 'POLYGON';
     const isNonEvmChain = chain === 'SOLANA' || chain === 'TRON';
 
     try {
@@ -147,11 +151,7 @@ export class WalletController {
       }
 
       // No chain requested: default ETH row + auto SOLANA/TRON for stablecoins.
-      const primary = await this.ensureChainDeposit(
-        user.id,
-        currency,
-        'ETH',
-      );
+      const primary = await this.ensureChainDeposit(user.id, currency, 'ETH');
       if (currency === Currency.USDT || currency === Currency.USDC) {
         await this.ensureMultichainWallet(user.id, currency, 'SOLANA');
         await this.ensureMultichainWallet(user.id, currency, 'TRON');
@@ -283,7 +283,10 @@ export class WalletController {
     // rows all screen as 'ethereum' — same address format).
     const rawChain = (ownedWallet.chain as string) || 'ethereum';
     const chain =
-      rawChain === 'EVM' || rawChain === 'ETH' || rawChain === 'BSC' || rawChain === 'POLYGON'
+      rawChain === 'EVM' ||
+      rawChain === 'ETH' ||
+      rawChain === 'BSC' ||
+      rawChain === 'POLYGON'
         ? 'ethereum'
         : rawChain === 'BTC'
           ? 'bitcoin'

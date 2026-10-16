@@ -18,7 +18,13 @@ import { ExchangeRateService } from '../crypto/exchange-rate.service';
 import { PlatformService } from '../crypto/platform.service';
 import { UserStatus, Role, Currency } from '@src/generated/client';
 import { AuditLog } from '../audit/audit.decorator';
-import { AdminUpdateAdDto, SweepFeeWalletDto, SweepConfigDto, CreditTestFundsDto, UpdateFeeConfigDto } from './dto/admin-operations.dto';
+import {
+  AdminUpdateAdDto,
+  SweepFeeWalletDto,
+  SweepConfigDto,
+  CreditTestFundsDto,
+  UpdateFeeConfigDto,
+} from './dto/admin-operations.dto';
 import { clampPagination } from '../../core/utils/pagination';
 
 @ApiTags('Admin')
@@ -148,11 +154,11 @@ export class AdminController {
   @Patch('ads/:id')
   @AuditLog('ADMIN_AD_UPDATE', 'MARKETPLACE')
   @ApiOperation({ summary: 'Admin update any ad (moderation)' })
-  adminUpdateAd(
-    @Param('id') adId: string,
-    @Body() dto: AdminUpdateAdDto,
-  ) {
-    return this.adminService.adminUpdateAd(adId, dto as Record<string, unknown>);
+  adminUpdateAd(@Param('id') adId: string, @Body() dto: AdminUpdateAdDto) {
+    return this.adminService.adminUpdateAd(
+      adId,
+      dto as Record<string, unknown>,
+    );
   }
 
   @Delete('ads/:id')
@@ -241,7 +247,10 @@ export class AdminController {
 
   @Post('crypto/reconcile')
   @AuditLog('ADMIN_CRYPTO_RECONCILE', 'SYSTEM')
-  @ApiOperation({ summary: 'Run full on-chain reconciliation (all chains)' })
+  @ApiOperation({
+    summary:
+      'Run on-chain reconciliation (BTC only — the chain with a webhook + xpub backstop)',
+  })
   reconcileAll() {
     return this.adminService.reconcileAll();
   }
@@ -249,7 +258,8 @@ export class AdminController {
   @Post('crypto/reconcile/:currency')
   @AuditLog('ADMIN_CRYPTO_RECONCILE_CURRENCY', 'SYSTEM')
   @ApiOperation({
-    summary: 'Run on-chain reconciliation for a specific currency',
+    summary:
+      'Run on-chain reconciliation for a specific currency (BTC only; all others return empty)',
   })
   reconcileCurrency(@Param('currency') currency: Currency) {
     return this.adminService.reconcileCurrency(currency);
@@ -360,11 +370,19 @@ export class AdminController {
     summary:
       'Manually pull and credit missed deposits for an EVM-family address (ETH/BSC/POLYGON)',
   })
-  evmPull(
-    @Param('chain') chain: string,
-    @Param('address') address: string,
-  ) {
+  evmPull(@Param('chain') chain: string, @Param('address') address: string) {
     return this.adminService.pullEvmDeposits(chain, address);
+  }
+
+  @Post('crypto/sol-pull/:address')
+  @AuditLog('ADMIN_CRYPTO_SOL_PULL', 'SYSTEM')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({
+    summary:
+      'Manually pull and credit missed SPL deposits for a Solana address (USDT/USDC)',
+  })
+  solPull(@Param('address') address: string) {
+    return this.adminService.pullSolDeposits(address);
   }
 
   // ─── Platform Fee Wallets ─────────────────────────────────────────────────
@@ -512,11 +530,7 @@ export class AdminController {
     @Query('limit') limit: string = '20',
   ) {
     const p = clampPagination(page, limit);
-    return this.adminService.getUserAuditTrail(
-      userId,
-      p.page,
-      p.limit,
-    );
+    return this.adminService.getUserAuditTrail(userId, p.page, p.limit);
   }
 
   // ─── Fee Configuration ─────────────────────────────────────────────────────

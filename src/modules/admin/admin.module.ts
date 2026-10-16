@@ -6,7 +6,11 @@ import { WalletModule } from '../wallet/wallet.module';
 import { SecurityModule } from '../security/security.module';
 
 @Module({
-  imports: [forwardRef(() => PaystackModule), forwardRef(() => WalletModule), SecurityModule],
+  imports: [
+    forwardRef(() => PaystackModule),
+    forwardRef(() => WalletModule),
+    SecurityModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],

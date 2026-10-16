@@ -69,12 +69,18 @@ export class WalletNotificationsHandler {
     return { userId: wallet.userId, currency: wallet.currency };
   }
 
-  private async notify(userId: string, type: string, data: Record<string, string>) {
+  private async notify(
+    userId: string,
+    type: string,
+    data: Record<string, string>,
+  ) {
     try {
       await this.notifications.notifyUser({ userId, type, data });
     } catch (error) {
       const err = error as Error;
-      this.logger.error(`Failed to send ${type} notification to ${userId}: ${err.message}`);
+      this.logger.error(
+        `Failed to send ${type} notification to ${userId}: ${err.message}`,
+      );
     }
   }
 }

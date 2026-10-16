@@ -70,10 +70,7 @@ export class TronDepositPollerService implements OnModuleInit {
       const cursor = await this.getCursorBlock();
 
       for (const currency of [Currency.USDT, Currency.USDC]) {
-        const contract = this.config.getStablecoinContractFor(
-          'TRON',
-          currency,
-        );
+        const contract = this.config.getStablecoinContractFor('TRON', currency);
         if (!contract) continue;
         let logs;
         try {

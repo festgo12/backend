@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -14,8 +14,7 @@ import { Currency, LedgerType } from '@src/generated/client';
  * assertions can match on the statement text. The first argument of a tagged
  * template call is the array of literal string parts.
  */
-const sqlText = (call: unknown[]): string =>
-  (call[0] as string[]).join('?');
+const sqlText = (call: unknown[]): string => (call[0] as string[]).join('?');
 
 /** True when any $executeRaw call touched the reservation column. */
 const reservedTouched = (calls: unknown[][]): boolean =>
@@ -225,13 +224,13 @@ describe('WalletService — withdrawal reservation release', () => {
       expect(sqlText(mockPrisma.$executeRaw.mock.calls[1])).toContain(
         'reservedBalance',
       );
-      expect(
-        sqlText(mockPrisma.$executeRaw.mock.calls[2]),
-      ).toContain('UPDATE "WalletTransaction"');
-      // The via-stamp value is a bound JSON parameter on the stamp statement.
-      expect(JSON.stringify(mockPrisma.$executeRaw.mock.calls[2].slice(1))).toContain(
-        'reverse-of-unsettled',
+      expect(sqlText(mockPrisma.$executeRaw.mock.calls[2])).toContain(
+        'UPDATE "WalletTransaction"',
       );
+      // The via-stamp value is a bound JSON parameter on the stamp statement.
+      expect(
+        JSON.stringify(mockPrisma.$executeRaw.mock.calls[2].slice(1)),
+      ).toContain('reverse-of-unsettled');
     });
 
     it('credits a refund (and does not release) when reversing a completed withdrawal', async () => {

@@ -9,9 +9,18 @@ import { SecurityModule } from '../security/security.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [forwardRef(() => PaystackModule), SecurityModule, NotificationsModule],
+  imports: [
+    forwardRef(() => PaystackModule),
+    SecurityModule,
+    NotificationsModule,
+  ],
   controllers: [WalletController],
-  providers: [WalletService, LedgerService, WalletEventsHandler, WalletNotificationsHandler],
+  providers: [
+    WalletService,
+    LedgerService,
+    WalletEventsHandler,
+    WalletNotificationsHandler,
+  ],
   exports: [WalletService, LedgerService],
 })
 export class WalletModule {}

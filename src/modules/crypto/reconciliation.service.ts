@@ -37,7 +37,7 @@ export interface ReconciliationResult {
 }
 
 /**
- * Automated and on-demand BTC transaction reconciliation.
+ * Automated and on-demand BTC-only transaction reconciliation.
  *
  * Compares on-chain state (via Alchemy xpub endpoint) against DB
  * WalletTransaction records to detect:
@@ -46,8 +46,10 @@ export interface ReconciliationResult {
  *   - Rollback Alert: DB COMPLETED, missing/reverted on-chain → revert + freeze
  *   - Pending Mempool: DB PENDING, 0 confirmations → hold
  *
- * EVM deposits are handled exclusively via Alchemy webhooks (push) and
- * do not require cron-based reconciliation.
+ * Reconciliation on this platform is BTC-only by design. EVM deposits are
+ * handled exclusively via Alchemy webhooks (push), Solana via a webhook plus
+ * an admin manual pull backstop, and TRON via the scheduled TRC-20 poller.
+ * None of those chains are reconciled by this service.
  *
  * System testnet transactions (reference: testnet-credit-*) are ignored.
  */
@@ -72,7 +74,9 @@ export class ReconciliationService implements OnModuleInit {
     });
     this.schedulerRegistry.addCronJob(ReconciliationService.JOB_NAME, job);
     job.start();
-    this.logger.log(`BTC reconciliation cron scheduled: ${cronExpression}`);
+    this.logger.log(
+      `BTC-only reconciliation cron scheduled: ${cronExpression}`,
+    );
   }
 
   // ─── Automated Cron ────────────────────────────────────────────────────
@@ -99,17 +103,22 @@ export class ReconciliationService implements OnModuleInit {
 
   // ─── Manual Trigger ────────────────────────────────────────────────────
 
-  /** BTC-only reconciliation. */
+  /**
+   * On-demand BTC-only reconciliation. This service does not reconcile any
+   * other chain: BTC deposit detection lives on the Alchemy BTC WebSocket
+   * (push), and reconciliation exists as a backstop for missed webhook events
+   * and rollback detection on the BTC ledger.
+   */
   async reconcileAll(): Promise<ReconciliationResult> {
     return this.reconcileBtc();
   }
 
-  /** Reconcile a single currency (BTC only). */
+  /**
+   * Reconcile a single currency. Only BTC is supported — every other chain
+   * has its own deposit-detection path and is not reconciled here.
+   */
   async reconcileCurrency(currency: Currency): Promise<ReconciliationResult> {
     if (currency !== Currency.BTC) {
-      this.logger.warn(
-        `Reconciliation for ${currency} is not supported; only BTC is reconciled via cron`,
-      );
       return this.emptyResult();
     }
     return this.reconcileBtc();

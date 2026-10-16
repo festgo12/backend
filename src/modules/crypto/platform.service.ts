@@ -43,7 +43,8 @@ function feeWalletPairs(
     }
     // USDT / USDC — one fee wallet per EVM chain + Solana + TRON.
     for (const evmChain of ['ETH', 'BSC', 'POLYGON'] as const) {
-      if (evmChains.includes(evmChain)) pairs.push({ currency, chain: evmChain });
+      if (evmChains.includes(evmChain))
+        pairs.push({ currency, chain: evmChain });
     }
     if (supportedChains.includes('SOLANA')) {
       pairs.push({ currency, chain: 'SOLANA' });
@@ -108,7 +109,12 @@ export class PlatformService implements OnApplicationBootstrap {
    */
   async ensurePlatformWallets(): Promise<{
     userId: string;
-    wallets: { currency: Currency; chain: string; id: string; address: string | null }[];
+    wallets: {
+      currency: Currency;
+      chain: string;
+      id: string;
+      address: string | null;
+    }[];
   }> {
     const platformUser = await this.prisma.user.upsert({
       where: { email: PLATFORM_EMAIL },

@@ -366,7 +366,10 @@ export class ChainClientService {
       // empty data, which ethers surfaces as BAD_DATA instead of a network
       // error. Treat it as an empty balance so one bad contract address
       // cannot break balance aggregation for the whole chain.
-      if (err?.message?.includes('BAD_DATA') || (err as { code?: string })?.code === 'BAD_DATA') {
+      if (
+        err?.message?.includes('BAD_DATA') ||
+        (err as { code?: string })?.code === 'BAD_DATA'
+      ) {
         this.logger.warn(
           `balanceOf returned empty data for ${currency} on ${chain} (dead or misconfigured contract ${contract}); reporting 0`,
         );
@@ -1044,12 +1047,172 @@ export class ChainClientService {
   // ─── On-chain History (admin pull) ──────────────────────────────────────
 
   /**
-   * Parsed SPL token transfers (USDT/USDC) touching an owner address. Inbound
-   * SPL transfers credit the owner's associated token account (ATA), so both
-   * the owner and its ATA are queried for recent signatures.
+   * Recent inbound TRC-20 transfers to a T-address via eth_getLogs on
+   * Alchemy's TRON EVM facade (replaces the TronGrid v1 endpoint, which the
+   * facade does not serve). Returns transfers decoded from the standard
+   * Transfer(address,address,uint256) event.
+   */
+  async getTronTransfers(
+    address: string,
+    contract: string,
+    limit = 50,
+  ): Promise<
+    Array<{
+      txHash: string;
+      amount: number;
+      from: string;
+      to: string;
+      blockNumber: number;
+      tokenSymbol: string | null;
+    }>
+  > {
+    const logs = await this.fetchTronTransferLogs(contract, [address], limit);
+    return logs.map((log) => ({
+      txHash: log.txHash,
+      amount: log.amount,
+      from: log.from,
+      to: log.to,
+      blockNumber: log.blockNumber,
+      tokenSymbol: null,
+    }));
+  }
+
+  /**
+   * Recent inbound SOL/SOLANA SPL transfers to `address` (USDT/USDC), decoded
+   * from parsed transaction token-balance deltas. Returns one entry per
+   * confirmed transfer with the mint and amount received. Used by the Solana
+   * manual deposit pull for missed-webhook recovery.
+   *
+   * Dedupes signatures across both the owner address and its ATAs, and pairs
+   * pre/post token balances per mint to compute the net increase for our
+   * address. Returns newest-first.
    */
   async getSolanaTransfers(
-    ownerAddress: string,
+    address: string,
+    mints: string[],
+    limit = 100,
+  ): Promise<
+    Array<{
+      signature: string;
+      mint: string;
+      amount: number;
+      from: string | null;
+      to: string | null;
+      slot: number | null;
+    }>
+  > {
+    const owner = new PublicKey(address);
+    const connection = this.solanaConnection();
+    const mintPubs = mints.map((m) => new PublicKey(m));
+    const mintSet = new Set(mintPubs.map((p) => p.toBase58()));
+
+    // Collect signatures across the owner and all known ATAs for the mints.
+    const signatures = new Set<string>();
+    const targets = [owner];
+    for (const mint of mintPubs) {
+      try {
+        const ata = await getAssociatedTokenAddress(
+          mint,
+          owner,
+          false,
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+        );
+        targets.push(ata);
+      } catch {
+        // ATA may not exist yet; skip without failing the whole scan.
+      }
+    }
+
+    for (const target of targets) {
+      try {
+        const res = await connection.getSignaturesForAddress(target, { limit });
+        for (const item of res) {
+          if (item.signature) signatures.add(item.signature);
+        }
+      } catch (error) {
+        const err = error as Error;
+        this.logger.warn(
+          `Solana getSignaturesForAddress failed for ${target.toBase58()}: ${err.message}`,
+        );
+      }
+      if (signatures.size >= limit) break;
+    }
+
+    const out: Array<{
+      signature: string;
+      mint: string;
+      amount: number;
+      from: string | null;
+      to: string | null;
+      slot: number | null;
+    }> = [];
+
+    const seen = new Set<string>();
+    for (const signature of [...signatures].slice(0, limit)) {
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+
+      let parsed: SolanaParsedTransaction | null = null;
+      try {
+        parsed = (await connection.getParsedTransaction(signature, {
+          maxSupportedTransactionVersion: 0,
+        })) as SolanaParsedTransaction | null;
+      } catch (error) {
+        const err = error as Error;
+        this.logger.warn(
+          `Solana getParsedTransaction failed ${signature}: ${err.message}`,
+        );
+        continue;
+      }
+      if (!parsed?.meta) continue;
+
+      const pre = new Map<string, number>();
+      const post = new Map<string, number>();
+      for (const b of parsed.meta.preTokenBalances ?? []) {
+        if (!mintSet.has(b.mint) || !b.owner) continue;
+        pre.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+      }
+      for (const b of parsed.meta.postTokenBalances ?? []) {
+        if (!mintSet.has(b.mint) || !b.owner) continue;
+        post.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+      }
+
+      const owners = new Set([...pre.keys(), ...post.keys()]);
+      let delta = 0;
+      let to: string | null = null;
+      for (const o of owners) {
+        const diff = (post.get(o) ?? 0) - (pre.get(o) ?? 0);
+        delta += diff;
+        if (diff > 0) to = o;
+      }
+      if (delta === 0 || !to) continue;
+
+      out.push({
+        signature,
+        mint:
+          parsed.meta.postTokenBalances?.find((b) => b.owner === to)?.mint ??
+          parsed.meta.preTokenBalances?.find((b) => b.owner === to)?.mint ??
+          '',
+        amount: delta,
+        from: null,
+        to,
+        slot: parsed.slot ?? null,
+      });
+    }
+
+    return out;
+  }
+
+  /**
+   * Recent inbound SPL transfers (USDT/USDC) to a single `address`, in a form
+   * suitable for the admin on-chain history UI. Returns one entry per
+   * transfer with the transaction hash, block slot, confirmation status, and
+   * sender/receiver. Compared with getSolanaTransfers (which is tuned for
+   * deposit crediting), this carries the extra history-only fields.
+   */
+  async getSolanaHistoryTransfers(
+    address: string,
     mint: string,
     limit = 50,
   ): Promise<
@@ -1063,8 +1226,8 @@ export class ChainClientService {
       confirmed: boolean;
     }>
   > {
+    const owner = new PublicKey(address);
     const connection = this.solanaConnection();
-    const owner = new PublicKey(ownerAddress);
     const mintPub = new PublicKey(mint);
     const ata = await getAssociatedTokenAddress(
       mintPub,
@@ -1091,7 +1254,7 @@ export class ChainClientService {
       if (signatures.size >= limit) break;
     }
 
-    const events: Array<{
+    const out: Array<{
       txHash: string;
       mint: string;
       amount: number;
@@ -1135,11 +1298,11 @@ export class ChainClientService {
       }
       if (delta === 0) continue;
 
-      events.push({
+      out.push({
         txHash: signature,
         mint,
         amount: Math.abs(delta),
-        from: delta < 0 ? ownerAddress : null,
+        from: delta < 0 ? address : null,
         to,
         blockNumber: parsed.slot,
         confirmed:
@@ -1147,38 +1310,7 @@ export class ChainClientService {
           parsed.confirmationStatus === 'finalized',
       });
     }
-    return events;
-  }
-
-  /**
-   * Recent inbound TRC-20 transfers to a T-address via eth_getLogs on
-   * Alchemy's TRON EVM facade (replaces the TronGrid v1 endpoint, which the
-   * facade does not serve). Returns transfers decoded from the standard
-   * Transfer(address,address,uint256) event.
-   */
-  async getTronTransfers(
-    address: string,
-    contract: string,
-    limit = 50,
-  ): Promise<
-    Array<{
-      txHash: string;
-      amount: number;
-      from: string;
-      to: string;
-      blockNumber: number;
-      tokenSymbol: string | null;
-    }>
-  > {
-    const logs = await this.fetchTronTransferLogs(contract, [address], limit);
-    return logs.map((log) => ({
-      txHash: log.txHash,
-      amount: log.amount,
-      from: log.from,
-      to: log.to,
-      blockNumber: log.blockNumber,
-      tokenSymbol: null,
-    }));
+    return out;
   }
 
   /**

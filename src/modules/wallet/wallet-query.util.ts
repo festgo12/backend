@@ -110,9 +110,7 @@ export function chainWalletWhere(
  * inside transactions without leaking the Prisma client type.
  */
 export async function resolveChainWallet<T>(
-  walletFindFirst: (
-    where: Record<string, unknown>,
-  ) => Promise<T | null>,
+  walletFindFirst: (where: Record<string, unknown>) => Promise<T | null>,
   userId: string,
   currency: Currency,
   chain: string | null | undefined,

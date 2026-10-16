@@ -57,15 +57,8 @@ export class WithdrawalTrackerService {
     destination: string;
     metadata?: Record<string, unknown>;
   }) {
-    const {
-      txHash,
-      walletId,
-      currency,
-      chain,
-      amount,
-      destination,
-      metadata,
-    } = params;
+    const { txHash, walletId, currency, chain, amount, destination, metadata } =
+      params;
     return this.prisma.withdrawalJob.create({
       data: {
         txHash,
@@ -96,7 +89,7 @@ export class WithdrawalTrackerService {
     if (!job || job.status !== 'PENDING') return;
 
     // Detect on-chain failure/revert for EVM-family and TRON chains.
-    const chain = job.chain as string | null;
+    const chain = job.chain;
     if (chain && chain !== 'BTC') {
       if (this.config.isEvmChain(asChain(chain))) {
         const receipt = await this.chainClient.getEvmReceipt(txHash);
@@ -212,7 +205,9 @@ export class WithdrawalTrackerService {
           pollError = 'transaction not found yet';
         }
       } else if (chain === 'SOLANA') {
-        const sigs = await this.chainClient.getSolanaSignatureStatuses(job.txHash);
+        const sigs = await this.chainClient.getSolanaSignatureStatuses(
+          job.txHash,
+        );
         if (sigs !== null) {
           confirmations = sigs;
           confirmed = confirmations >= chainConfirmations;
@@ -360,7 +355,11 @@ export class WithdrawalTrackerService {
           severity: 'CRITICAL',
           title: 'Withdrawal failed on-chain',
           message: `Your withdrawal ${txHash} failed on-chain (${reason}). The transaction is marked FAILED for admin retry — no funds left your wallet on this attempt.`,
-          metadata: { txHash, reason, via: extraMetadata.confirmedVia ?? 'unknown' },
+          metadata: {
+            txHash,
+            reason,
+            via: extraMetadata.confirmedVia ?? 'unknown',
+          },
         },
       });
     } catch (error) {

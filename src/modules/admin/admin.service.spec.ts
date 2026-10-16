@@ -28,7 +28,11 @@ describe('AdminService', () => {
 
   const mockPrismaService = {
     user: { findUnique: jest.fn() },
-    wallet: { findMany: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
+    wallet: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
     walletTransaction: { findMany: jest.fn() },
     withdrawalJob: { findMany: jest.fn(), count: jest.fn() },
   };
@@ -80,7 +84,10 @@ describe('AdminService', () => {
       lastRefreshedAt: new Date('2026-01-01T00:00:00.000Z'),
       counts: { ethereum: 7, bitcoin: 2 },
       source: 'defaults',
-      merged: { chainsBefore: { ethereum: 7, bitcoin: 2 }, chainsAfter: { ethereum: 7, bitcoin: 2 } },
+      merged: {
+        chainsBefore: { ethereum: 7, bitcoin: 2 },
+        chainsAfter: { ethereum: 7, bitcoin: 2 },
+      },
     }),
   };
 
@@ -265,8 +272,8 @@ describe('AdminService', () => {
         },
       ]);
       mockHdWallet.getMasterAddress.mockReturnValue('0xMaster');
-      mockHdWallet.getMasterAddressForChain.mockImplementation((chain: string) =>
-        chain === 'SOLANA' ? 'SolMaster' : 'TronMaster',
+      mockHdWallet.getMasterAddressForChain.mockImplementation(
+        (chain: string) => (chain === 'SOLANA' ? 'SolMaster' : 'TronMaster'),
       );
 
       const result = await service.getCryptoSystemStatus();
@@ -325,8 +332,8 @@ describe('AdminService', () => {
       mockHdWallet.getMasterAddress
         .mockReturnValueOnce('0xEvmMaster')
         .mockReturnValueOnce('bc1btcmaster');
-      mockHdWallet.getMasterAddressForChain.mockImplementation((chain: string) =>
-        chain === 'SOLANA' ? 'SolMaster' : 'TronMaster',
+      mockHdWallet.getMasterAddressForChain.mockImplementation(
+        (chain: string) => (chain === 'SOLANA' ? 'SolMaster' : 'TronMaster'),
       );
       mockChainClient.getBtcUtxos.mockResolvedValue([
         { txid: 'a', vout: 0, value: 5000, blockHeight: 1 },
@@ -347,19 +354,59 @@ describe('AdminService', () => {
         tron: 'TronMaster',
       });
       expect(result.balances).toEqual([
-        { chain: 'BTC', currency: Currency.BTC, address: 'bc1btcmaster', balance: 0.00005 },
+        {
+          chain: 'BTC',
+          currency: Currency.BTC,
+          address: 'bc1btcmaster',
+          balance: 0.00005,
+        },
         // EVM entries: one per EVM chain (ETH/BSC/POLYGON) — the master address
         // is shared but each chain has its own token contracts. The native ETH
         // row exists only on the Ethereum chain; BSC/POLYGON list USDT/USDC only.
-        { chain: 'ETH', currency: Currency.ETH, address: '0xEvmMaster', balance: 2.5 },
+        {
+          chain: 'ETH',
+          currency: Currency.ETH,
+          address: '0xEvmMaster',
+          balance: 2.5,
+        },
         ...(['ETH', 'BSC', 'POLYGON'] as const).flatMap((chain) => [
-          { chain, currency: Currency.USDT, address: '0xEvmMaster', balance: 2.5 },
-          { chain, currency: Currency.USDC, address: '0xEvmMaster', balance: 2.5 },
+          {
+            chain,
+            currency: Currency.USDT,
+            address: '0xEvmMaster',
+            balance: 2.5,
+          },
+          {
+            chain,
+            currency: Currency.USDC,
+            address: '0xEvmMaster',
+            balance: 2.5,
+          },
         ]),
-        { chain: 'SOLANA', currency: Currency.USDT, address: 'SolMaster', balance: 7 },
-        { chain: 'SOLANA', currency: Currency.USDC, address: 'SolMaster', balance: 7 },
-        { chain: 'TRON', currency: Currency.USDT, address: 'TronMaster', balance: 9 },
-        { chain: 'TRON', currency: Currency.USDC, address: 'TronMaster', balance: 9 },
+        {
+          chain: 'SOLANA',
+          currency: Currency.USDT,
+          address: 'SolMaster',
+          balance: 7,
+        },
+        {
+          chain: 'SOLANA',
+          currency: Currency.USDC,
+          address: 'SolMaster',
+          balance: 7,
+        },
+        {
+          chain: 'TRON',
+          currency: Currency.USDT,
+          address: 'TronMaster',
+          balance: 9,
+        },
+        {
+          chain: 'TRON',
+          currency: Currency.USDC,
+          address: 'TronMaster',
+          balance: 9,
+        },
       ]);
     });
   });

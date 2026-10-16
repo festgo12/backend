@@ -198,7 +198,7 @@ describe('HdWalletService', () => {
       const info = await service.getOrAssignDepositInfo(
         'user-1',
         Currency.USDT,
-        'BSC' as never,
+        'BSC',
       );
 
       expect(info).toEqual({

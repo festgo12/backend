@@ -22,7 +22,15 @@ export class LedgerService {
       metadata?: any;
     },
   ) {
-    const { walletId, transactionId, orderId, amount, type, reference, metadata } = params;
+    const {
+      walletId,
+      transactionId,
+      orderId,
+      amount,
+      type,
+      reference,
+      metadata,
+    } = params;
 
     const amountDecimal = new Prisma.Decimal(amount);
 
