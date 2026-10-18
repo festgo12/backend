@@ -1395,4 +1395,13 @@ export declare class AdminService {
         errors: string[];
     }>;
     private walletOnAdminChain;
+    pullSolDeposits(address: string): Promise<{
+        chain: string;
+        address: string;
+        found: number;
+        credited: number;
+        alreadyRecorded: number;
+        skipped: string[];
+        errors: string[];
+    }>;
 }

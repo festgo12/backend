@@ -144,6 +144,9 @@ let AdminController = class AdminController {
     evmPull(chain, address) {
         return this.adminService.pullEvmDeposits(chain, address);
     }
+    solPull(address) {
+        return this.adminService.pullSolDeposits(address);
+    }
     getFeeWallets() {
         return this.adminService.getFeeWallets();
     }
@@ -414,7 +417,9 @@ __decorate([
 __decorate([
     (0, common_1.Post)('crypto/reconcile'),
     (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_RECONCILE', 'SYSTEM'),
-    (0, swagger_1.ApiOperation)({ summary: 'Run full on-chain reconciliation (all chains)' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Run on-chain reconciliation (BTC only — the chain with a webhook + xpub backstop)',
+    }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
@@ -423,7 +428,7 @@ __decorate([
     (0, common_1.Post)('crypto/reconcile/:currency'),
     (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_RECONCILE_CURRENCY', 'SYSTEM'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Run on-chain reconciliation for a specific currency',
+        summary: 'Run on-chain reconciliation for a specific currency (BTC only; all others return empty)',
     }),
     __param(0, (0, common_1.Param)('currency')),
     __metadata("design:type", Function),
@@ -531,6 +536,18 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "evmPull", null);
+__decorate([
+    (0, common_1.Post)('crypto/sol-pull/:address'),
+    (0, audit_decorator_1.AuditLog)('ADMIN_CRYPTO_SOL_PULL', 'SYSTEM'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Manually pull and credit missed SPL deposits for a Solana address (USDT/USDC)',
+    }),
+    __param(0, (0, common_1.Param)('address')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "solPull", null);
 __decorate([
     (0, common_1.Get)('fee-wallets'),
     (0, swagger_1.ApiOperation)({ summary: 'List platform fee wallets with ledger balances' }),

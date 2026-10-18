@@ -21,9 +21,18 @@ let WalletModule = class WalletModule {
 exports.WalletModule = WalletModule;
 exports.WalletModule = WalletModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => paystack_module_1.PaystackModule), security_module_1.SecurityModule, notifications_module_1.NotificationsModule],
+        imports: [
+            (0, common_1.forwardRef)(() => paystack_module_1.PaystackModule),
+            security_module_1.SecurityModule,
+            notifications_module_1.NotificationsModule,
+        ],
         controllers: [wallet_controller_1.WalletController],
-        providers: [wallet_service_1.WalletService, ledger_service_1.LedgerService, wallet_events_handler_1.WalletEventsHandler, wallet_notifications_handler_1.WalletNotificationsHandler],
+        providers: [
+            wallet_service_1.WalletService,
+            ledger_service_1.LedgerService,
+            wallet_events_handler_1.WalletEventsHandler,
+            wallet_notifications_handler_1.WalletNotificationsHandler,
+        ],
         exports: [wallet_service_1.WalletService, ledger_service_1.LedgerService],
     })
 ], WalletModule);

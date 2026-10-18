@@ -188,7 +188,8 @@ let ChainClientService = class ChainClientService {
         }
         catch (error) {
             const err = error;
-            if (err?.message?.includes('BAD_DATA') || err?.code === 'BAD_DATA') {
+            if (err?.message?.includes('BAD_DATA') ||
+                err?.code === 'BAD_DATA') {
                 this.logger.warn(`balanceOf returned empty data for ${currency} on ${chain} (dead or misconfigured contract ${contract}); reporting 0`);
                 return 0;
             }
@@ -584,9 +585,105 @@ let ChainClientService = class ChainClientService {
             return null;
         }
     }
-    async getSolanaTransfers(ownerAddress, mint, limit = 50) {
+    async getTronTransfers(address, contract, limit = 50) {
+        const logs = await this.fetchTronTransferLogs(contract, [address], limit);
+        return logs.map((log) => ({
+            txHash: log.txHash,
+            amount: log.amount,
+            from: log.from,
+            to: log.to,
+            blockNumber: log.blockNumber,
+            tokenSymbol: null,
+        }));
+    }
+    async getSolanaTransfers(address, mints, limit = 100) {
+        const owner = new web3_js_1.PublicKey(address);
         const connection = this.solanaConnection();
-        const owner = new web3_js_1.PublicKey(ownerAddress);
+        const mintPubs = mints.map((m) => new web3_js_1.PublicKey(m));
+        const mintSet = new Set(mintPubs.map((p) => p.toBase58()));
+        const signatures = new Set();
+        const targets = [owner];
+        for (const mint of mintPubs) {
+            try {
+                const ata = await (0, spl_token_1.getAssociatedTokenAddress)(mint, owner, false, spl_token_1.TOKEN_PROGRAM_ID, spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID);
+                targets.push(ata);
+            }
+            catch {
+            }
+        }
+        for (const target of targets) {
+            try {
+                const res = await connection.getSignaturesForAddress(target, { limit });
+                for (const item of res) {
+                    if (item.signature)
+                        signatures.add(item.signature);
+                }
+            }
+            catch (error) {
+                const err = error;
+                this.logger.warn(`Solana getSignaturesForAddress failed for ${target.toBase58()}: ${err.message}`);
+            }
+            if (signatures.size >= limit)
+                break;
+        }
+        const out = [];
+        const seen = new Set();
+        for (const signature of [...signatures].slice(0, limit)) {
+            if (seen.has(signature))
+                continue;
+            seen.add(signature);
+            let parsed = null;
+            try {
+                parsed = (await connection.getParsedTransaction(signature, {
+                    maxSupportedTransactionVersion: 0,
+                }));
+            }
+            catch (error) {
+                const err = error;
+                this.logger.warn(`Solana getParsedTransaction failed ${signature}: ${err.message}`);
+                continue;
+            }
+            if (!parsed?.meta)
+                continue;
+            const pre = new Map();
+            const post = new Map();
+            for (const b of parsed.meta.preTokenBalances ?? []) {
+                if (!mintSet.has(b.mint) || !b.owner)
+                    continue;
+                pre.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+            }
+            for (const b of parsed.meta.postTokenBalances ?? []) {
+                if (!mintSet.has(b.mint) || !b.owner)
+                    continue;
+                post.set(b.owner, Number(b.uiTokenAmount?.uiAmount ?? 0));
+            }
+            const owners = new Set([...pre.keys(), ...post.keys()]);
+            let delta = 0;
+            let to = null;
+            for (const o of owners) {
+                const diff = (post.get(o) ?? 0) - (pre.get(o) ?? 0);
+                delta += diff;
+                if (diff > 0)
+                    to = o;
+            }
+            if (delta === 0 || !to)
+                continue;
+            out.push({
+                signature,
+                mint: parsed.meta.postTokenBalances?.find((b) => b.owner === to)?.mint ??
+                    parsed.meta.preTokenBalances?.find((b) => b.owner === to)?.mint ??
+                    '',
+                amount: delta,
+                from: null,
+                to,
+                slot: parsed.slot ?? null,
+            });
+        }
+        return out;
+    }
+    async getSolanaHistoryTransfers(address, mint, limit = 50) {
+        const owner = new web3_js_1.PublicKey(address);
+        const connection = this.solanaConnection();
         const mintPub = new web3_js_1.PublicKey(mint);
         const ata = await (0, spl_token_1.getAssociatedTokenAddress)(mintPub, owner, false, spl_token_1.TOKEN_PROGRAM_ID, spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID);
         const targets = [owner, ata];
@@ -606,7 +703,7 @@ let ChainClientService = class ChainClientService {
             if (signatures.size >= limit)
                 break;
         }
-        const events = [];
+        const out = [];
         for (const signature of [...signatures].slice(0, limit)) {
             let parsed = null;
             try {
@@ -644,29 +741,18 @@ let ChainClientService = class ChainClientService {
             }
             if (delta === 0)
                 continue;
-            events.push({
+            out.push({
                 txHash: signature,
                 mint,
                 amount: Math.abs(delta),
-                from: delta < 0 ? ownerAddress : null,
+                from: delta < 0 ? address : null,
                 to,
                 blockNumber: parsed.slot,
                 confirmed: parsed.confirmationStatus === 'confirmed' ||
                     parsed.confirmationStatus === 'finalized',
             });
         }
-        return events;
-    }
-    async getTronTransfers(address, contract, limit = 50) {
-        const logs = await this.fetchTronTransferLogs(contract, [address], limit);
-        return logs.map((log) => ({
-            txHash: log.txHash,
-            amount: log.amount,
-            from: log.from,
-            to: log.to,
-            blockNumber: log.blockNumber,
-            tokenSymbol: null,
-        }));
+        return out;
     }
     async fetchTronTransferLogs(contract, toAddresses, maxLogs = 200, fromBlock = 'latest') {
         const contractHex = this.resolveTronContractHex(contract);

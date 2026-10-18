@@ -41,7 +41,7 @@ let ReconciliationService = class ReconciliationService {
         });
         this.schedulerRegistry.addCronJob(ReconciliationService_1.JOB_NAME, job);
         job.start();
-        this.logger.log(`BTC reconciliation cron scheduled: ${cronExpression}`);
+        this.logger.log(`BTC-only reconciliation cron scheduled: ${cronExpression}`);
     }
     async runAutomatedReconciliation() {
         if (this.isRunning) {
@@ -67,7 +67,6 @@ let ReconciliationService = class ReconciliationService {
     }
     async reconcileCurrency(currency) {
         if (currency !== client_1.Currency.BTC) {
-            this.logger.warn(`Reconciliation for ${currency} is not supported; only BTC is reconciled via cron`);
             return this.emptyResult();
         }
         return this.reconcileBtc();

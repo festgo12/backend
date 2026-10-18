@@ -351,9 +351,15 @@ let HdWalletService = HdWalletService_1 = class HdWalletService {
         return (0, bs58_1.encode)(Buffer.concat([payload, checksum]));
     }
     tronHexToBase58(hexAddress) {
-        const hex = (hexAddress || '').toLowerCase().replace(/^0x/, '').padStart(42, '0');
+        const hex = (hexAddress || '')
+            .toLowerCase()
+            .replace(/^0x/, '')
+            .padStart(42, '0');
         const bytes = Buffer.from(hex, 'hex').subarray(-21);
-        const body = Buffer.concat([Buffer.from([TRON_ADDRESS_PREFIX]), bytes.subarray(1)]);
+        const body = Buffer.concat([
+            Buffer.from([TRON_ADDRESS_PREFIX]),
+            bytes.subarray(1),
+        ]);
         return this.base58Check(body);
     }
     tronBase58ToHex(address) {

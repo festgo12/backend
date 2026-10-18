@@ -183,7 +183,8 @@ let WalletService = class WalletService {
                 this.eventEmitter.emit('wallet.withdrawal.initiated', payload);
             }
         }
-        else if (transaction.type === client_1.LedgerType.DEPOSIT && status === 'COMPLETED') {
+        else if (transaction.type === client_1.LedgerType.DEPOSIT &&
+            status === 'COMPLETED') {
             this.eventEmitter.emit('wallet.deposit.confirmed', payload);
         }
     }
@@ -334,7 +335,10 @@ let WalletService = class WalletService {
                 }
                 return transaction;
             }
-            const depositTypes = [client_1.LedgerType.DEPOSIT, client_1.LedgerType.GIFT_CARD_PURCHASE];
+            const depositTypes = [
+                client_1.LedgerType.DEPOSIT,
+                client_1.LedgerType.GIFT_CARD_PURCHASE,
+            ];
             const isDeposit = depositTypes.includes(transaction.type);
             const reverseAmount = isDeposit
                 ? -Math.abs(transaction.amount.toNumber())

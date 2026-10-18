@@ -108,15 +108,6 @@ export declare class ChainClientService {
         confirmed: boolean;
         blockNumber: number;
     } | null>;
-    getSolanaTransfers(ownerAddress: string, mint: string, limit?: number): Promise<Array<{
-        txHash: string;
-        mint: string;
-        amount: number;
-        from: string | null;
-        to: string | null;
-        blockNumber: number | null;
-        confirmed: boolean;
-    }>>;
     getTronTransfers(address: string, contract: string, limit?: number): Promise<Array<{
         txHash: string;
         amount: number;
@@ -124,6 +115,23 @@ export declare class ChainClientService {
         to: string;
         blockNumber: number;
         tokenSymbol: string | null;
+    }>>;
+    getSolanaTransfers(address: string, mints: string[], limit?: number): Promise<Array<{
+        signature: string;
+        mint: string;
+        amount: number;
+        from: string | null;
+        to: string | null;
+        slot: number | null;
+    }>>;
+    getSolanaHistoryTransfers(address: string, mint: string, limit?: number): Promise<Array<{
+        txHash: string;
+        mint: string;
+        amount: number;
+        from: string | null;
+        to: string | null;
+        blockNumber: number | null;
+        confirmed: boolean;
     }>>;
     fetchTronTransferLogs(contract: string, toAddresses: string[], maxLogs?: number, fromBlock?: number | 'latest'): Promise<Array<{
         txHash: string;

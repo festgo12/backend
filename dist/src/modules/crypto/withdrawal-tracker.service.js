@@ -36,7 +36,7 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
         this.config = config;
     }
     async enqueue(params) {
-        const { txHash, walletId, currency, chain, amount, destination, metadata, } = params;
+        const { txHash, walletId, currency, chain, amount, destination, metadata } = params;
         return this.prisma.withdrawalJob.create({
             data: {
                 txHash,
@@ -272,7 +272,11 @@ let WithdrawalTrackerService = WithdrawalTrackerService_1 = class WithdrawalTrac
                     severity: 'CRITICAL',
                     title: 'Withdrawal failed on-chain',
                     message: `Your withdrawal ${txHash} failed on-chain (${reason}). The transaction is marked FAILED for admin retry — no funds left your wallet on this attempt.`,
-                    metadata: { txHash, reason, via: extraMetadata.confirmedVia ?? 'unknown' },
+                    metadata: {
+                        txHash,
+                        reason,
+                        via: extraMetadata.confirmedVia ?? 'unknown',
+                    },
                 },
             });
         }

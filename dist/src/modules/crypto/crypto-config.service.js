@@ -233,8 +233,7 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         return this.configService.get('HD_SOL_MASTER_XPUB') || null;
     }
     get solDerivationPath() {
-        return (this.configService.get('HD_SOL_DERIVATION_PATH', "m/44'/501'/0'/0'") ||
-            "m/44'/501'/0'/0'");
+        return (this.configService.get('HD_SOL_DERIVATION_PATH', "m/44'/501'/0'/0'") || "m/44'/501'/0'/0'");
     }
     get solAccountIndex() {
         return Number(this.configService.get('HD_SOL_ACCOUNT', '0'));
@@ -246,8 +245,7 @@ let CryptoConfigService = CryptoConfigService_1 = class CryptoConfigService {
         return this.configService.get('HD_TRON_MASTER_XPUB') || null;
     }
     get tronDerivationPath() {
-        return (this.configService.get('HD_TRON_DERIVATION_PATH', "m/44'/195'/0'/0") ||
-            "m/44'/195'/0'/0");
+        return (this.configService.get('HD_TRON_DERIVATION_PATH', "m/44'/195'/0'/0") || "m/44'/195'/0'/0");
     }
     get tronAccountIndex() {
         return Number(this.configService.get('HD_TRON_ACCOUNT', '0'));

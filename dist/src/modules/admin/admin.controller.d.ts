@@ -1081,6 +1081,15 @@ export declare class AdminController {
         skipped: string[];
         errors: string[];
     }>;
+    solPull(address: string): Promise<{
+        chain: string;
+        address: string;
+        found: number;
+        credited: number;
+        alreadyRecorded: number;
+        skipped: string[];
+        errors: string[];
+    }>;
     getFeeWallets(): Promise<{
         wallets: {
             id: string;

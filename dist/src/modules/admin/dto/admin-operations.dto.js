@@ -13,7 +13,15 @@ exports.UpdateFeeConfigDto = exports.CreditTestFundsDto = exports.SweepConfigDto
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("../../../generated/client/index.js");
-const ALLOWED_AD_FIELDS = ['status', 'quantity', 'price', 'minLimit', 'maxLimit', 'paymentMethods', 'description'];
+const ALLOWED_AD_FIELDS = [
+    'status',
+    'quantity',
+    'price',
+    'minLimit',
+    'maxLimit',
+    'paymentMethods',
+    'description',
+];
 class AdminUpdateAdDto {
     status;
     quantity;
@@ -25,7 +33,11 @@ class AdminUpdateAdDto {
 }
 exports.AdminUpdateAdDto = AdminUpdateAdDto;
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: ALLOWED_AD_FIELDS, isArray: true, description: 'Only whitelisted fields are accepted' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        enum: ALLOWED_AD_FIELDS,
+        isArray: true,
+        description: 'Only whitelisted fields are accepted',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(ALLOWED_AD_FIELDS, { each: true }),
     __metadata("design:type", String)
@@ -77,7 +89,9 @@ __decorate([
     __metadata("design:type", String)
 ], SweepFeeWalletDto.prototype, "address", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Amount to sweep (omit for full balance)' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Amount to sweep (omit for full balance)',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
@@ -97,7 +111,9 @@ class SweepConfigDto {
 }
 exports.SweepConfigDto = SweepConfigDto;
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Enable/disable sweeping for this chain' }),
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Enable/disable sweeping for this chain',
+    }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)

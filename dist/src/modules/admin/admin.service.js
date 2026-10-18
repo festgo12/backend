@@ -383,11 +383,7 @@ let AdminService = class AdminService {
             : {};
         if (chain) {
             const existingOr = where.OR ?? [];
-            where.OR = [
-                ...existingOr,
-                { chain },
-                { ad: { chain } },
-            ];
+            where.OR = [...existingOr, { chain }, { ad: { chain } }];
         }
         const [orders, total] = await Promise.all([
             this.prisma.order.findMany({
@@ -1025,7 +1021,12 @@ let AdminService = class AdminService {
                 sol: solMaster,
                 tron: tronMaster,
             },
-            balances: [btcBalance, ...evmBalances, ...solanaBalances, ...tronBalances].filter((b) => b !== null),
+            balances: [
+                btcBalance,
+                ...evmBalances,
+                ...solanaBalances,
+                ...tronBalances,
+            ].filter((b) => b !== null),
         };
     }
     async reconcileAll() {
@@ -1159,10 +1160,7 @@ let AdminService = class AdminService {
         };
     }
     async triggerSweepChain(chain) {
-        const valid = [
-            ...this.cryptoConfig.supportedChains,
-            'BTC',
-        ];
+        const valid = [...this.cryptoConfig.supportedChains, 'BTC'];
         if (!valid.includes(chain)) {
             throw new common_1.BadRequestException(`Unsupported sweep chain: ${chain}. Expected ${valid.join(', ')}.`);
         }
@@ -1229,7 +1227,7 @@ let AdminService = class AdminService {
             const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
             if (!mint)
                 continue;
-            const transfers = await this.chainClient.getSolanaTransfers(address, mint, limit);
+            const transfers = await this.chainClient.getSolanaHistoryTransfers(address, mint, limit);
             for (const tx of transfers) {
                 const dbTx = await this.prisma.walletTransaction.findUnique({
                     where: { reference: tx.txHash },
@@ -1397,6 +1395,120 @@ let AdminService = class AdminService {
             return walletChain === eventChain || walletChain === 'EVM';
         }
         return walletChain === eventChain;
+    }
+    async pullSolDeposits(address) {
+        const normalizedAddress = address;
+        const supportedMints = [
+            this.cryptoConfig.getStablecoinContractFor('SOLANA', client_1.Currency.USDT),
+            this.cryptoConfig.getStablecoinContractFor('SOLANA', client_1.Currency.USDC),
+        ].filter((m) => Boolean(m));
+        if (supportedMints.length === 0) {
+            return {
+                chain: 'SOLANA',
+                address: normalizedAddress,
+                found: 0,
+                credited: 0,
+                alreadyRecorded: 0,
+                skipped: ['No Solana SPL mints configured for USDT/USDC'],
+                errors: [],
+            };
+        }
+        const transfers = await this.chainClient.getSolanaTransfers(normalizedAddress, supportedMints, 100);
+        const mintToCurrency = {};
+        for (const currency of [client_1.Currency.USDT, client_1.Currency.USDC]) {
+            const mint = this.cryptoConfig.getStablecoinContractFor('SOLANA', currency);
+            if (mint)
+                mintToCurrency[mint.toUpperCase()] = currency;
+        }
+        const summary = {
+            chain: 'SOLANA',
+            address: normalizedAddress,
+            found: 0,
+            credited: 0,
+            alreadyRecorded: 0,
+            skipped: [],
+            errors: [],
+        };
+        const seen = new Set();
+        for (const tx of transfers) {
+            if (seen.has(tx.signature))
+                continue;
+            seen.add(tx.signature);
+            if (tx.to !== normalizedAddress)
+                continue;
+            const currency = mintToCurrency[tx.mint.toUpperCase()];
+            if (!currency) {
+                summary.skipped.push(`${tx.signature}: unsupported SPL asset ${tx.mint}`);
+                continue;
+            }
+            const amount = Number.isFinite(tx.amount) && tx.amount > 0 ? tx.amount : 0;
+            if (amount <= 0)
+                continue;
+            summary.found += 1;
+            const registrations = this.depositRegistry.lookup(normalizedAddress, 'SOLANA');
+            let matched = false;
+            for (const reg of registrations) {
+                const wallet = await this.prisma.wallet.findUnique({
+                    where: { id: reg.walletId },
+                });
+                if (!wallet || wallet.currency !== currency)
+                    continue;
+                matched = true;
+                const existing = await this.prisma.walletTransaction.findUnique({
+                    where: { reference: tx.signature },
+                });
+                if (existing) {
+                    summary.alreadyRecorded += 1;
+                    continue;
+                }
+                const metadata = {
+                    source: 'ADMIN_MANUAL_PULL',
+                    listener: 'ADMIN_SOL_PULL',
+                    chain: 'SOLANA',
+                    blockTxId: tx.signature,
+                    asset: currency,
+                    address: normalizedAddress,
+                    sourceAddress: tx.from ?? '',
+                    blockNumber: tx.slot ?? 0,
+                    confirmations: this.cryptoConfig.confirmationsFor('SOLANA'),
+                    receivedAt: new Date().toISOString(),
+                    swept: false,
+                };
+                try {
+                    await this.walletService.createTransaction({
+                        walletId: wallet.id,
+                        type: client_1.LedgerType.DEPOSIT,
+                        amount,
+                        reference: tx.signature,
+                        status: 'COMPLETED',
+                        metadata,
+                    });
+                    const created = await this.prisma.walletTransaction.findUnique({
+                        where: { reference: tx.signature },
+                    });
+                    if (created && !created.resolvedAt) {
+                        await this.prisma.walletTransaction.update({
+                            where: { id: created.id },
+                            data: { resolvedAt: new Date() },
+                        });
+                    }
+                    summary.credited += 1;
+                }
+                catch (error) {
+                    const err = error;
+                    if (err.code === 'P2002') {
+                        summary.alreadyRecorded += 1;
+                    }
+                    else {
+                        summary.errors.push(`${tx.signature}: ${err.message}`);
+                    }
+                }
+            }
+            if (!matched) {
+                summary.skipped.push(`${tx.signature}: no matching wallet on SOLANA`);
+            }
+        }
+        return summary;
     }
 };
 exports.AdminService = AdminService;

@@ -395,15 +395,31 @@ let CryptoWithdrawalService = CryptoWithdrawalService_1 = class CryptoWithdrawal
     }
     platformFeeAddress(chain) {
         if (chain === 'BTC') {
-            return { chain: 'BTC', address: this.hdWallet.getMasterAddress('BTC'), derivationIndex: 0 };
+            return {
+                chain: 'BTC',
+                address: this.hdWallet.getMasterAddress('BTC'),
+                derivationIndex: 0,
+            };
         }
         if (chain === 'SOLANA') {
-            return { chain: 'SOLANA', address: this.hdWallet.getMasterAddressForChain('SOLANA'), derivationIndex: 0 };
+            return {
+                chain: 'SOLANA',
+                address: this.hdWallet.getMasterAddressForChain('SOLANA'),
+                derivationIndex: 0,
+            };
         }
         if (chain === 'TRON') {
-            return { chain: 'TRON', address: this.hdWallet.getMasterAddressForChain('TRON'), derivationIndex: 0 };
+            return {
+                chain: 'TRON',
+                address: this.hdWallet.getMasterAddressForChain('TRON'),
+                derivationIndex: 0,
+            };
         }
-        return { chain, address: this.hdWallet.getMasterAddress('EVM'), derivationIndex: 0 };
+        return {
+            chain,
+            address: this.hdWallet.getMasterAddress('EVM'),
+            derivationIndex: 0,
+        };
     }
 };
 exports.CryptoWithdrawalService = CryptoWithdrawalService;

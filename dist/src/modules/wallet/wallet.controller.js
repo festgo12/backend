@@ -154,7 +154,10 @@ let WalletController = WalletController_1 = class WalletController {
             throw new common_1.BadRequestException('NGN withdrawals use Paystack, not crypto withdrawal');
         }
         const rawChain = ownedWallet.chain || 'ethereum';
-        const chain = rawChain === 'EVM' || rawChain === 'ETH' || rawChain === 'BSC' || rawChain === 'POLYGON'
+        const chain = rawChain === 'EVM' ||
+            rawChain === 'ETH' ||
+            rawChain === 'BSC' ||
+            rawChain === 'POLYGON'
             ? 'ethereum'
             : rawChain === 'BTC'
                 ? 'bitcoin'
@@ -234,7 +237,9 @@ __decorate([
 __decorate([
     (0, common_1.Post)('init'),
     (0, audit_decorator_1.AuditLog)('WALLET_CREATION', 'WALLET'),
-    (0, swagger_1.ApiOperation)({ summary: 'Initialize a wallet for a specific currency (optionally per-chain)' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Initialize a wallet for a specific currency (optionally per-chain)',
+    }),
     __param(0, (0, get_user_decorator_1.GetUser)()),
     __param(1, (0, common_1.Body)('currency')),
     __param(2, (0, common_1.Body)('chain')),

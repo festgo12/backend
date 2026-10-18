@@ -19,7 +19,7 @@ let LedgerService = class LedgerService {
         this.prisma = prisma;
     }
     async createEntry(tx, params) {
-        const { walletId, transactionId, orderId, amount, type, reference, metadata } = params;
+        const { walletId, transactionId, orderId, amount, type, reference, metadata, } = params;
         const amountDecimal = new client_1.Prisma.Decimal(amount);
         if (amount < 0) {
             const absDebit = amountDecimal.abs();
